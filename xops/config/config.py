@@ -116,8 +116,8 @@ class Config:
         if path is not None:
             if os.path.exists(path):
                 return path
-            raise ValueError(
-                'XOPS_CONFIG env var does not direct to an existing path')
+            raise ValueError(('XOPS_CONFIG env var does not direct'
+                              ' to an existing path'))
 
         # then check if a config file is present in the working directory
         path = Path('./xops_config.ini')
@@ -149,8 +149,11 @@ def dump_default_config():
     """
     dump_path = Path('./xops_config.ini')
     if os.path.exists(dump_path.as_posix()):
-        raise RuntimeError(
-            'A config file already exists in the working directory')
-    default_content = resources.read_text('xops.resources', 'default_config.ini')
+        raise RuntimeError(('A config file already exists'
+                            ' in the working directory'))
+
+    default_content = resources.read_text('xops.resources',
+                                          'default_config.ini')
+
     with open(dump_path.as_posix(), 'w+', encoding='utf-8') as dump_file:
         dump_file.write(default_content)

@@ -4,8 +4,7 @@ author: Etienne Wallet
 This module contains utils various functions
 """
 import logging
-
-from xops.config.config import Config
+import os
 
 
 def get_logger(name: str) -> logging.Logger:
@@ -17,12 +16,8 @@ def get_logger(name: str) -> logging.Logger:
     :return: logger
     :rtype: logging.Logger
     """
-    config = Config.get_config()
     logger = logging.getLogger(name)
-    try:
-        log_level = config.get('LOGGING_LEVEL')
-    except KeyError:
-        log_level = 'WARNING'
+    log_level = os.environ.get('XOPS_LOG_LEVEL', 'WARNING')
     logger.setLevel(log_level)
 
     # create formatter and add it to the handlers
