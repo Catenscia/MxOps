@@ -36,6 +36,15 @@ class _Config:
             with resources.open_text('xops.resources', 'default_config.ini') as config_file:
                 self.__config.read_file(config_file)
 
+    def get_network(self) -> NetworkEnum:
+        """
+        Return the network of the config
+
+        :return: network used
+        :rtype: NetworkEnum
+        """
+        return self.__network
+
     def get(self, option: str) -> str:
         """
         return the specified option for the current environment
@@ -45,8 +54,6 @@ class _Config:
         :return: value for the option as a string
         :rtype: str
         """
-        if option == 'ENV':
-            return self.__network.name
         return self.__config.get(self.__network.name, option)
 
     def get_options(self) -> List[str]:
