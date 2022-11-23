@@ -1,0 +1,8 @@
+## Command Line Interface for xOps ##
+
+xops [COMMAND] [SUBCOMMAND] [OPTIONS]
+
+Available commands:
+
+    config   -> Interact with the configuration
+                type 'xops config --help' for more information

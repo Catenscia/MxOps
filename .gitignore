@@ -1,3 +1,7 @@
+# xOps related files
+
+xops_config.ini
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
