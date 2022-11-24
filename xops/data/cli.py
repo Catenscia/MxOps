@@ -42,8 +42,8 @@ def add_subparser(subparsers_action: _SubParsersAction):
                             action='store_true',
                             help='Display the root path for the user data')
 
-    get_parser.add_argument('-n',
-                            '--names',
+    get_parser.add_argument('-l',
+                            '--list',
                             action='store_true',
                             help=('Display the names of all scenarios saved'
                                   ' for the specified network'))
@@ -90,7 +90,7 @@ def execute_cli(args: Namespace):
         if args.scenario:
             data = io.load_scenario_data(args.scenario)
             print(json.dumps(data, indent=4))
-        elif args.names:
+        elif args.list:
             scenarios_names = io.get_all_scenarios_names()
             data = {'names': sorted(scenarios_names)}
             print(json.dumps(data, indent=4))
