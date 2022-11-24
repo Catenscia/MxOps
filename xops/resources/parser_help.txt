@@ -6,3 +6,6 @@ Available commands:
 
     config   -> Interact with the configuration
                 type 'xops config --help' for more information
+
+    data     -> Display data that have been saved localy.
+                type 'xops data --help' for more information
