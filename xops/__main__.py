@@ -8,6 +8,7 @@ import argparse
 from importlib import resources
 
 from xops.config import cli as config_cli
+from xops.data import cli as data_cli
 
 
 def parse_args() -> Namespace:
@@ -26,6 +27,7 @@ def parse_args() -> Namespace:
         dest='command')
 
     config_cli.add_subparser(subparsers_action)
+    data_cli.add_subparser(subparsers_action)
 
     return parser.parse_args()
 
@@ -39,6 +41,8 @@ def main():
 
     if args.command == 'config':
         config_cli.execute_cli(args)
+    elif args.command == 'data':
+        data_cli.execute_cli(args)
     else:
         raise ArgumentError(None, f'Unkown command: {args.command}')
 
