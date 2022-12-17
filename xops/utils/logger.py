@@ -17,7 +17,7 @@ def get_logger(name: str) -> logging.Logger:
     :rtype: logging.Logger
     """
     logger = logging.getLogger(name)
-    log_level = os.environ.get('XOPS_LOG_LEVEL', 'WARNING')
+    log_level = os.environ.get('XOPS_LOG_LEVEL', 'INFO')
     logger.setLevel(log_level)
 
     # create formatter and add it to the handlers
