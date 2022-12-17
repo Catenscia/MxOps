@@ -34,10 +34,7 @@ class AccountsManager:
         :type ledger_account_index: Optional[int], optional
         :param ledger_address_index: index of the ledger address, defaults to None
         :type ledger_address_index: Optional[int], optional
-        """
-        if account_name in cls._accounts:
-            raise ValueError(f'{account_name} is already used by another wallet')
-        
+        """        
         if ledger_account_index is not None and ledger_address_index is not None:
             cls._accounts[account_name] = LedgerAccount(ledger_account_index, ledger_address_index)
         elif isinstance(pem_path, str):
