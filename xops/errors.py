@@ -82,6 +82,10 @@ class WrongScenarioDataReference(Exception):
 #############################################################
 
 class TransactionError(Exception):
+    """
+    To be raised when a transaction encountered an error
+    on the network
+    """
 
     def __init__(self, tx: Transaction) -> None:
         self.tx = tx
@@ -92,14 +96,23 @@ class TransactionError(Exception):
 
 
 class FailedTransactionError(TransactionError):
-    pass
+    """
+    To be raised when a transaction send got a failed status
+    """
 
 
 class UnfinalizedTransactionException(TransactionError):
-    pass
+    """
+    To be raised when a transaction was found to be 
+    not finalized (completed tx excepted)
+    """
 
 
 class SmartContractExecutionError(TransactionError):
+    """
+    To be raised when a transaction encountered a smart
+    contract execution error
+    """
 
     def __init__(self, tx: Transaction, logs: str) -> None:
         self.logs = logs
@@ -108,3 +121,8 @@ class SmartContractExecutionError(TransactionError):
     def __str__(self) -> str:
         return ("error on contract execution transaction "
                 f"{get_proxy_tx_link(self.tx.hash)}\nlogs:\n{self.logs}")
+
+class EmptyQueryResults(Exception):
+    """
+    To be raised when a query returned no results
+    """

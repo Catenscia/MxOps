@@ -145,6 +145,7 @@ class _ScenarioData:
         except KeyError:
             raise errors.UnknownContract(self.name, contract_id)
         contract.set_value(value_key, value)
+        self.save()
 
     def add_contract_data(self, contract_data: ContractData):
         """

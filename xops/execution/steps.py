@@ -10,15 +10,16 @@ import sys
 from typing import Dict, List
 
 from erdpy.contracts import CodeMetadata
-from xops.data.data import ContractData, ScenarioData
 
+from xops.data.data import ContractData, ScenarioData
 from xops.execution.account import AccountsManager
 from xops.execution import contract_interactions as cti
 from xops.execution.msc import EsdtTransfer
 from xops.execution.network import check_onchain_success, send, send_and_wait_for_result
+from xops.execution.utils import parse_query_result
 from xops.utils.logger import get_logger
 from xops.utils.msc import get_file_hash, get_proxy_tx_link
-
+from xops import errors
 
 LOGGER = get_logger('steps')
 
@@ -180,6 +181,27 @@ class ContractQueryStep(ContractStep):
     save_keys: List[str] = field(default_factory=lambda: [])
     result_types: List[str] = field(default_factory=lambda: [])
     print_results: bool = False
+
+    def execute(self):
+        """
+        Execute a query and optionally save the result
+        """
+        LOGGER.info(f'Query on {self.endpoint} for {self.contract_id}')
+        scenario_data = ScenarioData.get()
+        contract_address = scenario_data.get_contract_value(self.contract_id,
+                                                            'address')
+        results = cti.query_contract(contract_address, self.endpoint, self.arguments)
+
+        if len(results) == 0:
+            raise errors.EmptyQueryResults
+        if len(self.save_keys):
+            LOGGER.info(f'Saving Query results as contract data ')
+            for result, save_key, result_type in zip(results, self.save_keys, self.result_types):
+                parsed_result = parse_query_result(result, result_type)
+                scenario_data.set_contract_value(self.contract_id, save_key, parsed_result)
+        elif self.print_results:
+            print(results)
+        LOGGER.info(f'Query successful')
 
 
 def instanciate_steps(raw_steps: List[Dict]) -> List[Step]:

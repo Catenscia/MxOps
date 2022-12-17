@@ -7,6 +7,7 @@ import os
 from typing import Any, List, Optional, Tuple
 
 from erdpy.accounts import Address
+from erdpy.contracts import QueryResult
 
 from xops.config.config import Config
 from xops.data.data import ScenarioData
@@ -148,3 +149,21 @@ def format_tx_arguments(arguments: List[Any]) -> List[Any]:
         
         formated_arguments.append(formated_arg)
     return formated_arguments
+
+
+def parse_query_result(result: QueryResult, expected_return: str) -> Any:
+    """
+    Take the return of a query and tries to parse it in the specified return type
+
+    :param result: result of a query
+    :type result: QueryResult
+    :param expected_return: expected return of the query
+    :type expected_return: str
+    :return: parsed result of the query
+    :rtype: Any
+    """
+    if expected_return == 'number':
+        return result.number
+    elif expected_return == 'str':
+        return bytes.fromhex(result.hex).decode()
+    raise ValueError(f'Unkown expected return: {expected_return}')
