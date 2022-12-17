@@ -74,3 +74,37 @@ class WrongScenarioDataReference(Exception):
         message = ('Scenario data reference must have the format '
                    r'"%contract_id%valuekey[:optional_format]"')
         super().__init__(message)
+
+#############################################################
+#
+#                   Transactions Errors
+#
+#############################################################
+
+class TransactionError(Exception):
+
+    def __init__(self, tx: Transaction) -> None:
+        self.tx = tx
+        super().__init__()
+
+    def __str__(self) -> str:
+        return f"error on transaction {get_proxy_tx_link(self.tx.hash)}"
+
+
+class FailedTransactionError(TransactionError):
+    pass
+
+
+class UnfinalizedTransactionException(TransactionError):
+    pass
+
+
+class SmartContractExecutionError(TransactionError):
+
+    def __init__(self, tx: Transaction, logs: str) -> None:
+        self.logs = logs
+        super().__init__(tx)
+
+    def __str__(self) -> str:
+        return ("error on contract execution transaction "
+                f"{get_proxy_tx_link(self.tx.hash)}\nlogs:\n{self.logs}")
