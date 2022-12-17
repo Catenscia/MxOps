@@ -18,12 +18,21 @@ allowed_networks:
 allowed_scenario:
   - "*"  # regex allowed here
 
+# list of accounts details. To be defined only once per execution
+# In case of the execution of several scenes. This can be defined in a single file.
+# names have to be unique or they will override each other
+accounts:
+  - account_name: bob
+    pem_path: path/to/bom_pem
+  - account_name: alice
+    ledger_account_index: 12
+    ledger_address_index: 2
+
 # list of the steps to execute
 steps:
   - type: ContractDeploy
-    sender:
-      pem: path/to/pem
-    wasm_file: path/to/wasm
+    sender: bob
+    wasm_path: path/to/wasm
     contract_id: my_first_sc
     gas_limit: 1584000
     arguments:
@@ -36,7 +45,7 @@ steps:
 
   - type: ContractCall
     sender:
-      pem: path/to/pem
+      pem_path: path/to/pem
     contract_id: my_first_sc
     endpoint: myEndpoint
     gas_limit: 60000000
@@ -58,8 +67,7 @@ saved under the provided id to allow futur interaction.
 
 ```yaml
 type: ContractDeploy
-sender:
-pem: path/to/pem
+sender: bob
 content:
 wasm_file: path/to/wasm
 contract_id: my_first_sc
@@ -79,8 +87,7 @@ This step is used to call the endpoint of a contract.
 
 ```yaml
 type: ContractCall
-sender:
-  pem: path/to/pem
+sender: alice
 contract-id: my_first_sc
 endpoint: myEndpoint
 gas_limit: 60000000
@@ -142,9 +149,11 @@ steps:
       - save_key: TokenIdentifier4Amount
         result_type: number
   
-  - type: ContractQuery
+  - type: ContractCall
+    sender: alice
     contract_id: my_first_sc
     endpoint: RetrieveSft
+    gas_limit: 60000000
     arguments:
       - TokenIdentifier4
       - $LOOP_VAR  # nonce

@@ -14,11 +14,14 @@ from xops.data.data import ScenarioData
 from xops.execution import steps
 import yaml
 
+from xops.execution.account import AccountsManager
+
 
 @dataclass
 class Scene:
     allowed_networks: List[str]
     allowed_scenario: List[str]
+    accounts: List[Dict]
     steps: List[steps.Step]
 
     def __post_init__(self):
@@ -73,6 +76,10 @@ def execute_scene(scene_path: Path):
     if not match_found:
         raise ValueError((f'Scene {scene_path} not allowed to be executed '
                           f'in the scenario {scenario_data.name}'))
+
+    # load accounts
+    for account in scene.accounts:
+        AccountsManager.load_account(**account)
 
     # execute steps
     for step in scene.steps:

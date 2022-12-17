@@ -62,3 +62,4 @@ exemple
 - [ ] Add a skip keyword to skip steps without deleting them
 - [ ] Out of gas transaction error
 - [ ] Add querry support for external contracts
+- [ ] Refactor scene files format to extract conditions and accounts
