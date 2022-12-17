@@ -3,12 +3,13 @@ author: Etienne Wallet
 
 Entry point for the xOps package.
 """
-from argparse import ArgumentError, Namespace, RawDescriptionHelpFormatter
+from argparse import Namespace, RawDescriptionHelpFormatter
 import argparse
 from importlib import resources
 
 from xops.config import cli as config_cli
 from xops.data import cli as data_cli
+from xops.execution import cli as execution_cli
 
 
 def parse_args() -> Namespace:
@@ -28,6 +29,7 @@ def parse_args() -> Namespace:
 
     config_cli.add_subparser(subparsers_action)
     data_cli.add_subparser(subparsers_action)
+    execution_cli.add_subparser(subparsers_action)
 
     return parser.parse_args()
 
@@ -43,8 +45,8 @@ def main():
         config_cli.execute_cli(args)
     elif args.command == 'data':
         data_cli.execute_cli(args)
-    else:
-        raise ArgumentError(None, f'Unkown command: {args.command}')
+    elif args.command == 'execute':
+        execution_cli.execute_cli(args)
 
 
 if __name__ == "__main__":
