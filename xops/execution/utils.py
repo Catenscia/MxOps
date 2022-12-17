@@ -9,7 +9,7 @@ from typing import Any, List, Optional, Tuple
 from erdpy.accounts import Address
 
 from xops.config.config import Config
-from xops.data.data import _ScenarioData
+from xops.data.data import ScenarioData
 from xops.errors import WrongScenarioDataReference
 
 
@@ -84,15 +84,13 @@ def retrieve_value_from_config(arg: str) -> str:
     return convert_arg(retrieved_value, desired_type)
 
 
-def retrieve_value_from_scenario_data(scenario_data: _ScenarioData, arg: str) -> str:
+def retrieve_value_from_scenario_data(arg: str) -> str:
     """
     Retrieve the value of an argument from scenario data.
     the argument must formated like this: %<contract_id>%<attribute>
 
     :param arg: name of the variable formated as above
     :type arg: str
-    :param scenario_data: data of the current scenario
-    :type scenario_data: ScenarioData
     :return: value saved in the config
     :rtype: str
     """
@@ -101,19 +99,19 @@ def retrieve_value_from_scenario_data(scenario_data: _ScenarioData, arg: str) ->
         contract_id, value_key = inner_arg[1:].split('%')
     except Exception as err:
         raise WrongScenarioDataReference from err
+    
+    scenario_data = ScenarioData.get()
     retrieved_value = scenario_data.get_contract_value(contract_id, value_key)
     return convert_arg(retrieved_value, desired_type)
 
 
-def retrieve_value_from_string(arg: str, scenario_data: _ScenarioData) -> Any:
+def retrieve_value_from_string(arg: str) -> Any:
     """
     Check if a string argument is intended to be an env var, a config var or a data var.
     If Nonce of the previous apply, return the string unchanged
 
     :param arg: argument to check
     :type arg: str
-    :param scenario_data: data of the current scenario
-    :type scenario_data: ScenarioData
     :return: untouched argument or retrieved value
     :rtype: Any
     """
@@ -122,7 +120,7 @@ def retrieve_value_from_string(arg: str, scenario_data: _ScenarioData) -> Any:
     elif arg.startswith('&'):
         return retrieve_value_from_config(arg)
     elif arg.startswith('%'):
-        return retrieve_value_from_scenario_data(scenario_data, arg)
+        return retrieve_value_from_scenario_data(arg)
     return arg
 
 

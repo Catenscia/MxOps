@@ -10,7 +10,7 @@ import sys
 from typing import Dict, List
 
 from erdpy.contracts import CodeMetadata
-from xops.data.data import ContractData, _ScenarioData
+from xops.data.data import ContractData, ScenarioData
 
 from xops.execution.account import AccountsManager
 from xops.execution.contract_interactions import get_contract_deploy_tx
@@ -82,7 +82,7 @@ class ContractDeployStep(ContractStep):
     payable_by_sc: bool = False
     arguments: List = field(default_factory=lambda: [])
 
-    def execute(self, scenario_data: _ScenarioData):
+    def execute(self):
         """
         Execute a contract deployment
         """
@@ -105,6 +105,8 @@ class ContractDeployStep(ContractStep):
             creation_timestamp,
             {}
         )
+
+        scenario_data = ScenarioData.get()
         scenario_data.add_contract_data(contract_data)
 
 
