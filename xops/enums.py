@@ -1,7 +1,7 @@
 """
 author: Etienne Wallet
 
-Entry point for the xOps package.
+Enums used in the xOps package
 """
 
 from enum import Enum
