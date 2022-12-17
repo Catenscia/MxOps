@@ -13,10 +13,14 @@ from erdpy.contracts import CodeMetadata
 from xops.data.data import ContractData, ScenarioData
 
 from xops.execution.account import AccountsManager
-from xops.execution.contract_interactions import get_contract_deploy_tx
+from xops.execution import contract_interactions as cti
 from xops.execution.msc import EsdtTransfer
-from xops.execution.network import check_onchain_success, send_and_wait_for_result
-from xops.utils.msc import get_file_hash
+from xops.execution.network import check_onchain_success, send, send_and_wait_for_result
+from xops.utils.logger import get_logger
+from xops.utils.msc import get_file_hash, get_proxy_tx_link
+
+
+LOGGER = get_logger('steps')
 
 
 @dataclass
@@ -86,15 +90,18 @@ class ContractDeployStep(ContractStep):
         """
         Execute a contract deployment
         """
+        LOGGER.info(f'Deploying contract {self.contract_id}')
         sender = AccountsManager.get_account(self.sender)
         metadata = CodeMetadata(self.upgradeable, self.readable,
                                 self.payable, self.payable_by_sc)
         wasm_path = Path(self.wasm_path)
-        tx, contract = get_contract_deploy_tx(wasm_path, metadata,
-                                              self.gas_limit, self.arguments, sender)
+        tx, contract = cti.get_contract_deploy_tx(wasm_path, metadata,
+                                                  self.gas_limit, self.arguments, sender)
         onChainTx = send_and_wait_for_result(tx)
         check_onchain_success(onChainTx)
         sender.nonce += 1
+        LOGGER.info((f'Deploy successful on {contract.address}'
+                     f'\ntx hash: {get_proxy_tx_link(onChainTx.hash)}'))
 
         creation_timestamp = onChainTx.to_dictionary()['timestamp']
         contract_data = ContractData(
@@ -136,6 +143,34 @@ class ContractCallStep(ContractStep):
             else:
                 raise ValueError(f'Unexpected type: {type(trf)}')
         self.esdt_transfers = checked_transfers
+
+    def execute(self):
+        """
+        Execute a contract call
+        """
+        LOGGER.info(f'Calling {self.endpoint} for {self.contract_id}')
+        sender = AccountsManager.get_account(self.sender)
+        scenario_data = ScenarioData.get()
+        contract_address = scenario_data.get_contract_value(self.contract_id,
+                                                            'address')
+
+        tx = cti.get_contract_multiple_esdt_call_tx(contract_address,
+                                                    self.endpoint,
+                                                    self.gas_limit,
+                                                    self.arguments,
+                                                    self.value,
+                                                    self.esdt_transfers,
+                                                    sender)
+
+        if self.wait_for_result:
+            onChainTx = send_and_wait_for_result(tx)
+            check_onchain_success(onChainTx)
+            LOGGER.info(
+                f'Call successful: {get_proxy_tx_link(onChainTx.hash)}')
+        else:
+            tx_hash = send(tx)
+            LOGGER.info(f'Call sent: {get_proxy_tx_link(tx_hash)}')
+        sender.nonce += 1
 
 
 @dataclass
