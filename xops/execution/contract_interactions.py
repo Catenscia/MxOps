@@ -16,8 +16,13 @@ from xops.execution.msc import EsdtTransfer
 from xops.execution.utils import format_tx_arguments, retrieve_value_from_string
 
 
-def get_contract_deploy_tx(wasm_file: Path, metadata: CodeMetadata, gas_limit: int,
-                           contract_args: List, sender: Account) -> Tuple[Transaction, SmartContract]:
+def get_contract_deploy_tx(
+    wasm_file: Path,
+    metadata: CodeMetadata,
+    gas_limit: int,
+    contract_args: List,
+    sender: Account
+) -> Tuple[Transaction, SmartContract]:
     """
     Contruct the contract instance and the transaction used to deploy a contract.
     The transaction is not relayed to the proxy, this has to be done with the result of this function.
@@ -47,8 +52,14 @@ def get_contract_deploy_tx(wasm_file: Path, metadata: CodeMetadata, gas_limit: i
     return tx, contract
 
 
-def get_contract_value_call_tx(contract_address: str, endpoint: str, gas_limit: int,
-                               arguments: List, value: int, sender: Account) -> Transaction:
+def get_contract_value_call_tx(
+    contract_address: str,
+    endpoint: str,
+    gas_limit: int,
+    arguments: List,
+    value: int,
+    sender: Account
+) -> Transaction:
     """
     Contruct the transaction for a contract call with value provision.
     The transaction is not relayed to the proxy, this has to be done with
@@ -91,8 +102,14 @@ def get_contract_value_call_tx(contract_address: str, endpoint: str, gas_limit: 
     return tx
 
 
-def get_contract_single_esdt_call_tx(contract_address: str, endpoint: str, gas_limit: int,
-                                     arguments: List, esdt_transfer: EsdtTransfer, sender: Account) -> Transaction:
+def get_contract_single_esdt_call_tx(
+    contract_address: str,
+    endpoint: str,
+    gas_limit: int,
+    arguments: List,
+    esdt_transfer: EsdtTransfer,
+    sender: Account
+) -> Transaction:
     """
     Contruct the transaction for a contract call with an esdt transfer.
     The transaction is not relayed to the proxy, this has to be done with
@@ -139,8 +156,14 @@ def get_contract_single_esdt_call_tx(contract_address: str, endpoint: str, gas_l
     return tx
 
 
-def get_contract_single_nft_call_tx(contract_address: str, endpoint: str, gas_limit: int,
-                                    arguments: List, nft_transfer: EsdtTransfer, sender: Account) -> Transaction:
+def get_contract_single_nft_call_tx(
+    contract_address: str,
+    endpoint: str,
+    gas_limit: int,
+    arguments: List,
+    nft_transfer: EsdtTransfer,
+    sender: Account
+) -> Transaction:
     """
     Contruct the transaction for a contract call with an nft transfer (NFT, SFT and Meta ESDT).
     The transaction is not relayed to the proxy, this has to be done with
@@ -190,8 +213,14 @@ def get_contract_single_nft_call_tx(contract_address: str, endpoint: str, gas_li
     return tx
 
 
-def get_contract_multiple_esdt_call_tx(contract_address: str, endpoint: str, gas_limit: int,
-                                       arguments: List, esdt_transfers: List[EsdtTransfer], sender: Account) -> Transaction:
+def get_contract_multiple_esdt_call_tx(
+    contract_address: str,
+    endpoint: str,
+    gas_limit: int,
+    arguments: List,
+    esdt_transfers: List[EsdtTransfer],
+    sender: Account
+) -> Transaction:
     """
     Contruct the transaction for a contract call with multiple esdt transfers.
     The transaction is not relayed to the proxy, this has to be done with
@@ -241,6 +270,73 @@ def get_contract_multiple_esdt_call_tx(contract_address: str, endpoint: str, gas
         chain=config.get('CHAIN'),
         version=erdpy_config.get_tx_version()
     )
+
+    return tx
+
+
+def get_contract_call_tx(
+    contract_address: str,
+    endpoint: str,
+    gas_limit: int,
+    arguments: List,
+    value: int,
+    esdt_transfers: List[EsdtTransfer],
+    sender: Account
+) -> Transaction:
+    """
+    Contruct the transaction for a contract call
+    The transaction is not relayed to the proxy, this has to be done with
+    the result of this function.
+
+    :param contract_address: bech32 address of the contract to call
+    :type contract_address: str
+    :param endpoint: endpoint to call
+    :type endpoint: str
+    :param gas_limit: gas limit for the transaction.
+    :type gas_limit:int
+    :param arguments: argument for endpoint
+    :type arguments: List
+    :param value: value to send during the call
+    :type value: int
+    :param esdt_transfers: transfers to be made with the endpoint call
+    :type esdt_transfers: List[EsdtTransfer]
+    :param sender: sender of the transaction
+    :type sender: Account
+    :return: call transaction to send
+    :rtype: Transaction
+    """
+    n_transfers = len(esdt_transfers)
+
+    if n_transfers == 0:
+        tx = get_contract_value_call_tx(contract_address,
+                                        endpoint,
+                                        gas_limit,
+                                        arguments,
+                                        value,
+                                        sender)
+    elif n_transfers == 1:
+        transfer = esdt_transfers[0]
+        if transfer.nonce:
+            tx = get_contract_single_nft_call_tx(contract_address,
+                                                 endpoint,
+                                                 gas_limit,
+                                                 arguments,
+                                                 transfer,
+                                                 sender)
+        else:
+            tx = get_contract_single_esdt_call_tx(contract_address,
+                                                  endpoint,
+                                                  gas_limit,
+                                                  arguments,
+                                                  transfer,
+                                                  sender)
+    else:
+        tx = get_contract_multiple_esdt_call_tx(contract_address,
+                                                endpoint,
+                                                gas_limit,
+                                                arguments,
+                                                esdt_transfers,
+                                                sender)
 
     return tx
 
