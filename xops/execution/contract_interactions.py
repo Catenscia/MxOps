@@ -25,7 +25,8 @@ def get_contract_deploy_tx(
 ) -> Tuple[Transaction, SmartContract]:
     """
     Contruct the contract instance and the transaction used to deploy a contract.
-    The transaction is not relayed to the proxy, this has to be done with the result of this function.
+    The transaction is not relayed to the proxy,
+    this has to be done with the result of this function.
 
     :param wasm_file: path to the wasm file of the contract
     :type wasm_file: Path
@@ -40,7 +41,7 @@ def get_contract_deploy_tx(
     :return: deploy transaction and contract instance created
     :rtype: Tuple[Transaction, SmartContract]
     """
-    config = Config.get()
+    config = Config.get_config()
 
     bytecode = erdpy_utils.read_binary_file(wasm_file).hex()
     contract = SmartContract(bytecode=bytecode, metadata=metadata)
@@ -80,7 +81,7 @@ def get_contract_value_call_tx(
     :return: call transaction to send
     :rtype: Transaction
     """
-    config = Config.get()
+    config = Config.get_config()
 
     contract = SmartContract(Address(contract_address))
 
@@ -130,7 +131,7 @@ def get_contract_single_esdt_call_tx(
     :return: call transaction to send
     :rtype: Transaction
     """
-    config = Config.get()
+    config = Config.get_config()
 
     contract = SmartContract(Address(contract_address))
 
@@ -184,7 +185,7 @@ def get_contract_single_nft_call_tx(
     :return: call transaction to send
     :rtype: Transaction
     """
-    config = Config.get()
+    config = Config.get_config()
     self_contract = SmartContract(sender.address)
 
     contract = SmartContract(Address(contract_address))
@@ -193,7 +194,7 @@ def get_contract_single_nft_call_tx(
         nft_transfer.token_identifier,
         nft_transfer.nonce,
         nft_transfer.amount,
-        contract_address.bech32(),
+        contract.address.bech32(),
         endpoint,
         *arguments
     ]
@@ -241,7 +242,7 @@ def get_contract_multiple_esdt_call_tx(
     :return: call transaction to send
     :rtype: Transaction
     """
-    config = Config.get()
+    config = Config.get_config()
     self_contract = SmartContract(sender.address)
 
     contract = SmartContract(Address(contract_address))
@@ -354,7 +355,7 @@ def query_contract(contract_address: str, endpoint: str, arguments: List) -> Lis
     :return: list of QueryResult
     :rtype: List[QueryResult]
     """
-    config = Config.get()
+    config = Config.get_config()
 
     contract = SmartContract(Address(contract_address))
 

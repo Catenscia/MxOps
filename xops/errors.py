@@ -13,6 +13,7 @@ from xops.utils.msc import get_proxy_tx_link
 #
 #############################################################
 
+
 class UnknownScenario(Exception):
     """
     To be raised when a specified scenario is not found
@@ -29,7 +30,7 @@ class UnloadedScenario(Exception):
     """
 
     def __init__(self) -> None:
-        message = (f'Scenario data was not loaded')
+        message = 'Scenario data was not loaded'
         super().__init__(message)
 
 
@@ -41,6 +42,16 @@ class UnknownContract(Exception):
     def __init__(self, scenario_name: str, contract_id: str) -> None:
         message = (f'Contract {contract_id} is unkown in '
                    f'scenario {scenario_name}')
+        super().__init__(message)
+
+
+class UnknownAccount(Exception):
+    """
+    To be raised when a specified account is not found in a scene
+    """
+
+    def __init__(self, account_name: str) -> None:
+        message = f'Account {account_name} is unkown in the current scene'
         super().__init__(message)
 
 
@@ -81,6 +92,7 @@ class WrongScenarioDataReference(Exception):
 #
 #############################################################
 
+
 class TransactionError(Exception):
     """
     To be raised when a transaction encountered an error
@@ -103,7 +115,7 @@ class FailedTransactionError(TransactionError):
 
 class UnfinalizedTransactionException(TransactionError):
     """
-    To be raised when a transaction was found to be 
+    To be raised when a transaction was found to be
     not finalized (completed tx excepted)
     """
 
@@ -121,6 +133,7 @@ class SmartContractExecutionError(TransactionError):
     def __str__(self) -> str:
         return ("error on contract execution transaction "
                 f"{get_proxy_tx_link(self.tx.hash)}\nlogs:\n{self.logs}")
+
 
 class EmptyQueryResults(Exception):
     """

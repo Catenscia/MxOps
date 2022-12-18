@@ -19,7 +19,7 @@ def send(tx: Transaction) -> str:
     :return: hash of the transaction
     :rtype: str
     """
-    config = Config.get()
+    config = Config.get_config()
     proxy = ElrondProxy(config.get('PROXY'))
     return tx.send(proxy)
 
@@ -34,25 +34,25 @@ def send_and_wait_for_result(tx: Transaction) -> Transaction:
     :return: on chain finalised transaction
     :rtype: Transaction
     """
-    config = Config.get()
+    config = Config.get_config()
     proxy = ElrondProxy(config.get('PROXY'))
     timeout = int(config.get('TX_TIMEOUT'))
     return tx.send_wait_result(proxy, timeout)
 
 
-def check_onchain_success(onChainTx: Transaction):
+def check_onchain_success(on_chain_tx: Transaction):
     """
     Raise an error if the transaction failed or if the contract encountered an error
 
     :param onChainTx: on chain finalised transaction
     :type onChainTx: Transaction
     """
-    if not onChainTx.is_done():
-        raise errors.UnfinalizedTransactionException(onChainTx)
-    tx_dict = onChainTx.to_dictionary()
+    if not on_chain_tx.is_done():
+        raise errors.UnfinalizedTransactionException(on_chain_tx)
+    tx_dict = on_chain_tx.to_dictionary()
     if tx_dict['status'] == 'failed':
-        raise errors.FailedTransactionError(onChainTx)
-    
+        raise errors.FailedTransactionError(on_chain_tx)
+
     try:
         logs = tx_dict['logs']
         events = logs['events']
@@ -61,4 +61,4 @@ def check_onchain_success(onChainTx: Transaction):
 
     for event in events:
         if event['identifier'] in ['internalVMErrors']:
-            raise errors.SmartContractExecutionError(onChainTx, logs)
+            raise errors.SmartContractExecutionError(on_chain_tx, logs)

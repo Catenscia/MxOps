@@ -72,7 +72,7 @@ def add_subparser(subparsers_action: _SubParsersAction):
                                help='Delete all scenarios saved for the specified network')
 
 
-def execute_cli(args: Namespace):
+def execute_cli(args: Namespace):  # pylint: disable=R0912
     """
     Execute the data cli by following the given parsed arguments
 

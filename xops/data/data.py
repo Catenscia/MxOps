@@ -150,8 +150,8 @@ class _ScenarioData:
         self.last_update_time = int(time.time())
         try:
             contract = self.contracts_data[contract_id]
-        except KeyError:
-            raise errors.UnknownContract(self.name, contract_id)
+        except KeyError as err:
+            raise errors.UnknownContract(self.name, contract_id) from err
         contract.set_value(value_key, value)
         self.save()
 
@@ -192,6 +192,11 @@ class _ScenarioData:
 
 
 class ScenarioData:  # pylint: disable=too-few-public-methods
+    """
+    Shell class that implement the singleton logic for the _ScenarioData
+    class.
+    Only one scenario should be loaded by execution.
+    """
 
     _instance: Optional[_ScenarioData] = None
 
@@ -204,7 +209,7 @@ class ScenarioData:  # pylint: disable=too-few-public-methods
         :rtype: _ScenarioData
         """
         if cls._instance is None:
-            raise
+            raise errors.UnloadedScenario
         return cls._instance
 
     @classmethod

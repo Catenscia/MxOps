@@ -47,7 +47,7 @@ def convert_arg(arg: Any, desired_type: Optional[str]) -> Any:
     """
     if desired_type == 'str':
         return str(arg)
-    elif desired_type == 'int':
+    if desired_type == 'int':
         return int(arg)
     return arg
 
@@ -80,7 +80,7 @@ def retrieve_value_from_config(arg: str) -> str:
     if not arg.startswith('&'):
         raise ValueError(f'the argument as no & sign: {arg}')
     inner_arg, desired_type = retrieve_specified_type(arg)
-    config = Config.get()
+    config = Config.get_config()
     retrieved_value = config.get(inner_arg[1:].upper())
     return convert_arg(retrieved_value, desired_type)
 
@@ -100,7 +100,7 @@ def retrieve_value_from_scenario_data(arg: str) -> str:
         contract_id, value_key = inner_arg[1:].split('%')
     except Exception as err:
         raise WrongScenarioDataReference from err
-    
+
     scenario_data = ScenarioData.get()
     retrieved_value = scenario_data.get_contract_value(contract_id, value_key)
     return convert_arg(retrieved_value, desired_type)
@@ -118,9 +118,9 @@ def retrieve_value_from_string(arg: str) -> Any:
     """
     if arg.startswith('$'):
         return retrieve_value_from_env(arg)
-    elif arg.startswith('&'):
+    if arg.startswith('&'):
         return retrieve_value_from_config(arg)
-    elif arg.startswith('%'):
+    if arg.startswith('%'):
         return retrieve_value_from_scenario_data(arg)
     return arg
 
@@ -146,7 +146,7 @@ def format_tx_arguments(arguments: List[Any]) -> List[Any]:
                 formated_arg = 'str:' + arg
         elif isinstance(arg, Address):
             formated_arg = '0x' + arg.hex()
-        
+
         formated_arguments.append(formated_arg)
     return formated_arguments
 
@@ -164,6 +164,6 @@ def parse_query_result(result: QueryResult, expected_return: str) -> Any:
     """
     if expected_return == 'number':
         return result.number
-    elif expected_return == 'str':
+    if expected_return == 'str':
         return bytes.fromhex(result.hex).decode()
     raise ValueError(f'Unkown expected return: {expected_return}')

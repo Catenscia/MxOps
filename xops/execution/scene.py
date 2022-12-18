@@ -8,17 +8,21 @@ import os
 from pathlib import Path
 import re
 from typing import Dict, List
-from xops.config.config import Config
-from xops.data.data import ScenarioData
 
-from xops.execution import steps
 import yaml
 
+from xops.config.config import Config
+from xops.data.data import ScenarioData
+from xops.execution import steps
 from xops.execution.account import AccountsManager
 
 
 @dataclass
 class Scene:
+    """
+    Dataclass to represent a set of step to execute sequentially
+    within a scenario.
+    """
     allowed_networks: List[str]
     allowed_scenario: List[str]
     accounts: List[Dict]
@@ -30,7 +34,7 @@ class Scene:
         found to be Dict, will try to convert them to Steps instances.
         Usefull for easy loading from yaml files
         """
-        if len(self.steps) and isinstance(self.steps[0], Dict):
+        if len(self.steps) > 0 and isinstance(self.steps[0], Dict):
             self.steps = steps.instanciate_steps(self.steps)
 
 

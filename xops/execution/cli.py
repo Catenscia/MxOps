@@ -22,14 +22,27 @@ def add_subparser(subparsers_action: _SubParsersAction):
     :type subparsers_action: _SubParsersAction[ArgumentParser]
     """
     scenario_parser = subparsers_action.add_parser('execute')
-    scenario_parser.add_argument('-s', '--scenario', type=str, required=True,
-                                 help='Name of the scenario in which the scene(s) will be executed')
-    scenario_parser.add_argument('-n', '--network', type=NetworkEnum, required=True,
-                                 help='Name of the network in which the scene(s) will be executed')
-    scenario_parser.add_argument('-f', '--file', type=Path,
+    scenario_parser.add_argument('-s',
+                                 '--scenario',
+                                 type=str,
+                                 required=True,
+                                 help=('Name of the scenario in which the '
+                                       'scene(s) will be executed'))
+    scenario_parser.add_argument('-n',
+                                 '--network',
+                                 type=NetworkEnum,
+                                 required=True,
+                                 help=('Name of the network in which the '
+                                       'scene(s) will be executed'))
+    scenario_parser.add_argument('-f',
+                                 '--file',
+                                 type=Path,
                                  help='Path to a scene file to execute')
-    scenario_parser.add_argument('-d', '--directory', type=Path,
-                                 help='Path to directory containing several scenes files to execute')
+    scenario_parser.add_argument('-d',
+                                 '--directory',
+                                 type=Path,
+                                 help=('Path to directory containing several '
+                                       'scenes files to execute'))
 
 
 def execute_cli(args: Namespace):
@@ -55,4 +68,4 @@ def execute_cli(args: Namespace):
     elif args.directory:
         execute_directory(args.directory)
     else:
-        raise ValueError(f'--file or --directory must be supplied')
+        raise ValueError('--file or --directory must be supplied')

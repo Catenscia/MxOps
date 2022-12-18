@@ -18,10 +18,9 @@ def get_proxy_tx_link(tx_hash: str) -> str:
     :return: link to the transaction
     :rtype: str
     """
-    config = Config.get()
+    config = Config.get_config()
     proxy = config.get('PROXY')
     return f'{proxy}/transaction/{tx_hash}'
-
 
 
 def get_file_hash(file_path: Path) -> str:
@@ -35,9 +34,9 @@ def get_file_hash(file_path: Path) -> str:
     """
     block_size = 65536
     file_hash = hashlib.sha256()
-    with open(file_path.as_posix(), 'rb') as f:
-        fb = f.read(block_size)
-        while len(fb) > 0:
-            file_hash.update(fb)
-            fb = f.read(block_size)
+    with open(file_path.as_posix(), 'rb') as file:
+        file_block = file.read(block_size)
+        while len(file_block) > 0:
+            file_hash.update(file_block)
+            file_block = file.read(block_size)
     return file_hash.hexdigest()

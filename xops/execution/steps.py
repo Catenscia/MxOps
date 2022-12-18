@@ -26,20 +26,26 @@ LOGGER = get_logger('steps')
 
 @dataclass
 class Step:
-    pass
+    """
+    Represents a instruction to execute within a scene
+    """
 
     def execute(self):
         """
         Interface for the method to execute the action described by a Step instance.
         Each child class must overrid this method
 
-        :raises NotImplementedError: if this method was not overriden by a child class or directly executed.
+        :raises NotImplementedError: if this method was not overriden
+        by a child class or directly executed.
         """
         raise NotImplementedError
 
 
 @dataclass
 class LoopStep:
+    """
+    Represents a set of steps to execute several time
+    """
     steps: List[Step]
     var_name: str
     var_start: int = None
@@ -48,7 +54,7 @@ class LoopStep:
 
     def execute(self):
         """
-        Execute in loop the inner steps 
+        Execute in loop the inner steps
         """
         if self.var_start is not None and self.var_end is not None:
             iterator = range(self.var_start, self.var_end)
@@ -67,17 +73,23 @@ class LoopStep:
         found to be Dict, will try to convert them to Steps instances.
         Usefull for easy loading from yaml files
         """
-        if len(self.steps) and isinstance(self.steps[0], Dict):
+        if len(self.steps) > 0 and isinstance(self.steps[0], Dict):
             self.steps = instanciate_steps(self.steps)
 
 
 @dataclass
-class ContractStep(Step):
+class ContractStep(Step):  # pylint: disable=W0223
+    """
+    Represents a step dealing with a smart contract
+    """
     contract_id: str
 
 
 @dataclass
 class ContractDeployStep(ContractStep):
+    """
+    Represents a smart contract deployment
+    """
     sender: Dict
     wasm_path: str
     gas_limit: int
@@ -98,13 +110,13 @@ class ContractDeployStep(ContractStep):
         wasm_path = Path(self.wasm_path)
         tx, contract = cti.get_contract_deploy_tx(wasm_path, metadata,
                                                   self.gas_limit, self.arguments, sender)
-        onChainTx = send_and_wait_for_result(tx)
-        check_onchain_success(onChainTx)
+        on_chain_tx = send_and_wait_for_result(tx)
+        check_onchain_success(on_chain_tx)
         sender.nonce += 1
         LOGGER.info((f'Deploy successful on {contract.address}'
-                     f'\ntx hash: {get_proxy_tx_link(onChainTx.hash)}'))
+                     f'\ntx hash: {get_proxy_tx_link(on_chain_tx.hash)}'))
 
-        creation_timestamp = onChainTx.to_dictionary()['timestamp']
+        creation_timestamp = on_chain_tx.to_dictionary()['timestamp']
         contract_data = ContractData(
             self.contract_id,
             contract.address.bech32(),
@@ -120,6 +132,9 @@ class ContractDeployStep(ContractStep):
 
 @dataclass
 class ContractCallStep(ContractStep):
+    """
+    Represents a smart contract endpoint call
+    """
     sender: Dict
     endpoint: str
     gas_limit: int
@@ -164,10 +179,10 @@ class ContractCallStep(ContractStep):
                                       sender)
 
         if self.wait_for_result:
-            onChainTx = send_and_wait_for_result(tx)
-            check_onchain_success(onChainTx)
+            on_chain_tx = send_and_wait_for_result(tx)
+            check_onchain_success(on_chain_tx)
             LOGGER.info(
-                f'Call successful: {get_proxy_tx_link(onChainTx.hash)}')
+                f'Call successful: {get_proxy_tx_link(on_chain_tx.hash)}')
         else:
             tx_hash = send(tx)
             LOGGER.info(f'Call sent: {get_proxy_tx_link(tx_hash)}')
@@ -176,6 +191,9 @@ class ContractCallStep(ContractStep):
 
 @dataclass
 class ContractQueryStep(ContractStep):
+    """
+    Represents a smart contract query
+    """
     endpoint: str
     arguments: List = field(default_factory=lambda: [])
     save_keys: List[str] = field(default_factory=lambda: [])
@@ -190,18 +208,20 @@ class ContractQueryStep(ContractStep):
         scenario_data = ScenarioData.get()
         contract_address = scenario_data.get_contract_value(self.contract_id,
                                                             'address')
-        results = cti.query_contract(contract_address, self.endpoint, self.arguments)
+        results = cti.query_contract(
+            contract_address, self.endpoint, self.arguments)
 
         if len(results) == 0:
             raise errors.EmptyQueryResults
-        if len(self.save_keys):
-            LOGGER.info(f'Saving Query results as contract data ')
+        if len(self.save_keys) > 0:
+            LOGGER.info('Saving Query results as contract data')
             for result, save_key, result_type in zip(results, self.save_keys, self.result_types):
                 parsed_result = parse_query_result(result, result_type)
-                scenario_data.set_contract_value(self.contract_id, save_key, parsed_result)
+                scenario_data.set_contract_value(
+                    self.contract_id, save_key, parsed_result)
         elif self.print_results:
             print(results)
-        LOGGER.info(f'Query successful')
+        LOGGER.info('Query successful')
 
 
 def instanciate_steps(raw_steps: List[Dict]) -> List[Step]:
