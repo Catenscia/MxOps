@@ -155,13 +155,13 @@ class ContractCallStep(ContractStep):
         contract_address = scenario_data.get_contract_value(self.contract_id,
                                                             'address')
 
-        tx = cti.get_contract_multiple_esdt_call_tx(contract_address,
-                                                    self.endpoint,
-                                                    self.gas_limit,
-                                                    self.arguments,
-                                                    self.value,
-                                                    self.esdt_transfers,
-                                                    sender)
+        tx = cti.get_contract_call_tx(contract_address,
+                                      self.endpoint,
+                                      self.gas_limit,
+                                      self.arguments,
+                                      self.value,
+                                      self.esdt_transfers,
+                                      sender)
 
         if self.wait_for_result:
             onChainTx = send_and_wait_for_result(tx)
