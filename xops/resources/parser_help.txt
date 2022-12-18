@@ -9,3 +9,10 @@ Available commands:
 
     data     -> Display data that have been saved localy.
                 type 'xops data --help' for more information
+
+    execute  -> Execute smart-contract interactions
+                type 'xops execute --help' for more information
+
+    version  -> Display the version of the xops package
+
+        
