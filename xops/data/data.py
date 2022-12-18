@@ -104,9 +104,17 @@ class _ScenarioData:
         Will also try to convert string network to NetworkEnum.
         Usefull for easy loading from json files
         """
-        if len(self.contracts_data) and isinstance(self.contracts_data[0], Dict):  # contracts are still dict
-            self.contracts_data = [ContractData(
-                **e) for e in self.contracts_data]
+        checked_data = []
+        for contract_data in self.contracts_data:
+            if isinstance(contract_data, Dict):
+                checked_data.append(ContractData(**contract_data))
+            elif isinstance(contract_data, ContractData):
+                checked_data.append(contract_data)
+            else:
+                raise TypeError(('Unexpected contract data '
+                                 f'type {type(contract_data)}'))
+        self.contracts_data = checked_data
+
         if isinstance(self.network, str):
             self.network = NetworkEnum(self.network)
 
@@ -142,9 +150,10 @@ class _ScenarioData:
         self.last_update_time = int(time.time())
         try:
             contract = self.contracts_data[contract_id]
-        except KeyError:
-            raise errors.UnknownContract(self.name, contract_id)
+        except KeyError as err:
+            raise errors.UnknownContract(self.name, contract_id) from err
         contract.set_value(value_key, value)
+        self.save()
 
     def add_contract_data(self, contract_data: ContractData):
         """
@@ -183,6 +192,11 @@ class _ScenarioData:
 
 
 class ScenarioData:  # pylint: disable=too-few-public-methods
+    """
+    Shell class that implement the singleton logic for the _ScenarioData
+    class.
+    Only one scenario should be loaded by execution.
+    """
 
     _instance: Optional[_ScenarioData] = None
 
@@ -195,7 +209,7 @@ class ScenarioData:  # pylint: disable=too-few-public-methods
         :rtype: _ScenarioData
         """
         if cls._instance is None:
-            raise
+            raise errors.UnloadedScenario
         return cls._instance
 
     @classmethod

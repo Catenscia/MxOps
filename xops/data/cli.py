@@ -1,5 +1,5 @@
 """
-author: EtWnn
+author: Etienne Wallet
 
 This module contains the cli for the data subpackage
 """
@@ -7,8 +7,9 @@ from argparse import _SubParsersAction, ArgumentError, Namespace, RawDescription
 from importlib import resources
 import json
 
-from xops.data import io
+from xops.data import path
 from xops.config.config import Config
+from xops.data.data import ScenarioData, delete_scenario_data
 from xops.enums import NetworkEnum
 
 
@@ -63,7 +64,6 @@ def add_subparser(subparsers_action: _SubParsersAction):
 
     delete_parser.add_argument('-s',
                                '--scenario',
-                               required=True,
                                help='Name of the scenario for the data deletion')
 
     delete_parser.add_argument('-a',
@@ -72,7 +72,7 @@ def add_subparser(subparsers_action: _SubParsersAction):
                                help='Delete all scenarios saved for the specified network')
 
 
-def execute_cli(args: Namespace):
+def execute_cli(args: Namespace):  # pylint: disable=R0912
     """
     Execute the data cli by following the given parsed arguments
 
@@ -81,30 +81,34 @@ def execute_cli(args: Namespace):
     """
     if args.command != 'data':
         raise ValueError(f'Command data was expected, found {args.command}')
-    io.initialize_data_folder()
+    path.initialize_data_folder()
     Config.set_network(args.network)
 
     sub_command = args.data_command
 
     if sub_command == 'get':
         if args.scenario:
-            data = io.load_scenario_data(args.scenario)
-            print(json.dumps(data, indent=4))
+            ScenarioData.load_scenario(args.scenario)
+            print(json.dumps(ScenarioData.get().to_dict(), indent=4))
         elif args.list:
-            scenarios_names = io.get_all_scenarios_names()
+            scenarios_names = path.get_all_scenarios_names()
             data = {'names': sorted(scenarios_names)}
             print(json.dumps(data, indent=4))
         elif args.path:
-            print(f'Root data path: {io.get_data_path()}')
+            print(f'Root data path: {path.get_data_path()}')
         else:
             raise ArgumentError(None, 'This set of options is not valid')
     elif sub_command == 'delete':
         if args.scenario:
-            io.delete_scenario_data(args.scenario)
+            delete_scenario_data(args.scenario)
         elif args.all:
-            scenarios_names = io.get_all_scenarios_names()
+            scenarios_names = path.get_all_scenarios_names()
+            message = 'Confirm deletion of all scenario. (y/n)'
+            if input(message).lower() not in ('y', 'yes'):
+                print('User aborted deletion')
+                return
             for scenario in scenarios_names:
-                io.delete_scenario_data(scenario)
+                delete_scenario_data(scenario)
         else:
             raise ArgumentError(None, 'This set of options is not valid')
     else:

@@ -50,3 +50,16 @@ exemple
 #### Contract Query Smart Values
 
 exemple
+
+## Backlog
+
+- [ ] Add an optional delay before/after each step
+- [ ] Create a framework to allow a user to create a step which will execute any custom made python functions. (This would allow extreme customizations for users)
+- [x] Add Ledger support
+- [ ] Add Keystore support
+- [ ] Add Maiar support
+- [ ] Add a specific step for contract ownership transfer.
+- [ ] Add a skip keyword to skip steps without deleting them
+- [ ] Out of gas transaction error
+- [ ] Add querry support for external contracts
+- [ ] Refactor scene files format to extract conditions and accounts
