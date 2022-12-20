@@ -66,7 +66,7 @@ class ContractData:
         :return: this instance as a dictionary
         :rtype: Dict
         """
-        self_dict = self.__dict__
+        self_dict = {**self.__dict__}
         # avoid shallow copy (warning: not nested proof)
         self_dict['saved_values'] = dict(self_dict['saved_values'])
         return self_dict
@@ -129,7 +129,10 @@ class _ScenarioData:
         :return: value saved under the given key
         :rtype: Any
         """
-        contract = self.contracts_data[contract_id]
+        try:
+            contract = self.contracts_data[contract_id]
+        except KeyError as err:
+            raise errors.UnknownContract(self.name, contract_id) from err
         try:
             return getattr(contract, value_key)
         except AttributeError:
@@ -164,7 +167,7 @@ class _ScenarioData:
         """
         self.last_update_time = int(time.time())
         if contract_data.contract_id in self.contracts_data:
-            raise errors.ContractIdAlreadyExists
+            raise errors.ContractIdAlreadyExists(contract_data.contract_id)
         self.contracts_data[contract_data.contract_id] = contract_data
 
     def save(self):
@@ -183,7 +186,7 @@ class _ScenarioData:
         :return: this instance as a dictionary
         :rtype: Dict
         """
-        self_dict = self.__dict__
+        self_dict = {**self.__dict__}
         self_dict['network'] = self.network.name
         self_dict['contracts_data'] = {}
         for contract_id, contract_data in self.contracts_data.items():
