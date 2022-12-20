@@ -27,10 +27,9 @@ def retrieve_specified_type(arg: str) -> Tuple[str, Optional[str]]:
     :return: inner arg and name of the desired type if it exists
     :rtype: Tuple[str, Optional[str]]
     """
-    try:
+    if ':' in arg:
         return arg.split(':')
-    except ValueError:
-        return arg, None
+    return arg, None
 
 
 def convert_arg(arg: Any, desired_type: Optional[str]) -> Any:
