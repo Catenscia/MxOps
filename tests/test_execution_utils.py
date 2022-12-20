@@ -1,5 +1,5 @@
 import os
-from xops.data.data import _ScenarioData, ContractData, ScenarioData
+from xops.data.data import _ScenarioData
 from xops.execution import utils
 
 
