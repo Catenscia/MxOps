@@ -88,6 +88,7 @@ def execute_scene(scene_path: Path):
     # execute steps
     for step in scene.steps:
         step.execute()
+        scenario_data.save()
 
 
 def execute_directory(directory_path: Path):
