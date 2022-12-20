@@ -223,7 +223,7 @@ class ContractQueryStep(ContractStep):
             raise errors.EmptyQueryResults
         if len(self.expected_results) > 0:
             LOGGER.info('Saving Query results as contract data')
-            for result, expected_result in zip(results, self.save_keys, self.result_types):
+            for result, expected_result in zip(results, self.expected_results):
                 parsed_result = parse_query_result(result,
                                                    expected_result['result_type'])
                 scenario_data.set_contract_value(self.contract_id,
