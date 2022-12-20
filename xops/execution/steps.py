@@ -104,6 +104,16 @@ class ContractDeployStep(ContractStep):
         Execute a contract deployment
         """
         LOGGER.info(f'Deploying contract {self.contract_id}')
+        scenario_data = ScenarioData.get()
+
+        # check that the id of the contract is free
+        try:
+            scenario_data.get_contract_value(self.contract_id, 'address')
+            raise errors.ContractIdAlreadyExists(self.contract_id)
+        except errors.UnknownContract:
+            pass
+        
+        # contruct the transaction
         sender = AccountsManager.get_account(self.sender)
         metadata = CodeMetadata(self.upgradeable, self.readable,
                                 self.payable, self.payable_by_sc)
@@ -125,8 +135,6 @@ class ContractDeployStep(ContractStep):
             creation_timestamp,
             {}
         )
-
-        scenario_data = ScenarioData.get()
         scenario_data.add_contract_data(contract_data)
 
 
