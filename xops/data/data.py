@@ -104,12 +104,12 @@ class _ScenarioData:
         Will also try to convert string network to NetworkEnum.
         Usefull for easy loading from json files
         """
-        checked_data = []
-        for contract_data in self.contracts_data:
+        checked_data = {}
+        for contract_id, contract_data in self.contracts_data.items():
             if isinstance(contract_data, Dict):
-                checked_data.append(ContractData(**contract_data))
+                checked_data[contract_id] = ContractData(**contract_data)
             elif isinstance(contract_data, ContractData):
-                checked_data.append(contract_data)
+                checked_data[contract_id] = contract_data
             else:
                 raise TypeError(('Unexpected contract data '
                                  f'type {type(contract_data)}'))
