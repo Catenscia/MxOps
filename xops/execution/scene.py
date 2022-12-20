@@ -99,4 +99,4 @@ def execute_directory(directory_path: Path):
     """
     files = sorted(os.listdir(directory_path.as_posix()))
     for file in files:
-        execute_scene(file)
+        execute_scene(directory_path / file)
