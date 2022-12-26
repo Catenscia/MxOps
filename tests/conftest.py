@@ -1,7 +1,8 @@
 
 import pytest
-from xops.config.config import Config
+import yaml
 
+from xops.config.config import Config
 from xops.data.data import ContractData, ScenarioData, delete_scenario_data
 from xops.enums import NetworkEnum
 
@@ -28,3 +29,8 @@ def scenario_data():
 
     yield _scenario_data
     delete_scenario_data('pytest_scenario', False)
+
+@pytest.fixture(scope='function')
+def deploy_yaml_content():
+    with open('./tests/data/deploy_scene.yaml', encoding='utf-8') as file:
+        return yaml.safe_load(file)
