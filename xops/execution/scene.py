@@ -13,7 +13,7 @@ import yaml
 
 from xops.config.config import Config
 from xops.data.data import ScenarioData
-from xops.execution import steps
+from xops.execution.steps import Step, instanciate_steps
 from xops.execution.account import AccountsManager
 
 
@@ -26,7 +26,7 @@ class Scene:
     allowed_networks: List[str]
     allowed_scenario: List[str]
     accounts: List[Dict]
-    steps: List[steps.Step]
+    steps: List[Step]
 
     def __post_init__(self):
         """
@@ -35,7 +35,7 @@ class Scene:
         Usefull for easy loading from yaml files
         """
         if len(self.steps) > 0 and isinstance(self.steps[0], Dict):
-            self.steps = steps.instanciate_steps(self.steps)
+            self.steps = instanciate_steps(self.steps)
 
 
 def load_scene(path: Path) -> Scene:
@@ -45,7 +45,7 @@ def load_scene(path: Path) -> Scene:
     :param path: _description_
     :type path: Path
     :return: _description_
-    :rtype: List[steps.Step]
+    :rtype: List[Step]
     """
     with open(path.as_posix(), 'r', encoding='utf-8') as file:
         raw_scene = yaml.safe_load(file)
