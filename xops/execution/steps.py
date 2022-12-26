@@ -104,6 +104,16 @@ class ContractDeployStep(ContractStep):
         Execute a contract deployment
         """
         LOGGER.info(f'Deploying contract {self.contract_id}')
+        scenario_data = ScenarioData.get()
+
+        # check that the id of the contract is free
+        try:
+            scenario_data.get_contract_value(self.contract_id, 'address')
+            raise errors.ContractIdAlreadyExists(self.contract_id)
+        except errors.UnknownContract:
+            pass
+        
+        # contruct the transaction
         sender = AccountsManager.get_account(self.sender)
         metadata = CodeMetadata(self.upgradeable, self.readable,
                                 self.payable, self.payable_by_sc)
@@ -125,8 +135,6 @@ class ContractDeployStep(ContractStep):
             creation_timestamp,
             {}
         )
-
-        scenario_data = ScenarioData.get()
         scenario_data.add_contract_data(contract_data)
 
 
@@ -196,8 +204,7 @@ class ContractQueryStep(ContractStep):
     """
     endpoint: str
     arguments: List = field(default_factory=lambda: [])
-    save_keys: List[str] = field(default_factory=lambda: [])
-    result_types: List[str] = field(default_factory=lambda: [])
+    expected_results: List[Dict[str, str]] = field(default_factory=lambda: [])
     print_results: bool = False
 
     def execute(self):
@@ -208,18 +215,21 @@ class ContractQueryStep(ContractStep):
         scenario_data = ScenarioData.get()
         contract_address = scenario_data.get_contract_value(self.contract_id,
                                                             'address')
-        results = cti.query_contract(
-            contract_address, self.endpoint, self.arguments)
+        results = cti.query_contract(contract_address,
+                                     self.endpoint,
+                                     self.arguments)
 
         if len(results) == 0:
             raise errors.EmptyQueryResults
-        if len(self.save_keys) > 0:
+        if len(self.expected_results) > 0:
             LOGGER.info('Saving Query results as contract data')
-            for result, save_key, result_type in zip(results, self.save_keys, self.result_types):
-                parsed_result = parse_query_result(result, result_type)
-                scenario_data.set_contract_value(
-                    self.contract_id, save_key, parsed_result)
-        elif self.print_results:
+            for result, expected_result in zip(results, self.expected_results):
+                parsed_result = parse_query_result(result,
+                                                   expected_result['result_type'])
+                scenario_data.set_contract_value(self.contract_id,
+                                                 expected_result['save_key'],
+                                                 parsed_result)
+        if self.print_results:
             print(results)
         LOGGER.info('Query successful')
 
