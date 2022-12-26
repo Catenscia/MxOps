@@ -44,7 +44,6 @@ class AccountsManager:
             cls._accounts[account_name] = Account(pem_file=pem_path)
         else:
             raise ValueError(f'{account_name} is not correctly configured')
-        cls.sync_account(account_name)
 
     @classmethod
     def get_account(cls, account_name: str) -> Account:

@@ -84,6 +84,7 @@ def execute_scene(scene_path: Path):
     # load accounts
     for account in scene.accounts:
         AccountsManager.load_account(**account)
+        AccountsManager.sync_account(account['account_name'])
 
     # execute steps
     for step in scene.steps:
