@@ -1,0 +1,75 @@
+#![no_std]
+
+elrond_wasm::imports!();
+elrond_wasm::derive_imports!();
+
+#[elrond_wasm::contract]
+pub trait EsdtMinter {
+    // #################   storage    #################
+
+    /// Token that will be issued and minted by the contract
+    #[view(esdtIdentifier)]
+    #[storage_mapper("esdt_identifier")]
+    fn esdt_identifier(&self) -> FungibleTokenMapper<Self::Api>;
+
+    // #################   views    #################
+
+    // #################   init    #################
+    #[init]
+    fn init(&self) {}
+
+    // #################   endpoints    #################
+
+    // #################   restricted endpoints    #################
+
+    /// OWNER RESTRICTED
+    ///
+    /// Issue and set all roles for the token of the contract
+    ///
+    /// ### Arguments
+    ///
+    /// * **token_display_name** - `ManagedBuffer` Display name for the LP token
+    /// * **token_ticker** - `ManagedBuffer` Ticker to designate the LP token
+    /// * **num_decimals** - `usize` Number of decimals for the LP token
+    ///
+    /// ### Payments:
+    ///
+    /// * **registering_payment**: Egld amount to exactly cover the registering cost of the token.
+    ///
+    #[only_owner]
+    #[endpoint(issueToken)]
+    fn issue_token(
+        &self,
+        token_display_name: ManagedBuffer,
+        token_ticker: ManagedBuffer,
+        num_decimals: usize,
+    ) {
+        let register_cost = self.call_value().egld_value();
+        self.esdt_identifier().issue_and_set_all_roles(
+            register_cost,
+            token_display_name,
+            token_ticker,
+            num_decimals,
+            None,
+        );
+    }
+
+    /// OWNER RESTRICTED
+    ///
+    /// Mint and send some tokens to the owner
+    ///
+    /// ### Arguments
+    ///
+    /// * **amount** - `BigUint` Amount of token to mint and send
+    ///
+    /// ### Return Payments
+    ///
+    /// * **token_payment**: Single payment with the minted tokens
+    ///
+    #[only_owner]
+    #[endpoint(getSomeTokens)]
+    fn get_some_tokens(&self, amount: BigUint) {
+        self.esdt_identifier()
+            .mint_and_send(&self.blockchain().get_owner_address(), amount);
+    }
+}

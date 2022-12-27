@@ -1,0 +1,31 @@
+[package]
+name = "piggy-bank-wasm"
+version = "0.0.0"
+edition = "2018"
+publish = false
+authors = [ "Etienne Wallet",]
+
+[lib]
+crate-type = [ "cdylib",]
+
+[workspace]
+members = [ ".",]
+
+[dev-dependencies]
+
+[profile.release]
+codegen-units = 1
+opt-level = "z"
+lto = true
+debug = false
+panic = "abort"
+
+[dependencies.piggy-bank]
+path = ".."
+
+[dependencies.elrond-wasm-node]
+version = "0.38.0"
+
+[dependencies.elrond-wasm-output]
+version = "0.38.0"
+features = [ "wasm-output-mode",]

@@ -1,0 +1,20 @@
+[package]
+name = "contracts-tests"
+version = "0.0.0"
+edition = "2018"
+publish = false
+
+[dev-dependencies]
+num-bigint = "0.4.2"
+
+[dependencies.elrond-wasm]
+version = "0.38.0"
+
+[dev-dependencies.elrond-wasm-debug]
+version = "0.38.0"
+
+[dev-dependencies.esdt-minter]
+path = "esdt-minter"
+
+[dev-dependencies.piggy-bank]
+path = "piggy-bank"

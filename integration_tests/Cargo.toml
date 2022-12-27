@@ -1,0 +1,8 @@
+[workspace]
+members = [
+  "contracts",
+  "contracts/esdt-minter",
+  "contracts/esdt-minter/meta",
+  "contracts/piggy-bank",
+  "contracts/piggy-bank/meta",
+]
