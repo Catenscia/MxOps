@@ -12,6 +12,11 @@ pub trait EsdtMinter {
     #[storage_mapper("esdt_identifier")]
     fn esdt_identifier(&self) -> FungibleTokenMapper<Self::Api>;
 
+    /// Airdop amount available per address
+    #[view(airdropAmount)]
+    #[storage_mapper("airdop_amount")]
+    fn airdop_amount(&self, address: ManagedAddress) -> SingleValueMapper<BigUint>;
+
     // #################   views    #################
 
     // #################   init    #################
@@ -56,20 +61,16 @@ pub trait EsdtMinter {
 
     /// OWNER RESTRICTED
     ///
-    /// Mint and send some tokens to the owner
+    /// Add some amount to a user airdrop balance
     ///
     /// ### Arguments
     ///
+    /// * **address** - `Address` Address of the user that will ave its amount augmented
     /// * **amount** - `BigUint` Amount of token to mint and send
     ///
-    /// ### Return Payments
-    ///
-    /// * **token_payment**: Single payment with the minted tokens
-    ///
     #[only_owner]
-    #[endpoint(getSomeTokens)]
-    fn get_some_tokens(&self, amount: BigUint) {
-        self.esdt_identifier()
-            .mint_and_send(&self.blockchain().get_owner_address(), amount);
+    #[endpoint(addAirdropAmount)]
+    fn add_airdrop_amount(&self, address: ManagedAddress, amount: BigUint) {
+        self.airdop_amount(address).update(|val| *val += amount);
     }
 }

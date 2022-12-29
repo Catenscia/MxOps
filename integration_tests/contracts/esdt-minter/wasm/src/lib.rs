@@ -5,15 +5,19 @@
 ////////////////////////////////////////////////////
 
 // Init:                                 1
-// Endpoints:                            0
+// Endpoints:                            4
 // Async Callback (empty):               1
-// Total number of exported functions:   2
+// Total number of exported functions:   6
 
 #![no_std]
 
 elrond_wasm_node::wasm_endpoints! {
-    empty
+    esdt_minter
     (
+        esdtIdentifier
+        airdropAmount
+        issueToken
+        addAirdropAmount
     )
 }
 
