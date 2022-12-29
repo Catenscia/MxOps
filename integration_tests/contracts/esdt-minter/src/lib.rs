@@ -8,12 +8,12 @@ pub trait EsdtMinter {
     // #################   storage    #################
 
     /// Token that will be issued and minted by the contract
-    #[view(esdtIdentifier)]
+    #[view(getEsdtIdentifier)]
     #[storage_mapper("esdt_identifier")]
     fn esdt_identifier(&self) -> FungibleTokenMapper<Self::Api>;
 
     /// Airdop amount available per address
-    #[view(airdropAmount)]
+    #[view(getAirdropAmount)]
     #[storage_mapper("airdop_amount")]
     fn airdrop_amount(&self, address: ManagedAddress) -> SingleValueMapper<BigUint>;
 

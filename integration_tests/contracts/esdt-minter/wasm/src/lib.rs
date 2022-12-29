@@ -14,8 +14,8 @@
 elrond_wasm_node::wasm_endpoints! {
     esdt_minter
     (
-        esdtIdentifier
-        airdropAmount
+        getEsdtIdentifier
+        getAirdropAmount
         claimAirdrop
         issueToken
         addAirdropAmount
