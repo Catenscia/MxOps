@@ -15,7 +15,7 @@ pub trait EsdtMinter {
     /// Airdop amount available per address
     #[view(airdropAmount)]
     #[storage_mapper("airdop_amount")]
-    fn airdop_amount(&self, address: ManagedAddress) -> SingleValueMapper<BigUint>;
+    fn airdrop_amount(&self, address: ManagedAddress) -> SingleValueMapper<BigUint>;
 
     // #################   views    #################
 
@@ -71,6 +71,6 @@ pub trait EsdtMinter {
     #[only_owner]
     #[endpoint(addAirdropAmount)]
     fn add_airdrop_amount(&self, address: ManagedAddress, amount: BigUint) {
-        self.airdop_amount(address).update(|val| *val += amount);
+        self.airdrop_amount(address).update(|val| *val += amount);
     }
 }
