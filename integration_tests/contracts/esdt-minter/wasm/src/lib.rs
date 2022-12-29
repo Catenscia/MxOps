@@ -5,9 +5,9 @@
 ////////////////////////////////////////////////////
 
 // Init:                                 1
-// Endpoints:                            4
+// Endpoints:                            5
 // Async Callback (empty):               1
-// Total number of exported functions:   6
+// Total number of exported functions:   7
 
 #![no_std]
 
@@ -16,6 +16,7 @@ elrond_wasm_node::wasm_endpoints! {
     (
         esdtIdentifier
         airdropAmount
+        claimAirdrop
         issueToken
         addAirdropAmount
     )

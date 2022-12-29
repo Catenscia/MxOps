@@ -25,6 +25,20 @@ pub trait EsdtMinter {
 
     // #################   endpoints    #################
 
+    /// Claim the airdrop amount assigned to the caller
+    /// 
+    /// ### Return Payments:
+    ///
+    /// * **airdrop_payment**: airdrop for the user
+    ///
+    #[endpoint(claimAirdrop)]
+    fn claim_airdrop(&self) {
+        let caller = self.blockchain().get_caller();
+        let claimable_amount = self.airdrop_amount(caller.clone()).get();
+        self.esdt_identifier().mint_and_send(&caller, claimable_amount);
+        self.airdrop_amount(caller).clear();
+    }
+
     // #################   restricted endpoints    #################
 
     /// OWNER RESTRICTED
