@@ -5,9 +5,9 @@
 ////////////////////////////////////////////////////
 
 // Init:                                 1
-// Endpoints:                            5
+// Endpoints:                            9
 // Async Callback (empty):               1
-// Total number of exported functions:   7
+// Total number of exported functions:  11
 
 #![no_std]
 
@@ -16,7 +16,11 @@ elrond_wasm_node::wasm_endpoints! {
     (
         getEsdtIdentifier
         getAirdropAmount
+        getInterestPercentage
         claimAirdrop
+        claimInterests
+        addInterestAddress
+        removeInterestAddress
         issueToken
         addAirdropAmount
     )
