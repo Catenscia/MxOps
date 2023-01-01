@@ -5,15 +5,20 @@
 ////////////////////////////////////////////////////
 
 // Init:                                 1
-// Endpoints:                            0
+// Endpoints:                            5
 // Async Callback (empty):               1
-// Total number of exported functions:   2
+// Total number of exported functions:   7
 
 #![no_std]
 
 elrond_wasm_node::wasm_endpoints! {
     piggy_bank
     (
+        getTokenIdentifier
+        getEsdtMinnterAddress
+        getAddressAmount
+        deposit
+        withraw
     )
 }
 
