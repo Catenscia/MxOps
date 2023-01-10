@@ -99,13 +99,13 @@ pub trait EsdtMinter {
     }
 
     /// OWNER RESTRICTED
-    /// 
+    ///
     /// Add an address to the interest whitelist
     ///
     /// ### Arguments
-    /// 
+    ///
     /// * **address** - `ManagedAddress` Adress to add to the interest whitelist
-    /// 
+    ///
     #[only_owner]
     #[endpoint(addInterestAddress)]
     fn add_interest_address(&self, address: ManagedAddress) {
@@ -113,11 +113,11 @@ pub trait EsdtMinter {
     }
 
     /// OWNER RESTRICTED
-    /// 
+    ///
     /// Remove an address from the interest whitelist
     ///
     /// ### Arguments
-    /// 
+    ///
     /// * **address** - `ManagedAddress` Adress to remove from the interest whitelist
     ///
     #[only_owner]
