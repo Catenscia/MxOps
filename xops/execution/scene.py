@@ -3,7 +3,7 @@ author: Etienne Wallet
 
 This module contains the functions to execute a scene in a scenario
 """
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import os
 from pathlib import Path
 import re
@@ -25,8 +25,8 @@ class Scene:
     """
     allowed_networks: List[str]
     allowed_scenario: List[str]
-    accounts: List[Dict]
-    steps: List[Step]
+    accounts: List[Dict] = field(default_factory=lambda: [])
+    steps: List[Step] = field(default_factory=lambda: [])
 
     def __post_init__(self):
         """
