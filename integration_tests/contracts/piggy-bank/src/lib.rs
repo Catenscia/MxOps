@@ -56,16 +56,16 @@ pub trait PiggyBank {
             .update(|val| *val += deposit_payment.amount);
     }
 
-    /// Allow a user to withraw all its piggy tokens from the piggy bank.
+    /// Allow a user to withdraw all its piggy tokens from the piggy bank.
     /// Interest will be issued and send along the principal.
     ///
     /// ### Return Payments
     ///
-    /// * **withraw_payment** : Single payment of piggy tokens containing all the user deposits and the interests earned
+    /// * **withdraw_payment** : Single payment of piggy tokens containing all the user deposits and the interests earned
     ///
-    #[endpoint(withraw)]
+    #[endpoint(withdraw)]
     #[payable("*")]
-    fn withraw(&self) {
+    fn withdraw(&self) {
         let caller = self.blockchain().get_caller();
         let available_amount = self.address_amount(caller.clone()).get();
 

@@ -18,7 +18,7 @@ elrond_wasm_node::wasm_endpoints! {
         getEsdtMinnterAddress
         getAddressAmount
         deposit
-        withraw
+        withdraw
     )
 }
 
