@@ -4,6 +4,7 @@ author: Etienne Wallet
 This module contains the cli for the execution subpackage
 """
 from argparse import _SubParsersAction, Namespace
+import os
 from pathlib import Path
 from xops.config.config import Config
 from xops.data import path
@@ -34,15 +35,10 @@ def add_subparser(subparsers_action: _SubParsersAction):
                                  required=True,
                                  help=('Name of the network in which the '
                                        'scene(s) will be executed'))
-    scenario_parser.add_argument('-f',
-                                 '--file',
-                                 type=Path,
-                                 help='Path to a scene file to execute')
-    scenario_parser.add_argument('-d',
-                                 '--directory',
-                                 type=Path,
-                                 help=('Path to directory containing several '
-                                       'scenes files to execute'))
+    scenario_parser.add_argument('elements',
+                                 nargs='+',
+                                 type=str,
+                                 help='Path to scene file and/or scene directory')
 
 
 def execute_cli(args: Namespace):
@@ -63,9 +59,11 @@ def execute_cli(args: Namespace):
         ScenarioData.create_scenario(args.scenario)
         ScenarioData.get().save()
 
-    if args.file:
-        execute_scene(args.file)
-    elif args.directory:
-        execute_directory(args.directory)
-    else:
-        raise ValueError('--file or --directory must be supplied')
+    for element in args.elements:
+        element_path = Path('./' + element)
+        if os.path.isfile(element_path):
+            execute_scene(element_path)
+        elif os.path.isdir(element_path):
+            execute_directory(element_path)
+        else:
+            raise ValueError(f'{element_path} is not a file nor a directory')
