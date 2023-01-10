@@ -48,6 +48,7 @@ pub trait EsdtMinter {
     fn claim_airdrop(&self) {
         let caller = self.blockchain().get_caller();
         let claimable_amount = self.airdrop_amount(caller.clone()).get();
+        require!(&claimable_amount > &BigUint::zero(), "Nothing to claim");
         self.esdt_identifier()
             .mint_and_send(&caller, claimable_amount);
         self.airdrop_amount(caller).clear();
@@ -85,7 +86,7 @@ pub trait EsdtMinter {
         let payment_with_interests = EsdtTokenPayment::new(
             capital_payment.token_identifier,
             0u64,
-            capital_payment.amount + interest_amount
+            capital_payment.amount + interest_amount,
         );
 
         self.send().direct_esdt(
