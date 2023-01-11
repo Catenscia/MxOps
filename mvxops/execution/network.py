@@ -6,8 +6,8 @@ This module contains the functions to pass transactions to the proxy and to moni
 from erdpy.proxy import ElrondProxy
 from erdpy.transactions import Transaction
 
-from xops.config.config import Config
-from xops import errors
+from mvxops.config.config import Config
+from mvxops import errors
 
 
 def send(tx: Transaction) -> str:

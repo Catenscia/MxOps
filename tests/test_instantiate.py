@@ -1,5 +1,5 @@
-from xops.execution.scene import Scene
-from xops.execution.steps import ContractCallStep, ContractDeployStep, ContractQueryStep
+from mvxops.execution.scene import Scene
+from mvxops.execution.steps import ContractCallStep, ContractDeployStep, ContractQueryStep
 
 
 def test_deploy_scene_instantiation(deploy_yaml_content):

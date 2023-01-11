@@ -9,7 +9,7 @@ import os
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from xops.enums import NetworkEnum
+from mvxops.enums import NetworkEnum
 
 
 class _Config:

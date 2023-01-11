@@ -9,10 +9,10 @@ from typing import Any, List, Optional, Tuple
 from erdpy.accounts import Address
 from erdpy.contracts import QueryResult
 
-from xops.config.config import Config
-from xops.data.data import ScenarioData
-from xops.errors import WrongScenarioDataReference
-from xops.execution.account import AccountsManager
+from mvxops.config.config import Config
+from mvxops.data.data import ScenarioData
+from mvxops.errors import WrongScenarioDataReference
+from mvxops.execution.account import AccountsManager
 
 
 def retrieve_specified_type(arg: str) -> Tuple[str, Optional[str]]:

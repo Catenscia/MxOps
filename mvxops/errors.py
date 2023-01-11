@@ -5,7 +5,7 @@ Errors used in the xOps package
 """
 from erdpy.transactions import Transaction
 
-from xops.utils.msc import get_proxy_tx_link
+from mvxops.utils.msc import get_proxy_tx_link
 
 #############################################################
 #

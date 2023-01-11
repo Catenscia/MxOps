@@ -9,9 +9,9 @@ from typing import List
 
 from appdirs import AppDirs
 
-from xops.config.config import Config
-from xops.enums import NetworkEnum
-from xops.utils.logger import get_logger
+from mvxops.config.config import Config
+from mvxops.enums import NetworkEnum
+from mvxops.utils.logger import get_logger
 
 
 LOGGER = get_logger('data-IO')

@@ -10,12 +10,12 @@ import os
 from pathlib import Path
 import time
 from typing import Any, Dict, Optional
-from xops.config.config import Config
-from xops.data.path import get_scenario_file_path
+from mvxops.config.config import Config
+from mvxops.data.path import get_scenario_file_path
 
-from xops.enums import NetworkEnum
-from xops import errors
-from xops.utils.logger import get_logger
+from mvxops.enums import NetworkEnum
+from mvxops import errors
+from mvxops.utils.logger import get_logger
 
 
 LOGGER = get_logger('data')

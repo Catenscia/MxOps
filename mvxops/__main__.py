@@ -8,9 +8,9 @@ import argparse
 from importlib import resources
 import pkg_resources
 
-from xops.config import cli as config_cli
-from xops.data import cli as data_cli
-from xops.execution import cli as execution_cli
+from mvxops.config import cli as config_cli
+from mvxops.data import cli as data_cli
+from mvxops.execution import cli as execution_cli
 
 
 def parse_args() -> Namespace:

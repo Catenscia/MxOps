@@ -6,9 +6,9 @@ This modules contains the class and functions to manage multiversX accounts
 from typing import Optional
 from erdpy.accounts import Account, LedgerAccount
 from erdpy.proxy.core import ElrondProxy
-from xops import errors
+from mvxops import errors
 
-from xops.config.config import Config
+from mvxops.config.config import Config
 
 
 class AccountsManager:

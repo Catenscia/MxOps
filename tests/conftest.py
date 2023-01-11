@@ -2,9 +2,9 @@
 import pytest
 import yaml
 
-from xops.config.config import Config
-from xops.data.data import ContractData, ScenarioData, delete_scenario_data
-from xops.enums import NetworkEnum
+from mvxops.config.config import Config
+from mvxops.data.data import ContractData, ScenarioData, delete_scenario_data
+from mvxops.enums import NetworkEnum
 
 
 @pytest.fixture(scope='session', autouse=True)
