@@ -4,6 +4,7 @@ import yaml
 
 from mvxops.config.config import Config
 from mvxops.data.data import ContractData, ScenarioData, delete_scenario_data
+from mvxops.data.path import initialize_data_folder
 from mvxops.enums import NetworkEnum
 
 
@@ -14,6 +15,7 @@ def network():
 
 @pytest.fixture(scope='session', autouse=True)
 def scenario_data():
+    initialize_data_folder()
     ScenarioData.create_scenario('pytest_scenario')
     contract_id = 'my_test_contract'
     address = 'erd1...f217'
@@ -29,6 +31,7 @@ def scenario_data():
 
     yield _scenario_data
     delete_scenario_data('pytest_scenario', False)
+
 
 @pytest.fixture(scope='function')
 def deploy_yaml_content():
