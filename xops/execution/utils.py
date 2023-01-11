@@ -12,6 +12,7 @@ from erdpy.contracts import QueryResult
 from xops.config.config import Config
 from xops.data.data import ScenarioData
 from xops.errors import WrongScenarioDataReference
+from xops.execution.account import AccountsManager
 
 
 def retrieve_specified_type(arg: str) -> Tuple[str, Optional[str]]:
@@ -105,6 +106,25 @@ def retrieve_value_from_scenario_data(arg: str) -> str:
     return convert_arg(retrieved_value, desired_type)
 
 
+def retrieve_address_from_account(arg: str) -> str:
+    """
+    Retrieve an address from the accounts manager.
+    the argument must formated like this: [user]
+
+    :param arg: name of the variable formated as above
+    :type arg: str
+    :return: address from the scenario
+    :rtype: str
+    """
+    try:
+        arg = arg[1:-1]
+    except Exception as err:
+        raise WrongScenarioDataReference from err
+
+    account = AccountsManager.get_account(arg)
+    return account.address.bech32()
+
+
 def retrieve_value_from_string(arg: str) -> Any:
     """
     Check if a string argument is intended to be an env var, a config var or a data var.
@@ -115,6 +135,8 @@ def retrieve_value_from_string(arg: str) -> Any:
     :return: untouched argument or retrieved value
     :rtype: Any
     """
+    if arg.startswith('['):
+        return retrieve_address_from_account(arg)
     if arg.startswith('$'):
         return retrieve_value_from_env(arg)
     if arg.startswith('&'):
