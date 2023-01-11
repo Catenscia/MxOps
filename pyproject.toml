@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 
 [project]
-name = "xops"
+name = "mvxops"
 version = "0.1.0"
 authors = [
   { name="Etienne Wallet", email="etienne.wallet@catenscia.com" },
@@ -21,12 +21,12 @@ requires-python = ">=3.8"
 dynamic = ["dependencies"]
 
 [project.scripts]
-xops = "xops.__main__:main"
+mvxops = "mvxops.__main__:main"
 
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["xops*"]
+include = ["mvxops*"]
 namespaces = false
 
 [tool.setuptools.package-data]
@@ -37,4 +37,4 @@ dependencies = {file = ["requirements.txt"]}
 
 
 [project.urls]
-"Homepage" = "https://github.com/Catenscia/xOps"
+"Homepage" = "https://github.com/Catenscia/MvxOps"

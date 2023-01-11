@@ -42,7 +42,7 @@ def add_subparser(subparsers_action: _SubParsersAction):
                                '--dump-default',
                                action='store_true',
                                help=('take the default config and dump it in '
-                                     'the working directory as xops_config.ini'))
+                                     'the working directory as mvxops_config.ini'))
 
 
 def execute_cli(args: Namespace):

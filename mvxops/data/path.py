@@ -27,7 +27,7 @@ def get_data_path() -> Path:
     :return: path of the folder to use for data saving
     :rtype: Path
     """
-    app_dirs = AppDirs("xops", "Catenscia")
+    app_dirs = AppDirs("mvxops", "Catenscia")
     data_path = Path(app_dirs.user_data_dir)
     return data_path
 
@@ -76,4 +76,4 @@ def get_all_scenarios_names() -> List[str]:
     return [file[:-5] for file in files if file.endswith('.json')]
 
 
-LOGGER.debug(f'xOps app directory is located at {get_data_path()}')
+LOGGER.debug(f'MvxOps app directory is located at {get_data_path()}')

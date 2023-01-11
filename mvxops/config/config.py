@@ -33,7 +33,7 @@ class _Config:
             with open(config_path.as_posix(), 'r', encoding='utf-8') as config_file:
                 self.__config.read_file(config_file)
         else:
-            with resources.open_text('xops.resources', 'default_config.ini') as config_file:
+            with resources.open_text('mvxops.resources', 'default_config.ini') as config_file:
                 self.__config.read_file(config_file)
 
     def get_network(self) -> NetworkEnum:
@@ -127,7 +127,7 @@ class Config:
                               ' to an existing path'))
 
         # then check if a config file is present in the working directory
-        path = Path('./xops_config.ini')
+        path = Path('./mvxops_config.ini')
         if os.path.exists(path):
             return path
 
@@ -152,14 +152,14 @@ class Config:
 
 def dump_default_config():
     """
-    Take the default config and dump it in the working directory as xops_config.ini
+    Take the default config and dump it in the working directory as mvxops_config.ini
     """
-    dump_path = Path('./xops_config.ini')
+    dump_path = Path('./mvxops_config.ini')
     if os.path.exists(dump_path.as_posix()):
         raise RuntimeError(('A config file already exists'
                             ' in the working directory'))
 
-    default_content = resources.read_text('xops.resources',
+    default_content = resources.read_text('mvxops.resources',
                                           'default_config.ini')
 
     with open(dump_path.as_posix(), 'w+', encoding='utf-8') as dump_file:

@@ -1,7 +1,7 @@
 """
 author: Etienne Wallet
 
-Errors used in the xOps package
+Errors used in the MvxOps package
 """
 from erdpy.transactions import Transaction
 

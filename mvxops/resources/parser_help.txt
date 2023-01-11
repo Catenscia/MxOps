@@ -1,18 +1,18 @@
-## Command Line Interface for xOps ##
+## Command Line Interface for MvxOps ##
 
-xops [COMMAND] [SUBCOMMAND] [OPTIONS]
+mvxops [COMMAND] [SUBCOMMAND] [OPTIONS]
 
 Available commands:
 
     config   -> Interact with the configuration
-                type 'xops config --help' for more information
+                type 'mvxops config --help' for more information
 
     data     -> Display data that have been saved localy.
-                type 'xops data --help' for more information
+                type 'mvxops data --help' for more information
 
     execute  -> Execute smart-contract interactions
-                type 'xops execute --help' for more information
+                type 'mvxops execute --help' for more information
 
-    version  -> Display the version of the xops package
+    version  -> Display the version of the mvxops package
 
         
