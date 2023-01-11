@@ -6,8 +6,8 @@ This module contains the cli for the config subpackage
 from argparse import _SubParsersAction, Namespace, RawDescriptionHelpFormatter
 import json
 
-from xops.enums import NetworkEnum
-from xops.config.config import Config, dump_default_config
+from mvxops.enums import NetworkEnum
+from mvxops.config.config import Config, dump_default_config
 
 
 def add_subparser(subparsers_action: _SubParsersAction):
@@ -42,7 +42,7 @@ def add_subparser(subparsers_action: _SubParsersAction):
                                '--dump-default',
                                action='store_true',
                                help=('take the default config and dump it in '
-                                     'the working directory as xops_config.ini'))
+                                     'the working directory as mvxops_config.ini'))
 
 
 def execute_cli(args: Namespace):

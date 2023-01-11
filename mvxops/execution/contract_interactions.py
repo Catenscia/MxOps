@@ -11,9 +11,9 @@ from erdpy.proxy import ElrondProxy
 from erdpy.transactions import Transaction
 from erdpy import utils as erdpy_utils
 
-from xops.config.config import Config
-from xops.execution.msc import EsdtTransfer
-from xops.execution.utils import format_tx_arguments, retrieve_value_from_string
+from mvxops.config.config import Config
+from mvxops.execution.msc import EsdtTransfer
+from mvxops.execution.utils import format_tx_arguments, retrieve_value_from_string
 
 
 def get_contract_deploy_tx(

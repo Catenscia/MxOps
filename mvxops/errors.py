@@ -1,11 +1,11 @@
 """
 author: Etienne Wallet
 
-Errors used in the xOps package
+Errors used in the MvxOps package
 """
 from erdpy.transactions import Transaction
 
-from xops.utils.msc import get_proxy_tx_link
+from mvxops.utils.msc import get_proxy_tx_link
 
 #############################################################
 #

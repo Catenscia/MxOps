@@ -6,7 +6,7 @@ This module contains utils various functions
 import hashlib
 from pathlib import Path
 
-from xops.config.config import Config
+from mvxops.config.config import Config
 
 
 def get_proxy_tx_link(tx_hash: str) -> str:

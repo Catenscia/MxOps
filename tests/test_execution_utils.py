@@ -2,9 +2,9 @@ import os
 
 from erdpy.accounts import Account
 
-from xops.data.data import _ScenarioData
-from xops.execution import utils
-from xops.execution.account import AccountsManager
+from mvxops.data.data import _ScenarioData
+from mvxops.execution import utils
+from mvxops.execution.account import AccountsManager
 
 
 def test_no_type():

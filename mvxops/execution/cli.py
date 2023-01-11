@@ -6,13 +6,13 @@ This module contains the cli for the execution subpackage
 from argparse import _SubParsersAction, Namespace
 import os
 from pathlib import Path
-from xops.config.config import Config
-from xops.data import path
-from xops.data.data import ScenarioData
+from mvxops.config.config import Config
+from mvxops.data import path
+from mvxops.data.data import ScenarioData
 
-from xops.enums import NetworkEnum
-from xops.execution.scene import execute_directory, execute_scene
-from xops import errors
+from mvxops.enums import NetworkEnum
+from mvxops.execution.scene import execute_directory, execute_scene
+from mvxops import errors
 
 
 def add_subparser(subparsers_action: _SubParsersAction):

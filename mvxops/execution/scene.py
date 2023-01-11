@@ -11,10 +11,10 @@ from typing import Dict, List
 
 import yaml
 
-from xops.config.config import Config
-from xops.data.data import ScenarioData
-from xops.execution.steps import Step, instanciate_steps
-from xops.execution.account import AccountsManager
+from mvxops.config.config import Config
+from mvxops.data.data import ScenarioData
+from mvxops.execution.steps import Step, instanciate_steps
+from mvxops.execution.account import AccountsManager
 
 
 @dataclass

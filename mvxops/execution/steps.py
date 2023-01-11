@@ -11,15 +11,15 @@ from typing import Dict, List
 
 from erdpy.contracts import CodeMetadata
 
-from xops.data.data import ContractData, ScenarioData
-from xops.execution.account import AccountsManager
-from xops.execution import contract_interactions as cti
-from xops.execution.msc import EsdtTransfer
-from xops.execution.network import check_onchain_success, send, send_and_wait_for_result
-from xops.execution.utils import parse_query_result
-from xops.utils.logger import get_logger
-from xops.utils.msc import get_file_hash, get_proxy_tx_link
-from xops import errors
+from mvxops.data.data import ContractData, ScenarioData
+from mvxops.execution.account import AccountsManager
+from mvxops.execution import contract_interactions as cti
+from mvxops.execution.msc import EsdtTransfer
+from mvxops.execution.network import check_onchain_success, send, send_and_wait_for_result
+from mvxops.execution.utils import parse_query_result
+from mvxops.utils.logger import get_logger
+from mvxops.utils.msc import get_file_hash, get_proxy_tx_link
+from mvxops import errors
 
 LOGGER = get_logger('steps')
 
