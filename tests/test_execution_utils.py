@@ -1,13 +1,17 @@
 import os
+
+from erdpy.accounts import Account
+
 from xops.data.data import _ScenarioData
 from xops.execution import utils
+from xops.execution.account import AccountsManager
 
 
 def test_no_type():
-    # Given
+    # Given
     arg = 'MyTokenIdentifier'
 
-    # When
+    # When
     retrieved_arg, specified_type = utils.retrieve_specified_type(arg)
 
     # Then
@@ -16,10 +20,10 @@ def test_no_type():
 
 
 def test_no_type():
-    # Given
+    # Given
     arg = 'MyTokenAmount:int'
 
-    # When
+    # When
     retrieved_arg, specified_type = utils.retrieve_specified_type(arg)
 
     # Then
@@ -28,12 +32,12 @@ def test_no_type():
 
 
 def test_env_value():
-    # Given
+    # Given
     var_name = 'PYTEST_XOPS_VALUE'
     var_value = 784525
     os.environ[var_name] = str(var_value)
 
-    # When
+    # When
     retrieved_value = utils.retrieve_value_from_env(f'${var_name}:int')
 
     # Then
@@ -41,11 +45,11 @@ def test_env_value():
 
 
 def test_scenario_attribute_data():
-    # Given
+    # Given
     contract_id = 'my_test_contract'
     address = 'erd1...f217'
 
-    # When
+    # When
     arg = f'%{contract_id}%address'
     retrieved_value = utils.retrieve_value_from_scenario_data(arg)
 
@@ -54,11 +58,11 @@ def test_scenario_attribute_data():
 
 
 def test_scenario_saved_data(scenario_data: _ScenarioData):
-    # Given
+    # Given
     contract_id = 'my_test_contract'
     scenario_data.set_contract_value(contract_id, 'my_key', 7458)
 
-    # When
+    # When
     arg = f'%{contract_id}%my_key:int'
     retrieved_value = utils.retrieve_value_from_scenario_data(arg)
 
@@ -67,7 +71,7 @@ def test_scenario_saved_data(scenario_data: _ScenarioData):
 
 
 def test_value_from_config():
-    # Given
+    # Given
     expected_value = 'local-testnet'
     value_name = 'CHAIN'
 
@@ -77,3 +81,18 @@ def test_value_from_config():
 
     # Then
     assert retrieved_value == expected_value
+
+
+def test_address_from_account():
+    # Given
+    address = 'erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th'
+    account_name = 'alice'
+    account = Account(address)
+    AccountsManager._accounts[account_name] = account
+
+    # When
+    arg = f'[{account_name}]'
+    retrieved_value = utils.retrieve_address_from_account(arg)
+
+    # Then
+    assert retrieved_value == address

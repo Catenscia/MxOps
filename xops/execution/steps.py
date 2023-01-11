@@ -112,7 +112,7 @@ class ContractDeployStep(ContractStep):
             raise errors.ContractIdAlreadyExists(self.contract_id)
         except errors.UnknownContract:
             pass
-        
+
         # contruct the transaction
         sender = AccountsManager.get_account(self.sender)
         metadata = CodeMetadata(self.upgradeable, self.readable,
