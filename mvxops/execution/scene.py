@@ -15,6 +15,7 @@ from mvxops.config.config import Config
 from mvxops.data.data import ScenarioData
 from mvxops.execution.steps import Step, instanciate_steps
 from mvxops.execution.account import AccountsManager
+from mvxops import errors
 
 
 @dataclass
@@ -68,8 +69,11 @@ def execute_scene(scene_path: Path):
 
     # check network authorization
     if network.name not in scene.allowed_networks:
-        raise ValueError(('Scene not allowed to be executed '
-                          f'in the network {network.name}'))
+        raise errors.ForbiddenSceneNetwork(
+            scene_path,
+            network.name,
+            scene.allowed_networks
+        )
 
     # check scenario authorizations
     match_found = False
@@ -78,8 +82,11 @@ def execute_scene(scene_path: Path):
             match_found = True
             break
     if not match_found:
-        raise ValueError((f'Scene {scene_path} not allowed to be executed '
-                          f'in the scenario {scenario_data.name}'))
+        raise errors.ForbiddenSceneScenario(
+            scene_path,
+            scenario_data.name,
+            scene.allowed_scenario
+        )
 
     # load accounts
     for account in scene.accounts:
