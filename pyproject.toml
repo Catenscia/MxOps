@@ -5,13 +5,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mvxops"
-version = "0.1.0"
+version = "0.1.0-dev"
 authors = [
   { name="Etienne Wallet", email="etienne.wallet@catenscia.com" },
 ]
 description = "Python package to automate MultiversX smart contracts deployment and contract interactions in general"
 readme = "README.md"
-keywords = ["elrond", "multiversx", "smart-contract", "devops"]
+keywords = ["elrond", "multiversx", "smart-contract", "devops", "tests"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
