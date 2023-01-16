@@ -149,7 +149,7 @@ class ContractCallStep(ContractStep):
     arguments: List = field(default_factory=lambda: [])
     value: int = 0
     esdt_transfers: List[EsdtTransfer] = field(default_factory=lambda: [])
-    check_for_errors: bool = False
+    check_for_errors: bool = True
 
     def __post_init__(self):
         """
