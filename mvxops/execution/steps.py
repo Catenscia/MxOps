@@ -149,7 +149,7 @@ class ContractCallStep(ContractStep):
     arguments: List = field(default_factory=lambda: [])
     value: int = 0
     esdt_transfers: List[EsdtTransfer] = field(default_factory=lambda: [])
-    wait_for_result: bool = False
+    check_for_errors: bool = False
 
     def __post_init__(self):
         """
@@ -186,7 +186,7 @@ class ContractCallStep(ContractStep):
                                       self.esdt_transfers,
                                       sender)
 
-        if self.wait_for_result:
+        if self.check_for_errors:
             on_chain_tx = send_and_wait_for_result(tx)
             check_onchain_success(on_chain_tx)
             LOGGER.info(

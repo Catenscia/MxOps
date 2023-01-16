@@ -27,4 +27,4 @@ steps:
     gas_limit: 5000000
     arguments:
       - "%abc-piggy-bank%address"
-    wait_for_result: True
+    check_for_errors: True

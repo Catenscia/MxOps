@@ -52,7 +52,7 @@ steps:
     arguments:
       - arg1
       - arg2
-    wait_for_result: True
+    check_for_errors: True
 ```
 
 ## Steps
@@ -101,7 +101,7 @@ esdt_transfers:  # optional, esdt transfer to make
   - token_identifier: LKMEX-e45d41
     amount: 848491898
     nonce: 721
-wait_for_result: True  # check that the tx ran without error
+check_for_errors: True  # check that the tx ran without error
 ```
 
 ### Contract Query Step
@@ -158,7 +158,7 @@ steps:
       - TokenIdentifier4
       - $LOOP_VAR  # nonce
       - "%my_first_sc%TokenIdentifier4Amount%"  # result of the query
-    wait_for_result: False
+    check_for_errors: False
 ```
 
 Instead of using `var_start` and `var_end` for the loop variable, a custom list of values can be provided with the keyword `var_list`.

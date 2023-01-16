@@ -29,14 +29,14 @@ def test_deploy_scene_instantiation(deploy_yaml_content):
             80000000,
             ['SEGLD', 'SEGLD', 18],
             '&BASE_ISSUING_COST',
-            wait_for_result=True
+            check_for_errors=True
         ),
         ContractCallStep(
             'SEGLD-minter',
             'owner',
             'setTokenLocalRoles',
             80000000,
-            wait_for_result=True
+            check_for_errors=True
         ),
         ContractQueryStep(
             'SEGLD-minter',
