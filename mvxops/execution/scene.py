@@ -16,6 +16,10 @@ from mvxops.data.data import ScenarioData
 from mvxops.execution.steps import Step, instanciate_steps
 from mvxops.execution.account import AccountsManager
 from mvxops import errors
+from mvxops.utils.logger import get_logger
+
+
+LOGGER = get_logger('scene')
 
 
 @dataclass
@@ -61,6 +65,7 @@ def execute_scene(scene_path: Path):
     :param scene_path: path to the scene file
     :type scene_path: Path
     """
+    LOGGER.info(f'Executing scene {scene_path}')
     scene = load_scene(scene_path)
     scenario_data = ScenarioData.get()
 
