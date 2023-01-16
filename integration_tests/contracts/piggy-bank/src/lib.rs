@@ -68,6 +68,7 @@ pub trait PiggyBank {
     fn withdraw(&self) {
         let caller = self.blockchain().get_caller();
         let available_amount = self.address_amount(caller.clone()).get();
+        require!(&available_amount > &BigUint::zero(), "Nothing to withdraw");
 
         let payment_with_interests = self.call_claim_interests_sync(available_amount);
 

@@ -3,6 +3,8 @@ author: Etienne Wallet
 
 Errors used in the MvxOps package
 """
+from pathlib import Path
+from typing import List
 from erdpy.transactions import Transaction
 
 from mvxops.utils.msc import get_proxy_tx_link
@@ -84,6 +86,34 @@ class WrongScenarioDataReference(Exception):
     def __init__(self) -> None:
         message = ('Scenario data reference must have the format '
                    r'"%contract_id%valuekey[:optional_format]"')
+        super().__init__(message)
+
+
+class ForbiddenSceneNetwork(Exception):
+    """
+    To be raised when a scene was set to be executed on 
+    a network that the scene does not allow
+    """
+
+    def __init__(self, scene_path: Path, network_name: str, allowed_networks: List[str]) -> None:
+        message = (f'Scene {scene_path} not allowed to be executed '
+                   f'in the network {network_name}.\n'
+                   f'Allowed networks: {allowed_networks}'
+                   )
+        super().__init__(message)
+
+
+class ForbiddenSceneScenario(Exception):
+    """
+    To be raised when a scene was set to be executed in 
+    a scenario that the scene does not allow
+    """
+
+    def __init__(self, scene_path: Path, scenario_name: str, allowed_scenario: List[str]) -> None:
+        message = (f'Scene {scene_path} not allowed to be executed '
+                   f'in the scenario {scenario_name}.\n'
+                   f'Allowed scenario: {allowed_scenario}'
+                   )
         super().__init__(message)
 
 #############################################################

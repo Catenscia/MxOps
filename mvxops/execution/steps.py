@@ -219,7 +219,10 @@ class ContractQueryStep(ContractStep):
                                      self.endpoint,
                                      self.arguments)
 
-        if len(results) == 0:
+        if self.print_results:
+            print(results)
+        
+        if len(results) == 0 or (len(results) == 1 and results[0] == ''):
             raise errors.EmptyQueryResults
         if len(self.expected_results) > 0:
             LOGGER.info('Saving Query results as contract data')
@@ -229,8 +232,7 @@ class ContractQueryStep(ContractStep):
                 scenario_data.set_contract_value(self.contract_id,
                                                  expected_result['save_key'],
                                                  parsed_result)
-        if self.print_results:
-            print(results)
+        
         LOGGER.info('Query successful')
 
 

@@ -1,0 +1,30 @@
+allowed_networks:
+  - LOCAL
+  - TEST
+  - DEV
+
+allowed_scenario:
+  - "integration_test*"
+
+steps:
+  - type: Loop
+    var_name: CAPITAL_AMOUNT
+    var_list: [100000, 200000, 400000]
+    steps:
+      - type: ContractCall
+        sender: user
+        contract_id: "abc-piggy-bank"
+        endpoint: deposit
+        esdt_transfers:
+          - token_identifier: "%abc-esdt-minter%EsdtIdentifier"
+            amount: "$CAPITAL_AMOUNT:int"
+            nonce: 0
+        gas_limit: 8000000
+        wait_for_result: True
+
+      - type: ContractCall
+        sender: user
+        contract_id: "abc-piggy-bank"
+        endpoint: withdraw
+        gas_limit: 8000000
+        wait_for_result: True
