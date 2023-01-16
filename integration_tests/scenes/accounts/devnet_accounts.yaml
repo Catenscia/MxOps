@@ -1,0 +1,11 @@
+allowed_networks:
+  - DEV
+
+allowed_scenario:
+  - "integration_tests*"
+
+accounts:
+  - account_name: owner
+    pem_path: ./integration_tests/wallets/devnet_owner.pem
+  - account_name: user
+    pem_path: ./integration_tests/wallets/devnet_user.pem
