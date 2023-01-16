@@ -4,7 +4,7 @@ elrond_wasm::imports!();
 elrond_wasm::derive_imports!();
 
 #[elrond_wasm::contract]
-pub trait EsdtMinter {
+pub trait EsdtMinter: elrond_wasm_modules::default_issue_callbacks::DefaultIssueCallbacksModule {
     // #################   storage    #################
 
     /// Token that will be issued and minted by the contract
@@ -141,6 +141,7 @@ pub trait EsdtMinter {
     ///
     /// * **registering_payment**: Egld amount to exactly cover the registering cost of the token.
     ///
+    #[payable("EGLD")]
     #[only_owner]
     #[endpoint(issueToken)]
     fn issue_token(
