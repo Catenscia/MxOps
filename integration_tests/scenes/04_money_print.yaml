@@ -20,11 +20,9 @@ steps:
             amount: "$CAPITAL_AMOUNT:int"
             nonce: 0
         gas_limit: 8000000
-        check_for_errors: True
 
       - type: ContractCall
         sender: user
         contract_id: "abc-piggy-bank"
         endpoint: withdraw
         gas_limit: 8000000
-        check_for_errors: True

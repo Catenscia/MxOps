@@ -52,7 +52,6 @@ steps:
     arguments:
       - arg1
       - arg2
-    check_for_errors: True
 ```
 
 ## Steps
@@ -101,7 +100,6 @@ esdt_transfers:  # optional, esdt transfer to make
   - token_identifier: LKMEX-e45d41
     amount: 848491898
     nonce: 721
-check_for_errors: True  # check that the tx ran without error
 ```
 
 ### Contract Query Step
