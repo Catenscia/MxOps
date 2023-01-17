@@ -15,7 +15,7 @@ from mvxops.data.data import ContractData, ScenarioData
 from mvxops.execution.account import AccountsManager
 from mvxops.execution import contract_interactions as cti
 from mvxops.execution.msc import EsdtTransfer
-from mvxops.execution.network import check_onchain_success, send, send_and_wait_for_result
+from mvxops.execution.network import raise_on_errors, send, send_and_wait_for_result
 from mvxops.execution.utils import parse_query_result
 from mvxops.utils.logger import get_logger
 from mvxops.utils.msc import get_file_hash, get_proxy_tx_link
@@ -121,7 +121,7 @@ class ContractDeployStep(ContractStep):
         tx, contract = cti.get_contract_deploy_tx(wasm_path, metadata,
                                                   self.gas_limit, self.arguments, sender)
         on_chain_tx = send_and_wait_for_result(tx)
-        check_onchain_success(on_chain_tx)
+        raise_on_errors(on_chain_tx)
         sender.nonce += 1
         LOGGER.info((f'Deploy successful on {contract.address}'
                      f'\ntx hash: {get_proxy_tx_link(on_chain_tx.hash)}'))
@@ -188,7 +188,7 @@ class ContractCallStep(ContractStep):
 
         if self.check_for_errors:
             on_chain_tx = send_and_wait_for_result(tx)
-            check_onchain_success(on_chain_tx)
+            raise_on_errors(on_chain_tx)
             LOGGER.info(
                 f'Call successful: {get_proxy_tx_link(on_chain_tx.hash)}')
         else:
@@ -221,7 +221,7 @@ class ContractQueryStep(ContractStep):
 
         if self.print_results:
             print(results)
-        
+
         if len(results) == 0 or (len(results) == 1 and results[0] == ''):
             raise errors.EmptyQueryResults
         if len(self.expected_results) > 0:
@@ -232,7 +232,7 @@ class ContractQueryStep(ContractStep):
                 scenario_data.set_contract_value(self.contract_id,
                                                  expected_result['save_key'],
                                                  parsed_result)
-        
+
         LOGGER.info('Query successful')
 
 
