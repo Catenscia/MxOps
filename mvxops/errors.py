@@ -91,7 +91,7 @@ class WrongScenarioDataReference(Exception):
 
 class ForbiddenSceneNetwork(Exception):
     """
-    To be raised when a scene was set to be executed on 
+    To be raised when a scene was set to be executed on
     a network that the scene does not allow
     """
 
@@ -105,7 +105,7 @@ class ForbiddenSceneNetwork(Exception):
 
 class ForbiddenSceneScenario(Exception):
     """
-    To be raised when a scene was set to be executed in 
+    To be raised when a scene was set to be executed in
     a scenario that the scene does not allow
     """
 
@@ -143,6 +143,12 @@ class FailedTransactionError(TransactionError):
     """
 
 
+class InvalidTransactionError(TransactionError):
+    """
+    To be raised when a transaction send got an invalid status
+    """
+
+
 class UnfinalizedTransactionException(TransactionError):
     """
     To be raised when a transaction was found to be
@@ -154,6 +160,36 @@ class SmartContractExecutionError(TransactionError):
     """
     To be raised when a transaction encountered a smart
     contract execution error
+    """
+
+    def __init__(self, tx: Transaction, logs: str) -> None:
+        self.logs = logs
+        super().__init__(tx)
+
+    def __str__(self) -> str:
+        return ("error on contract execution transaction "
+                f"{get_proxy_tx_link(self.tx.hash)}\nlogs:\n{self.logs}")
+
+
+class InternalVmExecutionError(TransactionError):
+    """
+    To be raised when a transaction encountered an internal
+    VM execution error
+    """
+
+    def __init__(self, tx: Transaction, logs: str) -> None:
+        self.logs = logs
+        super().__init__(tx)
+
+    def __str__(self) -> str:
+        return ("error on contract execution transaction "
+                f"{get_proxy_tx_link(self.tx.hash)}\nlogs:\n{self.logs}")
+
+
+class TransactionExecutionError(TransactionError):
+    """
+    To be raised when a transaction encountered an internal
+    VM execution error
     """
 
     def __init__(self, tx: Transaction, logs: str) -> None:
