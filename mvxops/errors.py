@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import List
 from erdpy.transactions import Transaction
 
-from mvxops.utils.msc import get_proxy_tx_link
+from mvxops.utils.msc import get_tx_link
 
 #############################################################
 #
@@ -134,7 +134,7 @@ class TransactionError(Exception):
         super().__init__()
 
     def __str__(self) -> str:
-        return f"error on transaction {get_proxy_tx_link(self.tx.hash)}"
+        return f"error on transaction {get_tx_link(self.tx.hash)}"
 
 
 class FailedTransactionError(TransactionError):
@@ -168,7 +168,7 @@ class SmartContractExecutionError(TransactionError):
 
     def __str__(self) -> str:
         return ("error on contract execution transaction "
-                f"{get_proxy_tx_link(self.tx.hash)}\nlogs:\n{self.logs}")
+                f"{get_tx_link(self.tx.hash)}\nlogs:\n{self.logs}")
 
 
 class InternalVmExecutionError(TransactionError):
@@ -183,7 +183,7 @@ class InternalVmExecutionError(TransactionError):
 
     def __str__(self) -> str:
         return ("error on contract execution transaction "
-                f"{get_proxy_tx_link(self.tx.hash)}\nlogs:\n{self.logs}")
+                f"{get_tx_link(self.tx.hash)}\nlogs:\n{self.logs}")
 
 
 class TransactionExecutionError(TransactionError):
@@ -198,7 +198,7 @@ class TransactionExecutionError(TransactionError):
 
     def __str__(self) -> str:
         return ("error on contract execution transaction "
-                f"{get_proxy_tx_link(self.tx.hash)}\nlogs:\n{self.logs}")
+                f"{get_tx_link(self.tx.hash)}\nlogs:\n{self.logs}")
 
 
 class EmptyQueryResults(Exception):

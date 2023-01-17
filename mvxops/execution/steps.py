@@ -18,7 +18,7 @@ from mvxops.execution.msc import EsdtTransfer
 from mvxops.execution.network import raise_on_errors, send, send_and_wait_for_result
 from mvxops.execution.utils import parse_query_result
 from mvxops.utils.logger import get_logger
-from mvxops.utils.msc import get_file_hash, get_proxy_tx_link
+from mvxops.utils.msc import get_file_hash, get_tx_link
 from mvxops import errors
 
 LOGGER = get_logger('steps')
@@ -124,7 +124,7 @@ class ContractDeployStep(ContractStep):
         raise_on_errors(on_chain_tx)
         sender.nonce += 1
         LOGGER.info((f'Deploy successful on {contract.address}'
-                     f'\ntx hash: {get_proxy_tx_link(on_chain_tx.hash)}'))
+                     f'\ntx hash: {get_tx_link(on_chain_tx.hash)}'))
 
         creation_timestamp = on_chain_tx.to_dictionary()['timestamp']
         contract_data = ContractData(
@@ -190,10 +190,10 @@ class ContractCallStep(ContractStep):
             on_chain_tx = send_and_wait_for_result(tx)
             raise_on_errors(on_chain_tx)
             LOGGER.info(
-                f'Call successful: {get_proxy_tx_link(on_chain_tx.hash)}')
+                f'Call successful: {get_tx_link(on_chain_tx.hash)}')
         else:
             tx_hash = send(tx)
-            LOGGER.info(f'Call sent: {get_proxy_tx_link(tx_hash)}')
+            LOGGER.info(f'Call sent: {get_tx_link(tx_hash)}')
         sender.nonce += 1
 
 
