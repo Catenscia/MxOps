@@ -1,9 +1,14 @@
+from pathlib import Path
+import yaml
+
 from mvxops.execution.scene import Scene
 from mvxops.execution.steps import ContractCallStep, ContractDeployStep, ContractQueryStep
 
 
-def test_deploy_scene_instantiation(deploy_yaml_content):
+def test_deploy_scene_instantiation(test_data_folder_path: Path):
     # Given
+    with open(test_data_folder_path / 'deploy_scene.yaml', encoding='utf-8') as file:
+        deploy_yaml_content = yaml.safe_load(file)
 
     # When
     scene = Scene(**deploy_yaml_content)
@@ -29,14 +34,14 @@ def test_deploy_scene_instantiation(deploy_yaml_content):
             80000000,
             ['SEGLD', 'SEGLD', 18],
             '&BASE_ISSUING_COST',
-            wait_for_result=True
+            check_for_errors=True
         ),
         ContractCallStep(
             'SEGLD-minter',
             'owner',
             'setTokenLocalRoles',
             80000000,
-            wait_for_result=True
+            check_for_errors=True
         ),
         ContractQueryStep(
             'SEGLD-minter',

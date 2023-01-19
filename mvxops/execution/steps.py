@@ -15,10 +15,10 @@ from mvxops.data.data import ContractData, ScenarioData
 from mvxops.execution.account import AccountsManager
 from mvxops.execution import contract_interactions as cti
 from mvxops.execution.msc import EsdtTransfer
-from mvxops.execution.network import check_onchain_success, send, send_and_wait_for_result
+from mvxops.execution.network import raise_on_errors, send, send_and_wait_for_result
 from mvxops.execution.utils import parse_query_result
 from mvxops.utils.logger import get_logger
-from mvxops.utils.msc import get_file_hash, get_proxy_tx_link
+from mvxops.utils.msc import get_file_hash, get_tx_link
 from mvxops import errors
 
 LOGGER = get_logger('steps')
@@ -121,10 +121,10 @@ class ContractDeployStep(ContractStep):
         tx, contract = cti.get_contract_deploy_tx(wasm_path, metadata,
                                                   self.gas_limit, self.arguments, sender)
         on_chain_tx = send_and_wait_for_result(tx)
-        check_onchain_success(on_chain_tx)
+        raise_on_errors(on_chain_tx)
         sender.nonce += 1
         LOGGER.info((f'Deploy successful on {contract.address}'
-                     f'\ntx hash: {get_proxy_tx_link(on_chain_tx.hash)}'))
+                     f'\ntx hash: {get_tx_link(on_chain_tx.hash)}'))
 
         creation_timestamp = on_chain_tx.to_dictionary()['timestamp']
         contract_data = ContractData(
@@ -149,7 +149,7 @@ class ContractCallStep(ContractStep):
     arguments: List = field(default_factory=lambda: [])
     value: int = 0
     esdt_transfers: List[EsdtTransfer] = field(default_factory=lambda: [])
-    wait_for_result: bool = False
+    check_for_errors: bool = True
 
     def __post_init__(self):
         """
@@ -186,14 +186,14 @@ class ContractCallStep(ContractStep):
                                       self.esdt_transfers,
                                       sender)
 
-        if self.wait_for_result:
+        if self.check_for_errors:
             on_chain_tx = send_and_wait_for_result(tx)
-            check_onchain_success(on_chain_tx)
+            raise_on_errors(on_chain_tx)
             LOGGER.info(
-                f'Call successful: {get_proxy_tx_link(on_chain_tx.hash)}')
+                f'Call successful: {get_tx_link(on_chain_tx.hash)}')
         else:
             tx_hash = send(tx)
-            LOGGER.info(f'Call sent: {get_proxy_tx_link(tx_hash)}')
+            LOGGER.info(f'Call sent: {get_tx_link(tx_hash)}')
         sender.nonce += 1
 
 
@@ -221,7 +221,7 @@ class ContractQueryStep(ContractStep):
 
         if self.print_results:
             print(results)
-        
+
         if len(results) == 0 or (len(results) == 1 and results[0] == ''):
             raise errors.EmptyQueryResults
         if len(self.expected_results) > 0:
@@ -232,7 +232,7 @@ class ContractQueryStep(ContractStep):
                 scenario_data.set_contract_value(self.contract_id,
                                                  expected_result['save_key'],
                                                  parsed_result)
-        
+
         LOGGER.info('Query successful')
 
 

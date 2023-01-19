@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import List
 from erdpy.transactions import Transaction
 
-from mvxops.utils.msc import get_proxy_tx_link
+from mvxops.utils.msc import get_tx_link
 
 #############################################################
 #
@@ -91,7 +91,7 @@ class WrongScenarioDataReference(Exception):
 
 class ForbiddenSceneNetwork(Exception):
     """
-    To be raised when a scene was set to be executed on 
+    To be raised when a scene was set to be executed on
     a network that the scene does not allow
     """
 
@@ -105,7 +105,7 @@ class ForbiddenSceneNetwork(Exception):
 
 class ForbiddenSceneScenario(Exception):
     """
-    To be raised when a scene was set to be executed in 
+    To be raised when a scene was set to be executed in
     a scenario that the scene does not allow
     """
 
@@ -134,12 +134,18 @@ class TransactionError(Exception):
         super().__init__()
 
     def __str__(self) -> str:
-        return f"error on transaction {get_proxy_tx_link(self.tx.hash)}"
+        return f"error on transaction {get_tx_link(self.tx.hash)}"
 
 
 class FailedTransactionError(TransactionError):
     """
     To be raised when a transaction send got a failed status
+    """
+
+
+class InvalidTransactionError(TransactionError):
+    """
+    To be raised when a transaction send got an invalid status
     """
 
 
@@ -162,7 +168,37 @@ class SmartContractExecutionError(TransactionError):
 
     def __str__(self) -> str:
         return ("error on contract execution transaction "
-                f"{get_proxy_tx_link(self.tx.hash)}\nlogs:\n{self.logs}")
+                f"{get_tx_link(self.tx.hash)}\nlogs:\n{self.logs}")
+
+
+class InternalVmExecutionError(TransactionError):
+    """
+    To be raised when a transaction encountered an internal
+    VM execution error
+    """
+
+    def __init__(self, tx: Transaction, logs: str) -> None:
+        self.logs = logs
+        super().__init__(tx)
+
+    def __str__(self) -> str:
+        return ("error on contract execution transaction "
+                f"{get_tx_link(self.tx.hash)}\nlogs:\n{self.logs}")
+
+
+class TransactionExecutionError(TransactionError):
+    """
+    To be raised when a transaction encountered an internal
+    VM execution error
+    """
+
+    def __init__(self, tx: Transaction, logs: str) -> None:
+        self.logs = logs
+        super().__init__(tx)
+
+    def __str__(self) -> str:
+        return ("error on contract execution transaction "
+                f"{get_tx_link(self.tx.hash)}\nlogs:\n{self.logs}")
 
 
 class EmptyQueryResults(Exception):

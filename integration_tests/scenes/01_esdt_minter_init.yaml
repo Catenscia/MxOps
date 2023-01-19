@@ -29,7 +29,6 @@ steps:
       - ABC
       - ABC
       - 3
-    wait_for_result: True
   
   - type: ContractQuery
     contract_id: "abc-esdt-minter"

@@ -15,11 +15,9 @@ steps:
     arguments:
       - "[user]"
       - 100000
-    wait_for_result: True
 
   - type: ContractCall
     sender: user
     contract_id: "abc-esdt-minter"
     endpoint: claimAirdrop
     gas_limit: 5000000
-    wait_for_result: True

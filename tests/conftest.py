@@ -1,4 +1,4 @@
-
+from pathlib import Path
 import pytest
 import yaml
 
@@ -11,6 +11,11 @@ from mvxops.enums import NetworkEnum
 @pytest.fixture(scope='session', autouse=True)
 def network():
     Config.set_network(NetworkEnum.LOCAL)
+
+
+@pytest.fixture(scope='session', autouse=True)
+def test_data_folder_path():
+    return Path('./tests/data')
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -33,7 +38,3 @@ def scenario_data():
     delete_scenario_data('pytest_scenario', False)
 
 
-@pytest.fixture(scope='function')
-def deploy_yaml_content():
-    with open('./tests/data/deploy_scene.yaml', encoding='utf-8') as file:
-        return yaml.safe_load(file)

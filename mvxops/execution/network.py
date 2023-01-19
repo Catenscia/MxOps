@@ -5,6 +5,7 @@ This module contains the functions to pass transactions to the proxy and to moni
 """
 from erdpy.proxy import ElrondProxy
 from erdpy.transactions import Transaction
+from erdpy.proxy.messages import TransactionOnNetwork
 
 from mvxops.config.config import Config
 from mvxops import errors
@@ -40,9 +41,13 @@ def send_and_wait_for_result(tx: Transaction) -> Transaction:
     return tx.send_wait_result(proxy, timeout)
 
 
-def check_onchain_success(on_chain_tx: Transaction):
+def raise_on_errors(on_chain_tx: TransactionOnNetwork):
     """
-    Raise an error if the transaction failed or if the contract encountered an error
+    Raise an error if the transaction contains any of the following:
+
+    - failed tx
+    - smart-contract error
+    - internal VM error
 
     :param onChainTx: on chain finalised transaction
     :type onChainTx: Transaction
@@ -50,8 +55,12 @@ def check_onchain_success(on_chain_tx: Transaction):
     if not on_chain_tx.is_done():
         raise errors.UnfinalizedTransactionException(on_chain_tx)
     tx_dict = on_chain_tx.to_dictionary()
-    if tx_dict['status'] == 'failed':
+
+    tx_status = tx_dict['status']
+    if tx_status == 'failed':
         raise errors.FailedTransactionError(on_chain_tx)
+    if tx_status ==  'invalid':
+        raise errors.InvalidTransactionError(on_chain_tx)
 
     try:
         logs = tx_dict['logs']
@@ -59,6 +68,10 @@ def check_onchain_success(on_chain_tx: Transaction):
     except KeyError:
         events = []
 
-    for event in events:
-        if event['identifier'] in ['internalVMErrors']:
-            raise errors.SmartContractExecutionError(on_chain_tx, logs)
+    event_identifiers = {e['identifier'] for e in events}
+    if  'InternalVmExecutionError' in event_identifiers:
+        raise errors.SmartContractExecutionError(on_chain_tx, logs)
+    if 'internalVMErrors' in event_identifiers:
+        raise errors.InternalVmExecutionError(on_chain_tx, logs)
+    if 'signalError' in event_identifiers:
+        raise errors.TransactionExecutionError(on_chain_tx, logs)
