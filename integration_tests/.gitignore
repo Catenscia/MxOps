@@ -4,5 +4,5 @@
 */target/
 Cargo.lock
 
-# The erdpy output
+# The mxpy output
 output*
