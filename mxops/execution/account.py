@@ -8,8 +8,8 @@ from typing import Optional
 from multiversx_sdk_cli.accounts import Account, LedgerAccount
 from multiversx_sdk_network_providers import ProxyNetworkProvider
 
-from mvxops import errors
-from mvxops.config.config import Config
+from mxops import errors
+from mxops.config.config import Config
 
 
 class AccountsManager:

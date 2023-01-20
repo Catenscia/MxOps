@@ -1,6 +1,6 @@
 # Scene
 
-A scene is a collection of sequential steps to be executed by MvxOps.
+A scene is a collection of sequential steps to be executed by MxOps.
 When executing a scene, the user will designate the scenario in which the actions and the data will be recorded.
 
 ## Scene Format
@@ -61,7 +61,7 @@ If you feel something is missing, please make a suggestion in the github!
 
 ### Contract Deploy Step
 
-The steps tells MvxOps to deploy a contract. The address of the new contract will be
+The steps tells MxOps to deploy a contract. The address of the new contract will be
 saved under the provided id to allow futur interaction.
 
 ```yaml

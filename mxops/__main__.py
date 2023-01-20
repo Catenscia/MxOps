@@ -1,16 +1,16 @@
 """
 author: Etienne Wallet
 
-Entry point for the MvxOps package.
+Entry point for the MxOps package.
 """
 from argparse import Namespace, RawDescriptionHelpFormatter
 import argparse
 from importlib import resources
 import pkg_resources
 
-from mvxops.config import cli as config_cli
-from mvxops.data import cli as data_cli
-from mvxops.execution import cli as execution_cli
+from mxops.config import cli as config_cli
+from mxops.data import cli as data_cli
+from mxops.execution import cli as execution_cli
 
 
 def parse_args() -> Namespace:
@@ -23,7 +23,7 @@ def parse_args() -> Namespace:
     parser = argparse.ArgumentParser(
         formatter_class=RawDescriptionHelpFormatter)
 
-    description = resources.read_text('mvxops.resources', 'parser_help.txt')
+    description = resources.read_text('mxops.resources', 'parser_help.txt')
     subparsers_action = parser.add_subparsers(
         description=description,
         dest='command')
@@ -51,7 +51,7 @@ def main():
     elif args.command == 'execute':
         execution_cli.execute_cli(args)
     elif args.command == 'version':
-        print(pkg_resources.get_distribution('mvxops').version)
+        print(pkg_resources.get_distribution('mxops').version)
 
 
 if __name__ == "__main__":

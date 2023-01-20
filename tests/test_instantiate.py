@@ -1,8 +1,8 @@
 from pathlib import Path
 import yaml
 
-from mvxops.execution.scene import Scene
-from mvxops.execution.steps import ContractCallStep, ContractDeployStep, ContractQueryStep
+from mxops.execution.scene import Scene
+from mxops.execution.steps import ContractCallStep, ContractDeployStep, ContractQueryStep
 
 
 def test_deploy_scene_instantiation(test_data_folder_path: Path):

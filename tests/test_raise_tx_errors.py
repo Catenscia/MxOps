@@ -3,8 +3,8 @@ from pathlib import Path
 
 from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
 
-from mvxops.execution.network import raise_on_errors
-from mvxops import errors
+from mxops.execution.network import raise_on_errors
+from mxops import errors
 
 def test_out_of_gas(test_data_folder_path: Path):
     # Given

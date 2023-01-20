@@ -11,9 +11,9 @@ from multiversx_sdk_network_providers import ProxyNetworkProvider
 from multiversx_sdk_cli.transactions import Transaction
 from multiversx_sdk_cli import utils as mxpy_utils
 
-from mvxops.config.config import Config
-from mvxops.execution.msc import EsdtTransfer
-from mvxops.execution.utils import format_tx_arguments, retrieve_value_from_string
+from mxops.config.config import Config
+from mxops.execution.msc import EsdtTransfer
+from mxops.execution.utils import format_tx_arguments, retrieve_value_from_string
 
 
 def get_contract_deploy_tx(

@@ -1,8 +1,8 @@
-# MvxOps
+# MxOps
 
-MvxOps is a python package to automate MultiversX smart contracts deployments and interactions in general.
+MxOps is a python package to automate MultiversX smart contracts deployments and interactions in general.
 These interactions are described by the user in one or several files (called scenes).
-MvxOps also provide smart values: values used in the scenes (ex a token identifier) can be directly written in the file but also taken from the environment, from a config file or even from smart contract queries.
+MxOps also provide smart values: values used in the scenes (ex a token identifier) can be directly written in the file but also taken from the environment, from a config file or even from smart contract queries.
 
 ## Overview
 
@@ -37,7 +37,7 @@ This step is used to specify a contract query.
 
 ### Smart Values
 
-What makes MvxOps truly usefull is its ability to use smart values in the contract steps. Smart-values can be taken from the environment variables, from the config file of your project or from the results of smart_contract-queries.
+What makes MxOps truly usefull is its ability to use smart values in the contract steps. Smart-values can be taken from the environment variables, from the config file of your project or from the results of smart_contract-queries.
 
 #### Environment Smart Values
 

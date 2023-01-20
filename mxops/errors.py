@@ -1,14 +1,14 @@
 """
 author: Etienne Wallet
 
-Errors used in the MvxOps package
+Errors used in the MxOps package
 """
 from pathlib import Path
 from typing import List
 
 from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
 
-from mvxops.utils.msc import get_tx_link
+from mxops.utils.msc import get_tx_link
 
 #############################################################
 #

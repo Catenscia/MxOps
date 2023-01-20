@@ -11,12 +11,12 @@ from typing import Dict, List
 
 import yaml
 
-from mvxops.config.config import Config
-from mvxops.data.data import ScenarioData
-from mvxops.execution.steps import Step, instanciate_steps
-from mvxops.execution.account import AccountsManager
-from mvxops import errors
-from mvxops.utils.logger import get_logger
+from mxops.config.config import Config
+from mxops.data.data import ScenarioData
+from mxops.execution.steps import Step, instanciate_steps
+from mxops.execution.account import AccountsManager
+from mxops import errors
+from mxops.utils.logger import get_logger
 
 
 LOGGER = get_logger('scene')

@@ -1,6 +1,6 @@
-# MvxOps related files
+# MxOps related files
 
-mvxops_config.ini
+mxops_config.ini
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

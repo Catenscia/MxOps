@@ -8,8 +8,8 @@ from multiversx_sdk_cli.transactions import Transaction
 from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
 from multiversx_sdk_network_providers.transaction_status import TransactionStatus
 
-from mvxops.config.config import Config
-from mvxops import errors
+from mxops.config.config import Config
+from mxops import errors
 
 
 def send(tx: Transaction) -> str:

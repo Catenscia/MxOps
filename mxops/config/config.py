@@ -9,7 +9,7 @@ import os
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from mvxops.enums import NetworkEnum
+from mxops.enums import NetworkEnum
 
 
 class _Config:
@@ -33,7 +33,7 @@ class _Config:
             with open(config_path.as_posix(), 'r', encoding='utf-8') as config_file:
                 self.__config.read_file(config_file)
         else:
-            with resources.open_text('mvxops.resources', 'default_config.ini') as config_file:
+            with resources.open_text('mxops.resources', 'default_config.ini') as config_file:
                 self.__config.read_file(config_file)
 
     def get_network(self) -> NetworkEnum:
@@ -116,18 +116,18 @@ class Config:
         """
         # first check if a config is specified by env var
         try:
-            path = os.environ['XOPS_CONFIG']
+            path = os.environ['MXOPS_CONFIG']
         except KeyError:
             path = None
 
         if path is not None:
             if os.path.exists(path):
                 return path
-            raise ValueError(('XOPS_CONFIG env var does not direct'
+            raise ValueError(('MXOPS_CONFIG env var does not direct'
                               ' to an existing path'))
 
         # then check if a config file is present in the working directory
-        path = Path('./mvxops_config.ini')
+        path = Path('./mxops_config.ini')
         if os.path.exists(path):
             return path
 
@@ -152,14 +152,14 @@ class Config:
 
 def dump_default_config():
     """
-    Take the default config and dump it in the working directory as mvxops_config.ini
+    Take the default config and dump it in the working directory as mxops_config.ini
     """
-    dump_path = Path('./mvxops_config.ini')
+    dump_path = Path('./mxops_config.ini')
     if os.path.exists(dump_path.as_posix()):
         raise RuntimeError(('A config file already exists'
                             ' in the working directory'))
 
-    default_content = resources.read_text('mvxops.resources',
+    default_content = resources.read_text('mxops.resources',
                                           'default_config.ini')
 
     with open(dump_path.as_posix(), 'w+', encoding='utf-8') as dump_file:

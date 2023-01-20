@@ -1,0 +1,18 @@
+## Command Line Interface for MxOps ##
+
+mxops [COMMAND] [SUBCOMMAND] [OPTIONS]
+
+Available commands:
+
+    config   -> Interact with the configuration
+                type 'mxops config --help' for more information
+
+    data     -> Display data that have been saved localy.
+                type 'mxops data --help' for more information
+
+    execute  -> Execute smart-contract interactions
+                type 'mxops execute --help' for more information
+
+    version  -> Display the version of the mxops package
+
+        

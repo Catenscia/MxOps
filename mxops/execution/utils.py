@@ -9,10 +9,10 @@ from typing import Any, List, Optional, Tuple
 from multiversx_sdk_cli.accounts import Address
 from multiversx_sdk_cli.contracts import QueryResult
 
-from mvxops.config.config import Config
-from mvxops.data.data import ScenarioData
-from mvxops.errors import WrongScenarioDataReference
-from mvxops.execution.account import AccountsManager
+from mxops.config.config import Config
+from mxops.data.data import ScenarioData
+from mxops.errors import WrongScenarioDataReference
+from mxops.execution.account import AccountsManager
 
 
 def retrieve_specified_type(arg: str) -> Tuple[str, Optional[str]]:
