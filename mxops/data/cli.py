@@ -7,10 +7,10 @@ from argparse import _SubParsersAction, ArgumentError, Namespace, RawDescription
 from importlib import resources
 import json
 
-from mvxops.data import path
-from mvxops.config.config import Config
-from mvxops.data.data import ScenarioData, delete_scenario_data
-from mvxops.enums import NetworkEnum
+from mxops.data import path
+from mxops.config.config import Config
+from mxops.data.data import ScenarioData, delete_scenario_data
+from mxops.enums import NetworkEnum
 
 
 def add_subparser(subparsers_action: _SubParsersAction):
@@ -25,7 +25,7 @@ def add_subparser(subparsers_action: _SubParsersAction):
 
     # create sub parser for data cli
     data_subparsers_actions = data_parser.add_subparsers(
-        description=resources.read_text('mvxops.resources',
+        description=resources.read_text('mxops.resources',
                                         'data_parser_help.txt'),
         dest='data_command')
 

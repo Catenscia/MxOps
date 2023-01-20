@@ -1,14 +1,14 @@
 #!/bin/bash
 
 # delete previous scenario data
-python -m mvxops \
+python -m mxops \
             data \
             delete \
             -n DEV \
             -s integration_tests
 
 # execute integrations scenes
-python -m mvxops \
+python -m mxops \
             execute \
             -n DEV \
             -s integration_tests \

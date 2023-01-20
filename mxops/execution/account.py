@@ -4,11 +4,12 @@ author: Etienne Wallet
 This modules contains the class and functions to manage multiversX accounts
 """
 from typing import Optional
-from erdpy.accounts import Account, LedgerAccount
-from erdpy.proxy.core import ElrondProxy
-from mvxops import errors
 
-from mvxops.config.config import Config
+from multiversx_sdk_cli.accounts import Account, LedgerAccount
+from multiversx_sdk_network_providers import ProxyNetworkProvider
+
+from mxops import errors
+from mxops.config.config import Config
 
 
 class AccountsManager:
@@ -70,7 +71,7 @@ class AccountsManager:
         :type account_name: str
         """
         config = Config.get_config()
-        proxy = ElrondProxy(config.get('PROXY'))
+        proxy = ProxyNetworkProvider(config.get('PROXY'))
         try:
             cls._accounts[account_name].sync_nonce(proxy)
         except KeyError as err:

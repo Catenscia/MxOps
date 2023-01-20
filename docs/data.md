@@ -1,12 +1,12 @@
 # Data
 
-One of the benefits of using MvxOps is to manage several scenarios without data collision.
+One of the benefits of using MxOps is to manage several scenarios without data collision.
 This means that you can deploy a contract on the mainnet, run a gas test scenario on a local testnet, run operational tests on the devnet (or the local testnet again) and keep track of all the important data generated within these scenario such as contract address, tickers of created tokens, queries results and so on...
 
 ## Structure
 
 The contract data is saved locally in the app folder of your computer (the exact path depends on your OS).
-This means that wherever you activate MvxOps, you will write and read at the same place.
+This means that wherever you activate MxOps, you will write and read at the same place.
 
 The contract data is saved in regards to the scenario in which it was generated.
 
@@ -19,7 +19,7 @@ The files organised as below:
 
 <AppFolder>
     |
-    mvxops
+    mxops
         |
         <Network>
             |

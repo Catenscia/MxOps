@@ -1,7 +1,7 @@
 """
 author: Etienne Wallet
 
-Enums used in the MvxOps package
+Enums used in the MxOps package
 """
 
 from enum import Enum

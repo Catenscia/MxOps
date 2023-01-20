@@ -2,10 +2,10 @@ from pathlib import Path
 import pytest
 import yaml
 
-from mvxops.config.config import Config
-from mvxops.data.data import ContractData, ScenarioData, delete_scenario_data
-from mvxops.data.path import initialize_data_folder
-from mvxops.enums import NetworkEnum
+from mxops.config.config import Config
+from mxops.data.data import ContractData, ScenarioData, delete_scenario_data
+from mxops.data.path import initialize_data_folder
+from mxops.enums import NetworkEnum
 
 
 @pytest.fixture(scope='session', autouse=True)

@@ -1,13 +1,14 @@
 """
 author: Etienne Wallet
 
-Errors used in the MvxOps package
+Errors used in the MxOps package
 """
 from pathlib import Path
 from typing import List
-from erdpy.transactions import Transaction
 
-from mvxops.utils.msc import get_tx_link
+from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
+
+from mxops.utils.msc import get_tx_link
 
 #############################################################
 #
@@ -129,12 +130,12 @@ class TransactionError(Exception):
     on the network
     """
 
-    def __init__(self, tx: Transaction) -> None:
+    def __init__(self, tx: TransactionOnNetwork) -> None:
         self.tx = tx
         super().__init__()
 
     def __str__(self) -> str:
-        return f"error on transaction {get_tx_link(self.tx.hash)}"
+        return f'Error on transaction {get_tx_link(self.tx.hash)}\n'
 
 
 class FailedTransactionError(TransactionError):
@@ -162,14 +163,6 @@ class SmartContractExecutionError(TransactionError):
     contract execution error
     """
 
-    def __init__(self, tx: Transaction, logs: str) -> None:
-        self.logs = logs
-        super().__init__(tx)
-
-    def __str__(self) -> str:
-        return ("error on contract execution transaction "
-                f"{get_tx_link(self.tx.hash)}\nlogs:\n{self.logs}")
-
 
 class InternalVmExecutionError(TransactionError):
     """
@@ -177,28 +170,12 @@ class InternalVmExecutionError(TransactionError):
     VM execution error
     """
 
-    def __init__(self, tx: Transaction, logs: str) -> None:
-        self.logs = logs
-        super().__init__(tx)
-
-    def __str__(self) -> str:
-        return ("error on contract execution transaction "
-                f"{get_tx_link(self.tx.hash)}\nlogs:\n{self.logs}")
-
 
 class TransactionExecutionError(TransactionError):
     """
     To be raised when a transaction encountered an internal
     VM execution error
     """
-
-    def __init__(self, tx: Transaction, logs: str) -> None:
-        self.logs = logs
-        super().__init__(tx)
-
-    def __str__(self) -> str:
-        return ("error on contract execution transaction "
-                f"{get_tx_link(self.tx.hash)}\nlogs:\n{self.logs}")
 
 
 class EmptyQueryResults(Exception):

@@ -9,17 +9,17 @@ from pathlib import Path
 import sys
 from typing import Dict, List
 
-from erdpy.contracts import CodeMetadata
+from multiversx_sdk_cli.contracts import CodeMetadata
 
-from mvxops.data.data import ContractData, ScenarioData
-from mvxops.execution.account import AccountsManager
-from mvxops.execution import contract_interactions as cti
-from mvxops.execution.msc import EsdtTransfer
-from mvxops.execution.network import raise_on_errors, send, send_and_wait_for_result
-from mvxops.execution.utils import parse_query_result
-from mvxops.utils.logger import get_logger
-from mvxops.utils.msc import get_file_hash, get_tx_link
-from mvxops import errors
+from mxops.data.data import ContractData, ScenarioData
+from mxops.execution.account import AccountsManager
+from mxops.execution import contract_interactions as cti
+from mxops.execution.msc import EsdtTransfer
+from mxops.execution.network import raise_on_errors, send, send_and_wait_for_result
+from mxops.execution.utils import parse_query_result
+from mxops.utils.logger import get_logger
+from mxops.utils.msc import get_file_hash, get_tx_link
+from mxops import errors
 
 LOGGER = get_logger('steps')
 

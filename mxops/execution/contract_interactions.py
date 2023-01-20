@@ -4,16 +4,16 @@ Module with deploy functions for the contracts
 from pathlib import Path
 from typing import List, Tuple
 
-from erdpy import config as erdpy_config
-from erdpy.accounts import Account, Address
-from erdpy.contracts import CodeMetadata, SmartContract, QueryResult
-from erdpy.proxy import ElrondProxy
-from erdpy.transactions import Transaction
-from erdpy import utils as erdpy_utils
+from multiversx_sdk_cli import config as mxpy_config
+from multiversx_sdk_cli.accounts import Account, Address
+from multiversx_sdk_cli.contracts import CodeMetadata, SmartContract, QueryResult
+from multiversx_sdk_network_providers import ProxyNetworkProvider
+from multiversx_sdk_cli.transactions import Transaction
+from multiversx_sdk_cli import utils as mxpy_utils
 
-from mvxops.config.config import Config
-from mvxops.execution.msc import EsdtTransfer
-from mvxops.execution.utils import format_tx_arguments, retrieve_value_from_string
+from mxops.config.config import Config
+from mxops.execution.msc import EsdtTransfer
+from mxops.execution.utils import format_tx_arguments, retrieve_value_from_string
 
 
 def get_contract_deploy_tx(
@@ -43,12 +43,12 @@ def get_contract_deploy_tx(
     """
     config = Config.get_config()
 
-    bytecode = erdpy_utils.read_binary_file(wasm_file).hex()
+    bytecode = mxpy_utils.read_binary_file(wasm_file).hex()
     contract = SmartContract(bytecode=bytecode, metadata=metadata)
     formated_args = format_tx_arguments(contract_args)
 
-    tx = contract.deploy(sender, formated_args, erdpy_config.DEFAULT_GAS_PRICE,
-                         gas_limit, 0, config.get('CHAIN'), erdpy_config.get_tx_version())
+    tx = contract.deploy(sender, formated_args, mxpy_config.DEFAULT_GAS_PRICE,
+                         gas_limit, 0, config.get('CHAIN'), mxpy_config.get_tx_version())
 
     return tx, contract
 
@@ -94,10 +94,10 @@ def get_contract_value_call_tx(
         function=endpoint,
         arguments=formated_args,
         value=value,
-        gas_price=erdpy_config.DEFAULT_GAS_PRICE,
+        gas_price=mxpy_config.DEFAULT_GAS_PRICE,
         gas_limit=gas_limit,
         chain=config.get('CHAIN'),
-        version=erdpy_config.get_tx_version()
+        version=mxpy_config.get_tx_version()
     )
 
     return tx
@@ -148,10 +148,10 @@ def get_contract_single_esdt_call_tx(
         function='ESDTTransfer',
         arguments=formated_args,
         value=0,
-        gas_price=erdpy_config.DEFAULT_GAS_PRICE,
+        gas_price=mxpy_config.DEFAULT_GAS_PRICE,
         gas_limit=gas_limit,
         chain=config.get('CHAIN'),
-        version=erdpy_config.get_tx_version()
+        version=mxpy_config.get_tx_version()
     )
 
     return tx
@@ -205,10 +205,10 @@ def get_contract_single_nft_call_tx(
         function='ESDTNFTTransfer',
         arguments=formated_args,
         value=0,
-        gas_price=erdpy_config.DEFAULT_GAS_PRICE,
+        gas_price=mxpy_config.DEFAULT_GAS_PRICE,
         gas_limit=gas_limit,
         chain=config.get('CHAIN'),
-        version=erdpy_config.get_tx_version()
+        version=mxpy_config.get_tx_version()
     )
 
     return tx
@@ -266,10 +266,10 @@ def get_contract_multiple_esdt_call_tx(
         function='MultiESDTNFTTransfer',
         arguments=formated_args,
         value=0,
-        gas_price=erdpy_config.DEFAULT_GAS_PRICE,
+        gas_price=mxpy_config.DEFAULT_GAS_PRICE,
         gas_limit=gas_limit,
         chain=config.get('CHAIN'),
-        version=erdpy_config.get_tx_version()
+        version=mxpy_config.get_tx_version()
     )
 
     return tx
@@ -360,7 +360,7 @@ def query_contract(contract_address: str, endpoint: str, arguments: List) -> Lis
     contract = SmartContract(Address(contract_address))
 
     formated_args = format_tx_arguments(arguments)
-    proxy = ElrondProxy(config.get('PROXY'))
+    proxy = ProxyNetworkProvider(config.get('PROXY'))
     results = contract.query(
         proxy=proxy,
         function=endpoint,

@@ -1,6 +1,6 @@
-## Command Line Interface for MvxOps ##
+## Command Line Interface for MxOps ##
 
-mvxops data [SUBCOMMAND] [OPTIONS]
+mxops data [SUBCOMMAND] [OPTIONS]
 
 Available sub-commands:
 

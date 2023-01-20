@@ -1,10 +1,10 @@
 import os
 
-from erdpy.accounts import Account
+from multiversx_sdk_cli.accounts import Account
 
-from mvxops.data.data import _ScenarioData
-from mvxops.execution import utils
-from mvxops.execution.account import AccountsManager
+from mxops.data.data import _ScenarioData
+from mxops.execution import utils
+from mxops.execution.account import AccountsManager
 
 
 def test_no_type():
@@ -33,7 +33,7 @@ def test_no_type():
 
 def test_env_value():
     # Given
-    var_name = 'PYTEST_XOPS_VALUE'
+    var_name = 'PYTEST_MXOPS_VALUE'
     var_value = 784525
     os.environ[var_name] = str(var_value)
 
