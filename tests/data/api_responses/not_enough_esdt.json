@@ -1,59 +1,57 @@
 {
-    "hash": "e4849118d4e8eb77b6a731bd34236df2feb1ee7102cc928e7dd0606505771455",
+    "tx_hash": "e4849118d4e8eb77b6a731bd34236df2feb1ee7102cc928e7dd0606505771455",
     "response": {
-        "transaction": {
-            "type": "invalid",
-            "processingTypeOnSource": "BuiltInFunctionCall",
-            "processingTypeOnDestination": "SCInvoking",
-            "hash": "e4849118d4e8eb77b6a731bd34236df2feb1ee7102cc928e7dd0606505771455",
-            "nonce": 33,
-            "round": 4222304,
-            "epoch": 3488,
-            "value": "0",
-            "receiver": "erd1qqqqqqqqqqqqqpgqesdchj2f3yv40j7xdc9tzq0rpkf5zen5hzdq8h842g",
-            "sender": "erd1ajvz5qswj5qq6ca7y5sy3pw639re2hnhnppk50wkt06txekdax2qdlat4s",
-            "gasPrice": 1000000000,
-            "gasLimit": 8000000,
-            "data": "RVNEVFRyYW5zZmVyQDQxNDI0MzJENjY2MzY0NjI2MjM1QDBGNDIzRkA2NDY1NzA2RjczNjk3NA==",
-            "signature": "64fd21726b65d73d411c1e86f09e8eeb9bc707841e0fc102adc7ccedbc6a5fc6bcb045f168e5b71d4969891d5969cb504d198c738aed2098f8b58bba4f41af0f",
-            "sourceShard": 0,
-            "destinationShard": 0,
-            "blockNonce": 4183862,
-            "blockHash": "9a60a3b45b743c8c3817e45ac3d3bfdbeff579b2fdbf80c2adab408f492cdfed",
-            "notarizedAtSourceInMetaNonce": 4186034,
-            "NotarizedAtSourceInMetaHash": "8659fb2fd9b5ad07b4bd3b712d0ed184bbaf23f543ad722cb65796a17eab3d1b",
-            "notarizedAtDestinationInMetaNonce": 4186034,
-            "notarizedAtDestinationInMetaHash": "8659fb2fd9b5ad07b4bd3b712d0ed184bbaf23f543ad722cb65796a17eab3d1b",
-            "miniblockType": "InvalidBlock",
-            "miniblockHash": "b2d1036a2a1e3774b2ac1b32563362f89c007a0c65b2ae8882819cce4ea8ca50",
-            "hyperblockNonce": 4186034,
-            "hyperblockHash": "8659fb2fd9b5ad07b4bd3b712d0ed184bbaf23f543ad722cb65796a17eab3d1b",
-            "timestamp": 1673885424,
-            "logs": {
-                "address": "erd1qqqqqqqqqqqqqpgqesdchj2f3yv40j7xdc9tzq0rpkf5zen5hzdq8h842g",
-                "events": [
-                    {
-                        "address": "erd1qqqqqqqqqqqqqpgqesdchj2f3yv40j7xdc9tzq0rpkf5zen5hzdq8h842g",
-                        "identifier": "signalError",
-                        "topics": [
-                            "7JgqAg6VAA1jviUgSIXaiUeVXneYQ2o91lv0s2bN6ZQ=",
-                            "aW5zdWZmaWNpZW50IGZ1bmRz"
-                        ],
-                        "data": "QDY5NmU3Mzc1NjY2NjY5NjM2OTY1NmU3NDIwNjY3NTZlNjQ3Mw=="
-                    }
-                ]
-            },
-            "status": "invalid",
-            "tokens": [
-                "ABC-fcdbb5"
-            ],
-            "esdtValues": [
-                "999999"
-            ],
-            "operation": "ESDTTransfer",
-            "function": "deposit",
-            "initiallyPaidFee": "211175000000000",
-            "options": 0
-        }
-    }
+                "type": "invalid",
+                "processingTypeOnSource": "BuiltInFunctionCall",
+                "processingTypeOnDestination": "SCInvoking",
+                "hash": "e4849118d4e8eb77b6a731bd34236df2feb1ee7102cc928e7dd0606505771455",
+                "nonce": 33,
+                "round": 4222304,
+                "epoch": 3488,
+                "value": "0",
+                "receiver": "erd1qqqqqqqqqqqqqpgqesdchj2f3yv40j7xdc9tzq0rpkf5zen5hzdq8h842g",
+                "sender": "erd1ajvz5qswj5qq6ca7y5sy3pw639re2hnhnppk50wkt06txekdax2qdlat4s",
+                "gasPrice": 1000000000,
+                "gasLimit": 8000000,
+                "data": "RVNEVFRyYW5zZmVyQDQxNDI0MzJENjY2MzY0NjI2MjM1QDBGNDIzRkA2NDY1NzA2RjczNjk3NA==",
+                "signature": "64fd21726b65d73d411c1e86f09e8eeb9bc707841e0fc102adc7ccedbc6a5fc6bcb045f168e5b71d4969891d5969cb504d198c738aed2098f8b58bba4f41af0f",
+                "sourceShard": 0,
+                "destinationShard": 0,
+                "blockNonce": 4183862,
+                "blockHash": "9a60a3b45b743c8c3817e45ac3d3bfdbeff579b2fdbf80c2adab408f492cdfed",
+                "notarizedAtSourceInMetaNonce": 4186034,
+                "NotarizedAtSourceInMetaHash": "8659fb2fd9b5ad07b4bd3b712d0ed184bbaf23f543ad722cb65796a17eab3d1b",
+                "notarizedAtDestinationInMetaNonce": 4186034,
+                "notarizedAtDestinationInMetaHash": "8659fb2fd9b5ad07b4bd3b712d0ed184bbaf23f543ad722cb65796a17eab3d1b",
+                "miniblockType": "InvalidBlock",
+                "miniblockHash": "b2d1036a2a1e3774b2ac1b32563362f89c007a0c65b2ae8882819cce4ea8ca50",
+                "hyperblockNonce": 4186034,
+                "hyperblockHash": "8659fb2fd9b5ad07b4bd3b712d0ed184bbaf23f543ad722cb65796a17eab3d1b",
+                "timestamp": 1673885424,
+                "logs": {
+                    "address": "erd1qqqqqqqqqqqqqpgqesdchj2f3yv40j7xdc9tzq0rpkf5zen5hzdq8h842g",
+                    "events": [
+                        {
+                            "address": "erd1qqqqqqqqqqqqqpgqesdchj2f3yv40j7xdc9tzq0rpkf5zen5hzdq8h842g",
+                            "identifier": "signalError",
+                            "topics": [
+                                "7JgqAg6VAA1jviUgSIXaiUeVXneYQ2o91lv0s2bN6ZQ=",
+                                "aW5zdWZmaWNpZW50IGZ1bmRz"
+                            ],
+                            "data": "QDY5NmU3Mzc1NjY2NjY5NjM2OTY1NmU3NDIwNjY3NTZlNjQ3Mw=="
+                        }
+                    ]
+                },
+                "status": "invalid",
+                "tokens": [
+                    "ABC-fcdbb5"
+                ],
+                "esdtValues": [
+                    "999999"
+                ],
+                "operation": "ESDTTransfer",
+                "function": "deposit",
+                "initiallyPaidFee": "211175000000000",
+                "options": 0
+            }
 }
