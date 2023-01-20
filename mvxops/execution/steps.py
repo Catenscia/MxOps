@@ -9,7 +9,7 @@ from pathlib import Path
 import sys
 from typing import Dict, List
 
-from erdpy.contracts import CodeMetadata
+from multiversx_sdk_cli.contracts import CodeMetadata
 
 from mvxops.data.data import ContractData, ScenarioData
 from mvxops.execution.account import AccountsManager

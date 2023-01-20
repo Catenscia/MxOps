@@ -6,8 +6,8 @@ This module contains some utilities functions for the execution sub package
 import os
 from typing import Any, List, Optional, Tuple
 
-from erdpy.accounts import Address
-from erdpy.contracts import QueryResult
+from multiversx_sdk_cli.accounts import Address
+from multiversx_sdk_cli.contracts import QueryResult
 
 from mvxops.config.config import Config
 from mvxops.data.data import ScenarioData
@@ -148,7 +148,7 @@ def retrieve_value_from_string(arg: str) -> Any:
 
 def format_tx_arguments(arguments: List[Any]) -> List[Any]:
     """
-    Transform the arguments so they can be recognised by erdpy
+    Transform the arguments so they can be recognised by mxpy
 
     :param arguments: list of arguments to be supplied to a endpoint
     :type arguments: List[Any]

@@ -3,9 +3,10 @@ author: Etienne Wallet
 
 This module contains the functions to pass transactions to the proxy and to monitor them
 """
-from erdpy.proxy import ElrondProxy
-from erdpy.transactions import Transaction
-from erdpy.proxy.messages import TransactionOnNetwork
+from multiversx_sdk_network_providers import ProxyNetworkProvider
+from multiversx_sdk_cli.transactions import Transaction
+from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
+from multiversx_sdk_network_providers.transaction_status import TransactionStatus
 
 from mvxops.config.config import Config
 from mvxops import errors
@@ -21,7 +22,7 @@ def send(tx: Transaction) -> str:
     :rtype: str
     """
     config = Config.get_config()
-    proxy = ElrondProxy(config.get('PROXY'))
+    proxy = ProxyNetworkProvider(config.get('PROXY'))
     return tx.send(proxy)
 
 
@@ -36,7 +37,7 @@ def send_and_wait_for_result(tx: Transaction) -> Transaction:
     :rtype: Transaction
     """
     config = Config.get_config()
-    proxy = ElrondProxy(config.get('PROXY'))
+    proxy = ProxyNetworkProvider(config.get('PROXY'))
     timeout = int(config.get('TX_TIMEOUT'))
     return tx.send_wait_result(proxy, timeout)
 
@@ -52,26 +53,18 @@ def raise_on_errors(on_chain_tx: TransactionOnNetwork):
     :param onChainTx: on chain finalised transaction
     :type onChainTx: Transaction
     """
-    if not on_chain_tx.is_done():
+    if not on_chain_tx.is_completed:
         raise errors.UnfinalizedTransactionException(on_chain_tx)
-    tx_dict = on_chain_tx.to_dictionary()
 
-    tx_status = tx_dict['status']
-    if tx_status == 'failed':
-        raise errors.FailedTransactionError(on_chain_tx)
-    if tx_status ==  'invalid':
+    if on_chain_tx.status.is_invalid():
         raise errors.InvalidTransactionError(on_chain_tx)
+    if on_chain_tx.status.is_failed():
+        raise errors.FailedTransactionError(on_chain_tx)
 
-    try:
-        logs = tx_dict['logs']
-        events = logs['events']
-    except KeyError:
-        events = []
-
-    event_identifiers = {e['identifier'] for e in events}
+    event_identifiers = {e.identifier for e in on_chain_tx.logs.events}
     if  'InternalVmExecutionError' in event_identifiers:
-        raise errors.SmartContractExecutionError(on_chain_tx, logs)
+        raise errors.SmartContractExecutionError(on_chain_tx)
     if 'internalVMErrors' in event_identifiers:
-        raise errors.InternalVmExecutionError(on_chain_tx, logs)
+        raise errors.InternalVmExecutionError(on_chain_tx)
     if 'signalError' in event_identifiers:
-        raise errors.TransactionExecutionError(on_chain_tx, logs)
+        raise errors.TransactionExecutionError(on_chain_tx)

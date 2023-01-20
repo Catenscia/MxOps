@@ -1,6 +1,6 @@
 import os
 
-from erdpy.accounts import Account
+from multiversx_sdk_cli.accounts import Account
 
 from mvxops.data.data import _ScenarioData
 from mvxops.execution import utils
