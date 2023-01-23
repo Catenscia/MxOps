@@ -62,6 +62,10 @@ steps:
       - arg2
 ```
 
+## More Examples
+
+You can always inspect the [integration tests folder](https://github.com/Catenscia/MxOps/tree/main/integration_tests) of MxOps to see how this can be used in a smart-contract project.
+
 ## Next Step
 
 Heads up to the {doc}`steps` section to learn how to write contract interactions!
