@@ -19,6 +19,7 @@ If you are new here, we recommand going first to the :doc:`user_documentation/ov
    user_documentation/scenes
    user_documentation/steps
    user_documentation/values
+   user_documentation/execution
 
 .. toctree::
    :maxdepth: 2
