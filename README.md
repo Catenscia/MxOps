@@ -1,68 +1,23 @@
 # MxOps
 
-MxOps is a python package to automate MultiversX smart contracts deployments and interactions in general.
-These interactions are described by the user in one or several files (called scenes).
-MxOps also provide smart values: values used in the scenes (ex a token identifier) can be directly written in the file but also taken from the environment, from a config file or even from smart contract queries.
+MxOps is a python package created to automate MultiversX smart contracts deployments, calls and querys.
+Inspired from DevOps tools, it aims to ease and make reproductible any set of these interactions with smart-contracts.
 
-## Overview
+MxOps aims to be useful in these situations:
 
-A user write a scene which contains a number of steps. Each step represent an action: contract deployment, contract call, contract query.
-(See Section Steps for more information).
-The user can then execute the scene (or directly a folder of scenes) in a scenario.
-A scenario is an environnement associated wich a chain (local, test, dev or main) in which contract data is recorded. (more on that in the [Scenario section](#scenario))
+- deployment automation
+- on-chain integration tests
+- contract interaction automation
 
-## Details
+## Get Started
 
-### Config
+Heads up to the quickstart in the [documentation](https://mxops.readthedocs.io) to get started!
 
-### Scenario
+## Contribution
 
-This allows you to have several instances of the same contract on the same chain.
+This tool is an humble proposal by [Catenscia](https://catenscia.com/) to have a standard way of writing deployment files, integrations tests and others.
+If you want this tool to improve, please tell us your issues and proposals!
 
-### Scenes
+And if you're motivated, we will always welcome hepling hands onboard :grin: !
 
-### Steps
-
-#### Contract Deployment Step
-
-This step is used to specify a contract deployment.
-
-#### Contract Call Step
-
-This step is used to specify a contract call.
-
-#### Contract Query Step
-
-This step is used to specify a contract query.
-
-### Smart Values
-
-What makes MxOps truly usefull is its ability to use smart values in the contract steps. Smart-values can be taken from the environment variables, from the config file of your project or from the results of smart_contract-queries.
-
-#### Environment Smart Values
-
-exemple
-
-#### Config Smart Values
-
-exemple
-
-#### Contract Query Smart Values
-
-exemple
-
-## Backlog
-
-- [ ] Add an optional delay before/after each step
-- [ ] Create a framework to allow a user to create a step which will execute any custom made python functions. (This would allow extreme customizations for users)
-- [ ] Add Keystore support
-- [ ] Add Maiar support
-- [ ] Add a specific step for contract ownership transfer.
-- [ ] Add a skip keyword to skip steps without deleting them
-- [ ] Add querry and call support for external contracts
-- [ ] Add configurable transactions contents checks (transfers, data, results...)
-
-## Known Issue
-
-- Issuficient funds errors are not catched
-- Out of gas errors are not catched
+Read the [contribution guidelines](./CONTRIBUTING.md) for more :wink:
