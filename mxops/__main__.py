@@ -44,6 +44,8 @@ def main():
     """
     args = parse_args()
 
+    print("MxOps  Copyright (C) 2023  Catenscia\nThis program comes with ABSOLUTELY NO WARRANTY")
+
     if args.command == 'config':
         config_cli.execute_cli(args)
     elif args.command == 'data':
