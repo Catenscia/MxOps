@@ -28,3 +28,4 @@ If you are new here, we recommand going first to the :doc:`user_documentation/ov
    dev_documentation/steps
    dev_documentation/values
    dev_documentation/backlog
+   dev_documentation/changelog
