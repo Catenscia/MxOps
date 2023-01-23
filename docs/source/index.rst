@@ -16,6 +16,7 @@ If you are new here, we recommand going first to the :doc:`user_documentation/ov
 
    user_documentation/overview
    user_documentation/getting_started
+   user_documentation/scenes
    user_documentation/steps
    user_documentation/values
 
@@ -23,6 +24,7 @@ If you are new here, we recommand going first to the :doc:`user_documentation/ov
    :maxdepth: 2
    :caption: Dev Documentation
 
+   dev_documentation/scenes
    dev_documentation/steps
    dev_documentation/values
    dev_documentation/backlog
