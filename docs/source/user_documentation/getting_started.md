@@ -37,13 +37,13 @@ The structure is layed out as below:
 
 ### Accounts
 
-Accounts are grouped in separate `scenes` to make sure you don't mix up your networks (there are other security measures in place to avoid that but we can never be to cautious).
+Accounts are grouped in separate `Scenes` to make sure you don't mix up your networks (there are other security measures in place to avoid that but we can never be to cautious).
 
 ### Scene Names
 
-When you have a complexe usecase and you want to organise the `steps` in several `scenes` to keep things clean, you should write them in a specific folder and prefix the files names with a number to make sure they will get executed in the correct order.
+When you have a complexe usecase and you want to organise the `steps` in several `Scenes` to keep things clean, you should write them in a specific folder and prefix the files names with a number to make sure they will get executed in the correct order.
 
 ## Next Step
 
-You are now ready to learn how to write `scenes`!
+You are now ready to learn how to write `Scenes`!
 Heads up to the {doc}`scenes` section
