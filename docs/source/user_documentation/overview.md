@@ -59,3 +59,7 @@ steps:
       - ABC
       - 3
 ```
+
+## Next Step
+
+You are now ready to heads up to the {doc}`getting_started` section!
