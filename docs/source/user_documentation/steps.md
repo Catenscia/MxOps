@@ -62,6 +62,8 @@ print_results: False  # if the query results should be printed in the console
 
 Currently allowed values for `result_type`: [`number`, `str`]
 
+(loop_step_target)=
+
 ## Loop Step
 
 This steps allows to run a set of steps for a given number of times.
