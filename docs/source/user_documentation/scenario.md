@@ -2,7 +2,7 @@
 
 `Scenario` are an environment in which the results of the every `step` execution will be stored locally on your computer. This allows to execute identical `Scenes` on different contracts in the **same** network and it is also essential to use these results at a later time (for example to upgrade a contract).
 
-An important think to keep in mind is that `Scenario` data is save on a user level. The current directory does not affect the `Scenario` behavior. This means that `Scenario` can be access from anywhere on your computer (which is usefull) bu also that their name should be unique for all your projects.
+An important think to keep in mind is that `Scenario` data is save on a user level. The current directory does not affect the `Scenario` behavior. This means that `Scenario` can be access from anywhere on your computer (which is useful) but it also means that their name should be unique for all your projects. Otherwise you may encounter data collision.
 
 ## Commands
 
