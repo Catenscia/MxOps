@@ -16,6 +16,7 @@ If you are new here, we recommand going first to the :doc:`user_documentation/ov
 
    user_documentation/overview
    user_documentation/getting_started
+   user_documentation/scenario
    user_documentation/scenes
    user_documentation/steps
    user_documentation/values

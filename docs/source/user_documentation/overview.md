@@ -14,7 +14,7 @@ MxOps aims to be useful in these situations:
 MxOps works with yaml files, called `Scenes`. This allows version control on MxOps executions.
 Each `Scene` contains any given number of `steps`. Each `step` is an interaction with a contract: be it a deployment, a call, an upgrade or a query.
 
-To execute `Scenes`, the user choses a network (mainnet, devnet, testnet or localnet) and a `scenario`.
+To execute `Scenes`, the user choses a network (mainnet, devnet, testnet or localnet) and a `Scenario`.
 `Scenario` are an environment in which the results of the every `step` execution will be stored locally on your computer. This allows to execute identical `Scenes` on different contracts in the **same** network and it is also essential to use these results at a later time (for example to upgrade a contract).
 
 ## Scene Example
