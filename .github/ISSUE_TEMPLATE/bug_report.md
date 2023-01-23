@@ -12,9 +12,10 @@ A clear and concise description of what the bug is.
 
 **To Reproduce**
 Steps to reproduce the behavior:
-1- Give your python and MxOps versions
-2- Show the code you tried to execute
-3- Show the full error / bug obtained
+
+1. Give your python and MxOps versions
+2. Show the code you tried to execute
+3. Show the full error / bug obtained
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
