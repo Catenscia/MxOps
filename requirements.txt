@@ -1,0 +1,4 @@
+appdirs~=1.4.4
+configparser~=5.3.0
+multiversx-sdk-cli~=5.1.0
+pyyaml~=6.0

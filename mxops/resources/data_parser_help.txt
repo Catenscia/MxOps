@@ -1,0 +1,20 @@
+## Command Line Interface for MxOps ##
+
+mxops data [SUBCOMMAND] [OPTIONS]
+
+Available sub-commands:
+
+    get     ->  Print recorded contract data for the current env
+                Required:
+                    -n, --network           name of the network to consider (MAIN, DEV, TEST, LOCAL)
+                Options:
+                    -p, --path              display the root path for the user data
+                    -l, --list              print all the scenarios names
+                    -s, --scenario          print the data saved for a scenario
+
+    delete  ->  Delete locally saved data for a specified network
+                Required:
+                    -n, --network           name of the network to consider (MAIN, DEV, TEST, LOCAL)
+                Options:
+                    -s, --scenario          name of the scenario to delete
+                    -a, --all               delete all scenarios for the specified network

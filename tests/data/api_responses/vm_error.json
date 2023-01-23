@@ -1,0 +1,62 @@
+{
+    "tx_hash": "481badc1d2f4e5da299f68d23b546dd465f6814cb24b79d1071dc8861dc65082",
+    "response": {
+        "type": "normal",
+        "processingTypeOnSource": "SCInvoking",
+        "processingTypeOnDestination": "SCInvoking",
+        "hash": "481badc1d2f4e5da299f68d23b546dd465f6814cb24b79d1071dc8861dc65082",
+        "nonce": 9,
+        "round": 4160387,
+        "epoch": 3436,
+        "value": "0",
+        "receiver": "erd1qqqqqqqqqqqqqpgqalvhtfeng65465uwdy0da5gv08mfp5g9hzdqh3h56p",
+        "sender": "erd1ajvz5qswj5qq6ca7y5sy3pw639re2hnhnppk50wkt06txekdax2qdlat4s",
+        "gasPrice": 1000000000,
+        "gasLimit": 8000000,
+        "data": "d2l0aGRyYXc=",
+        "signature": "8adec371ce23197656c11603f44fa72ce5b3f3c1449d90126a8960445136212de05284a65b195728f6aee1ab7a7fe6351d960e515edc1f058d96ef6ce3fab206",
+        "sourceShard": 0,
+        "destinationShard": 2,
+        "blockNonce": 4120410,
+        "blockHash": "7639b352a87d7cad6667721dd894c4f744ced2617aacbf48fb7b24262a12d8ec",
+        "notarizedAtSourceInMetaNonce": 4124138,
+        "NotarizedAtSourceInMetaHash": "ab3d2f5df2cb38758d1579e95d2ad46dfcbc2b6acfcf825ef9db536b1a71ab6b",
+        "notarizedAtDestinationInMetaNonce": 4124142,
+        "notarizedAtDestinationInMetaHash": "0a9603900a441746a44c9c4ff5e36104e05fcff8979608e0b3ac0d59fbbbc1a4",
+        "miniblockType": "TxBlock",
+        "miniblockHash": "67338576df0e552a2d13beb9d779825cc7406ba6fa0cc33d4bc9d695794c5b01",
+        "hyperblockNonce": 4124142,
+        "hyperblockHash": "0a9603900a441746a44c9c4ff5e36104e05fcff8979608e0b3ac0d59fbbbc1a4",
+        "timestamp": 1673513922,
+        "logs": {
+            "address": "erd1qqqqqqqqqqqqqpgqalvhtfeng65465uwdy0da5gv08mfp5g9hzdqh3h56p",
+            "events": [
+                {
+                    "address": "erd1qqqqqqqqqqqqqpgqalvhtfeng65465uwdy0da5gv08mfp5g9hzdqh3h56p",
+                    "identifier": "signalError",
+                    "topics": [
+                        "7JgqAg6VAA1jviUgSIXaiUeVXneYQ2o91lv0s2bN6ZQ=",
+                        "ZXhlY3V0aW9uIGZhaWxlZA=="
+                    ],
+                    "data": "QDY1Nzg2NTYzNzU3NDY5NmY2ZTIwNjY2MTY5NmM2NTY0"
+                },
+                {
+                    "address": "erd1ajvz5qswj5qq6ca7y5sy3pw639re2hnhnppk50wkt06txekdax2qdlat4s",
+                    "identifier": "internalVMErrors",
+                    "topics": [
+                        "AAAAAAAAAAAFAO/ZdaczRqldU45pHt7RDHn2kNEFuJo=",
+                        "d2l0aGRyYXc="
+                    ],
+                    "data": "CglydW50aW1lLmdvOjExNTkgW2V4ZWN1dGlvbiBmYWlsZWRdIFt3aXRoZHJhd10KCXJ1bnRpbWUuZ286MTE1OSBbZXhlY3V0aW9uIGZhaWxlZF0gW3dpdGhkcmF3XQoJcnVudGltZS5nbzoxMTU5IFtleGVjdXRpb24gZmFpbGVkXQoJcnVudGltZS5nbzoxMTU5IFtleGVjdXRpb24gZmFpbGVkXSBbY2xhaW1JbnRlcmVzdHNdCglydW50aW1lLmdvOjExNTkgW2V4ZWN1dGlvbiBmYWlsZWRdIFtjbGFpbUludGVyZXN0c10KCXJ1bnRpbWUuZ286MTE1NiBbc2VuZGluZyB2YWx1ZSB0byBub24gcGF5YWJsZSBjb250cmFjdF0="
+                }
+            ]
+        },
+        "status": "success",
+        "operation": "transfer",
+        "function": "withdraw",
+        "initiallyPaidFee": "141380000000000",
+        "chainID": "D",
+        "version": 1,
+        "options": 0
+    }
+}

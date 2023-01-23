@@ -1,0 +1,11 @@
+allowed_networks:
+  - LOCAL
+
+allowed_scenario:
+  - "integration_tests*"
+
+accounts:
+  - account_name: owner
+    pem_path: ./integration_tests/wallets/bob.pem
+  - account_name: user
+    pem_path: ./integration_tests/wallets/alice.pem

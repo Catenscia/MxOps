@@ -1,0 +1,51 @@
+# list of network onto which this scene can be run
+allowed_networks:
+  - LOCAL
+
+allowed_scenario:
+  - ".*"
+
+accounts:
+  - account_name: owner
+    pem_path: wallets/local_owner.pem
+
+steps:
+  - type: ContractDeploy
+    sender: owner
+    wasm_path: ../contract/src/esdt-minter/output/esdt-minter.wasm
+    contract_id: SEGLD-minter
+    gas_limit: 80000000
+    arguments:
+      - 125000000
+      - 120
+    upgradeable: True
+    readable: False
+    payable: False
+    payable_by_sc: False
+
+  - type: ContractCall
+    sender: owner
+    contract_id: SEGLD-minter
+    endpoint: registerToken
+    gas_limit: 80000000
+    value: "&BASE_ISSUING_COST"
+    arguments:
+      - SEGLD
+      - SEGLD
+      - 18
+
+  - type: ContractCall
+    sender: owner
+    contract_id: SEGLD-minter
+    endpoint: setTokenLocalRoles
+    gas_limit: 80000000
+    arguments: []
+  
+  - type: ContractQuery
+    contract_id: SEGLD-minter
+    endpoint: getTokenIdentifier
+    arguments: []
+    expected_results:
+      - save_key: TokenIdentifier
+        result_type: str
+    print_results: True

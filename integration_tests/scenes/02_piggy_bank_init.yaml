@@ -1,0 +1,29 @@
+allowed_networks:
+  - LOCAL
+  - TEST
+  - DEV
+
+allowed_scenario:
+  - "integration_test*"
+
+steps:
+  - type: ContractDeploy
+    sender: owner
+    wasm_path: "./integration_tests/contracts/piggy-bank/output/piggy-bank.wasm"
+    contract_id: "abc-piggy-bank"
+    gas_limit: 80000000
+    arguments:
+      - "%abc-esdt-minter%EsdtIdentifier"
+      - "%abc-esdt-minter%address"
+    upgradeable: True
+    readable: False
+    payable: False
+    payable_by_sc: True
+
+  - type: ContractCall
+    sender: owner
+    contract_id: "abc-esdt-minter"
+    endpoint: addInterestAddress
+    gas_limit: 5000000
+    arguments:
+      - "%abc-piggy-bank%address"
