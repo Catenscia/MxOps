@@ -26,11 +26,12 @@ Please follow this steps:
 Banches names should reflect the type of change they bring.
 The examples below should fit most needs.
 
-| **Change type** | Description                                            | Name                       |
-|-----------------|--------------------------------------------------------|----------------------------|
-| **Feature**     | For any feature that will be added to the project      | `feature_<feature_name>`   |
-| **Fix**         | For any bug fix on the project                         | `fix_<bug_name>`           |
-| **Refactor**    | For any change that do not impact the functionnalities | `refactor_<refactor_name>` |
-| **Test**        | For any test(s) that will be added to the project      | `test_<test_name>`         |
+| **Change type**   | Description                                            | Name                       |
+|-------------------|--------------------------------------------------------|----------------------------|
+| **Feature**       | For any feature that will be added to the project      | `feature_<feature_name>`   |
+| **Fix**           | For any bug fix on the project                         | `fix_<bug_name>`           |
+| **Refactor**      | For any change that do not impact the functionnalities | `refactor_<refactor_name>` |
+| **Test**          | For any test(s) that will be added to the project      | `test_<test_name>`         |
+| **Documentation** | For any change in the documentation                    | `docs_<change_name>`       |
 
 Many thanks! :heart: :heart: :heart:

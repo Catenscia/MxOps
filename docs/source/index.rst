@@ -7,12 +7,14 @@ Welcome to MxOps |version| !
 =========================================
 
 You are in the MxOps documentation. Use the left-side pannel or the menu below to navigate where you want to go.
-If you are new here, we recommand going first to the :doc:`user_documentation/overview` section and then to the :doc:`user_documentation/getting_started`.
-
+If you are new here, we recommand going first to the :doc:`user_documentation/overview` section and
+then to the :doc:`user_documentation/getting_started`.
+Otherwise, if you prefer to learn by example, the :doc:`user_documentation/tutorial` section is here for you!
 
 .. toctree::
    :maxdepth: 2
    :caption: User Documentation
+   :numbered:
 
    user_documentation/overview
    user_documentation/getting_started
@@ -21,6 +23,7 @@ If you are new here, we recommand going first to the :doc:`user_documentation/ov
    user_documentation/steps
    user_documentation/values
    user_documentation/execution
+   user_documentation/tutorial
 
 .. toctree::
    :maxdepth: 2
