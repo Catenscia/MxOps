@@ -30,9 +30,13 @@ Where:
 - Network will be the name of chain used (MAIN, DEV, TEST or LOCAL) for the scenario
 - <my_scenario>.json is the file where all the contract data of the executed scenario are stored
 
-One important note: the files are kept after each executions. This means that you can reuse a `Scenario` and execute new `Scenes` in it. This is very usefull for incremental executions (deploy, upgrade...) or reccurent tasks (complexe claim/compound cycles for example)
+```{note}
+The files are kept after each executions. This means that you can reuse a `Scenario` and execute new `Scenes` in it. This is very usefull for incremental executions (deploy, upgrade...) or reccurent tasks (complexe claim/compound cycles for example)
+```
 
-This also means that their name should be unique for all your projects. Otherwise you may encounter data collision.
+```{warning}
+This also means that `Scenario` names should be unique for all your projects. Otherwise you may encounter data collision.
+```
 
 ## Commands
 
