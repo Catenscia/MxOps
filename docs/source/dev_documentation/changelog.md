@@ -4,7 +4,8 @@
 
 ### Added
 
-- None
+- Readthedocs yaml configuration file to fix compilation
+- Full user tutorial in the sphinx documentation
 
 ### Changed
 
