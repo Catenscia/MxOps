@@ -468,42 +468,42 @@ This sould give you on output similar to this:
 ```bash
 MxOps  Copyright (C) 2023  Catenscia
 This program comes with ABSOLUTELY NO WARRANTY
-[2023-01-24 08:12:26,030 data INFO] Scenario integration_tests created for network DEV [data:259 in create_scenario]
-[2023-01-24 08:12:26,030 scene INFO] Executing scene integration_tests/scenes/accounts/devnet_accounts.yaml [scene:68 in execute_scene]
-[2023-01-24 08:12:26,411 scene INFO] Executing scene integration_tests/scenes/01_esdt_minter_init.yaml [scene:68 in execute_scene]
-[2023-01-24 08:12:26,415 steps INFO] Deploying contract abc-esdt-minter [steps:106 in execute]
-[2023-01-24 08:12:32,185 steps INFO] Deploy successful on erd1qqqqqqqqqqqqqpgqv6p829acqhv0z42jdvlp688xr7hcaax6hzdqcyjy04
-tx hash: https://devnet-explorer.multiversx.com/transactions/9f18f2b28920d50cc2f78de2597e8119949cccb07b23f0b0122d87c6887ccbc4 [steps:126 in execute]
-[2023-01-24 08:12:32,187 steps INFO] Calling issueToken for abc-esdt-minter [steps:175 in execute]
-[2023-01-24 08:13:04,101 steps INFO] Call successful: https://devnet-explorer.multiversx.com/transactions/03bbdee5935e9fd7cb89343d1e43c7c81a2d146dbcd0f79b136abca02c4b9eae [steps:192 in execute]
-[2023-01-24 08:13:04,102 steps INFO] Query on getEsdtIdentifier for abc-esdt-minter [steps:214 in execute]
-[{'base64': 'QUJDLWYwOTNjNg==', 'hex': '4142432d663039336336', 'number': 308176147132923566580534}]
-[2023-01-24 08:13:04,815 steps INFO] Saving Query results as contract data [steps:228 in execute]
-[2023-01-24 08:13:04,815 steps INFO] Query successful [steps:236 in execute]
-[2023-01-24 08:13:04,820 scene INFO] Executing scene integration_tests/scenes/02_piggy_bank_init.yaml [scene:68 in execute_scene]
-[2023-01-24 08:13:04,823 steps INFO] Deploying contract abc-piggy-bank [steps:106 in execute]
-[2023-01-24 08:13:10,679 steps INFO] Deploy successful on erd1qqqqqqqqqqqqqpgqq9g7qtphjvp254x29zzvxhu6fje2c300hzdqlhqrpj
-tx hash: https://devnet-explorer.multiversx.com/transactions/e5f3ee67fe17a335619dd2f523c0cc409caebdaab6ffbfa2c1c02d0a9a1cea7c [steps:126 in execute]
-[2023-01-24 08:13:10,680 steps INFO] Calling addInterestAddress for abc-esdt-minter [steps:175 in execute]
-[2023-01-24 08:13:16,097 steps INFO] Call successful: https://devnet-explorer.multiversx.com/transactions/6b7d29c6d53058aa2b553f60ae5272971816ab2f3e5525c0a054735194dedfab [steps:192 in execute]
-[2023-01-24 08:13:16,098 scene INFO] Executing scene integration_tests/scenes/03_airdrop.yaml [scene:68 in execute_scene]
-[2023-01-24 08:13:16,101 steps INFO] Calling addAirdropAmount for abc-esdt-minter [steps:175 in execute]
-[2023-01-24 08:13:21,636 steps INFO] Call successful: https://devnet-explorer.multiversx.com/transactions/aa7e587c72e60ae4796b5e0b82196d93cba50d0fa081fe971dbee6e70ce58312 [steps:192 in execute]
-[2023-01-24 08:13:21,636 steps INFO] Calling claimAirdrop for abc-esdt-minter [steps:175 in execute]
-[2023-01-24 08:14:13,946 steps INFO] Call successful: https://devnet-explorer.multiversx.com/transactions/1a8f4d8a84e24b05c1b17173a5c10a2c4a5e60aa26df7c14ad3e00690aa79189 [steps:192 in execute]
-[2023-01-24 08:14:13,947 scene INFO] Executing scene integration_tests/scenes/04_money_print.yaml [scene:68 in execute_scene]
-[2023-01-24 08:14:13,951 steps INFO] Calling deposit for abc-piggy-bank [steps:175 in execute]
-[2023-01-24 08:15:11,150 steps INFO] Call successful: https://devnet-explorer.multiversx.com/transactions/a40421d170696f36171693e63e87ad2f825603a37fdd39e421641965c8f85414 [steps:192 in execute]
-[2023-01-24 08:15:11,150 steps INFO] Calling withdraw for abc-piggy-bank [steps:175 in execute]
-[2023-01-24 08:16:03,628 steps INFO] Call successful: https://devnet-explorer.multiversx.com/transactions/4136c5e6932229329ffd406ccda4830f799aa48e2f871520ea4346a145c75037 [steps:192 in execute]
-[2023-01-24 08:16:03,628 steps INFO] Calling deposit for abc-piggy-bank [steps:175 in execute]
-[2023-01-24 08:16:56,012 steps INFO] Call successful: https://devnet-explorer.multiversx.com/transactions/c33479dc324d06a0a00570789b2eefbd3b4605fcf186169886532d50235e3d33 [steps:192 in execute]
-[2023-01-24 08:16:56,012 steps INFO] Calling withdraw for abc-piggy-bank [steps:175 in execute]
-[2023-01-24 08:17:55,076 steps INFO] Call successful: https://devnet-explorer.multiversx.com/transactions/2adbb9201b2d26d9aab3c0c840ac0cb8ca2c75ccb2441bbce0e52f34c45ca4f0 [steps:192 in execute]
-[2023-01-24 08:17:55,076 steps INFO] Calling deposit for abc-piggy-bank [steps:175 in execute]
-[2023-01-24 08:18:52,833 steps INFO] Call successful: https://devnet-explorer.multiversx.com/transactions/2d709f1e3ffc64c0f69ccc6a9c325c556f970f864d6dfae720a8a86d8e6dcceb [steps:192 in execute]
-[2023-01-24 08:18:52,834 steps INFO] Calling withdraw for abc-piggy-bank [steps:175 in execute]
-[2023-01-24 08:19:45,517 steps INFO] Call successful: https://devnet-explorer.multiversx.com/transactions/6e9ddbadbbe849a93e740ca7ff1cf95e4aaac4014f8bb3c653834932409a2e56 [steps:192 in execute]
+[2023-01-24 21:26:45,650 data INFO] Scenario integration_tests_tutorial created for network DEV [data:259 in create_scenario]
+[2023-01-24 21:26:45,650 scene INFO] Executing scene integration_tests/scenes/accounts/devnet_accounts.yaml [scene:68 in execute_scene]
+[2023-01-24 21:26:46,099 scene INFO] Executing scene integration_tests/scenes/01_esdt_minter_init.yaml [scene:68 in execute_scene]
+[2023-01-24 21:26:46,121 steps INFO] Deploying contract abc-esdt-minter [steps:106 in execute]
+[2023-01-24 21:26:51,645 steps INFO] Deploy successful on erd1qqqqqqqqqqqqqpgqam5fmdvqqta307y4xe6elhqj4z58leduhzdq8jytfw
+tx hash: https://devnet-explorer.multiversx.com/transactions/2bf47375abc692ecc284fd1a273ca4ad7dbec677da548466aa85eedf7bd5140e [steps:126 in execute]
+[2023-01-24 21:26:51,647 steps INFO] Calling issueToken for abc-esdt-minter [steps:175 in execute]
+[2023-01-24 21:27:23,416 steps INFO] Call successful: https://devnet-explorer.multiversx.com/transactions/0f80e6e44eb1c742d1837c8871edffe1f6f329230634674588e406c09636e0fd [steps:192 in execute]
+[2023-01-24 21:27:23,416 steps INFO] Query on getEsdtIdentifier for abc-esdt-minter [steps:214 in execute]
+[{'base64': 'QUJDLTE0YWYwZA==', 'hex': '4142432d313461663064', 'number': 308176147074667304595556}]
+[2023-01-24 21:27:23,631 steps INFO] Saving Query results as contract data [steps:228 in execute]
+[2023-01-24 21:27:23,631 steps INFO] Query successful [steps:236 in execute]
+[2023-01-24 21:27:23,636 scene INFO] Executing scene integration_tests/scenes/02_piggy_bank_init.yaml [scene:68 in execute_scene]
+[2023-01-24 21:27:23,653 steps INFO] Deploying contract abc-piggy-bank [steps:106 in execute]
+[2023-01-24 21:27:34,681 steps INFO] Deploy successful on erd1qqqqqqqqqqqqqpgqn7jctdfnem2n2zk8atus7ep9r64jy80whzdqp3wmyu
+tx hash: https://devnet-explorer.multiversx.com/transactions/9f2f45f2ea9d33dc4700bef2724ec4a42e8a21737a60c02004cef05609d04493 [steps:126 in execute]
+[2023-01-24 21:27:34,682 steps INFO] Calling addInterestAddress for abc-esdt-minter [steps:175 in execute]
+[2023-01-24 21:27:40,258 steps INFO] Call successful: https://devnet-explorer.multiversx.com/transactions/c3022dab7a49a5eefe2a4c17ccc66838eb41e3280a6c14f0c81d9169773a9810 [steps:192 in execute]
+[2023-01-24 21:27:40,259 scene INFO] Executing scene integration_tests/scenes/03_airdrop.yaml [scene:68 in execute_scene]
+[2023-01-24 21:27:40,261 steps INFO] Calling addAirdropAmount for abc-esdt-minter [steps:175 in execute]
+[2023-01-24 21:27:45,579 steps INFO] Call successful: https://devnet-explorer.multiversx.com/transactions/88beda7d9b4858f32010137fd4e7c5ca573cfae18dccbe0a163001de4474b5a5 [steps:192 in execute]
+[2023-01-24 21:27:45,580 steps INFO] Calling claimAirdrop for abc-esdt-minter [steps:175 in execute]
+[2023-01-24 21:28:37,922 steps INFO] Call successful: https://devnet-explorer.multiversx.com/transactions/d8451a30fedcd92d67b8e783cb3989e1613143d09cd3cd9303a011bcb29caa2d [steps:192 in execute]
+[2023-01-24 21:28:37,923 scene INFO] Executing scene integration_tests/scenes/04_money_print.yaml [scene:68 in execute_scene]
+[2023-01-24 21:28:37,926 steps INFO] Calling deposit for abc-piggy-bank [steps:175 in execute]
+[2023-01-24 21:29:30,292 steps INFO] Call successful: https://devnet-explorer.multiversx.com/transactions/95fc37a627fcfbea102fb4f317880b39b7b76effd4399bdb15075e6926481c1e [steps:192 in execute]
+[2023-01-24 21:29:30,292 steps INFO] Calling withdraw for abc-piggy-bank [steps:175 in execute]
+[2023-01-24 21:30:28,589 steps INFO] Call successful: https://devnet-explorer.multiversx.com/transactions/33d52b9ed973757d09782998bd096ff19ba3ad0e42fb4810fc7430941d7b50be [steps:192 in execute]
+[2023-01-24 21:30:28,590 steps INFO] Calling deposit for abc-piggy-bank [steps:175 in execute]
+[2023-01-24 21:31:21,530 steps INFO] Call successful: https://devnet-explorer.multiversx.com/transactions/2d3da6f3251b3d8194d5bf2ad7e42215bf496c0440b364f901d661a7899e160e [steps:192 in execute]
+[2023-01-24 21:31:21,530 steps INFO] Calling withdraw for abc-piggy-bank [steps:175 in execute]
+[2023-01-24 21:32:13,874 steps INFO] Call successful: https://devnet-explorer.multiversx.com/transactions/97a5b1699b287561f5bf8f5cbadf90fb42f8abf08a398f0f55b74bca5b643891 [steps:192 in execute]
+[2023-01-24 21:32:13,874 steps INFO] Calling deposit for abc-piggy-bank [steps:175 in execute]
+[2023-01-24 21:33:06,208 steps INFO] Call successful: https://devnet-explorer.multiversx.com/transactions/da79b69f16c20768a85d48c29225af5c99699b4ffe57c459a46160a66aca36c5 [steps:192 in execute]
+[2023-01-24 21:33:06,208 steps INFO] Calling withdraw for abc-piggy-bank [steps:175 in execute]
+[2023-01-24 21:34:03,874 steps INFO] Call successful: https://devnet-explorer.multiversx.com/transactions/086d02d7341727aaa89ac09e45bd438aae16ea36b8d46a0723913b4e64968183 [steps:192 in execute]
 ```
 
 And that's it! You just created a repetable way of executing interactions with your smart-contracts! 🥳
@@ -526,29 +526,29 @@ This should give you a result similar to this:
 ```bash
 MxOps  Copyright (C) 2023  Catenscia
 This program comes with ABSOLUTELY NO WARRANTY
-[2023-01-24 09:24:33,620 data INFO] Scenario integration_tests loaded for network DEV [data:234 in load_scenario]
+[2023-01-24 21:36:14,175 data INFO] Scenario integration_tests_tutorial loaded for network DEV [data:234 in load_scenario]
 {
-    "name": "integration_tests",
+    "name": "integration_tests_tutorial",
     "network": "DEV",
-    "creation_time": 1674547946,
-    "last_update_time": 1674547990,
+    "creation_time": 1674592005,
+    "last_update_time": 1674592054,
     "contracts_data": {
         "abc-esdt-minter": {
             "contract_id": "abc-esdt-minter",
-            "address": "erd1qqqqqqqqqqqqqpgqv6p829acqhv0z42jdvlp688xr7hcaax6hzdqcyjy04",
+            "address": "erd1qqqqqqqqqqqqqpgqam5fmdvqqta307y4xe6elhqj4z58leduhzdq8jytfw",
             "wasm_hash": "c8280fa4f2f173940f3ba9e0b294867e3fad910ae0744628a90a0b73452c12cd",
-            "deploy_time": 1674547950,
-            "last_upgrade_time": 1674547950,
+            "deploy_time": 1674592008,
+            "last_upgrade_time": 1674592008,
             "saved_values": {
-                "EsdtIdentifier": "ABC-f093c6"
+                "EsdtIdentifier": "ABC-14af0d"
             }
         },
         "abc-piggy-bank": {
             "contract_id": "abc-piggy-bank",
-            "address": "erd1qqqqqqqqqqqqqpgqq9g7qtphjvp254x29zzvxhu6fje2c300hzdqlhqrpj",
+            "address": "erd1qqqqqqqqqqqqqpgqn7jctdfnem2n2zk8atus7ep9r64jy80whzdqp3wmyu",
             "wasm_hash": "ea2a4cf5e924d01b3e43541edce4180e5972e46d50c10fa4db62b3b11c0d8699",
-            "deploy_time": 1674547986,
-            "last_upgrade_time": 1674547986,
+            "deploy_time": 1674592050,
+            "last_upgrade_time": 1674592050,
             "saved_values": {}
         }
     }
