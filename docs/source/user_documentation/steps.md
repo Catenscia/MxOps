@@ -42,7 +42,10 @@ esdt_transfers:  # optional, ESDTs to send
   - token_identifier: LKMEX-e45d41
     amount: 848491898
     nonce: 721
+check_for_errors: True  # optional, True by default
 ```
+
+`check_for_errors` is the parameter that tells`MxOps` to verify that the transaction went without errors. If an error is found, the execution will be stopped. In some use-cases, for example if you want to launch 100s of txs, you can deactivate this parameter for faster execution.
 
 ## Contract Query Step
 
