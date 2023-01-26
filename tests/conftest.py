@@ -1,6 +1,5 @@
 from pathlib import Path
 import pytest
-import yaml
 
 from mxops.config.config import Config
 from mxops.data.data import ContractData, ScenarioData, delete_scenario_data
@@ -36,5 +35,3 @@ def scenario_data():
 
     yield _scenario_data
     delete_scenario_data('pytest_scenario', False)
-
-

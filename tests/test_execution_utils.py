@@ -19,7 +19,7 @@ def test_no_type():
     assert specified_type is None
 
 
-def test_no_type():
+def test_int_type():
     # Given
     arg = 'MyTokenAmount:int'
 

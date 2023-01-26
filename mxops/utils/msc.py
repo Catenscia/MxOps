@@ -10,7 +10,7 @@ from pathlib import Path
 from mxops.config.config import Config
 
 
-def get_explorer_tx_link(tx_hash: str)-> str:
+def get_explorer_tx_link(tx_hash: str) -> str:
     """
     Return the link to a transaction using the explorer in the config
 

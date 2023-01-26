@@ -7,9 +7,9 @@ from typing import List, Tuple
 from multiversx_sdk_cli import config as mxpy_config
 from multiversx_sdk_cli.accounts import Account, Address
 from multiversx_sdk_cli.contracts import CodeMetadata, SmartContract, QueryResult
-from multiversx_sdk_network_providers import ProxyNetworkProvider
 from multiversx_sdk_cli.transactions import Transaction
 from multiversx_sdk_cli import utils as mxpy_utils
+from multiversx_sdk_network_providers import ProxyNetworkProvider
 
 from mxops.config.config import Config
 from mxops.execution.msc import EsdtTransfer

@@ -6,11 +6,11 @@ from mxops.execution.steps import ContractCallStep, ContractDeployStep, Contract
 
 
 def test_deploy_scene_instantiation(test_data_folder_path: Path):
-    # Given
+    # Given
     with open(test_data_folder_path / 'deploy_scene.yaml', encoding='utf-8') as file:
         deploy_yaml_content = yaml.safe_load(file)
 
-    # When
+    # When
     scene = Scene(**deploy_yaml_content)
     loaded_steps = scene.steps
 
