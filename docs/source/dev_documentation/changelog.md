@@ -4,7 +4,7 @@
 
 ### Added
 
-- None
+- CI and script for bandit, flake8 and pylint
 
 ### Changed
 
