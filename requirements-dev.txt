@@ -1,6 +1,7 @@
 -r requirements.txt
 build~=0.9.0
 coverage~=7.0.0
+flake8~=6.0.0
 myst-parser~=0.18.1
 pep8~=1.7.1
 pylint~=2.15.6
