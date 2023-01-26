@@ -19,6 +19,7 @@ Please follow this steps:
 - Fork this repo
 - create a new branch from `develop`
 - make your changes and commits continuously to your branch
+- execute `scripts/check_python_code.sh` and ensure that all tests pass
 - submit a PR from your branch to the `develop` branch of this repo
 
 ## Branch names
