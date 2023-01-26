@@ -14,7 +14,7 @@ printf "${BLUE}##########\n# Bandit\n##########${NC}\n"
 OUTPUT=$(bandit -r mxops)
 echo "${OUTPUT}"
 SUB="No issues identified"
-if [ "${OUTPUT}" == *"${SUB}"* ]
+if [[ "${OUTPUT}" != *"${SUB}"* ]];
 then
     printf "${RED}bandit output is not empty, test failed${NC}\n"
     exit 1
