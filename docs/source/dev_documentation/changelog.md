@@ -6,6 +6,8 @@
 
 - CI and script for bandit, flake8 and pylint
 - CI for pytest tests
+- CI for python package build
+- CI for package publication on PYPI
 
 ### Changed
 
