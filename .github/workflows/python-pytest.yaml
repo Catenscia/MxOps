@@ -18,4 +18,4 @@ jobs:
         pip install -r requirements-dev.txt
     - name: Check python code
       run: |
-        bash scrips/launch_tests.sh
+        bash scripts/launch_tests.sh
