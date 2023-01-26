@@ -3,10 +3,9 @@ author: Etienne Wallet
 
 This module contains the functions to pass transactions to the proxy and to monitor them
 """
-from multiversx_sdk_network_providers import ProxyNetworkProvider
 from multiversx_sdk_cli.transactions import Transaction
+from multiversx_sdk_network_providers import ProxyNetworkProvider
 from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
-from multiversx_sdk_network_providers.transaction_status import TransactionStatus
 
 from mxops.config.config import Config
 from mxops import errors
@@ -62,7 +61,7 @@ def raise_on_errors(on_chain_tx: TransactionOnNetwork):
         raise errors.FailedTransactionError(on_chain_tx)
 
     event_identifiers = {e.identifier for e in on_chain_tx.logs.events}
-    if  'InternalVmExecutionError' in event_identifiers:
+    if 'InternalVmExecutionError' in event_identifiers:
         raise errors.SmartContractExecutionError(on_chain_tx)
     if 'internalVMErrors' in event_identifiers:
         raise errors.InternalVmExecutionError(on_chain_tx)
