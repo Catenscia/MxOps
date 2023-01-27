@@ -2,9 +2,8 @@ name: python-build
 
 on:
   workflow_run:
-    workflows: [python-pytest]
-    types:
-      - completed
+    workflows: ["python-pytest"]
+    types: [completed]
 
 jobs:
   build:
