@@ -1,0 +1,265 @@
+{
+    "tx_hash": "86e6e9e8258e51b57d9047a0f863b94bc334ab052318d00c4825cc5924b80e16",
+    "response": {
+        "type": "normal",
+        "processingTypeOnSource": "BuiltInFunctionCall",
+        "processingTypeOnDestination": "SCInvoking",
+        "hash": "86e6e9e8258e51b57d9047a0f863b94bc334ab052318d00c4825cc5924b80e16",
+        "nonce": 3386,
+        "round": 13128990,
+        "epoch": 911,
+        "value": "0",
+        "receiver": "erd1qqqqqqqqqqqqqpgqp32ecg03fyxgt2pf2fsxyg4knvhfvtgz2jps6rx6gf",
+        "sender": "erd13vafnpmmtuq76ecq2ay4lma6ep9mcg9pwayde6ckqywrjsy68phqm0y2g2",
+        "gasPrice": 1000000000,
+        "gasLimit": 20000000,
+        "data": "RVNEVFRyYW5zZmVyQDQyNDg0MTU0MmQ2MzMxNjY2NDY1MzNANWJkMzQzZmNmNDdjNTg4MDAwQDczNzc2MTcwNTQ2ZjZiNjU2ZTczNDY2OTc4NjU2NDQ5NmU3MDc1NzRANTc0NTQ3NGM0NDJkNjI2NDM0NjQzNzM5QDE3MDVmM2I1ZDI1ZjgwMDA=",
+        "signature": "48dfa67813492c8dea94e0a94f47ae87e8c67cbd6c14e3a6e55ffc4e7bcedc26b3441b52a2181b5df487019e469ca458c201f3298157f90eac8cf986aa69180d",
+        "sourceShard": 2,
+        "destinationShard": 1,
+        "blockNonce": 13119804,
+        "blockHash": "c2ce268b41e254ee43d17f89adeeae9c33ba815be08b4ebb1533f230263c7fe5",
+        "notarizedAtSourceInMetaNonce": 13109063,
+        "NotarizedAtSourceInMetaHash": "9264f32e4c32368537b6aa3fcf5026dc0bfe03a4962eb4a8a6d23bfe7382c135",
+        "notarizedAtDestinationInMetaNonce": 13109067,
+        "notarizedAtDestinationInMetaHash": "cee9a0eb14cc0149d7ccdac5904d60b0182b89abe6283d6a8fdc128effb75a80",
+        "miniblockType": "TxBlock",
+        "miniblockHash": "1d6b3d8e49f536ff79b9d2940489152321e04fa785af8a64fbc9d64a9251c354",
+        "hyperblockNonce": 13109067,
+        "hyperblockHash": "cee9a0eb14cc0149d7ccdac5904d60b0182b89abe6283d6a8fdc128effb75a80",
+        "timestamp": 1674891540,
+        "smartContractResults": [
+            {
+                "hash": "e8e10738982406fd988bbe3e7a49ec473a09bf6d05b9f615e20d676cd03b8a3c",
+                "nonce": 0,
+                "value": 0,
+                "receiver": "erd13vafnpmmtuq76ecq2ay4lma6ep9mcg9pwayde6ckqywrjsy68phqm0y2g2",
+                "sender": "erd1qqqqqqqqqqqqqpgqp32ecg03fyxgt2pf2fsxyg4knvhfvtgz2jps6rx6gf",
+                "data": "ESDTTransfer@5745474c442d626434643739@19df359bd1b3ddc4",
+                "prevTxHash": "86e6e9e8258e51b57d9047a0f863b94bc334ab052318d00c4825cc5924b80e16",
+                "originalTxHash": "86e6e9e8258e51b57d9047a0f863b94bc334ab052318d00c4825cc5924b80e16",
+                "gasLimit": 0,
+                "gasPrice": 1000000000,
+                "callType": 0,
+                "logs": {
+                    "address": "erd13vafnpmmtuq76ecq2ay4lma6ep9mcg9pwayde6ckqywrjsy68phqm0y2g2",
+                    "events": [
+                        {
+                            "address": "erd1qqqqqqqqqqqqqpgqp32ecg03fyxgt2pf2fsxyg4knvhfvtgz2jps6rx6gf",
+                            "identifier": "ESDTTransfer",
+                            "topics": [
+                                "V0VHTEQtYmQ0ZDc5",
+                                "",
+                                "Gd81m9Gz3cQ=",
+                                "izqZh3tfAe1nAFdJX++6yEu8IKF3SNzrFgEcOUCaOG4="
+                            ]
+                        },
+                        {
+                            "address": "erd13vafnpmmtuq76ecq2ay4lma6ep9mcg9pwayde6ckqywrjsy68phqm0y2g2",
+                            "identifier": "writeLog",
+                            "topics": [
+                                "AAAAAAAAAAAFAAxVnCHxSQyFqClSYGIitpsuli0CVIM="
+                            ],
+                            "data": "QDZmNmI="
+                        },
+                        {
+                            "address": "erd13vafnpmmtuq76ecq2ay4lma6ep9mcg9pwayde6ckqywrjsy68phqm0y2g2",
+                            "identifier": "completedTxEvent",
+                            "topics": [
+                                "hubp6CWOUbV9kEeg+GO5S8M0qwUjGNAMSCXMWSS4DhY="
+                            ]
+                        }
+                    ]
+                },
+                "tokens": [
+                    "WEGLD-bd4d79"
+                ],
+                "esdtValues": [
+                    "1864267714109103556"
+                ],
+                "operation": "ESDTTransfer"
+            },
+            {
+                "hash": "e4e105c4835db205bad3a2abf5d0f45fa3456ff2dbe615e62746ab8146f84e7c",
+                "nonce": 3387,
+                "value": 9070200000000,
+                "receiver": "erd13vafnpmmtuq76ecq2ay4lma6ep9mcg9pwayde6ckqywrjsy68phqm0y2g2",
+                "sender": "erd1qqqqqqqqqqqqqpgqp32ecg03fyxgt2pf2fsxyg4knvhfvtgz2jps6rx6gf",
+                "data": "@6f6b@0000000c5745474c442d62643464373900000000000000000000000819df359bd1b3ddc4",
+                "prevTxHash": "86e6e9e8258e51b57d9047a0f863b94bc334ab052318d00c4825cc5924b80e16",
+                "originalTxHash": "86e6e9e8258e51b57d9047a0f863b94bc334ab052318d00c4825cc5924b80e16",
+                "gasLimit": 0,
+                "gasPrice": 1000000000,
+                "callType": 0,
+                "logs": {
+                    "address": "erd13vafnpmmtuq76ecq2ay4lma6ep9mcg9pwayde6ckqywrjsy68phqm0y2g2",
+                    "events": [
+                        {
+                            "address": "erd13vafnpmmtuq76ecq2ay4lma6ep9mcg9pwayde6ckqywrjsy68phqm0y2g2",
+                            "identifier": "completedTxEvent",
+                            "topics": [
+                                "hubp6CWOUbV9kEeg+GO5S8M0qwUjGNAMSCXMWSS4DhY="
+                            ]
+                        }
+                    ]
+                },
+                "operation": "transfer",
+                "isRefund": true
+            },
+            {
+                "hash": "ef2326eebec5c3e87adb36efd442bd8c141d3f323e4623061a83f53cce8ab41b",
+                "nonce": 0,
+                "value": 0,
+                "receiver": "erd1qqqqqqqqqqqqqpgqa0fsfshnff4n76jhcye6k7uvd7qacsq42jpsp6shh2",
+                "sender": "erd1qqqqqqqqqqqqqpgqp32ecg03fyxgt2pf2fsxyg4knvhfvtgz2jps6rx6gf",
+                "data": "ESDTTransfer@5745474c442d626434643739@03520df67ddd66@737761704e6f466565416e64466f7277617264@4d45582d343535633537@0000000000000000000000000000000000000000000000000000000000000000",
+                "prevTxHash": "86e6e9e8258e51b57d9047a0f863b94bc334ab052318d00c4825cc5924b80e16",
+                "originalTxHash": "86e6e9e8258e51b57d9047a0f863b94bc334ab052318d00c4825cc5924b80e16",
+                "gasLimit": 0,
+                "gasPrice": 1000000000,
+                "callType": 0,
+                "tokens": [
+                    "WEGLD-bd4d79"
+                ],
+                "esdtValues": [
+                    "934644853628262"
+                ],
+                "operation": "ESDTTransfer",
+                "function": "swapNoFeeAndForward"
+            },
+            {
+                "hash": "30d63f266c0b538b644826d4e96eb71fa57c54eeae2196c180a723211b435979",
+                "nonce": 0,
+                "value": 0,
+                "receiver": "erd1qqqqqqqqqqqqqpgqp32ecg03fyxgt2pf2fsxyg4knvhfvtgz2jps6rx6gf",
+                "sender": "erd1qqqqqqqqqqqqqpgqp32ecg03fyxgt2pf2fsxyg4knvhfvtgz2jps6rx6gf",
+                "data": "swapTokensFixedInput@5745474c442d626434643739@1705f3b5d25f8000",
+                "prevTxHash": "86e6e9e8258e51b57d9047a0f863b94bc334ab052318d00c4825cc5924b80e16",
+                "originalTxHash": "86e6e9e8258e51b57d9047a0f863b94bc334ab052318d00c4825cc5924b80e16",
+                "gasLimit": 19544500,
+                "gasPrice": 1000000000,
+                "callType": 0,
+                "operation": "transfer",
+                "function": "swapTokensFixedInput"
+            },
+            {
+                "hash": "566ca8d8fbc2af39eebf2408e558dcbab811883b9fcabd2c9e6c89a6ff2245af",
+                "nonce": 0,
+                "value": 0,
+                "receiver": "erd1qqqqqqqqqqqqqpgqjsnxqprks7qxfwkcg2m2v9hxkrchgm9akp2segrswt",
+                "sender": "erd1qqqqqqqqqqqqqpgqp32ecg03fyxgt2pf2fsxyg4knvhfvtgz2jps6rx6gf",
+                "data": "ESDTTransfer@424841542d633166646533@0bc0ee14171a2800@6465706f7369745377617046656573",
+                "prevTxHash": "86e6e9e8258e51b57d9047a0f863b94bc334ab052318d00c4825cc5924b80e16",
+                "originalTxHash": "86e6e9e8258e51b57d9047a0f863b94bc334ab052318d00c4825cc5924b80e16",
+                "gasLimit": 0,
+                "gasPrice": 1000000000,
+                "callType": 0,
+                "tokens": [
+                    "BHAT-c1fde3"
+                ],
+                "esdtValues": [
+                    "846938500000000000"
+                ],
+                "operation": "ESDTTransfer",
+                "function": "depositSwapFees"
+            }
+        ],
+        "logs": {
+            "address": "erd1qqqqqqqqqqqqqpgqp32ecg03fyxgt2pf2fsxyg4knvhfvtgz2jps6rx6gf",
+            "events": [
+                {
+                    "address": "erd13vafnpmmtuq76ecq2ay4lma6ep9mcg9pwayde6ckqywrjsy68phqm0y2g2",
+                    "identifier": "ESDTTransfer",
+                    "topics": [
+                        "QkhBVC1jMWZkZTM=",
+                        "",
+                        "W9ND/PR8WIAA",
+                        "AAAAAAAAAAAFAAxVnCHxSQyFqClSYGIitpsuli0CVIM="
+                    ]
+                },
+                {
+                    "address": "erd1qqqqqqqqqqqqqpgqp32ecg03fyxgt2pf2fsxyg4knvhfvtgz2jps6rx6gf",
+                    "identifier": "ESDTTransfer",
+                    "topics": [
+                        "QkhBVC1jMWZkZTM=",
+                        "",
+                        "C8DuFBcaKAA=",
+                        "AAAAAAAAAAAFAJQmYAR2h4BkuthCtqYW5rDxdGy9sFU="
+                    ]
+                },
+                {
+                    "address": "erd1qqqqqqqqqqqqqpgqjsnxqprks7qxfwkcg2m2v9hxkrchgm9akp2segrswt",
+                    "identifier": "depositSwapFees",
+                    "topics": [
+                        "ZGVwb3NpdF9zd2FwX2ZlZXNfZXZlbnQ=",
+                        "AAAAAAAAAAAFAAxVnCHxSQyFqClSYGIitpsuli0CVIM=",
+                        "CA==",
+                        "AAAAC0JIQVQtYzFmZGUzAAAAAAAAAAAAAAAIC8DuFBcaKAA="
+                    ]
+                },
+                {
+                    "address": "erd1qqqqqqqqqqqqqpgqp32ecg03fyxgt2pf2fsxyg4knvhfvtgz2jps6rx6gf",
+                    "identifier": "ESDTTransfer",
+                    "topics": [
+                        "V0VHTEQtYmQ0ZDc5",
+                        "",
+                        "A1IN9n3dZg==",
+                        "AAAAAAAAAAAFAOvTBMLzSms/alfBM6t7jG+B3EAVVIM="
+                    ]
+                },
+                {
+                    "address": "erd1qqqqqqqqqqqqqpgqa0fsfshnff4n76jhcye6k7uvd7qacsq42jpsp6shh2",
+                    "identifier": "ESDTLocalBurn",
+                    "topics": [
+                        "TUVYLTQ1NWM1Nw==",
+                        "",
+                        "gNbSKynPKuyY"
+                    ]
+                },
+                {
+                    "address": "erd1qqqqqqqqqqqqqpgqa0fsfshnff4n76jhcye6k7uvd7qacsq42jpsp6shh2",
+                    "identifier": "swapNoFeeAndForward",
+                    "topics": [
+                        "c3dhcF9ub19mZWVfYW5kX2ZvcndhcmQ=",
+                        "TUVYLTQ1NWM1Nw==",
+                        "AAAAAAAAAAAFAAxVnCHxSQyFqClSYGIitpsuli0CVIM=",
+                        "A48="
+                    ],
+                    "data": "AAAAAAAAAAAFAAxVnCHxSQyFqClSYGIitpsuli0CVIMAAAAMV0VHTEQtYmQ0ZDc5AAAABwNSDfZ93WYAAAAKTUVYLTQ1NWM1NwAAAAmA1tIrKc8q7JgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAyDE8AAAAAAAAA48AAAAAY9TRFA=="
+                },
+                {
+                    "address": "erd1qqqqqqqqqqqqqpgqp32ecg03fyxgt2pf2fsxyg4knvhfvtgz2jps6rx6gf",
+                    "identifier": "ESDTTransfer",
+                    "topics": [
+                        "V0VHTEQtYmQ0ZDc5",
+                        "",
+                        "Gd81m9Gz3cQ=",
+                        "izqZh3tfAe1nAFdJX++6yEu8IKF3SNzrFgEcOUCaOG4="
+                    ]
+                },
+                {
+                    "address": "erd1qqqqqqqqqqqqqpgqp32ecg03fyxgt2pf2fsxyg4knvhfvtgz2jps6rx6gf",
+                    "identifier": "swapTokensFixedInput",
+                    "topics": [
+                        "c3dhcA==",
+                        "QkhBVC1jMWZkZTM=",
+                        "V0VHTEQtYmQ0ZDc5",
+                        "izqZh3tfAe1nAFdJX++6yEu8IKF3SNzrFgEcOUCaOG4=",
+                        "A48="
+                    ],
+                    "data": "izqZh3tfAe1nAFdJX++6yEu8IKF3SNzrFgEcOUCaOG4AAAALQkhBVC1jMWZkZTMAAAAJW9ND/PR8WIAAAAAADFdFR0xELWJkNGQ3OQAAAAgZ3zWb0bPdxAAAAAgXgdwoLjRQAAAAAAsEdMt+oV7ko4QolQAAAAoBQklc0wF6eHcJAAAAAADIMTwAAAAAAAADjwAAAABj1NEU"
+                }
+            ]
+        },
+        "status": "success",
+        "tokens": [
+            "BHAT-c1fde3"
+        ],
+        "esdtValues": [
+            "1693877000000000000000"
+        ],
+        "operation": "ESDTTransfer",
+        "function": "swapTokensFixedInput",
+        "initiallyPaidFee": "452945000000000"
+    }
+}
