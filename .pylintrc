@@ -2,4 +2,4 @@
 disable=W1203
 
 [FORMAT]
-good-names=tx
+good-names=tx,i,x,e

@@ -1,0 +1,92 @@
+{
+    "tx_hash": "db44649250ab1532f4cc020d7e749b4ecfe2614d8785007b7ff8dfd3d310aed7",
+    "response": {
+        "type": "normal",
+        "processingTypeOnSource": "SCInvoking",
+        "processingTypeOnDestination": "SCInvoking",
+        "hash": "db44649250ab1532f4cc020d7e749b4ecfe2614d8785007b7ff8dfd3d310aed7",
+        "nonce": 410,
+        "round": 13128963,
+        "epoch": 911,
+        "value": "0",
+        "receiver": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqxhllllssz7sl7",
+        "sender": "erd19dw6qeqyvn5ft7rqfzcds587j6u26n88kwkp0n0unnz7h2h6ds8qfpjmch",
+        "gasPrice": 1000000000,
+        "gasLimit": 6000000,
+        "data": "Y2xhaW1SZXdhcmRz",
+        "signature": "62a7f44479bf688d8a724980b1f7d40b3efa13a7a0c9370a4f0564a5244fb812974bef418ea39aef7531b251bd3b957468b3d1ceb6825271eadd79f96fc5b507",
+        "sourceShard": 2,
+        "destinationShard": 4294967295,
+        "blockNonce": 13109038,
+        "blockHash": "8447ad6c244535646bb7ec767a7dd330a3f43aa030e139c1f83eac3dbb3b61a2",
+        "notarizedAtSourceInMetaNonce": 13109038,
+        "NotarizedAtSourceInMetaHash": "8447ad6c244535646bb7ec767a7dd330a3f43aa030e139c1f83eac3dbb3b61a2",
+        "notarizedAtDestinationInMetaNonce": 13109038,
+        "notarizedAtDestinationInMetaHash": "8447ad6c244535646bb7ec767a7dd330a3f43aa030e139c1f83eac3dbb3b61a2",
+        "miniblockType": "TxBlock",
+        "miniblockHash": "546f82ada1a0f943864e936ac1218642211ae86c3ec6bd0e7a164133babf5fb7",
+        "hyperblockNonce": 13109038,
+        "hyperblockHash": "8447ad6c244535646bb7ec767a7dd330a3f43aa030e139c1f83eac3dbb3b61a2",
+        "timestamp": 1674891378,
+        "smartContractResults": [
+            {
+                "hash": "9a13e41bfa62ff7c3f1f4095c287be16c10f1de0dbf7848ca7e86fe0ced1534f",
+                "nonce": 411,
+                "value": 49320000000000,
+                "receiver": "erd19dw6qeqyvn5ft7rqfzcds587j6u26n88kwkp0n0unnz7h2h6ds8qfpjmch",
+                "sender": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqxhllllssz7sl7",
+                "data": "@6f6b",
+                "prevTxHash": "db44649250ab1532f4cc020d7e749b4ecfe2614d8785007b7ff8dfd3d310aed7",
+                "originalTxHash": "db44649250ab1532f4cc020d7e749b4ecfe2614d8785007b7ff8dfd3d310aed7",
+                "gasLimit": 0,
+                "gasPrice": 1000000000,
+                "callType": 0,
+                "logs": {
+                    "address": "erd19dw6qeqyvn5ft7rqfzcds587j6u26n88kwkp0n0unnz7h2h6ds8qfpjmch",
+                    "events": [
+                        {
+                            "address": "erd19dw6qeqyvn5ft7rqfzcds587j6u26n88kwkp0n0unnz7h2h6ds8qfpjmch",
+                            "identifier": "completedTxEvent",
+                            "topics": [
+                                "20RkklCrFTL0zAINfnSbTs/iYU2HhQB7f/jf09MQrtc="
+                            ]
+                        }
+                    ]
+                },
+                "operation": "transfer",
+                "isRefund": true
+            },
+            {
+                "hash": "d2ca5040682d18c9593d97de51d4f867833945dde98e2b32e5524a36332d16be",
+                "nonce": 0,
+                "value": 32138287366664708,
+                "receiver": "erd19dw6qeqyvn5ft7rqfzcds587j6u26n88kwkp0n0unnz7h2h6ds8qfpjmch",
+                "sender": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqxhllllssz7sl7",
+                "prevTxHash": "db44649250ab1532f4cc020d7e749b4ecfe2614d8785007b7ff8dfd3d310aed7",
+                "originalTxHash": "db44649250ab1532f4cc020d7e749b4ecfe2614d8785007b7ff8dfd3d310aed7",
+                "gasLimit": 0,
+                "gasPrice": 1000000000,
+                "callType": 0,
+                "originalSender": "erd19dw6qeqyvn5ft7rqfzcds587j6u26n88kwkp0n0unnz7h2h6ds8qfpjmch",
+                "operation": "transfer"
+            }
+        ],
+        "logs": {
+            "address": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqxhllllssz7sl7",
+            "events": [
+                {
+                    "address": "erd19dw6qeqyvn5ft7rqfzcds587j6u26n88kwkp0n0unnz7h2h6ds8qfpjmch",
+                    "identifier": "claimRewards",
+                    "topics": [
+                        "ci2aIi3yBQ==",
+                        "ZmFsc2U="
+                    ]
+                }
+            ]
+        },
+        "status": "success",
+        "operation": "transfer",
+        "function": "claimRewards",
+        "initiallyPaidFee": "127320000000000"
+    }
+}
