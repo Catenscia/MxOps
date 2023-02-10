@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import List, Tuple
 
 from multiversx_sdk_cli import config as mxpy_config
-from multiversx_sdk_cli.accounts import Account, Address
+from multiversx_sdk_cli.accounts import Account
 from multiversx_sdk_cli.contracts import CodeMetadata, SmartContract, QueryResult
 from multiversx_sdk_cli.transactions import Transaction
 from multiversx_sdk_cli import utils as mxpy_utils
@@ -13,7 +13,7 @@ from multiversx_sdk_network_providers import ProxyNetworkProvider
 
 from mxops.config.config import Config
 from mxops.execution.msc import EsdtTransfer
-from mxops.execution.utils import format_tx_arguments, retrieve_value_from_string
+from mxops.execution import utils
 
 
 def get_contract_deploy_tx(
@@ -45,7 +45,7 @@ def get_contract_deploy_tx(
 
     bytecode = mxpy_utils.read_binary_file(wasm_file).hex()
     contract = SmartContract(bytecode=bytecode, metadata=metadata)
-    formated_args = format_tx_arguments(contract_args)
+    formated_args = utils.format_tx_arguments(contract_args)
 
     tx = contract.deploy(sender, formated_args, mxpy_config.DEFAULT_GAS_PRICE,
                          gas_limit, 0, config.get('CHAIN'), mxpy_config.get_tx_version())
@@ -54,7 +54,7 @@ def get_contract_deploy_tx(
 
 
 def get_contract_value_call_tx(
-    contract_address: str,
+    contract_str: str,
     endpoint: str,
     gas_limit: int,
     arguments: List,
@@ -66,8 +66,8 @@ def get_contract_value_call_tx(
     The transaction is not relayed to the proxy, this has to be done with
     the result of this function.
 
-    :param contract_address: bech32 address of the contract to call
-    :type contract_address: str
+    :param contract_str: designation of the contract to call (bech32 or mxops value)
+    :type contract_str: str
     :param endpoint: endpoint to call
     :type endpoint: str
     :param gas_limit: gas limit for the transaction.
@@ -83,11 +83,11 @@ def get_contract_value_call_tx(
     """
     config = Config.get_config()
 
-    contract = SmartContract(Address(contract_address))
+    contract = utils.get_contract_instance(contract_str)
 
-    formated_args = format_tx_arguments(arguments)
+    formated_args = utils.format_tx_arguments(arguments)
     if isinstance(value, str):
-        value = retrieve_value_from_string(value)
+        value = utils.retrieve_value_from_string(value)
 
     tx = contract.execute(
         caller=sender,
@@ -104,7 +104,7 @@ def get_contract_value_call_tx(
 
 
 def get_contract_single_esdt_call_tx(
-    contract_address: str,
+    contract_str: str,
     endpoint: str,
     gas_limit: int,
     arguments: List,
@@ -116,8 +116,8 @@ def get_contract_single_esdt_call_tx(
     The transaction is not relayed to the proxy, this has to be done with
     the result of this function.
 
-    :param contract_address: bech32 address of the contract to call
-    :type contract_address: str
+    :param contract_str: designation of the contract to call (bech32 or mxops value)
+    :type contract_str: str
     :param endpoint: endpoint to call
     :type endpoint: str
     :param gas_limit: gas limit for the transaction.
@@ -133,7 +133,7 @@ def get_contract_single_esdt_call_tx(
     """
     config = Config.get_config()
 
-    contract = SmartContract(Address(contract_address))
+    contract = utils.get_contract_instance(contract_str)
 
     tx_arguments = [
         esdt_transfer.token_identifier,
@@ -141,7 +141,7 @@ def get_contract_single_esdt_call_tx(
         endpoint,
         *arguments
     ]
-    formated_args = format_tx_arguments(tx_arguments)
+    formated_args = utils.format_tx_arguments(tx_arguments)
 
     tx = contract.execute(
         caller=sender,
@@ -158,7 +158,7 @@ def get_contract_single_esdt_call_tx(
 
 
 def get_contract_single_nft_call_tx(
-    contract_address: str,
+    contract_str: str,
     endpoint: str,
     gas_limit: int,
     arguments: List,
@@ -170,8 +170,8 @@ def get_contract_single_nft_call_tx(
     The transaction is not relayed to the proxy, this has to be done with
     the result of this function.
 
-    :param contract_address: bech32 address of the contract to call
-    :type contract_address: str
+    :param contract_str: designation of the contract to call (bech32 or mxops value)
+    :type contract_str: str
     :param endpoint: endpoint to call
     :type endpoint: str
     :param gas_limit: gas limit for the transaction.
@@ -188,7 +188,7 @@ def get_contract_single_nft_call_tx(
     config = Config.get_config()
     self_contract = SmartContract(sender.address)
 
-    contract = SmartContract(Address(contract_address))
+    contract = utils.get_contract_instance(contract_str)
 
     tx_arguments = [
         nft_transfer.token_identifier,
@@ -198,7 +198,7 @@ def get_contract_single_nft_call_tx(
         endpoint,
         *arguments
     ]
-    formated_args = format_tx_arguments(tx_arguments)
+    formated_args = utils.format_tx_arguments(tx_arguments)
 
     tx = self_contract.execute(
         caller=sender,
@@ -215,7 +215,7 @@ def get_contract_single_nft_call_tx(
 
 
 def get_contract_multiple_esdt_call_tx(
-    contract_address: str,
+    contract_str: str,
     endpoint: str,
     gas_limit: int,
     arguments: List,
@@ -227,8 +227,8 @@ def get_contract_multiple_esdt_call_tx(
     The transaction is not relayed to the proxy, this has to be done with
     the result of this function.
 
-    :param contract_address: bech32 address of the contract to call
-    :type contract_address: str
+    :param contract_str: designation of the contract to call (bech32 or mxops value)
+    :type contract_str: str
     :param endpoint: endpoint to call
     :type endpoint: str
     :param gas_limit: gas limit for the transaction.
@@ -243,9 +243,9 @@ def get_contract_multiple_esdt_call_tx(
     :rtype: Transaction
     """
     config = Config.get_config()
-    self_contract = SmartContract(sender.address)
 
-    contract = SmartContract(Address(contract_address))
+    self_contract = SmartContract(sender.address)
+    contract = utils.get_contract_instance(contract_str)
 
     tx_arguments = [
         contract.address.bech32(),
@@ -259,7 +259,7 @@ def get_contract_multiple_esdt_call_tx(
         ])
 
     tx_arguments.extend([endpoint, *arguments])
-    formated_args = format_tx_arguments(tx_arguments)
+    formated_args = utils.format_tx_arguments(tx_arguments)
 
     tx = self_contract.execute(
         caller=sender,
@@ -276,7 +276,7 @@ def get_contract_multiple_esdt_call_tx(
 
 
 def get_contract_call_tx(
-    contract_address: str,
+    contract_str: str,
     endpoint: str,
     gas_limit: int,
     arguments: List,
@@ -289,8 +289,8 @@ def get_contract_call_tx(
     The transaction is not relayed to the proxy, this has to be done with
     the result of this function.
 
-    :param contract_address: bech32 address of the contract to call
-    :type contract_address: str
+    :param contract_str: designation of the contract to call (bech32 or mxops value)
+    :type contract_str: str
     :param endpoint: endpoint to call
     :type endpoint: str
     :param gas_limit: gas limit for the transaction.
@@ -309,7 +309,7 @@ def get_contract_call_tx(
     n_transfers = len(esdt_transfers)
 
     if n_transfers == 0:
-        tx = get_contract_value_call_tx(contract_address,
+        tx = get_contract_value_call_tx(contract_str,
                                         endpoint,
                                         gas_limit,
                                         arguments,
@@ -318,21 +318,21 @@ def get_contract_call_tx(
     elif n_transfers == 1:
         transfer = esdt_transfers[0]
         if transfer.nonce:
-            tx = get_contract_single_nft_call_tx(contract_address,
+            tx = get_contract_single_nft_call_tx(contract_str,
                                                  endpoint,
                                                  gas_limit,
                                                  arguments,
                                                  transfer,
                                                  sender)
         else:
-            tx = get_contract_single_esdt_call_tx(contract_address,
+            tx = get_contract_single_esdt_call_tx(contract_str,
                                                   endpoint,
                                                   gas_limit,
                                                   arguments,
                                                   transfer,
                                                   sender)
     else:
-        tx = get_contract_multiple_esdt_call_tx(contract_address,
+        tx = get_contract_multiple_esdt_call_tx(contract_str,
                                                 endpoint,
                                                 gas_limit,
                                                 arguments,
@@ -342,12 +342,12 @@ def get_contract_call_tx(
     return tx
 
 
-def query_contract(contract_address: str, endpoint: str, arguments: List) -> List[QueryResult]:
+def query_contract(contract_str: str, endpoint: str, arguments: List) -> List[QueryResult]:
     """
     Query a contract to retireve some values.
 
-    :param contract_address: bech32 address of the contract to call
-    :type contract_address: str
+    :param contract_str: designation of the contract to call (bech32 or mxops value)
+    :type contract_str: str
     :param endpoint: endpoint to query
     :type endpoint: str
     :param arguments: argument for endpoint
@@ -356,11 +356,11 @@ def query_contract(contract_address: str, endpoint: str, arguments: List) -> Lis
     :rtype: List[QueryResult]
     """
     config = Config.get_config()
-
-    contract = SmartContract(Address(contract_address))
-
-    formated_args = format_tx_arguments(arguments)
     proxy = ProxyNetworkProvider(config.get('PROXY'))
+
+    contract = utils.get_contract_instance(contract_str)
+    formated_args = utils.format_tx_arguments(arguments)
+
     results = contract.query(
         proxy=proxy,
         function=endpoint,
