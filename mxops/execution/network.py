@@ -8,8 +8,7 @@ from typing import List
 from multiversx_sdk_cli.transactions import Transaction
 from multiversx_sdk_cli.accounts import Address
 from multiversx_sdk_network_providers import ProxyNetworkProvider
-from multiversx_sdk_network_providers.transactions import TransactionOnNetwork, TransactionLogs
-from multiversx_sdk_network_providers.transaction_events import TransactionEvent
+from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
 
 from mxops.config.config import Config
 from mxops import errors
@@ -74,38 +73,124 @@ def raise_on_errors(on_chain_tx: TransactionOnNetwork):
         raise errors.TransactionExecutionError(on_chain_tx)
 
 
-def get_transfer_from_event(event: TransactionEvent):
-    """_summary_
-
-    :param event: _description_
-    :type event: TransactionEvent
+def extract_simple_esdt_transfer(sender: str, receiver: str, data: str) -> OnChainTransfer:
     """
-    if 'Transfer' not in event.identifier:
-        return None
-    token, nonce, amount, receiver = [t.raw for t in event.topics]
-    token = token.decode()
-    nonce = nonce.hex()
-    if nonce != '':
-        token += '-' + nonce
-    receiver = Address(receiver.hex()).bech32()
-    amount = str(int(amount.hex(), 16))
-    return OnChainTransfer(event.address.bech32(), receiver, token, amount)
+    Extract a simple ESDT transfer from transaction data or smart contract result data
+
+    :param sender: address of the sender of the data in bech32
+    :type sender: str
+    :param receiver: address of the receiver of the data in bech32
+    :type receiver: str
+    :param data: data to analyse for simple ESDT transfer
+    :type data: str
+    :return: Transfer found in the data
+    :rtype: OnChainTransfer
+    """
+    if not data.startswith('ESDTTransfer@'):
+        raise ValueError(f'Data does not describe a simple ESDT transfer: {data}')
+
+    try:
+        _, token, amount, *_ = data.split('@')
+        token = bytearray.fromhex(token).decode()
+        amount = str(int(amount, 16))
+    except Exception as err:
+        raise errors.ParsingError(data, 'ESDTTransfer') from err
+
+    return OnChainTransfer(sender, receiver, token, amount)
 
 
-def get_transfers_from_logs(on_chain_logs: TransactionLogs) -> List[OnChainTransfer]:
-    """_summary_
+def extract_nft_transfer(sender: str, receiver: str, data: str) -> OnChainTransfer:
+    """
+    Extract a nft transfer from a smart contract result data.
 
-    :param on_chain_logs: _description_
-    :type on_chain_logs: TransactionLogs
-    :return: _description_
+    :param sender: address of the sender of the data in bech32
+    :type sender: str
+    :param receiver: address of the receiver of the data in bech32
+    :type receiver: str
+    :param data: data to analyse for nft transfer
+    :type data: str
+    :return: Transfer found in the data
+    :rtype: OnChainTransfer
+    """
+    if not data.startswith('ESDTNFTTransfer@'):
+        raise ValueError(f'Data does not describe a nft transfer: {data}')
+
+    try:
+        _, token, nonce, amount, *_ = data.split('@')
+        token = bytearray.fromhex(token).decode() + '-' + nonce
+        amount = str(int(amount, 16))
+    except Exception as err:
+        raise errors.ParsingError(data, 'ESDTNFTTransfer') from err
+
+    return OnChainTransfer(sender, receiver, token, amount)
+
+
+def extract_multi_transfer(sender: str, data: str) -> List[OnChainTransfer]:
+    """
+    Extract a multi transfer from smart contract result data
+
+    :param sender: address of the sender of the data in bech32
+    :type sender: str
+    :param data: data to analyse for multi transfer
+    :type data: str
+    :return: Transfers found in the data
     :rtype: List[OnChainTransfer]
     """
+    if not data.startswith('MultiESDTNFTTransfer@'):
+        raise ValueError(f'Data does not describe a multi transfer: {data}')
+
+    try:
+        _, receiver, n_transfers, *details = data.split('@')
+        n_transfers = int(n_transfers, base=16)
+        receiver = Address(receiver).bech32()
+    except Exception as err:
+        raise errors.ParsingError(data, 'MultiESDTNFTTransfer') from err
+
     transfers = []
-    for event in on_chain_logs.events:
-        transfer = get_transfer_from_event(event)
-        if transfer is not None:
-            transfers.append(transfer)
+    for i in range(n_transfers):
+        try:
+            token, nonce, amount = details[3*i:3*(i+1)]
+            token = bytearray.fromhex(token).decode()
+            amount = str(int(amount, 16))
+        except Exception as err:
+            raise errors.ParsingError(data, 'MultiESDTNFTTransfer') from err
+        if nonce != '':
+            token += f'-{nonce}'
+        transfers.append(OnChainTransfer(sender, receiver, token, amount))
+
     return transfers
+
+
+def get_transfers_from_data(sender: str, receiver: str, data: str) -> List[OnChainTransfer]:
+    """
+    Try to extract token transfers from the data of a transaction or asmart contract result.
+    It relies on the transfer format of ESDT.
+
+    :param sender: address of the sender of the data in bech 32
+    :type sender: str
+    :param receiver: address of the receiver of the data in bech 32
+    :type receiver: str
+    :param data: data to analyse for transfers
+    :type data: str
+    :return: tranfers extracted from the data
+    :rtype: List[OnChainTransfer]
+    """
+    try:
+        return [extract_simple_esdt_transfer(sender, receiver, data)]
+    except ValueError:
+        pass
+
+    try:
+        return [extract_nft_transfer(sender, receiver, data)]
+    except ValueError:
+        pass
+
+    try:
+        return extract_multi_transfer(sender, data)
+    except ValueError:
+        pass
+
+    return []
 
 
 def get_on_chain_transfers(on_chain_tx: TransactionOnNetwork) -> List[OnChainTransfer]:
@@ -119,24 +204,38 @@ def get_on_chain_transfers(on_chain_tx: TransactionOnNetwork) -> List[OnChainTra
     :rtype: List[OnChainTransfer]
     """
     transfers = []
-    if on_chain_tx.value != "0":
+    sender = on_chain_tx.sender.bech32()
+    receiver = on_chain_tx.receiver.bech32()
+    amount = str(on_chain_tx.value)
+    if amount != "0":
         transfers.append(OnChainTransfer(
-            on_chain_tx.sender.bech32(),
-            on_chain_tx.receiver.bech32(),
+            sender,
+            receiver,
             'EGLD',
-            on_chain_tx.value
+            amount
         ))
+    elif sender != receiver and on_chain_tx.data.startswith('ESDTTransfer'):
+        try:
+            transfers.append(extract_simple_esdt_transfer(sender, receiver, on_chain_tx.data))
+        except errors.ParsingError:
+            pass
+    elif on_chain_tx.data.startswith('MultiESDTNFTTransfer'):
+        try:
+            transfers.extend(extract_multi_transfer(sender, on_chain_tx.data))
+        except errors.ParsingError:
+            pass
 
     for result in on_chain_tx.contract_results.items:
         sender, receiver = result.sender.bech32(), result.receiver.bech32()
-        if result.value != 0 and sender != receiver:
+        amount = str(result.value)
+        if amount != "0" and not result.is_refund:
             transfers.append(OnChainTransfer(
-                result.sender,
-                result.receiver,
+                sender,
+                receiver,
                 'EGLD',
-                result.value
+                amount
             ))
-        transfers.extend(get_transfers_from_logs(result.logs))
+        else:
+            transfers.extend(get_transfers_from_data(sender, receiver, result.data))
 
-    transfers.extend(get_transfers_from_logs(on_chain_tx.logs))
     return transfers
