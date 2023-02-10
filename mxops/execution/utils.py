@@ -7,11 +7,12 @@ import os
 from typing import Any, List, Optional, Tuple
 
 from multiversx_sdk_cli.accounts import Address
-from multiversx_sdk_cli.contracts import QueryResult
+from multiversx_sdk_cli.contracts import QueryResult, SmartContract
+from multiversx_sdk_cli.errors import BadAddressFormatError
 
 from mxops.config.config import Config
 from mxops.data.data import ScenarioData
-from mxops.errors import WrongScenarioDataReference
+from mxops import errors
 from mxops.execution.account import AccountsManager
 
 
@@ -99,7 +100,7 @@ def retrieve_value_from_scenario_data(arg: str) -> str:
     try:
         contract_id, value_key = inner_arg[1:].split('%')
     except Exception as err:
-        raise WrongScenarioDataReference from err
+        raise errors.WrongScenarioDataReference from err
 
     scenario_data = ScenarioData.get()
     retrieved_value = scenario_data.get_contract_value(contract_id, value_key)
@@ -119,7 +120,7 @@ def retrieve_address_from_account(arg: str) -> str:
     try:
         arg = arg[1:-1]
     except Exception as err:
-        raise WrongScenarioDataReference from err
+        raise errors.WrongScenarioDataReference from err
 
     account = AccountsManager.get_account(arg)
     return account.address.bech32()
@@ -170,6 +171,37 @@ def format_tx_arguments(arguments: List[Any]) -> List[Any]:
 
         formated_arguments.append(formated_arg)
     return formated_arguments
+
+
+def get_contract_instance(contract_str: str) -> SmartContract:
+    """
+    From a string return a smart contract instance.
+    The input will be parsed to dynamically evaluate values from
+    the environment, the config or from the saved data.
+
+    :param contract_str: contract address or mxops value
+    :type contract_str: str
+    :return: smart contract corresponding to the address
+    :rtype: SmartContract
+    """
+    # try to see if the string is a valid address
+    try:
+        return SmartContract(Address(contract_str))
+    except BadAddressFormatError:
+        pass
+    # otherwise try to parse it as a mxops value
+    contract_address = retrieve_value_from_string(contract_str)
+    try:
+        return SmartContract(Address(contract_address))
+    except BadAddressFormatError:
+        pass
+    # lastly try to see if it is a valid contract id
+    contract_address = retrieve_value_from_string(f'%{contract_str}%address')
+    try:
+        return SmartContract(Address(contract_address))
+    except BadAddressFormatError:
+        pass
+    raise errors.ParsingError(contract_str, 'contract address')
 
 
 def parse_query_result(result: QueryResult, expected_return: str) -> Any:
