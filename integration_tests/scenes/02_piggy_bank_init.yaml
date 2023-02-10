@@ -22,7 +22,7 @@ steps:
 
   - type: ContractCall
     sender: owner
-    contract_id: "abc-esdt-minter"
+    contract: "abc-esdt-minter"
     endpoint: addInterestAddress
     gas_limit: 5000000
     arguments:

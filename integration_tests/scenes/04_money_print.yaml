@@ -13,7 +13,7 @@ steps:
     steps:
       - type: ContractCall
         sender: user
-        contract_id: "abc-piggy-bank"
+        contract: "abc-piggy-bank"
         endpoint: deposit
         esdt_transfers:
           - token_identifier: "%abc-esdt-minter%EsdtIdentifier"
@@ -23,6 +23,6 @@ steps:
 
       - type: ContractCall
         sender: user
-        contract_id: "abc-piggy-bank"
+        contract: "abc-piggy-bank"
         endpoint: withdraw
         gas_limit: 8000000

@@ -17,38 +17,38 @@ def test_deploy_scene_instantiation(test_data_folder_path: Path):
     # Then
     expected_steps = [
         ContractDeployStep(
-            'SEGLD-minter',
-            'owner',
-            '../contract/src/esdt-minter/output/esdt-minter.wasm',
-            80000000,
-            True,
-            False,
-            False,
-            False,
-            [125000000, 120]
+            sender='owner',
+            wasm_path='../contract/src/esdt-minter/output/esdt-minter.wasm',
+            contract_id='SEGLD-minter',
+            gas_limit=80000000,
+            upgradeable=True,
+            readable=False,
+            payable=False,
+            payable_by_sc=False,
+            arguments=[125000000, 120]
         ),
         ContractCallStep(
-            'SEGLD-minter',
-            'owner',
-            'registerToken',
-            80000000,
-            ['SEGLD', 'SEGLD', 18],
-            '&BASE_ISSUING_COST',
+            sender='owner',
+            contract='SEGLD-minter',
+            endpoint='registerToken',
+            gas_limit=80000000,
+            arguments=['SEGLD', 'SEGLD', 18],
+            value='&BASE_ISSUING_COST',
             check_for_errors=True
         ),
         ContractCallStep(
-            'SEGLD-minter',
-            'owner',
-            'setTokenLocalRoles',
-            80000000,
+            sender='owner',
+            contract='SEGLD-minter',
+            endpoint='setTokenLocalRoles',
+            gas_limit=80000000,
             check_for_errors=True
         ),
         ContractQueryStep(
-            'SEGLD-minter',
-            'getTokenIdentifier',
-            [],
-            [{'save_key': 'TokenIdentifier', 'result_type': 'str'}],
-            True
+            endpoint='getTokenIdentifier',
+            contract='SEGLD-minter',
+            arguments=[],
+            expected_results=[{'save_key': 'TokenIdentifier', 'result_type': 'str'}],
+            print_results=True
         )
     ]
 
