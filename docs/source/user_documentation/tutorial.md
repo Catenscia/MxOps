@@ -185,7 +185,7 @@ To issue a new token, we also need to pay some egld. The amount change depending
 ```yaml
 type: ContractCall
 sender: owner
-contract_id: "abc-esdt-minter"
+contract: "abc-esdt-minter"
 endpoint: issueToken
 gas_limit: 100000000
 value: "&BASE_ISSUING_COST"
@@ -202,7 +202,7 @@ We will save this identifier as a string under the name "EsdtIdentifier".
 
 ```yaml
 type: ContractQuery
-contract_id: "abc-esdt-minter"
+contract: "abc-esdt-minter"
 endpoint: getEsdtIdentifier
 arguments: []
 expected_results:
@@ -239,7 +239,7 @@ steps:
 
   - type: ContractCall
     sender: owner
-    contract_id: "abc-esdt-minter"
+    contract: "abc-esdt-minter"
     endpoint: issueToken
     gas_limit: 100000000
     value: "&BASE_ISSUING_COST"
@@ -249,7 +249,7 @@ steps:
       - 3
   
   - type: ContractQuery
-    contract_id: "abc-esdt-minter"
+    contract: "abc-esdt-minter"
     endpoint: getEsdtIdentifier
     arguments: []
     expected_results:
@@ -293,7 +293,7 @@ The `esdt-contract` only allows whitelisted addresses to claim interests. We nee
 ```yaml
 type: ContractCall
 sender: owner
-contract_id: "abc-esdt-minter"
+contract: "abc-esdt-minter"
 endpoint: addInterestAddress
 gas_limit: 5000000
 arguments:
@@ -329,7 +329,7 @@ steps:
 
   - type: ContractCall
     sender: owner
-    contract_id: "abc-esdt-minter"
+    contract: "abc-esdt-minter"
     endpoint: addInterestAddress
     gas_limit: 5000000
     arguments:
@@ -352,7 +352,7 @@ allowed_scenario:
 steps:
   - type: ContractCall
     sender: owner
-    contract_id: "abc-esdt-minter"
+    contract: "abc-esdt-minter"
     endpoint: addAirdropAmount
     gas_limit: 5000000
     arguments:
@@ -361,7 +361,7 @@ steps:
 
   - type: ContractCall
     sender: user
-    contract_id: "abc-esdt-minter"
+    contract: "abc-esdt-minter"
     endpoint: claimAirdrop
     gas_limit: 5000000
 ```
@@ -388,7 +388,7 @@ steps:
     steps:
       - type: ContractCall
         sender: user
-        contract_id: "abc-piggy-bank"
+        contract: "abc-piggy-bank"
         endpoint: deposit
         esdt_transfers:
           - token_identifier: "%abc-esdt-minter%EsdtIdentifier"
@@ -398,7 +398,7 @@ steps:
 
       - type: ContractCall
         sender: user
-        contract_id: "abc-piggy-bank"
+        contract: "abc-piggy-bank"
         endpoint: withdraw
         gas_limit: 8000000
 ```

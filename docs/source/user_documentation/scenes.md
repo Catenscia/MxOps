@@ -54,7 +54,7 @@ steps:
 
   - type: ContractCall
     sender: alice
-    contract_id: my_first_sc
+    contract: my_first_sc
     endpoint: myEndpoint
     gas_limit: 60000000
     arguments:

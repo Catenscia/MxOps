@@ -50,7 +50,7 @@ steps:
 
   - type: ContractCall
     sender: owner
-    contract_id: "abc-esdt-minter"
+    contract: "abc-esdt-minter"
     endpoint: issueToken
     gas_limit: 100000000
     value: "&BASE_ISSUING_COST"

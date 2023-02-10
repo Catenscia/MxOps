@@ -54,7 +54,7 @@ For example to fetch the identifier of a token created by a contract and stored 
 
 ```yaml
 type: ContractQuery
-contract_id: my_first_sc
+contract: my_first_sc
 endpoint: getEsdtIdentifier
 arguments: []
 expected_results:  # list of results excpected from the query output
@@ -81,7 +81,7 @@ var_start: 1
 var_end: 100
 steps:
   - type: ContractQuery
-    contract_id: my_first_sc
+    contract: my_first_sc
     endpoint: getSftAmount
     arguments:
       - TokenIdentifier4
@@ -92,7 +92,7 @@ steps:
   
   - type: ContractCall
     sender: alice
-    contract_id: my_first_sc
+    contract: my_first_sc
     endpoint: RetrieveSft
     gas_limit: 60000000
     arguments:
