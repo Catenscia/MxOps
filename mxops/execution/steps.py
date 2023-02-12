@@ -11,7 +11,7 @@ from typing import Dict, List
 
 from multiversx_sdk_cli.contracts import CodeMetadata
 
-from mxops.data.data import ContractData, ScenarioData
+from mxops.data.data import InternalContractData, ScenarioData
 from mxops.execution.account import AccountsManager
 from mxops.execution import contract_interactions as cti
 from mxops.execution.msc import EsdtTransfer
@@ -120,7 +120,7 @@ class ContractDeployStep(Step):
                      f'\ntx hash: {get_tx_link(on_chain_tx.hash)}'))
 
         creation_timestamp = on_chain_tx.to_dictionary()['timestamp']
-        contract_data = ContractData(
+        contract_data = InternalContractData(
             self.contract_id,
             contract.address.bech32(),
             get_file_hash(wasm_path),
