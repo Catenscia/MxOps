@@ -9,3 +9,6 @@ accounts:
     pem_path: ./integration_tests/wallets/devnet_owner.pem
   - account_name: user
     pem_path: ./integration_tests/wallets/devnet_user.pem
+
+external_contracts:
+  egld_wrapper_shard_0: erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax
