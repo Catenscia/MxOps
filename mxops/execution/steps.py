@@ -123,10 +123,10 @@ class ContractDeployStep(Step):
         contract_data = InternalContractData(
             self.contract_id,
             contract.address.bech32(),
+            dict(),
             get_file_hash(wasm_path),
             creation_timestamp,
             creation_timestamp,
-            {}
         )
         scenario_data.add_contract_data(contract_data)
 

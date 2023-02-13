@@ -26,12 +26,12 @@ def scenario_data():
 
     _scenario_data = ScenarioData.get()
     _scenario_data.add_contract_data(InternalContractData(contract_id=contract_id,
-                                                  address=address,
-                                                  wasm_hash='0x..hash',
-                                                  deploy_time=1,
-                                                  last_upgrade_time=1,
-                                                  saved_values={},
-                                                  ))
+                                                          address=address,
+                                                          wasm_hash='0x..hash',
+                                                          deploy_time=1,
+                                                          last_upgrade_time=1,
+                                                          saved_values=dict(),
+                                                          ))
 
     yield _scenario_data
     delete_scenario_data('pytest_scenario', False)
