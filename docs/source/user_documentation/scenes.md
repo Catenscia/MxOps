@@ -9,7 +9,8 @@ When executing `Scenes`, the user will designate the `Scenario` in which the act
 
 - `allowed_network*`: a list of the network onto which the `Scene` is allowed to be run. Allowed values are: [`LOCAL`, `TEST`, `DEV`, `MAIN`].
 - `allowed_scenario*`: a list of the scenario into which the `Scene` is allowed to be run. Regex can be used here.
-- `accounts`: a list of the accounts details. This can be define only once per execution (so in only one file in the case of a folder execution). Each account will be designated by its `account_name` in the `Steps`.
+- `accounts`: a list of the accounts details. This can be defined only once per execution (so in only one file in the case of a folder execution). Each account will be designated by its `account_name` in the `Steps`.
+- `external_contracts`: a dictionary of external contract addresses. The keys will be used as contract ids by MxOps. This has to be defined only once per scenario.
 - `steps`: a list the `Steps` to execute sequentially.
 
  \* *mandatory values*
@@ -37,6 +38,11 @@ accounts:
     ledger_account_index: 12
     ledger_address_index: 2
 
+# external contracts that will be called for transactions or queries in futur steps
+external_contracts:
+  egld_wrapper: erd1qqqqqqqqqqqqqpgqhe8t5jewej70zupmh44jurgn29psua5l2jps3ntjj3 
+  xexchange_router: erd1qqqqqqqqqqqqqpgqq66xk9gfr4esuhem3jru86wg5hvp33a62jps2fy57p
+
 # list of the steps to execute
 steps:
   - type: ContractDeploy
@@ -54,7 +60,7 @@ steps:
 
   - type: ContractCall
     sender: alice
-    contract_id: my_first_sc
+    contract: my_first_sc
     endpoint: myEndpoint
     gas_limit: 60000000
     arguments:

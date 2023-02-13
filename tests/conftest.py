@@ -2,7 +2,7 @@ from pathlib import Path
 import pytest
 
 from mxops.config.config import Config
-from mxops.data.data import ContractData, ScenarioData, delete_scenario_data
+from mxops.data.data import InternalContractData, ScenarioData, delete_scenario_data
 from mxops.data.path import initialize_data_folder
 from mxops.enums import NetworkEnum
 
@@ -25,13 +25,13 @@ def scenario_data():
     address = 'erd1...f217'
 
     _scenario_data = ScenarioData.get()
-    _scenario_data.add_contract_data(ContractData(contract_id,
-                                                  address,
-                                                  '0x..hash',
-                                                  1,
-                                                  1,
-                                                  {},
-                                                  ))
+    _scenario_data.add_contract_data(InternalContractData(contract_id=contract_id,
+                                                          address=address,
+                                                          wasm_hash='0x..hash',
+                                                          deploy_time=1,
+                                                          last_upgrade_time=1,
+                                                          saved_values=dict(),
+                                                          ))
 
     yield _scenario_data
     delete_scenario_data('pytest_scenario', False)

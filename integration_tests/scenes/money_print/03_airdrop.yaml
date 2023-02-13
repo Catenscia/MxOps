@@ -9,7 +9,7 @@ allowed_scenario:
 steps:
   - type: ContractCall
     sender: owner
-    contract_id: "abc-esdt-minter"
+    contract: "abc-esdt-minter"
     endpoint: addAirdropAmount
     gas_limit: 5000000
     arguments:
@@ -18,6 +18,6 @@ steps:
 
   - type: ContractCall
     sender: user
-    contract_id: "abc-esdt-minter"
+    contract: "abc-esdt-minter"
     endpoint: claimAirdrop
     gas_limit: 5000000

@@ -25,7 +25,7 @@ steps:
 
   - type: ContractCall
     sender: owner
-    contract_id: SEGLD-minter
+    contract: SEGLD-minter
     endpoint: registerToken
     gas_limit: 80000000
     value: "&BASE_ISSUING_COST"
@@ -36,13 +36,13 @@ steps:
 
   - type: ContractCall
     sender: owner
-    contract_id: SEGLD-minter
+    contract: SEGLD-minter
     endpoint: setTokenLocalRoles
     gas_limit: 80000000
     arguments: []
   
   - type: ContractQuery
-    contract_id: SEGLD-minter
+    contract: SEGLD-minter
     endpoint: getTokenIdentifier
     arguments: []
     expected_results:

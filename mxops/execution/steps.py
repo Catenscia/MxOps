@@ -11,7 +11,7 @@ from typing import Dict, List
 
 from multiversx_sdk_cli.contracts import CodeMetadata
 
-from mxops.data.data import ContractData, ScenarioData
+from mxops.data.data import InternalContractData, ScenarioData
 from mxops.execution.account import AccountsManager
 from mxops.execution import contract_interactions as cti
 from mxops.execution.msc import EsdtTransfer
@@ -42,7 +42,7 @@ class Step:
 
 
 @dataclass
-class LoopStep:
+class LoopStep(Step):
     """
     Represents a set of steps to execute several time
     """
@@ -78,20 +78,13 @@ class LoopStep:
 
 
 @dataclass
-class ContractStep(Step):  # pylint: disable=W0223
-    """
-    Represents a step dealing with a smart contract
-    """
-    contract_id: str
-
-
-@dataclass
-class ContractDeployStep(ContractStep):
+class ContractDeployStep(Step):
     """
     Represents a smart contract deployment
     """
     sender: Dict
     wasm_path: str
+    contract_id: str
     gas_limit: int
     upgradeable: bool = True
     readable: bool = True
@@ -127,23 +120,24 @@ class ContractDeployStep(ContractStep):
                      f'\ntx hash: {get_tx_link(on_chain_tx.hash)}'))
 
         creation_timestamp = on_chain_tx.to_dictionary()['timestamp']
-        contract_data = ContractData(
+        contract_data = InternalContractData(
             self.contract_id,
             contract.address.bech32(),
+            dict(),
             get_file_hash(wasm_path),
             creation_timestamp,
             creation_timestamp,
-            {}
         )
         scenario_data.add_contract_data(contract_data)
 
 
 @dataclass
-class ContractCallStep(ContractStep):
+class ContractCallStep(Step):
     """
     Represents a smart contract endpoint call
     """
     sender: Dict
+    contract: str
     endpoint: str
     gas_limit: int
     arguments: List = field(default_factory=lambda: [])
@@ -172,13 +166,10 @@ class ContractCallStep(ContractStep):
         """
         Execute a contract call
         """
-        LOGGER.info(f'Calling {self.endpoint} for {self.contract_id}')
+        LOGGER.info(f'Calling {self.endpoint} for {self.contract}')
         sender = AccountsManager.get_account(self.sender)
-        scenario_data = ScenarioData.get()
-        contract_address = scenario_data.get_contract_value(self.contract_id,
-                                                            'address')
 
-        tx = cti.get_contract_call_tx(contract_address,
+        tx = cti.get_contract_call_tx(self.contract,
                                       self.endpoint,
                                       self.gas_limit,
                                       self.arguments,
@@ -198,10 +189,11 @@ class ContractCallStep(ContractStep):
 
 
 @dataclass
-class ContractQueryStep(ContractStep):
+class ContractQueryStep(Step):
     """
     Represents a smart contract query
     """
+    contract: str
     endpoint: str
     arguments: List = field(default_factory=lambda: [])
     expected_results: List[Dict[str, str]] = field(default_factory=lambda: [])
@@ -211,11 +203,9 @@ class ContractQueryStep(ContractStep):
         """
         Execute a query and optionally save the result
         """
-        LOGGER.info(f'Query on {self.endpoint} for {self.contract_id}')
+        LOGGER.info(f'Query on {self.endpoint} for {self.contract}')
         scenario_data = ScenarioData.get()
-        contract_address = scenario_data.get_contract_value(self.contract_id,
-                                                            'address')
-        results = cti.query_contract(contract_address,
+        results = cti.query_contract(self.contract,
                                      self.endpoint,
                                      self.arguments)
 
@@ -229,7 +219,7 @@ class ContractQueryStep(ContractStep):
             for result, expected_result in zip(results, self.expected_results):
                 parsed_result = parse_query_result(result,
                                                    expected_result['result_type'])
-                scenario_data.set_contract_value(self.contract_id,
+                scenario_data.set_contract_value(self.contract,
                                                  expected_result['save_key'],
                                                  parsed_result)
 
