@@ -4,6 +4,7 @@
 
 ### Added
 
+- External contract support for contract calls and queries (including results save)
 - CI and script for bandit, flake8 and pylint
 - CI for pytest tests
 - CI for python package build
@@ -11,7 +12,7 @@
 
 ### Changed
 
-- None
+- 🚨 BREAKING CHANGE 🚨 `contract_id` attribute renamed to `contract` for calls and queries
 
 ### Removed
 
