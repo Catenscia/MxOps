@@ -39,7 +39,10 @@ class ContractData:
         :param value: value to save
         :type value: Any
         """
-        self.saved_values[value_key] = value
+        if value_key == 'address':
+            self.address = value
+        else:
+            self.saved_values[value_key] = value
 
     def get_saved_value(self, value_key: str) -> Any:
         """
@@ -81,16 +84,6 @@ class InternalContractData(ContractData):
     deploy_time: int
     last_upgrade_time: int
 
-    def to_dict(self) -> Dict:
-        """
-        Convert this instance to a dictionary
-
-        :return: this instance as a dictionary
-        :rtype: Dict
-        """
-        self_dict =  super().to_dict()
-        return self_dict
-
 
 @dataclass
 class ExternalContractData(ContractData):
@@ -98,8 +91,6 @@ class ExternalContractData(ContractData):
     Dataclass representing the data that can be locally saved for a contract
     not managed by MxOps
     """
-
-
 
 
 @dataclass
