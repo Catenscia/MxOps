@@ -33,6 +33,8 @@ steps:
       - SEGLD
       - SEGLD
       - 18
+    checks:
+      - type: Success
 
   - type: ContractCall
     sender: owner
@@ -40,6 +42,7 @@ steps:
     endpoint: setTokenLocalRoles
     gas_limit: 80000000
     arguments: []
+    checks: []
   
   - type: ContractQuery
     contract: SEGLD-minter

@@ -4,6 +4,7 @@
 
 ### Added
 
+- Check classes for CallStep
 - External contract support for contract calls and queries (including results save)
 - CI and script for bandit, flake8 and pylint
 - CI for pytest tests
@@ -13,6 +14,7 @@
 ### Changed
 
 - 🚨 BREAKING CHANGE 🚨 `contract_id` attribute renamed to `contract` for calls and queries
+- 🚨 BREAKING CHANGE 🚨 Refactor check_for_errors attribute to be more general (allow more checks in the future)
 
 ### Removed
 

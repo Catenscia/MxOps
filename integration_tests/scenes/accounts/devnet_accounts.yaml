@@ -11,4 +11,4 @@ accounts:
     pem_path: ./integration_tests/wallets/devnet_user.pem
 
 external_contracts:
-  egld_wrapper_shard_0: erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax
+  egld_wrapper_shard_2: erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc
