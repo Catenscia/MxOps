@@ -27,7 +27,7 @@ LOGGER = get_logger('steps')
 @dataclass
 class Step:
     """
-    Represents a instruction to execute within a scene
+    Represents an instruction to execute within a scene
     """
 
     def execute(self):
