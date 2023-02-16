@@ -14,6 +14,7 @@ from multiversx_sdk_cli.contracts import CodeMetadata
 from mxops.data.data import InternalContractData, ScenarioData
 from mxops.execution.account import AccountsManager
 from mxops.execution import contract_interactions as cti
+from mxops.execution.checks import Check, SuccessCheck, instanciate_checks
 from mxops.execution.msc import EsdtTransfer
 from mxops.execution.network import raise_on_errors, send, send_and_wait_for_result
 from mxops.execution.utils import parse_query_result
@@ -143,7 +144,7 @@ class ContractCallStep(Step):
     arguments: List = field(default_factory=lambda: [])
     value: int = 0
     esdt_transfers: List[EsdtTransfer] = field(default_factory=lambda: [])
-    check_for_errors: bool = True
+    checks: List[Check] = field(default_factory=lambda: [SuccessCheck()])
 
     def __post_init__(self):
         """
@@ -162,6 +163,9 @@ class ContractCallStep(Step):
                 raise ValueError(f'Unexpected type: {type(trf)}')
         self.esdt_transfers = checked_transfers
 
+        if len(self.checks) > 0 and isinstance(self.checks[0], Dict):
+            self.checks = instanciate_checks(self.checks)
+
     def execute(self):
         """
         Execute a contract call
@@ -177,9 +181,10 @@ class ContractCallStep(Step):
                                       self.esdt_transfers,
                                       sender)
 
-        if self.check_for_errors:
+        if self.checks:
             on_chain_tx = send_and_wait_for_result(tx)
-            raise_on_errors(on_chain_tx)
+            for check in self.checks:
+                check.raise_on_failure(on_chain_tx)
             LOGGER.info(
                 f'Call successful: {get_tx_link(on_chain_tx.hash)}')
         else:
