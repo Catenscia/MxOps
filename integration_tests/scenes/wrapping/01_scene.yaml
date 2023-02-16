@@ -9,7 +9,7 @@ allowed_scenario:
 steps:
   
   - type: ContractQuery
-    contract: egld_wrapper_shard_0
+    contract: egld_wrapper_shard_2
     endpoint: getWrappedEgldTokenId
     arguments: []
     expected_results:
@@ -18,17 +18,17 @@ steps:
 
   - type: ContractCall
     sender: user
-    contract: egld_wrapper_shard_0
+    contract: egld_wrapper_shard_2
     endpoint: wrapEgld
     value: 10000
     gas_limit: 3000000
 
   - type: ContractCall
     sender: user
-    contract: egld_wrapper_shard_0
+    contract: egld_wrapper_shard_2
     endpoint: unwrapEgld
     gas_limit: 3000000
     esdt_transfers:
-      - token_identifier: "%egld_wrapper_shard_0%WrappedTokenIdentifier"
+      - token_identifier: "%egld_wrapper_shard_2%WrappedTokenIdentifier"
         amount: 10000
         nonce: 0
