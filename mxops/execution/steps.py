@@ -123,7 +123,7 @@ class ContractDeployStep(Step):
         contract_data = InternalContractData(
             self.contract_id,
             contract.address.bech32(),
-            dict(),
+            {},
             get_file_hash(wasm_path),
             creation_timestamp,
             creation_timestamp,
@@ -228,12 +228,12 @@ class ContractQueryStep(Step):
 
 def instanciate_steps(raw_steps: List[Dict]) -> List[Step]:
     """
-    Take steps as dictionaries and convert them to their conrresponding step classes.
+    Take steps as dictionaries and convert them to their corresponding step classes.
 
     :param raw_steps: steps to instantiate
     :type raw_steps: List[Dict]
     :return: steps instances
-    :rtype: List[steps.Step]
+    :rtype: List[Step]
     """
     steps_list = []
     for raw_step in raw_steps:
