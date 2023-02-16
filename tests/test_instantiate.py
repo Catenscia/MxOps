@@ -1,5 +1,6 @@
 from pathlib import Path
 import yaml
+from mxops.execution.checks import SuccessCheck
 
 from mxops.execution.scene import Scene
 from mxops.execution.steps import ContractCallStep, ContractDeployStep, ContractQueryStep
@@ -34,14 +35,14 @@ def test_deploy_scene_instantiation(test_data_folder_path: Path):
             gas_limit=80000000,
             arguments=['SEGLD', 'SEGLD', 18],
             value='&BASE_ISSUING_COST',
-            check_for_errors=True
+            checks=[SuccessCheck()]
         ),
         ContractCallStep(
             sender='owner',
             contract='SEGLD-minter',
             endpoint='setTokenLocalRoles',
             gas_limit=80000000,
-            check_for_errors=True
+            checks=[]
         ),
         ContractQueryStep(
             endpoint='getTokenIdentifier',
