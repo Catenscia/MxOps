@@ -1,0 +1,12 @@
+devnet
+eGLD
+esdt
+ESDT
+ESDTmapper
+mainnet
+Maiar
+mandos
+MultiversX
+localnet
+testnet
+txs
