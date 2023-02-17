@@ -2,7 +2,7 @@
 
 ## Installation
 
-Mxops is available on [PyPI](https://pypi.org/project/mxops/). Install it simply with pip:
+MxOps is available on [PyPI](https://pypi.org/project/mxops/). Install it simply with pip:
 
 ```bash
 pip install mxops
@@ -10,8 +10,8 @@ pip install mxops
 
 ## Structure
 
-We propose a folder structure template to organise your files. This is not mandatory but should make using MxOps much easier.
-The structure is layed out as below:
+We propose a folder structure template to organize your files. This is not mandatory but should make using MxOps much easier.
+The structure is laid out as below:
 
 ```bash
 .
@@ -41,7 +41,7 @@ Accounts are grouped in separate `Scenes` to make sure you don't mix up your net
 
 ### Scene Names
 
-When you have a complexe usecase and you want to organise the `steps` in several `Scenes` to keep things clean, you should write them in a specific folder and prefix the files names with a number to make sure they will get executed in the correct order.
+When you have a complex use case and you want to organize the `steps` in several `Scenes` to keep things clean, you should write them in a specific folder and prefix the files names with a number to make sure they will get executed in the correct order.
 
 ## Next Step
 

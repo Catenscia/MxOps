@@ -1,12 +1,12 @@
 # Steps
 
-Several type of `Steps` exists, to allow users to easily construct complexe `Scenes`.
+Several type of `Steps` exists, to allow users to easily construct complex `Scenes`.
 If you feel something is missing, please make a suggestion in the github!
 
 ## Contract Deploy Step
 
 This `Step` is used to deploy a contract. The address of the new contract will be
-saved in the `Scenario` (specified at execution time) under the provided id to allow futur interactions.
+saved in the `Scenario` (specified at execution time) under the provided id to allow future interactions.
 
 ```yaml
 type: ContractDeploy
@@ -34,7 +34,7 @@ endpoint: myEndpoint
 gas_limit: 60000000
 arguments:  # optional, args of the endpoint
   - arg1
-value: 0  # optional, amount of egld to send
+value: 0  # optional, amount of eGLD to send
 esdt_transfers:  # optional, ESDTs to send
   - token_identifier: ALICE-123456
     amount: 58411548
@@ -46,7 +46,7 @@ checks:  # optional, by default it will contain a transaction success check
   - type: Success  
 ```
 
-`SuccessCheck` tells `MxOps` to verify that the transaction went without errors. If an error is found, the execution will be stopped. In some use-cases, for example if you want to launch 100s of txs, you can deactivate this parameter for faster execution.
+`SuccessCheck` tells `MxOps` to verify that the transaction went without errors. If an error is found, the execution will be stopped. In some use cases, for example if you want to launch 100s of txs, you can deactivate this parameter for faster execution.
 
 ## Contract Query Step
 
@@ -115,5 +115,5 @@ steps:
 
 ## Next Step
 
-You will notice that some symboles are used in the arguments of the above `ContractCall`. These are here to dynamically fetch values from different sources.
+You will notice that some symbols are used in the arguments of the above `ContractCall`. These are here to dynamically fetch values from different sources.
 Heads up to the {doc}`values` section for more information.

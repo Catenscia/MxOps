@@ -38,7 +38,7 @@ accounts:
     ledger_account_index: 12
     ledger_address_index: 2
 
-# external contracts that will be called for transactions or queries in futur steps
+# external contracts that will be called for transactions or queries in future steps
 external_contracts:
   egld_wrapper: erd1qqqqqqqqqqqqqpgqhe8t5jewej70zupmh44jurgn29psua5l2jps3ntjj3 
   xexchange_router: erd1qqqqqqqqqqqqqpgqq66xk9gfr4esuhem3jru86wg5hvp33a62jps2fy57p
