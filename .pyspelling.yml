@@ -1,0 +1,33 @@
+matrix:
+
+- name: Documentation
+  aspell:
+    lang: en
+    d: en_US
+  sources:
+    - docs/source/**/*.md
+    - docs/source/**/*.rst
+  dictionary:
+    wordlists:
+      - docs/dictionary/project_wordlist.txt
+      - docs/dictionary/sphinx_wordlist.txt
+      - docs/dictionary/multiversx_wordlist.txt
+      - docs/dictionary/custom_wordlist.txt
+    output: build/dictionary/python.dic
+  pipeline:
+    - pyspelling.filters.context:
+        context_visible_first: true
+        delimiters:
+        - open: '(?s)^(?P<open> *`{3,})yaml$'
+          close: '^(?P=open)$'
+        - open: '(?s)^(?P<open> *`{3,})bash$'
+          close: '^(?P=open)$'
+        - open: '(?P<open>:+)'
+          close: '(?P=open)'
+        - open: '(?P<open>`+)'
+          close: '(?P=open)'
+    - pyspelling.filters.markdown:
+        markdown_extensions:
+          - markdown.extensions.extra
+    - pyspelling.filters.html:
+        comments: false
