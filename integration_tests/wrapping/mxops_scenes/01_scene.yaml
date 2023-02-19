@@ -4,7 +4,7 @@ allowed_networks:
   - DEV
 
 allowed_scenario:
-  - "integration_test*"
+  - "integration_test_wrapping"
 
 steps:
   
