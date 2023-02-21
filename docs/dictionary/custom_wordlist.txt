@@ -14,3 +14,7 @@ pytest
 Readthedocs
 yaml
 svg
+Flaticon
+Freepik
+Knop
+SBTS

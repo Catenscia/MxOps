@@ -12,6 +12,7 @@ Keystore
 mainnet
 Maiar
 MxOps
+mxops
 MultiversX
 PiggyBank
 pylint

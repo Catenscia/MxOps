@@ -31,3 +31,10 @@ Otherwise, if you prefer to learn by example, the :doc:`user_documentation/tutor
 
    dev_documentation/backlog
    dev_documentation/changelog
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Others
+
+   others/credits
+   
