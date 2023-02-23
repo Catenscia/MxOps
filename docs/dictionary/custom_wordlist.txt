@@ -6,6 +6,7 @@ ChangeLog
 customization
 customizations
 DevOps
+env
 json
 https
 png
@@ -18,3 +19,5 @@ Flaticon
 Freepik
 Knop
 SBTS
+sdk
+wasm
