@@ -7,14 +7,22 @@ Welcome to MxOps |version| !
 =========================================
 
 You are in the MxOps documentation. Use the left-side panel or the menu below to navigate where you want to go.
-If you are new here, we recommend going first to the :doc:`user_documentation/overview` section and
-then to the :doc:`user_documentation/getting_started`.
-Otherwise, if you prefer to learn by example, the :doc:`user_documentation/tutorial` section is here for you!
+If you are new here, we recommend going first to the :doc:`getting_started/presentation` section.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
+   :caption: Getting Started
+
+   getting_started/presentation
+   getting_started/installation
+   getting_started/first_scene
+   getting_started/first_scene_enhanced
+   getting_started/next_steps
+
+
+.. toctree::
+   :maxdepth: 1
    :caption: User Documentation
-   :numbered:
 
    user_documentation/overview
    user_documentation/getting_started
@@ -23,10 +31,19 @@ Otherwise, if you prefer to learn by example, the :doc:`user_documentation/tutor
    user_documentation/steps
    user_documentation/values
    user_documentation/execution
-   user_documentation/tutorial
+   user_documentation/good_practices
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
+   :caption: Examples
+
+   examples/presentation
+   examples/structure
+   examples/piggy_bank
+   examples/wrapping
+
+.. toctree::
+   :maxdepth: 1
    :caption: Dev Documentation
 
    dev_documentation/backlog
