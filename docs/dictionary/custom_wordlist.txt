@@ -1,0 +1,16 @@
+AppDir
+AppFolder
+blockchain
+blockchains
+ChangeLog
+customization
+customizations
+DevOps
+json
+https
+png
+PyPI
+pytest
+Readthedocs
+yaml
+svg

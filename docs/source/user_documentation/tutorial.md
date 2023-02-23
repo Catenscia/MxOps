@@ -4,7 +4,7 @@ This tutorial uses the smart-contracts and `Scenes` from `MxOps` [integration te
 
 This will guide you through every steps required to run a complete example with MxOps. After this tutorial, you will have learn to:
 
-- Automate deploiments
+- Automate deployments
 - Automate smart-contract setups
 - Simulate user scenario
 
@@ -14,14 +14,14 @@ In future version of `MxOps`, you will also be able to test queries and calls re
 
 To use `MxOps`, we first need some smart-contracts. We will create two of them: a simple contract that is in charge of minting a fungible ESDT and a contract that will act as a piggy bank that gives amazing interest returns.
 
-The image below is a map with the main interactions betweens these contracts and agents. (click on it for full view).
+The image below is a map with the main interactions between these contracts and agents. (click on it for full view).
 You will also find some explanation in the next two sections.
 
 ```{thumbnail} ../images/integration_test_contracts_map.svg
 ```
 
 ```{warning}
-DISCLAIMER: This should be obvious but these contracts are not meant to be use on real usecases as their designs are flawed for the tutorial purposes.
+DISCLAIMER: This should be obvious but these contracts are not meant to be use on real use cases as their designs are flawed for the tutorial purposes.
 ```
 
 ### EsdtMinter Contract
@@ -42,8 +42,8 @@ Don't hesitate to check the [source code](https://github.com/Catenscia/MxOps/tre
 
 ## Scenes
 
-Now that we home some smart-contracts, we can contructs some `Scenes`.
-We will create a scenes folder at the root level of our smart-contract projet. Here is what our structure looks like:
+Now that we home some smart-contracts, we can construct some `Scenes`.
+We will create a scenes folder at the root level of our smart-contract project. Here is what our structure looks like:
 
 ```bash
 .
@@ -66,13 +66,13 @@ We will create a scenes folder at the root level of our smart-contract projet. H
 
 We would like to execute our contracts on two chains: On the devnet to ensure everything will work flawlessly but also on a localnet to make our first tests without spamming the devnet.
 
-We will copy two wallets, alice and bob, that already have some egld on their account when we start a localnet.
+We will copy two wallets, alice and bob, that already have some eGLD on their account when we start a localnet.
 
-For the devnet we will create two wallets, one for the owner of the contracts and one for a user. We will provide some egld to these accounts using the [devnet wallet](https://devnet-wallet.multiversx.com/).
+For the devnet we will create two wallets, one for the owner of the contracts and one for a user. We will provide some eGLD to these accounts using the [devnet wallet](https://devnet-wallet.multiversx.com/).
 
-To access these wallets from several scenes, we will create specific `Scenes̀for them.
+To access these wallets from several scenes, we will create specific `Scene` for them.
 
-#### LocalNet Accounts
+#### Localnet Accounts
 
 We will use bob as the contract owner and alice as a user.
 
@@ -141,7 +141,7 @@ We will create the following situation:
 - The user claim the airdrop
 - The user deposit and withdraw to/from the piggy-bank several times to exploit the contracts
 
-#### EsdtMinter Initialisation
+#### EsdtMinter Initialization
 
 Let's create out first scene to deploy the `esdt-minter` contract: `scenes/01_esdt_minter_init.yaml`.
 
@@ -180,7 +180,7 @@ payable_by_sc: True
 ##### Token Issuance
 
 We will now ask the contract to issue a new fungible ESDT named "ABC". This token should have 3 decimals.
-To issue a new token, we also need to pay some egld. The amount change depending on the network but this value is present in the [MxOps' config](https://github.com/Catenscia/MxOps/blob/main/mxops/resources/default_config.ini) under the name `BASE_ISSUING_COST`.
+To issue a new token, we also need to pay some eGLD. The amount change depending on the network but this value is present in the [MxOps' default configuration](https://github.com/Catenscia/MxOps/blob/main/mxops/resources/default_config.ini) under the name `BASE_ISSUING_COST`.
 
 ```yaml
 type: ContractCall
@@ -197,8 +197,8 @@ arguments:
 
 ##### Token Identifier
 
-We want to retrieve the token identifier that has been assigned to the newly issued token. For that we can use a query to access the view on the esdt mapper from the contract.
-We will save this identifier as a string under the name "EsdtIdentifier".
+We want to retrieve the token identifier that has been assigned to the newly issued token. For that we can use a query to access the view on the ESDTmapper from the contract.
+We will save this identifier as a string under the name `EsdtIdentifier`.
 
 ```yaml
 type: ContractQuery
@@ -258,7 +258,7 @@ steps:
     print_results: True
 ```
 
-#### PiggyBank Intitialisation
+#### PiggyBank Initialization
 
 We create a new scene to deploy and initialize the `piggy-bank` contract: `scenes/02_piggy_bank_init.yaml`.
 
@@ -268,8 +268,8 @@ When we deploy the `piggy-bank` contract, we need to supply two arguments: the t
 
 We could supply theses values by hand but that would be a huge waste of time and very prone to errors. Instead we can use the {doc}`values` system of `MxOps`:
 
-We can access the address of the `esdt-minter` contract we just deployed by using its id: "%abc-esdt-minter%address".
-As we also save the token identifier, we can access it too: "%abc-esdt-minter%EsdtIdentifier".
+We can access the address of the `esdt-minter` contract we just deployed by using its id: `%abc-esdt-minter%address`.
+As we also save the token identifier, we can access it too: `%abc-esdt-minter%EsdtIdentifier`.
 
 ```yaml
 type: ContractDeploy
@@ -288,7 +288,7 @@ payable_by_sc: True
 
 ##### Interest Whitelist
 
-The `esdt-contract` only allows whitelisted addresses to claim interests. We need to add our `piggy-bank` contract to this withelist using the endpoint `addInterestAddress`.
+The `esdt-contract` only allows whitelisted addresses to claim interests. We need to add our `piggy-bank` contract to this whitelist using the endpoint `addInterestAddress`.
 
 ```yaml
 type: ContractCall
@@ -463,7 +463,7 @@ mxops \
     scenes
 ```
 
-This sould give you on output similar to this:
+This should give you on output similar to this:
 
 ```bash
 MxOps  Copyright (C) 2023  Catenscia
@@ -506,13 +506,13 @@ tx hash: https://devnet-explorer.multiversx.com/transactions/9f2f45f2ea9d33dc470
 [2023-01-24 21:34:03,874 steps INFO] Call successful: https://devnet-explorer.multiversx.com/transactions/086d02d7341727aaa89ac09e45bd438aae16ea36b8d46a0723913b4e64968183 [steps:192 in execute]
 ```
 
-And that's it! You just created a repetable way of executing interactions with your smart-contracts! 🥳
+And that's it! You just created a repeatable way of executing interactions with your smart-contracts! 🥳
 
 Using the links in the previous outputs, you can navigate the different transactions with the explorer.
 
 ## Data
 
-After executing, the `Scenario` data is persitent (until you delete or overwrite it).
+After executing, the `Scenario` data is persistent (until you delete or overwrite it).
 You can access this data using command lines.
 
 For example, to see all the data saved under our integration_tests_tutorial `Scenario`:

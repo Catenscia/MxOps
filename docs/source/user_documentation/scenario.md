@@ -10,7 +10,7 @@ This means that wherever you activate MxOps, you will write and read at the same
 Each `Scenario` has a dedicated file per network. This means that you can run a `Scenario` on the devnet and if you are
 satisfied, launch the same `Scenario` on the mainnet without changing any file.
 
-The files organised as below:
+The files organized as below:
 
 ```bash
 
@@ -31,7 +31,7 @@ Where:
 - <my_scenario>.json is the file where all the contract data of the executed scenario are stored
 
 ```{note}
-The files are kept after each executions. This means that you can reuse a `Scenario` and execute new `Scenes` in it. This is very usefull for incremental executions (deploy, upgrade...) or reccurent tasks (complexe claim/compound cycles for example)
+The files are kept after each executions. This means that you can reuse a `Scenario` and execute new `Scenes` in it. This is very useful for incremental executions (deploy, upgrade...) or recurrent tasks (complex claim/compound cycles for example)
 ```
 
 ```{warning}

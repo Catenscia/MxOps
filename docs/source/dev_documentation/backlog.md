@@ -6,5 +6,5 @@
 - [ ] Add Maiar support
 - [ ] Add a specific step for contract ownership transfer.
 - [ ] Add a skip keyword to skip steps without deleting them
-- [ ] Add querry and call support for external contracts
+- [ ] Add query and call support for external contracts
 - [ ] Add configurable transactions contents checks (transfers, data, results...)
