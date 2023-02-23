@@ -15,7 +15,7 @@
 
 - 🚨 BREAKING CHANGE 🚨 `contract_id` attribute renamed to `contract` for calls and queries
 - 🚨 BREAKING CHANGE 🚨 Refactor check_for_errors attribute to be more general (allow more checks in the future)
-- Reorganize integrations tests folders, scripts and scenario names
+- Reorganize integration tests folders, scripts and scenario names
 
 ### Removed
 

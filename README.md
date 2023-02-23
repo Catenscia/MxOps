@@ -15,7 +15,7 @@ Heads up to the [documentation](https://mxops.readthedocs.io) to get started!
 
 ## Contribution
 
-This tool is an humble proposal by [Catenscia](https://catenscia.com/) to have a standard way of writing deployment files, integrations tests and others.
+This tool is an humble proposal by [Catenscia](https://catenscia.com/) to have a standard way of writing deployment files, integration tests and others.
 If you want this tool to improve, please tell us your issues and proposals!
 
 And if you're motivated, we will always welcome hepling hands onboard :grin: !
