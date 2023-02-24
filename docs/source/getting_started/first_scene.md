@@ -57,7 +57,7 @@ Everything is in place for us to create our first `Scene` so let's get to work n
 
 For this, create a file named `first_scene.yaml`. Your folder should now look like this:
 
-```bash
+```text
 mxops_tutorial
 ├── contract
 │   ├── ping-pong
@@ -67,7 +67,7 @@ mxops_tutorial
 │   │   ...
 │   ...
 ├── wallets
-│   ├── my_devnet_wallet.pem
+│   └── my_devnet_wallet.pem
 └── first_scene.yaml
 ```
 
@@ -120,7 +120,7 @@ fn init(
 ```
 
 We will specify 0.5 eGLD for the ping amount and 1 seconds for the duration to enable us to pong right after the ping.
-To be able to interact with the deployed contract later on in the scene, we need give the newly deployed contract an id.  We will choose `egld-ping-pong` for our case.
+To be able to interact with the deployed contract later on in the scene, we need give the newly deployed contract an id.  We will choose "egld-ping-pong" for our case.
 
 The `ContractStep` will look like this:
 
@@ -250,4 +250,4 @@ By default, `MxOps` checks that each transaction is successful. In case an unexp
 
 Congratulation you wrote and executed your first `Scene` with `MxOps` 🎉🎉🎉
 
-In the {doc}`next section<enhanced_first_scene>` we will introduce a few features and guidelines to improve this example. See you there! 😀
+Next, we will **finally** explain the mystery behind `Scenarios`! See you {doc}`there<about_scenarios>` 😀

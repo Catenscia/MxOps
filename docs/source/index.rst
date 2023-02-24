@@ -18,7 +18,7 @@ If you are new here, we recommend going first to the :doc:`getting_started/prese
    getting_started/first_scene
    getting_started/about_scenarios
    getting_started/enhanced_first_scene
-   getting_started/next_steps
+   getting_started/conclusion
 
 
 .. toctree::

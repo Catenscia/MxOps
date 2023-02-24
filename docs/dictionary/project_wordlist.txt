@@ -16,5 +16,6 @@ Maiar
 MxOps
 mxops
 PiggyBank
+PingAmount
 pylint
 runtime

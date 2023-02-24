@@ -1,7 +1,5 @@
 # About Scenario
 
-Since the beginning, you have been using `Scenarios`. They are what make `MxOps` truly practical.
-
 When you executed you first `Scene`, you may have asked yourself some questions along these lines:
 
 - What happen if I enter a second time the command to execute the `Scene`?
