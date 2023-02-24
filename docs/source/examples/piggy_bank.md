@@ -40,7 +40,7 @@ Find more details in the [source code](https://github.com/Catenscia/MxOps/tree/m
 
 ## Scenes
 
-Now that we home some smart-contracts, we can construct some `Scenes`.
+Now that we have some smart-contracts, we can construct some `Scenes`.
 We will create a scenes folder at the root level of our smart-contract project. Here is what our structure looks like:
 
 ```bash
@@ -50,7 +50,7 @@ We will create a scenes folder at the root level of our smart-contract project. 
 │   ├── piggy-bank
 │   ├── tests
 │   └── Cargo.toml
-├── scenes
+├── mxops_scenes
 ├── scripts
 ├── wallets/
 │   ├── alice.pem

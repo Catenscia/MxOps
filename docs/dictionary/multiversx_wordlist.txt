@@ -19,3 +19,5 @@ OptionalValue
 pem
 testnet
 txs
+WEGLD
+wrapEgld

@@ -1,9 +1,0 @@
-allowed_networks:
-  - LOCAL
-
-allowed_scenario:
-  - "integration_test_wrapping"
-
-accounts:
-  - account_name: user
-    pem_path: ./integration_tests/wrapping/wallets/bob.pem
