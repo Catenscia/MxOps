@@ -1,7 +1,7 @@
 # Scenes
 
 A `Scene` is a collection of sequential `Steps` to be executed by MxOps.
-When executing `Scenes`, the user will designate the `Scenario` in which the actions and the data will be recorded.
+At execution time, the user will designate the `Scenario` in which the actions will be performed and the data recorded.
 
 ## Scene Format
 
@@ -10,7 +10,7 @@ When executing `Scenes`, the user will designate the `Scenario` in which the act
 - `allowed_network*`: a list of the network onto which the `Scene` is allowed to be run. Allowed values are: [`LOCAL`, `TEST`, `DEV`, `MAIN`].
 - `allowed_scenario*`: a list of the scenario into which the `Scene` is allowed to be run. Regex can be used here.
 - `accounts`: a list of the accounts details. This can be defined only once per execution (so in only one file in the case of a folder execution). Each account will be designated by its `account_name` in the `Steps`.
-- `external_contracts`: a dictionary of external contract addresses. The keys will be used as contract ids by MxOps. This has to be defined only once per scenario.
+- `external_contracts`: a dictionary of external contract addresses. The keys will be used as contract ids by MxOps. This can be defined only once per scenario.
 - `steps`: a list the `Steps` to execute sequentially.
 
  \* *mandatory values*
@@ -26,7 +26,7 @@ allowed_networks:
 
 # list of scenario into which this scene can be run
 allowed_scenario:
-  - "*"  # regex allowed here
+  - ".*"  # regex allowed here (in this case ".*" allows everything)
 
 # list of accounts details. To be defined only once per execution
 # In case of the execution of several scenes. This can be defined in a single file.
@@ -67,11 +67,3 @@ steps:
       - arg1
       - arg2
 ```
-
-## More Examples
-
-You can always inspect the [integration tests folder](https://github.com/Catenscia/MxOps/tree/main/integration_tests) of MxOps to see how this can be used in a smart-contract project.
-
-## Next Step
-
-Heads up to the {doc}`steps` section to learn how to write contract interactions!

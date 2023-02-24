@@ -1,0 +1,9 @@
+allowed_networks:
+    - LOCAL
+
+allowed_scenario:
+    - ".*"
+
+accounts:
+  - account_name: owner
+    pem_path: ./wallets/bob.pem

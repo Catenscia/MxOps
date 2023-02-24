@@ -1,27 +1,25 @@
-# Tutorial
+# Piggy Bank
 
-This tutorial uses the smart-contracts and `Scenes` from `MxOps` [integration tests](https://github.com/Catenscia/MxOps/tree/main/integration_tests).
+This example uses the smart-contracts and `Scenes` from the `MxOps` integration test called [Piggy Bank](https://github.com/Catenscia/MxOps/tree/main/integration_tests/piggy_bank).
 
-This will guide you through every steps required to run a complete example with MxOps. After this tutorial, you will have learn to:
+Step by step, the example will show you how to:
 
-- Automate deployments
+- Automate smart-contract deployments
 - Automate smart-contract setups
 - Simulate user scenario
 
-In future version of `MxOps`, you will also be able to test queries and calls results.
-
 ## Smart-Contracts
 
-To use `MxOps`, we first need some smart-contracts. We will create two of them: a simple contract that is in charge of minting a fungible ESDT and a contract that will act as a piggy bank that gives amazing interest returns.
+For this example, we have created two smart-contracts: a contract in charge of minting a simple ESDT and a contract that will act as a piggy bank with amazing interest returns.
 
 The image below is a map with the main interactions between these contracts and agents. (click on it for full view).
 You will also find some explanation in the next two sections.
 
-```{thumbnail} ../images/integration_test_contracts_map.svg
+```{thumbnail} ../images/piggy_bank_contracts_map.svg
 ```
 
 ```{warning}
-DISCLAIMER: This should be obvious but these contracts are not meant to be use on real use cases as their designs are flawed for the tutorial purposes.
+DISCLAIMER: This should be obvious but these contracts are not meant to be use on real use cases as their designs are flawed for the example purposes.
 ```
 
 ### EsdtMinter Contract
@@ -32,17 +30,17 @@ This contract has three roles:
 - Allow airdrops to specific users
 - Mint new tokens to pay the interests of the piggy-bank
 
-Don't hesitate to check the [source code](https://github.com/Catenscia/MxOps/tree/main/integration_tests/contracts/esdt-minter/src) for more details.
+Find more details in the [source code](https://github.com/Catenscia/MxOps/tree/main/integration_tests/piggy_bank/contracts/esdt-minter/src).
 
 ### PiggyBank Contract
 
 A user can deposit a specific token in the bank. The only other action he can make is to withdraw them. At withdrawal, he will get back his principal and receive some interests in addition.
 
-Don't hesitate to check the [source code](https://github.com/Catenscia/MxOps/tree/main/integration_tests/contracts/piggy-bank/src) for more details.
+Find more details in the [source code](https://github.com/Catenscia/MxOps/tree/main/integration_tests/piggy_bank/contracts/piggy-bank/src).
 
 ## Scenes
 
-Now that we home some smart-contracts, we can construct some `Scenes`.
+Now that we have some smart-contracts, we can construct some `Scenes`.
 We will create a scenes folder at the root level of our smart-contract project. Here is what our structure looks like:
 
 ```bash
@@ -52,7 +50,7 @@ We will create a scenes folder at the root level of our smart-contract project. 
 │   ├── piggy-bank
 │   ├── tests
 │   └── Cargo.toml
-├── scenes
+├── mxops_scenes
 ├── scripts
 ├── wallets/
 │   ├── alice.pem
@@ -81,13 +79,13 @@ allowed_networks:
   - LOCAL
 
 allowed_scenario:
-  - "integration_tests*"
+  - "piggy_bank.*"
 
 accounts:
   - account_name: owner
-    pem_path: ./integration_tests/wallets/bob.pem
+    pem_path: ./wallets/bob.pem
   - account_name: user
-    pem_path: ./integration_tests/wallets/alice.pem
+    pem_path: ./wallets/alice.pem
 ```
 
 #### Devnet Accounts
@@ -96,16 +94,16 @@ Same as above, but we replace the wallets by the ones on the devnet and we chang
 
 ```yaml
 allowed_networks:
-  - LOCAL
+  - DEV
 
 allowed_scenario:
-  - "integration_tests*"
+  - "piggy_bank.*"
 
 accounts:
   - account_name: owner
-    pem_path: ./integration_tests/wallets/bob.pem
+    pem_path: ./wallets/bob.pem
   - account_name: user
-    pem_path: ./integration_tests/wallets/alice.pem
+    pem_path: ./wallets/alice.pem
 ```
 
 #### Result Structure
@@ -119,7 +117,7 @@ Our project should now be like this:
 │   ├── piggy-bank
 │   ├── tests
 │   └── Cargo.toml
-├── scenes/
+├── mxops_scenes/
 │   └── accounts/
 │       ├── local_accounts.yaml
 │       └── devent_account.yaml
@@ -132,7 +130,7 @@ Our project should now be like this:
 └── Cargo.toml
 ```
 
-### Smart Contract Interactions
+### Smart Contract Interactions: User Exploit
 
 We will create the following situation:
 
@@ -141,11 +139,34 @@ We will create the following situation:
 - The user claim the airdrop
 - The user deposit and withdraw to/from the piggy-bank several times to exploit the contracts
 
+We will call this situation "User Exploit" and create a special folder for the corresponding scenes.
+
+```bash
+.
+├── contract/
+│   ├── esdt-minter
+│   ├── piggy-bank
+│   ├── tests
+│   └── Cargo.toml
+├── mxops_scenes/
+│   └── accounts/
+│       ├── local_accounts.yaml
+│       └── devent_account.yaml
+├────── user_exploit/
+├── scripts
+├── wallets/
+│   ├── alice.pem
+│   ├── bob.pem
+│   ├── devnet_owner.pem
+│   └── devnet_user.pem
+└── Cargo.toml
+```
+
 #### EsdtMinter Initialization
 
-Let's create out first scene to deploy the `esdt-minter` contract: `scenes/01_esdt_minter_init.yaml`.
+Let's create out first scene to deploy the `esdt-minter` contract: `mxops_scenes/user_exploit/01_esdt_minter_init.yaml`.
 
-We will allow this scene (and all the next scenes) to be run on all networks except the mainnet. The scenario we will use should also start with 'integration_test':
+We will allow this scene (and all the next scenes) to be run on all networks except the mainnet. We will then specify that the scenarios we will use should start with 'piggy_bank' to restrict execution mistakes:
 
 ```yaml
 allowed_networks:
@@ -154,7 +175,7 @@ allowed_networks:
   - DEV
 
 allowed_scenario:
-  - "integration_test*"
+  - "piggy_bank.*"
 ```
 
 ##### Deployment
@@ -166,7 +187,7 @@ We will give the deployed contract the id "abc-esdt-minter". (ABC will be the na
 ```yaml
 type: ContractDeploy
 sender: owner
-wasm_path: "./integration_tests/contracts/esdt-minter/output/esdt-minter.wasm"
+wasm_path: "./contracts/esdt-minter/output/esdt-minter.wasm"
 contract_id: "abc-esdt-minter"
 gas_limit: 50000000
 arguments:
@@ -213,7 +234,7 @@ print_results: True
 
 ##### Results
 
-Our file `scenes/01_esdt_minter_init.yaml` should now look like this:
+Our file `mxops_scenes/user_exploit/01_esdt_minter_init.yaml` should now look like this:
 
 ```yaml
 allowed_networks:
@@ -222,12 +243,12 @@ allowed_networks:
   - DEV
 
 allowed_scenario:
-  - "integration_test*"
+  - "piggy_bank.*"
 
 steps:
   - type: ContractDeploy
     sender: owner
-    wasm_path: "./integration_tests/contracts/esdt-minter/output/esdt-minter.wasm"
+    wasm_path: "./contracts/esdt-minter/output/esdt-minter.wasm"
     contract_id: "abc-esdt-minter"
     gas_limit: 50000000
     arguments:
@@ -260,13 +281,13 @@ steps:
 
 #### PiggyBank Initialization
 
-We create a new scene to deploy and initialize the `piggy-bank` contract: `scenes/02_piggy_bank_init.yaml`.
+We create a new scene to deploy and initialize the `piggy-bank` contract: `mxops_scenes/user_exploit/02_piggy_bank_init.yaml`.
 
 ##### Deployment
 
 When we deploy the `piggy-bank` contract, we need to supply two arguments: the token identifier of the token that will be accepted by the contract and the address of the token issuer.
 
-We could supply theses values by hand but that would be a huge waste of time and very prone to errors. Instead we can use the {doc}`values` system of `MxOps`:
+We could supply theses values by hand but that would be a huge waste of time and very prone to errors. Instead we can use the {doc}`../user_documentation/values` system of `MxOps`:
 
 We can access the address of the `esdt-minter` contract we just deployed by using its id: `%abc-esdt-minter%address`.
 As we also save the token identifier, we can access it too: `%abc-esdt-minter%EsdtIdentifier`.
@@ -274,7 +295,7 @@ As we also save the token identifier, we can access it too: `%abc-esdt-minter%Es
 ```yaml
 type: ContractDeploy
 sender: owner
-wasm_path: "./integration_tests/contracts/piggy-bank/output/piggy-bank.wasm"
+wasm_path: "./contracts/piggy-bank/output/piggy-bank.wasm"
 contract_id: "abc-piggy-bank"
 gas_limit: 80000000
 arguments:
@@ -302,7 +323,7 @@ arguments:
 
 ##### Results
 
-The file `scenes/02_piggy_bank_init.yaml` should look like this:
+The file `mxops_scenes/user_exploit/02_piggy_bank_init.yaml` should look like this:
 
 ```yaml
 allowed_networks:
@@ -311,12 +332,12 @@ allowed_networks:
   - DEV
 
 allowed_scenario:
-  - "integration_test*"
+  - "piggy_bank.*"
 
 steps:
   - type: ContractDeploy
     sender: owner
-    wasm_path: "./integration_tests/contracts/piggy-bank/output/piggy-bank.wasm"
+    wasm_path: "./contracts/piggy-bank/output/piggy-bank.wasm"
     contract_id: "abc-piggy-bank"
     gas_limit: 80000000
     arguments:
@@ -338,7 +359,7 @@ steps:
 
 #### Airdrop
 
-In the scene `scenes/03_airdrop.yaml`, the owner will add an airdrop of 100.000 ABC for the user and the user will claim this airdrop:
+In the scene `mxops_scenes/user_exploit/03_airdrop.yaml`, the owner will add an airdrop of 100.000 ABC for the user and the user will claim this airdrop:
 
 ```yaml
 allowed_networks:
@@ -347,7 +368,7 @@ allowed_networks:
   - DEV
 
 allowed_scenario:
-  - "integration_test*"
+  - "piggy_bank.*"
 
 steps:
   - type: ContractCall
@@ -366,8 +387,9 @@ steps:
     gas_limit: 5000000
 ```
 
-#### Money Printing
+#### Money Print
 
+The final scene will be `mxops_scenes/user_exploit/04_money_print.yaml`
 Once he claimed the airdrop, the user discover that he can earn tons of ABC tokens by depositing and withdrawing his tokens to/from the `piggy-bank`. To test his hypothesis, he will execute three cycles of deposit and withdraws. As the interest is 100%, the user should double his tokens amount each cycle.
 
 We will execute this scenario using a `LoopStep`. The loop variable will be the amount that the user deposit at each cycle: 100.000 then 200.000 and finally 400.000 (We assume he deposits each time all the tokens he has).
@@ -379,7 +401,7 @@ allowed_networks:
   - DEV
 
 allowed_scenario:
-  - "integration_test*"
+  - "piggy_bank.*"
 
 steps:
   - type: Loop
@@ -414,14 +436,15 @@ Our project should now be like this:
 │   ├── piggy-bank
 │   ├── tests
 │   └── Cargo.toml
-├── scenes/
+├── mxops_scenes/
 │   ├── accounts/
 │   │   ├── local_accounts.yaml
 │   │   └── devent_account.yaml
-│   ├── 01_esdt_minter_init.yaml
-│   ├── 02_piggy_bank_init.yaml
-│   ├── 03_airdrop.yaml
-│   └── 04_money_print.yaml
+├────── user_exploit/
+│       ├── 01_esdt_minter_init.yaml
+│       ├── 02_piggy_bank_init.yaml
+│       ├── 03_airdrop.yaml
+│       └── 04_money_print.yaml
 ├── scripts
 ├── wallets/
 │   ├── alice.pem
@@ -433,7 +456,7 @@ Our project should now be like this:
 
 ### Execution
 
-We can now execute our scenes in a `Scenario`. We will execute this on the devnet for example and call our scenario "integration_tests_tutorial".
+We can now execute our scenes in a `Scenario`. We will execute this on the devnet for example and call our scenario "piggy_bank_user_exploit".
 
 #### Data Cleaning
 
@@ -444,7 +467,7 @@ mxops \
     data \
     delete \
     -n DEV \
-    -s integration_tests_tutorial
+    -s piggy_bank_user_exploit
 ```
 
 Enter `y` when prompted.
@@ -458,9 +481,9 @@ After that we can execute all the `Scenes`in the order we wrote them.
 mxops \
     execute \
     -n DEV \
-    -s integration_tests_tutorial \
-    scenes/accounts/devnet_accounts.yaml \
-    scenes
+    -s piggy_bank_user_exploit \
+    mxops_scenes/accounts/devnet_accounts.yaml \
+    mxops_scenes
 ```
 
 This should give you on output similar to this:
@@ -468,9 +491,9 @@ This should give you on output similar to this:
 ```bash
 MxOps  Copyright (C) 2023  Catenscia
 This program comes with ABSOLUTELY NO WARRANTY
-[2023-01-24 21:26:45,650 data INFO] Scenario integration_tests_tutorial created for network DEV [data:259 in create_scenario]
-[2023-01-24 21:26:45,650 scene INFO] Executing scene integration_tests/scenes/accounts/devnet_accounts.yaml [scene:68 in execute_scene]
-[2023-01-24 21:26:46,099 scene INFO] Executing scene integration_tests/scenes/01_esdt_minter_init.yaml [scene:68 in execute_scene]
+[2023-01-24 21:26:45,650 data INFO] Scenario piggy_bank_user_exploit created for network DEV [data:259 in create_scenario]
+[2023-01-24 21:26:45,650 scene INFO] Executing scene mxops_scenes/accounts/devnet_accounts.yaml [scene:68 in execute_scene]
+[2023-01-24 21:26:46,099 scene INFO] Executing scene mxops_scenes/user_exploit/01_esdt_minter_init.yaml [scene:68 in execute_scene]
 [2023-01-24 21:26:46,121 steps INFO] Deploying contract abc-esdt-minter [steps:106 in execute]
 [2023-01-24 21:26:51,645 steps INFO] Deploy successful on erd1qqqqqqqqqqqqqpgqam5fmdvqqta307y4xe6elhqj4z58leduhzdq8jytfw
 tx hash: https://devnet-explorer.multiversx.com/transactions/2bf47375abc692ecc284fd1a273ca4ad7dbec677da548466aa85eedf7bd5140e [steps:126 in execute]
@@ -480,18 +503,18 @@ tx hash: https://devnet-explorer.multiversx.com/transactions/2bf47375abc692ecc28
 [{'base64': 'QUJDLTE0YWYwZA==', 'hex': '4142432d313461663064', 'number': 308176147074667304595556}]
 [2023-01-24 21:27:23,631 steps INFO] Saving Query results as contract data [steps:228 in execute]
 [2023-01-24 21:27:23,631 steps INFO] Query successful [steps:236 in execute]
-[2023-01-24 21:27:23,636 scene INFO] Executing scene integration_tests/scenes/02_piggy_bank_init.yaml [scene:68 in execute_scene]
+[2023-01-24 21:27:23,636 scene INFO] Executing scene mxops_scenes/user_exploit/02_piggy_bank_init.yaml [scene:68 in execute_scene]
 [2023-01-24 21:27:23,653 steps INFO] Deploying contract abc-piggy-bank [steps:106 in execute]
 [2023-01-24 21:27:34,681 steps INFO] Deploy successful on erd1qqqqqqqqqqqqqpgqn7jctdfnem2n2zk8atus7ep9r64jy80whzdqp3wmyu
 tx hash: https://devnet-explorer.multiversx.com/transactions/9f2f45f2ea9d33dc4700bef2724ec4a42e8a21737a60c02004cef05609d04493 [steps:126 in execute]
 [2023-01-24 21:27:34,682 steps INFO] Calling addInterestAddress for abc-esdt-minter [steps:175 in execute]
 [2023-01-24 21:27:40,258 steps INFO] Call successful: https://devnet-explorer.multiversx.com/transactions/c3022dab7a49a5eefe2a4c17ccc66838eb41e3280a6c14f0c81d9169773a9810 [steps:192 in execute]
-[2023-01-24 21:27:40,259 scene INFO] Executing scene integration_tests/scenes/03_airdrop.yaml [scene:68 in execute_scene]
+[2023-01-24 21:27:40,259 scene INFO] Executing scene mxops_scenes/user_exploit/03_airdrop.yaml [scene:68 in execute_scene]
 [2023-01-24 21:27:40,261 steps INFO] Calling addAirdropAmount for abc-esdt-minter [steps:175 in execute]
 [2023-01-24 21:27:45,579 steps INFO] Call successful: https://devnet-explorer.multiversx.com/transactions/88beda7d9b4858f32010137fd4e7c5ca573cfae18dccbe0a163001de4474b5a5 [steps:192 in execute]
 [2023-01-24 21:27:45,580 steps INFO] Calling claimAirdrop for abc-esdt-minter [steps:175 in execute]
 [2023-01-24 21:28:37,922 steps INFO] Call successful: https://devnet-explorer.multiversx.com/transactions/d8451a30fedcd92d67b8e783cb3989e1613143d09cd3cd9303a011bcb29caa2d [steps:192 in execute]
-[2023-01-24 21:28:37,923 scene INFO] Executing scene integration_tests/scenes/04_money_print.yaml [scene:68 in execute_scene]
+[2023-01-24 21:28:37,923 scene INFO] Executing scene mxops_scenes/user_exploit/04_money_print.yaml [scene:68 in execute_scene]
 [2023-01-24 21:28:37,926 steps INFO] Calling deposit for abc-piggy-bank [steps:175 in execute]
 [2023-01-24 21:29:30,292 steps INFO] Call successful: https://devnet-explorer.multiversx.com/transactions/95fc37a627fcfbea102fb4f317880b39b7b76effd4399bdb15075e6926481c1e [steps:192 in execute]
 [2023-01-24 21:29:30,292 steps INFO] Calling withdraw for abc-piggy-bank [steps:175 in execute]
@@ -515,10 +538,10 @@ Using the links in the previous outputs, you can navigate the different transact
 After executing, the `Scenario` data is persistent (until you delete or overwrite it).
 You can access this data using command lines.
 
-For example, to see all the data saved under our integration_tests_tutorial `Scenario`:
+For example, to see all the data saved under our piggy_bank_user_exploit `Scenario`:
 
 ```bash
-mxops data get -n DEV -s integration_tests_tutorial
+mxops data get -n DEV -s piggy_bank_user_exploit
 ```
 
 This should give you a result similar to this:
@@ -526,9 +549,9 @@ This should give you a result similar to this:
 ```bash
 MxOps  Copyright (C) 2023  Catenscia
 This program comes with ABSOLUTELY NO WARRANTY
-[2023-01-24 21:36:14,175 data INFO] Scenario integration_tests_tutorial loaded for network DEV [data:234 in load_scenario]
+[2023-01-24 21:36:14,175 data INFO] Scenario piggy_bank_user_exploit loaded for network DEV [data:234 in load_scenario]
 {
-    "name": "integration_tests_tutorial",
+    "name": "piggy_bank_user_exploit",
     "network": "DEV",
     "creation_time": 1674592005,
     "last_update_time": 1674592054,
@@ -554,9 +577,3 @@ This program comes with ABSOLUTELY NO WARRANTY
     }
 }
 ```
-
-## Conclusion
-
-You are now ready to write your own `Scenes` 👏👏👏
-
-Please don't hesitate to give us your feedback on [github](https://github.com/Catenscia/MxOps/discussions) or [twitter](https://twitter.com/catenscia), we would really appreciate it 🤗
