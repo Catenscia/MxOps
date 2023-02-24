@@ -1,6 +1,6 @@
 # Scenario
 
-`Scenario` are an environment in which the results of the every `step` execution will be stored locally on your computer. This allows to execute identical `Scenes` on different contracts in the **same** network and it is also essential to use these results at a later time (for example to upgrade a contract).
+`Scenario` are an environment in which the results of `step` executions can be stored locally on your computer. This allows to execute identical `Scenes` on different contracts in the **same** network and it is also essential to use these results at a later time (for example to upgrade a contract).
 
 ## Structure
 

@@ -98,4 +98,4 @@ Here is the above `Scene`, but this time with the MxOps syntax:
 
 A lot of information is written here, but you don't have to worry about the details for now. Just remember that `Scenes` are the core of `MxOps` and that it tells the program what to do.
 
-You will be guided through the steps of writing a `Scene` in the next sections. But before that, you need to {doc}`install MxOps! <installation>`
+You will be guided through the steps of writing a `Scene` in the next sections. But before that, you need to 🚧 {doc}`install MxOps! <installation>` 🚧

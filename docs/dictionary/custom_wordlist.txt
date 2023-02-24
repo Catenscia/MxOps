@@ -16,8 +16,7 @@ Readthedocs
 yaml
 svg
 Flaticon
-Freepik
-Knop
+reusability
 SBTS
 sdk
 wasm

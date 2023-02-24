@@ -248,4 +248,4 @@ By default, `MxOps` checks that each transaction is successful. In case an unexp
 
 Congratulation you wrote and executed your first `Scene` with `MxOps` 🎉🎉🎉
 
-In the {doc}`next section<first_scene_enhanced>` we will introduce a few features and guidelines to improve this example. See you there! 😀
+In the {doc}`next section<enhanced_first_scene>` we will introduce a few features and guidelines to improve this example. See you there! 😀

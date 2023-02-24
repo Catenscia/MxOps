@@ -16,7 +16,8 @@ If you are new here, we recommend going first to the :doc:`getting_started/prese
    getting_started/presentation
    getting_started/installation
    getting_started/first_scene
-   getting_started/first_scene_enhanced
+   getting_started/about_scenarios
+   getting_started/enhanced_first_scene
    getting_started/next_steps
 
 
