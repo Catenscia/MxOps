@@ -36,7 +36,6 @@ If you are new here, we recommend going first to the :doc:`getting_started/prese
    :caption: Examples
 
    examples/presentation
-   examples/structure
    examples/piggy_bank
    examples/wrapping
 
