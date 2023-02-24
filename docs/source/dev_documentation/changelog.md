@@ -10,12 +10,14 @@
 - CI for pytest tests
 - CI for python package build
 - CI for package publication on PYPI
+- Wrapping example in the documentation
 
 ### Changed
 
 - 🚨 BREAKING CHANGE 🚨 `contract_id` attribute renamed to `contract` for calls and queries
 - 🚨 BREAKING CHANGE 🚨 Refactor check_for_errors attribute to be more general (allow more checks in the future)
 - Reorganize integration tests folders, scripts and scenario names
+- Convert the "Getting Started" section to a complete chapter in the documentation
 
 ### Removed
 
