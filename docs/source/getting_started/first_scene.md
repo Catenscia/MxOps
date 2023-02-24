@@ -20,7 +20,7 @@ We will need a wallet to make our tests. The easiest is to use a pem wallet:
 
 ```bash
 mkdir wallets
-mxpy wallet derive wallets/my_wallet.pem
+mxpy wallet derive wallets/my_devnet_wallet.pem
 ```
 
 ```{warning}
@@ -67,7 +67,7 @@ mxops_tutorial
 │   │   ...
 │   ...
 ├── wallets
-│   ├── my_wallet.pem
+│   ├── my_devnet_wallet.pem
 └── first_scene.yaml
 ```
 
@@ -95,7 +95,7 @@ The next thing we can specify in a `Scene` is a list of wallets we will use late
 ```yaml
 accounts:
   - account_name: owner
-    pem_path: ./wallets/my_wallet.pem
+    pem_path: ./wallets/my_devnet_wallet.pem
 ```
 
 ### Steps
@@ -175,7 +175,7 @@ allowed_scenario:
 
 accounts:
   - account_name: owner
-    pem_path: ./wallets/my_wallet.pem
+    pem_path: ./wallets/my_devnet_wallet.pem
 
 steps:
 

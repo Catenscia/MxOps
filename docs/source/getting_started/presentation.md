@@ -32,7 +32,7 @@ A `Scene` is a file describing what MxOps has to do. If we translate it in natur
 
   ```bash
   - MxOps can execute this scene on the mainnet and devnet
-  - Name "owner" the wallet located at "./wallets/my_wallet.pem"
+  - Name "owner" the wallet located at "./wallets/my_devnet_wallet.pem"
   - MxOps will execute these actions in the specified order:
       - Make "owner" deploy a contract from wasm file at "./contracts/my_contract.wasm".
         Name the newly deployed contract "my-contract".
@@ -57,7 +57,7 @@ Here is the above `Scene`, but this time with the MxOps syntax:
 
   accounts:
     - account_name: owner
-      pem_path: "./wallets/my_wallet.pem"
+      pem_path: "./wallets/my_devnet_wallet.pem"
 
   steps:
     - type: ContractDeploy

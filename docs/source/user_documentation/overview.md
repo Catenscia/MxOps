@@ -33,7 +33,7 @@ allowed_scenario:
 
 accounts:
   - account_name: owner
-    pem_path: ./wallets/my_wallet.pem
+    pem_path: ./wallets/my_devnet_wallet.pem
 
 steps:
   - type: ContractDeploy
