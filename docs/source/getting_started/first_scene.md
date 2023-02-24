@@ -19,7 +19,8 @@ In this tutorial, we will create some files and clone a git repository so create
 We will need a wallet to make our tests. The easiest is to use a pem wallet:
 
 ```bash
-mxpy wallet derive my_wallet.pem
+mkdir wallets
+mxpy wallet derive wallets/my_wallet.pem
 ```
 
 ```{warning}
@@ -65,8 +66,9 @@ mxops_tutorial
 │   │   │   └── ping-pong.wasm
 │   │   ...
 │   ...
-├── first_scene.yaml
-└── my_wallet.pem
+├── wallets
+│   ├── my_wallet.pem
+└── first_scene.yaml
 ```
 
 ### Blockchain Network
@@ -93,7 +95,7 @@ The next thing we can specify in a `Scene` is a list of wallets we will use late
 ```yaml
 accounts:
   - account_name: owner
-    pem_path: ./my_wallet.pem
+    pem_path: ./wallets/my_wallet.pem
 ```
 
 ### Steps
@@ -173,7 +175,7 @@ allowed_scenario:
 
 accounts:
   - account_name: owner
-    pem_path: ./my_wallet.pem
+    pem_path: ./wallets/my_wallet.pem
 
 steps:
 
