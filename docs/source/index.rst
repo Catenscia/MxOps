@@ -55,4 +55,5 @@ If you are new here, we recommend going first to the :doc:`getting_started/prese
    :caption: Others
 
    others/credits
+   others/contact_us
    
