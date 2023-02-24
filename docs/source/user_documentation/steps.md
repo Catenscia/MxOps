@@ -1,7 +1,7 @@
 # Steps
 
 Several type of `Steps` exists, to allow users to easily construct complex `Scenes`.
-If you feel something is missing, please make a suggestion in the github!
+If you feel something is missing, please make a suggestion in the [github](https://github.com/Catenscia/MxOps/discussions/categories/ideas)!
 
 ## Contract Deploy Step
 
@@ -112,8 +112,6 @@ var_list: [1, 5, 78, 1566]
 steps:
     [...]
 ```
-
-## Next Step
 
 You will notice that some symbols are used in the arguments of the above `ContractCall`. These are here to dynamically fetch values from different sources.
 Heads up to the {doc}`values` section for more information.

@@ -25,14 +25,11 @@ If you are new here, we recommend going first to the :doc:`getting_started/prese
    :maxdepth: 1
    :caption: User Documentation
 
-   user_documentation/overview
-   user_documentation/getting_started
    user_documentation/scenario
    user_documentation/scenes
    user_documentation/steps
    user_documentation/values
    user_documentation/execution
-   user_documentation/good_practices
 
 .. toctree::
    :maxdepth: 1

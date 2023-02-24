@@ -1,6 +1,6 @@
 # Scenario
 
-`Scenario` are an environment in which the results of `step` executions can be stored locally on your computer. This allows to execute identical `Scenes` on different contracts in the **same** network and it is also essential to use these results at a later time (for example to upgrade a contract).
+`Scenario` are virtual context separate contract interactions and in which the results of `step` executions can be stored locally on your computer. This allows to execute identical `Scenes` on different contracts in the **same** network.
 
 ## Structure
 
@@ -10,7 +10,7 @@ This means that wherever you activate MxOps, you will write and read at the same
 Each `Scenario` has a dedicated file per network. This means that you can run a `Scenario` on the devnet and if you are
 satisfied, launch the same `Scenario` on the mainnet without changing any file.
 
-The files organized as below:
+The files are organized as below:
 
 ```bash
 
@@ -35,7 +35,7 @@ The files are kept after each executions. This means that you can reuse a `Scena
 ```
 
 ```{warning}
-This also means that `Scenario` names should be unique for all your projects. Otherwise you may encounter data collision.
+This also means that `Scenario` names should be unique per network for all your projects. Otherwise you may encounter data collision.
 ```
 
 ## Commands
