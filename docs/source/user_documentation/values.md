@@ -41,4 +41,4 @@ See example in the [Loop Step section](loop_step_target).
 
 ### Account Address
 
-To reference the address of an account specified in the `accounts` field of a `Scene`, one must use the following syntax: `[account_name]`.
+To reference as an argument the address of an account specified in the `accounts` field of a `Scene`, one must use the following syntax: `[account_name]`.

@@ -1,6 +1,6 @@
 # Scenario
 
-`Scenario` are virtual context separate contract interactions and in which the results of `step` executions can be stored locally on your computer. This allows to execute identical `Scenes` on different contracts in the **same** network.
+A `Scenario` is a virtual context that separates contract interactions and in which the results of `step` executions can be stored locally on your computer. This allows to execute identical `Scenes` on different contracts in the **same** network.
 
 ## Structure
 
@@ -8,7 +8,7 @@
 This means that wherever you activate MxOps, you will write and read at the same place.
 
 Each `Scenario` has a dedicated file per network. This means that you can run a `Scenario` on the devnet and if you are
-satisfied, launch the same `Scenario` on the mainnet without changing any file.
+satisfied, launch the same `Scenario` on the mainnet without changing any `Scene`.
 
 The files are organized as below:
 

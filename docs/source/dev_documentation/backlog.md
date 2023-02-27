@@ -8,4 +8,5 @@
 - [ ] Add a skip keyword to skip steps without deleting them
 - [ ] Add configurable transactions contents checks (transfers, data, results...)
 - [ ] Handle list type in query results
-- [ ] Initialize all scenes before any execution to prevent mid-run interuption
+- [ ] Initialize all scenes before any execution to prevent mid-run interruption
+- [ ] Create a ContractUpgrade Step

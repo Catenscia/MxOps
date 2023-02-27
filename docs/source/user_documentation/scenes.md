@@ -9,7 +9,7 @@ At execution time, the user will designate the `Scenario` in which the actions w
 
 - `allowed_network*`: a list of the network onto which the `Scene` is allowed to be run. Allowed values are: [`LOCAL`, `TEST`, `DEV`, `MAIN`].
 - `allowed_scenario*`: a list of the scenario into which the `Scene` is allowed to be run. Regex can be used here.
-- `accounts`: a list of the accounts details. This can be defined only once per execution (so in only one file in the case of a folder execution). Each account will be designated by its `account_name` in the `Steps`.
+- `accounts`: a list of the accounts details. This can be defined only once per execution (so in only one file in the case where several files were submitted). Each account will be designated by its `account_name` in the `Steps`.
 - `external_contracts`: a dictionary of external contract addresses. The keys will be used as contract ids by MxOps. This can be defined only once per scenario.
 - `steps`: a list the `Steps` to execute sequentially.
 
