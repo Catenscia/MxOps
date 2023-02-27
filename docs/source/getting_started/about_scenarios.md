@@ -3,7 +3,7 @@
 When you executed you first `Scene`, you may have asked yourself some questions along these lines:
 
 - What happen if I enter a second time the command to execute the `Scene`?
-- Let's say I want to ping and pong my contract again, how do I do that without deploying a new contract ?
+- Let's say I want to ping or pong my contract again, how do I do that without deploying a new contract ?
 
 `Scenarios` are here to answer these needs and many more 😁
 
@@ -13,7 +13,7 @@ This section will give you a basic understanding of `Scenarios`, you can always 
 
 `Scenarios` are virtual context in which data can be saved and reused. The first use case is during deployment: Once a contract is deployed, one need to save the address that has been assigned to the contract for later interactions.
 
-`Scenarios` are simply virtual contexts which saves contract data using their `contract-id`. This means that the same `contract-id` can be use in different `Scenarios` but also in different networks (main, dev...).
+`Scenarios` save contract data using their `contract-id`. This means that the same `contract-id` can be use in different `Scenarios` but also in different networks (main, dev...).
 This allows maximum reusability for the `Scenes` as you don't have to monitor which ids has already been taken in your others `Scenarios`.
 
 ## Persistence

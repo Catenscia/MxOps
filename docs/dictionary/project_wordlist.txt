@@ -3,6 +3,9 @@ alice
 bob
 Catenscia
 changelog
+ContractCall
+ContractQuery
+ContractUpgrade
 dev
 Dev
 devnet

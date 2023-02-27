@@ -4,11 +4,11 @@ In the section we will modify our initial `Scene` that was made to deploy and in
 
 ## Account Scenes
 
-The modification will be to take advantage of the fact that when launching `MxOps`, we can specify several files and/or folders with `Scenes`.
+The improvement here will take advantage of the fact that when launching `MxOps`, we can specify several files and/or folders with `Scenes`.
 
 We will define the accounts in separate files per network type. Let's start by creating folder `mxops_scenes` with a sub_folder `accounts`.
 
-We will write the `Scene`  `mxops_scenes/accounts/local.yaml` with no step at all, just the account definition:
+We will write the `Scene`  `mxops_scenes/accounts/devnet.yaml` with no step at all, just the account definition:
 
 ```yaml
 allowed_networks:
@@ -41,7 +41,7 @@ accounts:
 Two details to notice:
 
 - a regex has been used for the allowed `Scenarios`: we want to allow all `Scenarios` as we are just specifying the account.
-- the wallets my_devnet_wallet and bob have been defined with the same name: we only have to refer to the account name "owner" in the scene we will write.
+- the wallets my_devnet_wallet and bob have been defined with the same name: we only have to refer to the account name "owner" in the scenes we will write later on.
 
 ## Deploy Scene
 
@@ -83,7 +83,7 @@ Three important changes:
 
 We can now write the final `Scene`of this tutorial. And for this occasion let's introduce a new component: The `ContractQuery` `Step`. This tells `Mxops` to query the view of a contract and optionally you can save the results and/or print it.
 
-In our situation let's say that we forgot what is the ping amount we need to send to our contract. We could look at the deploy transaction and look at the supplied arguments but that is not convenient. Instead query the ping amount directly from the deployed contract and save this value for when we want to ping.
+In our situation let's say that we forgot what is the ping amount we need to send to our contract. We could look at the deploy transaction and look at the supplied arguments but that is not convenient. Instead we will query the ping amount directly from the deployed contract and save this value for when we want to ping.
 
 Such `Step` would look like this:
 
@@ -221,6 +221,8 @@ This program comes with ABSOLUTELY NO WARRANTY
 
 You can notice the extra query `Step` in the logs compared to the first version of this tutorial.
 
+You can now ping and pong the contract again, without making a new deployment each time.
+
 ## Data
 
 Let's take a look at the data of the current `Scenario`:
@@ -256,4 +258,4 @@ This program comes with ABSOLUTELY NO WARRANTY
 
 You can notice the "PingAmount" value has indeed been saved under the contract "egld-ping-pong".
 
-Lady and Gentleman, it is now time to wrap things up and go towards the 👉 {doc}`conclusion of this tutorial<conclusion>` 🏁
+Ladies and Gentlemen, it is now time to wrap things up and go towards the 👉 {doc}`conclusion of this tutorial<conclusion>` 🏁

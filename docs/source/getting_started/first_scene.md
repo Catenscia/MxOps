@@ -12,11 +12,11 @@ Nothing fancy there, but this will teach you the strings of `MxOps` and you will
 
 ## Folder
 
-In this tutorial, we will create some files and clone a git repository so create a new folder to keep things clean. Let's say `mxops_tutorial` for example.
+In this tutorial, we will create some files and clone a git repository. To keep things nice and tidy, we'll create a new folder. Let's say `mxops_tutorial` for example.
 
 ## Owner Wallet
 
-We will need a wallet to make our tests. The easiest is to use a pem wallet:
+We will need a wallet to make our tests. The easiest is to use a pem wallet, as it doesn't require a confirmation when signing transactions:
 
 ```bash
 mkdir wallets
@@ -27,14 +27,15 @@ mxpy wallet derive wallets/my_devnet_wallet.pem
 The secret key is written in clear in a pem file! It is very useful for tests but unless you know what you are doing, don't use pem files for the mainnet.
 ```
 
-We will execute this tutorial on the devnet, so the account you just created will need some devnet eGLD. For that, the faucet on the [devnet wallet](https://devnet-wallet.multiversx.com) can be used.
+We will execute this tutorial on the devnet, so the account you just created will need some devnet eGLD. You an use the faucet on the [devnet wallet](https://devnet-wallet.multiversx.com) to get some.
 
 ```{thumbnail} ../images/devnet_faucet.png
 ```
 
 ## Smart Contract Build
 
-Let's retrieve now the source code of the ping-pong contract and compile it:
+To deploy a smart-contract, we need it in wasm format.
+Let's retrieve from Github the source code of the ping-pong contract and compile it:
 
 ```bash
 git clone https://github.com/multiversx/mx-ping-pong-sc contract
@@ -53,9 +54,9 @@ The contract is now compiled and ready to be deployed! 📡
 
 ## Scene
 
-Everything is in place for us to create our first `Scene` so let's get to work now ⚒️👷‍♂️
+Everything is in place for us to create our first `Scene` so let's get to work ⚒️👷‍♂️
 
-For this, create a file named `first_scene.yaml`. Your folder should now look like this:
+For this, create a file named `first_scene.yaml`. This file will contain you first `Scene` and your folder should now look like this:
 
 ```text
 mxops_tutorial
@@ -90,7 +91,7 @@ allowed_scenario:
 
 ### Wallet
 
-The next thing we can specify in a `Scene` is a list of wallets we will use later on. Here we have only one wallet so we will name it `owner`.
+The next thing we can specify in a `Scene` is a list of wallets we will use later on. Here we have only one wallet and we will use it to deploy the ping-pong contract so we will name it `owner`.
 
 ```yaml
 accounts:
@@ -131,8 +132,8 @@ The `ContractStep` will look like this:
     contract_id: "egld-ping-pong"
     gas_limit: 50000000
     arguments:
-      - 500000000000000000
-      - 1
+      - 500000000000000000 # 0.5eGLD
+      - 1 # 1 sec
     upgradeable: True
     readable: False
     payable: False
@@ -149,12 +150,14 @@ Once our contract is deployed, we can ping it. This will be done with a `Contrac
     contract: "egld-ping-pong"
     endpoint: ping
     gas_limit: 100000000
-    value: 500000000000000000
+    value: 500000000000000000 # 0.5eGLD
 ```
 
 #### Step 3: Pong
 
-As we set a wait time of 1 second to be able to pong, we can do it immediately. We will use again a `ContractCall` `Step` but this time for the `pong` endpoint which doesn't needs any arguments nor transfers.
+As we set a wait time of 1 second and a block confirmation time is more than that, we can call the "pong" endpoint immediately after the ping confirmation.
+
+We will use again a `ContractCall` `Step` but this time for the `pong` endpoint which doesn't needs any arguments nor transfers.
 
 ```yaml
   - type: ContractCall

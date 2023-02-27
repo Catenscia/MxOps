@@ -1,5 +1,8 @@
 # Steps
 
+In `MxOps`, any action to be executed is called a `Step`.
+In other words, a `Scene` contains a series of `Steps` that tells what `MxOps` should do.
+
 Several type of `Steps` exists, to allow users to easily construct complex `Scenes`.
 If you feel something is missing, please make a suggestion in the [github](https://github.com/Catenscia/MxOps/discussions/categories/ideas)!
 
@@ -24,7 +27,7 @@ payable_by_sc: True
 
 ## Contract Call Step
 
-This `Step` is used to call the endpoint of a contract.
+This `Step` is used to call the endpoint of a deployed contract.
 
 ```yaml
 type: ContractCall

@@ -101,9 +101,9 @@ allowed_scenario:
 
 accounts:
   - account_name: owner
-    pem_path: ./wallets/bob.pem
+    pem_path: ./wallets/devnet_owner.pem
   - account_name: user
-    pem_path: ./wallets/alice.pem
+    pem_path: ./devnet_user.pem
 ```
 
 #### Result Structure
@@ -120,7 +120,7 @@ Our project should now be like this:
 ├── mxops_scenes/
 │   └── accounts/
 │       ├── local_accounts.yaml
-│       └── devent_account.yaml
+│       └── devnet_account.yaml
 ├── scripts
 ├── wallets/
 │   ├── alice.pem
@@ -151,7 +151,7 @@ We will call this situation "User Exploit" and create a special folder for the c
 ├── mxops_scenes/
 │   └── accounts/
 │       ├── local_accounts.yaml
-│       └── devent_account.yaml
+│       └── devnet_account.yaml
 ├────── user_exploit/
 ├── scripts
 ├── wallets/
@@ -439,7 +439,7 @@ Our project should now be like this:
 ├── mxops_scenes/
 │   ├── accounts/
 │   │   ├── local_accounts.yaml
-│   │   └── devent_account.yaml
+│   │   └── devnet_account.yaml
 ├────── user_exploit/
 │       ├── 01_esdt_minter_init.yaml
 │       ├── 02_piggy_bank_init.yaml
