@@ -164,3 +164,4 @@ def dump_default_config():
 
     with open(dump_path.as_posix(), 'w+', encoding='utf-8') as dump_file:
         dump_file.write(default_content)
+    print(f'Copy of the default config dumped at {dump_path.absolute()}')
