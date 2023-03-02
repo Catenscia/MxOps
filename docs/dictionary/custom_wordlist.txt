@@ -3,6 +3,8 @@ AppFolder
 blockchain
 blockchains
 ChangeLog
+config
+configparser
 customization
 customizations
 DevOps
