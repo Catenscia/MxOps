@@ -1,6 +1,7 @@
 # MxOps related files
 
 mxops_config.ini
+tutorials/**/contract
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -131,3 +132,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+# Exceptions
+!**/**/.gitkeep

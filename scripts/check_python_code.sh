@@ -19,12 +19,12 @@ then
     printf "${RED}bandit output is not empty, test failed${NC}\n"
     exit 1
 else
-    printf "${GREEN}bandit success${NC}\n"
+    printf "${GREEN}bandit success${NC}\n\n\n"
 fi
 
 # launch flake8 on the entire repository
 # it is mandatory to obtain valid check
-printf "\n\n${BLUE}##########\n# Flake8\n##########${NC}\n"
+printf "${BLUE}##########\n# Flake8\n##########${NC}\n"
 OUTPUT=$(flake8 .)
 if [ ! -z "${OUTPUT}" ]
 then
@@ -32,12 +32,12 @@ then
     printf "${RED}flake8 output is not empty, test failed${NC}\n"
     exit 2
 else
-    printf "${GREEN}flake8 success${NC}\n"
+    printf "${GREEN}flake8 success${NC}\n\n\n"
 fi
 
 # launch pylint only on the mxops package
 # score should be equal or above 9.5
-printf "\n\n${BLUE}##########\n# Pylint\n##########${NC}\n"
+printf "${BLUE}##########\n# Pylint\n##########${NC}\n"
 OUTPUT=$(pylint mxops)
 echo "${OUTPUT}"
 SCORE=$(sed -n '$s/[^0-9]*\([0-9.]*\).*/\1/p' <<< "$OUTPUT")
@@ -48,7 +48,7 @@ then
     printf "${RED}pylint score below 9.5, test failed${NC}\n"
     exit 3
 else
-    printf "${GREEN}pylint success${NC}\n"
+    printf "${GREEN}pylint success${NC}\n\n\n"
 fi
 
 exit 0

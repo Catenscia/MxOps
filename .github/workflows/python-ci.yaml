@@ -3,85 +3,128 @@ name: python-ci
 on: push
 
 jobs:
-  code-check:
+  code-check-job:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.8'
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements-dev.txt
-    - name: Check python code
-      run: |
-        bash scripts/check_python_code.sh
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.8'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+      - name: Check python code
+        run: |
+          bash scripts/check_python_code.sh
 
 
-  tests:
+  tests-job:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.8'
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements-dev.txt
-    - name: Test python code
-      run: |
-        bash scripts/launch_tests.sh
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.8'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+      - name: Test python code
+        run: |
+          bash scripts/launch_unit_tests.sh
 
 
-  documentation:
+  documentation-job:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.8'
-    - name: Install aspell
-      run: sudo apt-get install -y aspell
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements-dev.txt
-    - name: Check and Build Documentation
-      run: |
-        bash scripts/build_doc.sh
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.8'
+      - name: Install aspell
+        run: sudo apt-get install -y aspell
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+      - name: Check and Build Documentation
+        run: |
+          bash scripts/build_doc.sh
   
 
-  build-publish:
+  build-job:
     runs-on: ubuntu-latest
-    needs: ['code-check', 'tests', 'documentation']
+    needs: ['code-check-job', 'tests-job', 'documentation-job']
+    outputs:
+      package_version: ${{ steps.retrieve-version.outputs.package_version }}
+      should_tag_publish: ${{ steps.retrieve-version.outputs.should_tag_publish }}
 
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.8'
-  
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements-dev.txt
-
-    - name: Build python code
-      run: |
-        bash scripts/build.sh
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.8'
     
-    - name: Publish package
-      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags') && github.ref_name == 'main'
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        password: ${{ secrets.PYPI_API_TOKEN }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Cache dist file
+        uses: actions/cache@v3
+        id: dist-cache
+        with:
+          path: ./dist
+          key: dist-${{ runner.os }}-${{ hashFiles('./pyproject.toml') }}
+
+      - name: Build python code
+        if: steps.dist-cache.outputs.cache-hits != 'true'
+        run: bash scripts/build.sh
+      
+      - name: retrieve version
+        id: retrieve-version
+        run: |
+          PACKAGE_VERSION=$(bump2version --dry-run --list patch | grep current_version | sed -E 's/.*=//')
+          echo "package_version=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
+          if [ $GITHUB_REF == "refs/heads/main" ]
+          then
+            echo "should_tag_publish=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_tag_publish=false" >> $GITHUB_OUTPUT
+          fi
+  
+  tag-publish-job:
+    runs-on: ubuntu-latest
+    needs: ['build-job']
+    if: ${{ needs.build-job.outputs.should_tag_publish == 'true' }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Restore dist files from cache
+        uses: actions/cache@v3
+        id: dist-cache
+        with:
+          path: ./dist
+          key: dist-${{ runner.os }}-${{ hashFiles('./pyproject.toml') }}
+
+      - name: Tag version
+        run: |
+          VERSION_NAME="v${{ needs.build-job.outputs.package_version }}"
+          git config user.email "41898282+github-actions@users.noreply.github.com"
+          git config user.name "github-actions"
+          git tag -a "$VERSION_NAME" -m "Release $VERSION_NAME"
+          git push origin $VERSION_NAME
+      
+      - name: Publish package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_KEY }}
