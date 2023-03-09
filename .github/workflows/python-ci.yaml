@@ -36,7 +36,7 @@ jobs:
           pip install -r requirements-dev.txt
       - name: Test python code
         run: |
-          bash scripts/launch_tests.sh
+          bash scripts/launch_unit_tests.sh
 
 
   documentation-job:
