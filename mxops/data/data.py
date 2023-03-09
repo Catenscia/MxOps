@@ -28,9 +28,6 @@ class ContractData:
     """
     contract_id: str
     address: str
-    wasm_hash: str
-    deploy_time: int
-    last_upgrade_time: int
     saved_values: Dict[str, Any]
 
     def set_value(self, value_key: str, value: Any):
@@ -42,7 +39,10 @@ class ContractData:
         :param value: value to save
         :type value: Any
         """
-        self.saved_values[value_key] = value
+        if value_key == 'address':
+            self.address = value
+        else:
+            self.saved_values[value_key] = value
 
     def get_saved_value(self, value_key: str) -> Any:
         """
@@ -69,7 +69,28 @@ class ContractData:
         self_dict = {**self.__dict__}
         # avoid shallow copy (warning: not nested proof)
         self_dict['saved_values'] = dict(self_dict['saved_values'])
+        # add attribute to indicate internal/external
+        self_dict['is_external'] = isinstance(self, ExternalContractData)
         return self_dict
+
+
+@dataclass
+class InternalContractData(ContractData):
+    """
+    Dataclass representing the data that can be locally saved for a contract
+    managed by MxOps
+    """
+    wasm_hash: str
+    deploy_time: int
+    last_upgrade_time: int
+
+
+@dataclass
+class ExternalContractData(ContractData):
+    """
+    Dataclass representing the data that can be locally saved for a contract
+    not managed by MxOps
+    """
 
 
 @dataclass
@@ -107,7 +128,14 @@ class _ScenarioData:
         checked_data = {}
         for contract_id, contract_data in self.contracts_data.items():
             if isinstance(contract_data, Dict):
-                checked_data[contract_id] = ContractData(**contract_data)
+                try:
+                    is_external = contract_data.pop('is_external')
+                except KeyError:
+                    is_external = False
+                if is_external:
+                    checked_data[contract_id] = ExternalContractData(**contract_data)
+                else:
+                    checked_data[contract_id] = InternalContractData(**contract_data)
             elif isinstance(contract_data, ContractData):
                 checked_data[contract_id] = contract_data
             else:

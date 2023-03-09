@@ -11,9 +11,10 @@ from typing import Dict, List
 
 from multiversx_sdk_cli.contracts import CodeMetadata
 
-from mxops.data.data import ContractData, ScenarioData
+from mxops.data.data import InternalContractData, ScenarioData
 from mxops.execution.account import AccountsManager
 from mxops.execution import contract_interactions as cti
+from mxops.execution.checks import Check, SuccessCheck, instanciate_checks
 from mxops.execution.msc import EsdtTransfer
 from mxops.execution.network import raise_on_errors, send, send_and_wait_for_result
 from mxops.execution.utils import parse_query_result
@@ -27,7 +28,7 @@ LOGGER = get_logger('steps')
 @dataclass
 class Step:
     """
-    Represents a instruction to execute within a scene
+    Represents an instruction to execute within a scene
     """
 
     def execute(self):
@@ -42,7 +43,7 @@ class Step:
 
 
 @dataclass
-class LoopStep:
+class LoopStep(Step):
     """
     Represents a set of steps to execute several time
     """
@@ -78,20 +79,13 @@ class LoopStep:
 
 
 @dataclass
-class ContractStep(Step):  # pylint: disable=W0223
-    """
-    Represents a step dealing with a smart contract
-    """
-    contract_id: str
-
-
-@dataclass
-class ContractDeployStep(ContractStep):
+class ContractDeployStep(Step):
     """
     Represents a smart contract deployment
     """
     sender: Dict
     wasm_path: str
+    contract_id: str
     gas_limit: int
     upgradeable: bool = True
     readable: bool = True
@@ -127,29 +121,30 @@ class ContractDeployStep(ContractStep):
                      f'\ntx hash: {get_tx_link(on_chain_tx.hash)}'))
 
         creation_timestamp = on_chain_tx.to_dictionary()['timestamp']
-        contract_data = ContractData(
+        contract_data = InternalContractData(
             self.contract_id,
             contract.address.bech32(),
+            {},
             get_file_hash(wasm_path),
             creation_timestamp,
             creation_timestamp,
-            {}
         )
         scenario_data.add_contract_data(contract_data)
 
 
 @dataclass
-class ContractCallStep(ContractStep):
+class ContractCallStep(Step):
     """
     Represents a smart contract endpoint call
     """
     sender: Dict
+    contract: str
     endpoint: str
     gas_limit: int
     arguments: List = field(default_factory=lambda: [])
     value: int = 0
     esdt_transfers: List[EsdtTransfer] = field(default_factory=lambda: [])
-    check_for_errors: bool = True
+    checks: List[Check] = field(default_factory=lambda: [SuccessCheck()])
 
     def __post_init__(self):
         """
@@ -168,17 +163,17 @@ class ContractCallStep(ContractStep):
                 raise ValueError(f'Unexpected type: {type(trf)}')
         self.esdt_transfers = checked_transfers
 
+        if len(self.checks) > 0 and isinstance(self.checks[0], Dict):
+            self.checks = instanciate_checks(self.checks)
+
     def execute(self):
         """
         Execute a contract call
         """
-        LOGGER.info(f'Calling {self.endpoint} for {self.contract_id}')
+        LOGGER.info(f'Calling {self.endpoint} for {self.contract}')
         sender = AccountsManager.get_account(self.sender)
-        scenario_data = ScenarioData.get()
-        contract_address = scenario_data.get_contract_value(self.contract_id,
-                                                            'address')
 
-        tx = cti.get_contract_call_tx(contract_address,
+        tx = cti.get_contract_call_tx(self.contract,
                                       self.endpoint,
                                       self.gas_limit,
                                       self.arguments,
@@ -186,9 +181,10 @@ class ContractCallStep(ContractStep):
                                       self.esdt_transfers,
                                       sender)
 
-        if self.check_for_errors:
+        if self.checks:
             on_chain_tx = send_and_wait_for_result(tx)
-            raise_on_errors(on_chain_tx)
+            for check in self.checks:
+                check.raise_on_failure(on_chain_tx)
             LOGGER.info(
                 f'Call successful: {get_tx_link(on_chain_tx.hash)}')
         else:
@@ -198,10 +194,11 @@ class ContractCallStep(ContractStep):
 
 
 @dataclass
-class ContractQueryStep(ContractStep):
+class ContractQueryStep(Step):
     """
     Represents a smart contract query
     """
+    contract: str
     endpoint: str
     arguments: List = field(default_factory=lambda: [])
     expected_results: List[Dict[str, str]] = field(default_factory=lambda: [])
@@ -211,11 +208,9 @@ class ContractQueryStep(ContractStep):
         """
         Execute a query and optionally save the result
         """
-        LOGGER.info(f'Query on {self.endpoint} for {self.contract_id}')
+        LOGGER.info(f'Query on {self.endpoint} for {self.contract}')
         scenario_data = ScenarioData.get()
-        contract_address = scenario_data.get_contract_value(self.contract_id,
-                                                            'address')
-        results = cti.query_contract(contract_address,
+        results = cti.query_contract(self.contract,
                                      self.endpoint,
                                      self.arguments)
 
@@ -229,7 +224,7 @@ class ContractQueryStep(ContractStep):
             for result, expected_result in zip(results, self.expected_results):
                 parsed_result = parse_query_result(result,
                                                    expected_result['result_type'])
-                scenario_data.set_contract_value(self.contract_id,
+                scenario_data.set_contract_value(self.contract,
                                                  expected_result['save_key'],
                                                  parsed_result)
 
@@ -238,12 +233,12 @@ class ContractQueryStep(ContractStep):
 
 def instanciate_steps(raw_steps: List[Dict]) -> List[Step]:
     """
-    Take steps as dictionaries and convert them to their conrresponding step classes.
+    Take steps as dictionaries and convert them to their corresponding step classes.
 
     :param raw_steps: steps to instantiate
     :type raw_steps: List[Dict]
     :return: steps instances
-    :rtype: List[steps.Step]
+    :rtype: List[Step]
     """
     steps_list = []
     for raw_step in raw_steps:

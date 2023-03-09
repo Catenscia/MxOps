@@ -1,6 +1,6 @@
 # Scenario
 
-`Scenario` are an environment in which the results of the every `step` execution will be stored locally on your computer. This allows to execute identical `Scenes` on different contracts in the **same** network and it is also essential to use these results at a later time (for example to upgrade a contract).
+A `Scenario` is a virtual context that separates contract interactions and in which the results of `step` executions can be stored locally on your computer. This allows to execute identical `Scenes` on different contracts in the **same** network.
 
 ## Structure
 
@@ -8,9 +8,9 @@
 This means that wherever you activate MxOps, you will write and read at the same place.
 
 Each `Scenario` has a dedicated file per network. This means that you can run a `Scenario` on the devnet and if you are
-satisfied, launch the same `Scenario` on the mainnet without changing any file.
+satisfied, launch the same `Scenario` on the mainnet without changing any `Scene`.
 
-The files organised as below:
+The files are organized as below:
 
 ```bash
 
@@ -31,11 +31,11 @@ Where:
 - <my_scenario>.json is the file where all the contract data of the executed scenario are stored
 
 ```{note}
-The files are kept after each executions. This means that you can reuse a `Scenario` and execute new `Scenes` in it. This is very usefull for incremental executions (deploy, upgrade...) or reccurent tasks (complexe claim/compound cycles for example)
+The files are kept after each executions. This means that you can reuse a `Scenario` and execute new `Scenes` in it. This is very useful for incremental executions (deploy, upgrade...) or recurrent tasks (complex claim/compound cycles for example)
 ```
 
 ```{warning}
-This also means that `Scenario` names should be unique for all your projects. Otherwise you may encounter data collision.
+This also means that `Scenario` names should be unique per network for all your projects. Otherwise you may encounter data collision.
 ```
 
 ## Commands

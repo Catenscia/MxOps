@@ -12,7 +12,7 @@ from typing import Dict, List
 import yaml
 
 from mxops.config.config import Config
-from mxops.data.data import ScenarioData
+from mxops.data.data import ExternalContractData, ScenarioData
 from mxops.execution.steps import Step, instanciate_steps
 from mxops.execution.account import AccountsManager
 from mxops import errors
@@ -30,8 +30,9 @@ class Scene:
     """
     allowed_networks: List[str]
     allowed_scenario: List[str]
-    accounts: List[Dict] = field(default_factory=lambda: [])
-    steps: List[Step] = field(default_factory=lambda: [])
+    accounts: List[Dict] = field(default_factory=list)
+    steps: List[Step] = field(default_factory=list)
+    external_contracts: Dict[str, str] = field(default_factory=dict)
 
     def __post_init__(self):
         """
@@ -97,6 +98,15 @@ def execute_scene(scene_path: Path):
     for account in scene.accounts:
         AccountsManager.load_account(**account)
         AccountsManager.sync_account(account['account_name'])
+
+    # load external contracts addresses
+    for contract_id, address in scene.external_contracts.items():
+        try:
+            # try to update the contract address while keeping data intact
+            scenario_data.set_contract_value(contract_id, 'address', address)
+        except errors.UnknownContract:
+            # otherwise create the contract data
+            scenario_data.add_contract_data(ExternalContractData(contract_id, address, {}))
 
     # execute steps
     for step in scene.steps:

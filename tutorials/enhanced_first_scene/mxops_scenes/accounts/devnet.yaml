@@ -1,0 +1,9 @@
+allowed_networks:
+    - DEV
+
+allowed_scenario:
+    - ".*"
+
+accounts:
+  - account_name: owner
+    pem_path: ./wallets/my_devnet_wallet.pem

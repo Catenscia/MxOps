@@ -1,6 +1,6 @@
 # Values
 
-To be as dynamic as possible, MxOps allows runtime evaluation of variables. This means that you can specify a generic argument and its actual value will change depending on its current state.
+To be as dynamic as possible, MxOps allows runtime evaluation of variables. This means that you can specify a generic argument and its actual value will change depending on the current state.
 
 ## Syntax
 
@@ -18,11 +18,11 @@ for example:
 
 The symbol is used to indicate which data source to use.
 
-| Symbol | Source               |
-|--------|----------------------|
-| &      | MxOps config file    |
-| $      | Environment variable |
-| %      | Scenario data        |
+| Symbol | Source                      |
+|--------|-----------------------------|
+| &      | MxOps configuration file    |
+| $      | Environment variable        |
+| %      | Scenario data               |
 
 ### Type
 
@@ -41,8 +41,4 @@ See example in the [Loop Step section](loop_step_target).
 
 ### Account Address
 
-To reference the address of an account specified in the `accounts` field of a `Scene`, one must use the following syntx: `[account_name]`.
-
-## Next Step
-
-There isnow only one last step for you to be able to execute your scenes! Heads up to the {doc}`execution` section!
+To reference as an argument the address of an account specified in the `accounts` field of a `Scene`, one must use the following syntax: `[account_name]`.

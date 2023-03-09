@@ -18,3 +18,4 @@ Available sub-commands:
                 Options:
                     -s, --scenario          name of the scenario to delete
                     -a, --all               delete all scenarios for the specified network
+                    -y, --yes               skip confirmation step

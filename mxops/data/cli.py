@@ -71,6 +71,11 @@ def add_subparser(subparsers_action: _SubParsersAction):
                                action='store_true',
                                help='Delete all scenarios saved for the specified network')
 
+    delete_parser.add_argument('-y',
+                               '--yes',
+                               action='store_true',
+                               help='Skip confirmation step')
+
 
 def execute_cli(args: Namespace):  # pylint: disable=R0912
     """
@@ -100,15 +105,15 @@ def execute_cli(args: Namespace):  # pylint: disable=R0912
             raise ArgumentError(None, 'This set of options is not valid')
     elif sub_command == 'delete':
         if args.scenario:
-            delete_scenario_data(args.scenario)
+            delete_scenario_data(args.scenario, not args.yes)
         elif args.all:
             scenarios_names = path.get_all_scenarios_names()
             message = 'Confirm deletion of all scenario. (y/n)'
-            if input(message).lower() not in ('y', 'yes'):
+            if not args.yes or input(message).lower() not in ('y', 'yes'):
                 print('User aborted deletion')
                 return
             for scenario in scenarios_names:
-                delete_scenario_data(scenario)
+                delete_scenario_data(scenario, False)
         else:
             raise ArgumentError(None, 'This set of options is not valid')
     else:

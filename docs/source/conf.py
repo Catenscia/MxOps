@@ -11,7 +11,7 @@ about = {}
 with open(os.path.join(this_directory, '../../pyproject.toml'), encoding='utf-8') as file:
     content = file.read()
 
-version_pattern = '\nversion\s*=\s*"(.*)"\n'
+version_pattern = r'\nversion\s*=\s*"(.*)"\n'
 pattern_match = re.search(version_pattern, content)
 if pattern_match is None:
     raise RuntimeError("Could not retrieve the version from pyproject.toml")

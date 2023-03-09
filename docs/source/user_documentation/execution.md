@@ -1,6 +1,6 @@
 # Execution
 
-Once you have written your `Scene`, the only thing left for you is to pass them to MxOps for execution.
+Once you have written your `Scenes`, the only thing left for you is to pass them to MxOps for execution.
 
 When executing `Scenes`, you will need to supply a network, a scenario and any number of `Scenes` or folders of `Scenes`.
 

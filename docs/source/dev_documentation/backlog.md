@@ -6,5 +6,7 @@
 - [ ] Add Maiar support
 - [ ] Add a specific step for contract ownership transfer.
 - [ ] Add a skip keyword to skip steps without deleting them
-- [ ] Add querry and call support for external contracts
 - [ ] Add configurable transactions contents checks (transfers, data, results...)
+- [ ] Handle list type in query results
+- [ ] Initialize all scenes before any execution to prevent mid-run interruption
+- [ ] Create a ContractUpgrade Step

@@ -1,12 +1,15 @@
 # Steps
 
-Several type of `Steps` exists, to allow users to easily construct complexe `Scenes`.
-If you feel something is missing, please make a suggestion in the github!
+In `MxOps`, any action to be executed is called a `Step`.
+In other words, a `Scene` contains a series of `Steps` that tells what `MxOps` should do.
+
+Several type of `Steps` exists, to allow users to easily construct complex `Scenes`.
+If you feel something is missing, please make a suggestion in the [github](https://github.com/Catenscia/MxOps/discussions/categories/ideas)!
 
 ## Contract Deploy Step
 
 This `Step` is used to deploy a contract. The address of the new contract will be
-saved in the `Scenario` (specified at execution time) under the provided id to allow futur interactions.
+saved in the `Scenario` (specified at execution time) under the provided id to allow future interactions.
 
 ```yaml
 type: ContractDeploy
@@ -24,7 +27,7 @@ payable_by_sc: True
 
 ## Contract Call Step
 
-This `Step` is used to call the endpoint of a contract.
+This `Step` is used to call the endpoint of a deployed contract.
 
 ```yaml
 type: ContractCall
@@ -34,7 +37,7 @@ endpoint: myEndpoint
 gas_limit: 60000000
 arguments:  # optional, args of the endpoint
   - arg1
-value: 0  # optional, amount of egld to send
+value: 0  # optional, amount of eGLD to send
 esdt_transfers:  # optional, ESDTs to send
   - token_identifier: ALICE-123456
     amount: 58411548
@@ -42,10 +45,11 @@ esdt_transfers:  # optional, ESDTs to send
   - token_identifier: LKMEX-e45d41
     amount: 848491898
     nonce: 721
-check_for_errors: True  # optional, True by default
+checks:  # optional, by default it will contain a transaction success check
+  - type: Success  
 ```
 
-`check_for_errors` is the parameter that tells`MxOps` to verify that the transaction went without errors. If an error is found, the execution will be stopped. In some use-cases, for example if you want to launch 100s of txs, you can deactivate this parameter for faster execution.
+`SuccessCheck` tells `MxOps` to verify that the transaction went without errors. If an error is found, the execution will be stopped. In some use cases, for example if you want to launch 100s of txs, you can deactivate this parameter for faster execution.
 
 ## Contract Query Step
 
@@ -54,7 +58,7 @@ For example to fetch the identifier of a token created by a contract and stored 
 
 ```yaml
 type: ContractQuery
-contract_id: my_first_sc
+contract: my_first_sc
 endpoint: getEsdtIdentifier
 arguments: []
 expected_results:  # list of results excpected from the query output
@@ -81,7 +85,7 @@ var_start: 1
 var_end: 100
 steps:
   - type: ContractQuery
-    contract_id: my_first_sc
+    contract: my_first_sc
     endpoint: getSftAmount
     arguments:
       - TokenIdentifier4
@@ -92,7 +96,7 @@ steps:
   
   - type: ContractCall
     sender: alice
-    contract_id: my_first_sc
+    contract: my_first_sc
     endpoint: RetrieveSft
     gas_limit: 60000000
     arguments:
@@ -112,7 +116,5 @@ steps:
     [...]
 ```
 
-## Next Step
-
-You will notice that some symboles are used in the arguments of the above `ContractCall`. These are here to dynamically fetch values from different sources.
+You will notice that some symbols are used in the arguments of the above `ContractCall`. These are here to dynamically fetch values from different sources.
 Heads up to the {doc}`values` section for more information.

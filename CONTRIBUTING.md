@@ -19,6 +19,7 @@ Please follow this steps:
 - Fork this repo
 - create a new branch from `develop`
 - make your changes and commits continuously to your branch
+- execute `scripts/check_python_code.sh` and ensure that all tests pass
 - submit a PR from your branch to the `develop` branch of this repo
 
 ## Branch names
@@ -30,7 +31,7 @@ The examples below should fit most needs.
 |-------------------|--------------------------------------------------------|----------------------------|
 | **Feature**       | For any feature that will be added to the project      | `feature_<feature_name>`   |
 | **Fix**           | For any bug fix on the project                         | `fix_<bug_name>`           |
-| **Refactor**      | For any change that do not impact the functionnalities | `refactor_<refactor_name>` |
+| **Refactor**      | For any change that do not impact the functionalities | `refactor_<refactor_name>` |
 | **Test**          | For any test(s) that will be added to the project      | `test_<test_name>`         |
 | **Documentation** | For any change in the documentation                    | `docs_<change_name>`       |
 

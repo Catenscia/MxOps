@@ -3,12 +3,31 @@ author: Etienne Wallet
 
 Errors used in the MxOps package
 """
+from dataclasses import dataclass
 from pathlib import Path
-from typing import List
+from typing import Any, List
 
 from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
 
 from mxops.utils.msc import get_tx_link
+
+
+#############################################################
+#
+#                   Operation Errors
+#
+#############################################################
+
+
+class ParsingError(Exception):
+    """
+    To be raise when some data could not be parsed successfuly
+    """
+
+    def __init__(self, raw_object: Any, parsing_target: str, ) -> None:
+        message = f"Could not parse {raw_object} as {parsing_target}"
+        super().__init__(message)
+
 
 #############################################################
 #
@@ -23,7 +42,7 @@ class UnknownScenario(Exception):
     """
 
     def __init__(self, scenario_name: str) -> None:
-        message = (f'Scenario {scenario_name} is unkown')
+        message = f'Scenario {scenario_name} is unkown'
         super().__init__(message)
 
 
@@ -182,3 +201,23 @@ class EmptyQueryResults(Exception):
     """
     To be raised when a query returned no results
     """
+
+
+#############################################################
+#
+#                   Check Errors
+#
+#############################################################
+
+class CheckFailed(Exception):
+    """
+    To be raised when an on-chain transaction check fails
+    """
+
+    def __init__(self, check: dataclass, tx: TransactionOnNetwork, *args: object) -> None:
+        self.check = check
+        self.tx = tx
+        super().__init__(*args)()
+
+    def __str__(self) -> str:
+        return f'Check failed on transaction {get_tx_link(self.tx.hash)}\nCheck: {self.check}'
