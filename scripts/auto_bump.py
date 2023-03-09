@@ -83,7 +83,7 @@ def get_change_to_apply(
     """
     if version_parts[ChangeType.RELEASE] is None:
         if commit_change_type == ChangeType.BUILD:
-            raise ValueError(f'Build can not be increased if release is None')
+            raise ValueError('Build can not be increased if release is None')
         return commit_change_type
     if (
         commit_change_type == ChangeType.MINOR
@@ -122,7 +122,7 @@ def parse_args() -> Namespace:
         'commits_messages',
         type=str,
         help='concatenation of all commits messages to include in the version bum')
-    
+
     parser.add_argument(
         '--dry-run',
         action='store_true',
