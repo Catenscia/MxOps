@@ -43,4 +43,9 @@ jobs:
       
       - name : Update changelog if targeting main branch
         if: ${{ github.event.pull_request.base.ref == 'main' }}
-        run: bash scripts/changelog_release.sh
+        run: |
+          bash scripts/changelog_release.sh
+          git add docs/source/dev_documentation/changelog.md
+          VERSION=$(bump2version --dry-run --list patch | grep current_version | sed -E 's/.*=//')
+          git commit -m "bump changelog: Unreleased -> ${VERSION}"
+          git push
