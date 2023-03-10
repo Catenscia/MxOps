@@ -5,6 +5,7 @@
 ### Fixed
 
 - Commit change when auto bumping changelog version
+- Make the pylint test fail if a pylint error is detected
 
 ## 1.0.0 - 2023-03-09
 
