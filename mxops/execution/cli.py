@@ -10,7 +10,7 @@ from mxops.config.config import Config
 from mxops.data import path
 from mxops.data.data import ScenarioData
 
-from mxops.enums import NetworkEnum
+from mxops.enums import parse_network_enum
 from mxops.execution.scene import execute_directory, execute_scene
 from mxops import errors
 
@@ -31,7 +31,7 @@ def add_subparser(subparsers_action: _SubParsersAction):
                                        'scene(s) will be executed'))
     scenario_parser.add_argument('-n',
                                  '--network',
-                                 type=NetworkEnum,
+                                 type=parse_network_enum,
                                  required=True,
                                  help=('Name of the network in which the '
                                        'scene(s) will be executed'))
