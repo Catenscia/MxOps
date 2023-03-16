@@ -1,6 +1,6 @@
 # list of network onto which this scene can be run
 allowed_networks:
-  - LOCAL
+  - localnet
 
 allowed_scenario:
   - ".*"

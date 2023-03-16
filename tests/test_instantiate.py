@@ -56,5 +56,5 @@ def test_deploy_scene_instantiation(test_data_folder_path: Path):
     assert expected_steps == loaded_steps
     assert scene.accounts == [
         {'account_name': 'owner', 'pem_path': 'wallets/local_owner.pem'}]
-    assert scene.allowed_networks == ['LOCAL']
+    assert scene.allowed_networks == ['localnet']
     assert scene.allowed_scenario == ['.*']

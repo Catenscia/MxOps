@@ -27,7 +27,7 @@ The files are organized as below:
 Where:
 
 - AppFolder is the application folder on your computer (OS dependent, example: share, AppDir ...)
-- Network will be the name of chain used (MAIN, DEV, TEST or LOCAL) for the scenario
+- Network will be the name of chain used (mainnet, devnet, testnet or localnet) for the scenario
 - <my_scenario>.json is the file where all the contract data of the executed scenario are stored
 
 ```{note}

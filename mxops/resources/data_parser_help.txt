@@ -6,7 +6,7 @@ Available sub-commands:
 
     get     ->  Print recorded contract data for the current env
                 Required:
-                    -n, --network           name of the network to consider (MAIN, DEV, TEST, LOCAL)
+                    -n, --network           name of the network to consider (mainnet, devnet, testnet, localnet)
                 Options:
                     -p, --path              display the root path for the user data
                     -l, --list              print all the scenarios names
@@ -14,7 +14,7 @@ Available sub-commands:
 
     delete  ->  Delete locally saved data for a specified network
                 Required:
-                    -n, --network           name of the network to consider (MAIN, DEV, TEST, LOCAL)
+                    -n, --network           name of the network to consider (mainnet, devnet, testnet, localnet)
                 Options:
                     -s, --scenario          name of the scenario to delete
                     -a, --all               delete all scenarios for the specified network

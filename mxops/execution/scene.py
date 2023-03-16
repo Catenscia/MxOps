@@ -74,10 +74,10 @@ def execute_scene(scene_path: Path):
     network = config.get_network()
 
     # check network authorization
-    if network.name not in scene.allowed_networks:
+    if network.name not in scene.allowed_networks and network.value not in scene.allowed_networks:
         raise errors.ForbiddenSceneNetwork(
             scene_path,
-            network.name,
+            network.value,
             scene.allowed_networks
         )
 

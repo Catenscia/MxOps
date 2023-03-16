@@ -23,7 +23,7 @@ Unless you specifically decide to delete it, the data stored in a `Scenario` is 
 For example, we can see what data has been saved when we executed our first `Scene`. Try this command:
 
 ```bash
-mxops data get -n DEV -s mxops_tutorial_first_scene
+mxops data get -n devnet -s mxops_tutorial_first_scene
 ```
 
 This will give you the following output:
@@ -31,10 +31,10 @@ This will give you the following output:
 ```bash
 MxOps  Copyright (C) 2023  Catenscia
 This program comes with ABSOLUTELY NO WARRANTY
-[2023-02-24 18:07:55,003 data INFO] Scenario mxops_tutorial_first_scene loaded for network DEV [data:262 in load_scenario]
+[2023-02-24 18:07:55,003 data INFO] Scenario mxops_tutorial_first_scene loaded for network devnet [data:262 in load_scenario]
 {
     "name": "mxops_tutorial_first_scene",
-    "network": "DEV",
+    "network": "devnet",
     "creation_time": 1677134890,
     "last_update_time": 1677134896,
     "contracts_data": {

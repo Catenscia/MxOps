@@ -15,7 +15,7 @@ Below are some examples.
 ```bash
 mxops \
     execute \
-    -n MAIN \
+    -n mainnet \
     -s compound_scenario \
     counpound_scene.yaml
 ```
@@ -25,7 +25,7 @@ mxops \
 ```bash
 mxops \
     execute \
-    -n TEST \
+    -n testnet \
     -s integration_tests \
     integration_tests/scenes/accounts/testnet_accounts.yaml \
     integration_tests/scenes
@@ -36,7 +36,7 @@ mxops \
 ```bash
 mxops \
     execute \
-    -n DEV \
+    -n devnet \
     -s integration_tests \
     integration_tests/scenes/accounts/devnet_accounts.yaml \
     integration_tests/test_1_scenes \

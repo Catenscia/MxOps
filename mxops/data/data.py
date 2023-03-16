@@ -10,10 +10,10 @@ import os
 from pathlib import Path
 import time
 from typing import Any, Dict, Optional
+
 from mxops.config.config import Config
 from mxops.data.path import get_scenario_file_path
-
-from mxops.enums import NetworkEnum
+from mxops.enums import NetworkEnum, parse_network_enum
 from mxops import errors
 from mxops.utils.logger import get_logger
 
@@ -104,8 +104,8 @@ class _ScenarioData:
     last_update_time: int
     contracts_data: Dict[str, ContractData]
 
-    @staticmethod
-    def load_from_file(scenario_name: str) -> _ScenarioData:
+    @classmethod
+    def load_from_name(cls, scenario_name: str) -> _ScenarioData:
         """
         Retrieve the locally saved scenario data and instantiate it
 
@@ -115,8 +115,22 @@ class _ScenarioData:
         :rtype: _ScenarioData
         """
         scenario_path = get_scenario_file_path(scenario_name)
+        return cls.load_from_path(scenario_path)
+
+    @staticmethod
+    def load_from_path(scenario_path: Path) -> _ScenarioData:
+        """
+        Retrieve the locally saved scenario data and instantiate it
+
+        :param scenario_path: path to the scenario to load
+        :type scenario_path: Path
+        :return: loaded scenario data
+        :rtype: _ScenarioData
+        """
         with open(scenario_path.as_posix(), 'r', encoding='utf-8') as file:
-            return _ScenarioData(**json.load(file))
+            raw_content = json.load(file)
+        raw_content['network'] = parse_network_enum(raw_content['network'])
+        return _ScenarioData(**raw_content)
 
     def __post_init__(self):
         """
@@ -254,13 +268,13 @@ class ScenarioData:  # pylint: disable=too-few-public-methods
         if cls._instance is not None:
             raise errors.UnloadedScenario
         try:
-            cls._instance = _ScenarioData.load_from_file(scenario_name)
+            cls._instance = _ScenarioData.load_from_name(scenario_name)
         except FileNotFoundError as err:
             raise errors.UnknownScenario(scenario_name) from err
         config = Config.get_config()
         network = config.get_network()
         LOGGER.info((f'Scenario {scenario_name} loaded for '
-                     f'network {network.name}'))
+                     f'network {network.value}'))
 
     @classmethod
     def create_scenario(cls, scenario_name: str):
@@ -285,7 +299,7 @@ class ScenarioData:  # pylint: disable=too-few-public-methods
                                       current_timestamp,
                                       {})
         LOGGER.info((f'Scenario {scenario_name} created for '
-                     f'network {network.name}'))
+                     f'network {network.value}'))
 
 
 def check_scenario_file(scenario_name: str) -> bool:
