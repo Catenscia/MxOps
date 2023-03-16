@@ -1,5 +1,5 @@
 allowed_networks:
-  - LOCAL
+  - localnet
 
 allowed_scenario:
   - "integration_test_piggy_bank.*"
