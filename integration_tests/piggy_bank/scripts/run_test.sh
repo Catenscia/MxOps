@@ -5,13 +5,13 @@ set -e
 python -m mxops \
             data \
             delete \
-            -n DEV \
+            -n $1 \
             -s integration_test_piggy_bank_user_exploit \
             -y
 
 python -m mxops \
             execute \
-            -n DEV \
+            -n $1 \
             -s integration_test_piggy_bank_user_exploit \
-            integration_tests/piggy_bank/mxops_scenes/accounts/devnet_accounts.yaml \
+            "integration_tests/piggy_bank/mxops_scenes/accounts/${1}_accounts.yaml" \
             integration_tests/piggy_bank/mxops_scenes/user_exploit
