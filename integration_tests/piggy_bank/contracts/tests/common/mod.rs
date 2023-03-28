@@ -1,8 +1,8 @@
-use elrond_wasm_debug::{rust_biguint, testing_framework::ContractObjWrapper, DebugApi};
+use multiversx_sc_scenario::{rust_biguint, testing_framework::ContractObjWrapper, DebugApi};
 use esdt_minter::EsdtMinter;
 
-elrond_wasm::imports!();
-elrond_wasm::derive_imports!();
+multiversx_sc::imports!();
+multiversx_sc::derive_imports!();
 
 pub mod blockchain_mod;
 pub mod esdt_minter_mod;

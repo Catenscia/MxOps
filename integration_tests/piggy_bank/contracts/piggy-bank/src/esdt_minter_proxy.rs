@@ -1,9 +1,9 @@
-elrond_wasm::imports!();
+multiversx_sc::imports!();
 
 /// Proxy for the esdt-minter contract
 /// This proxy will be used only to claim interest on the piggy token
 ///
-#[elrond_wasm::proxy]
+#[multiversx_sc::proxy]
 pub trait EsdtMinterProxy {
     #[payable("*")]
     #[endpoint(claimInterests)]

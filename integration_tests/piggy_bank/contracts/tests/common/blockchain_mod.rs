@@ -1,8 +1,8 @@
-elrond_wasm::imports!();
-elrond_wasm::derive_imports!();
+multiversx_sc::imports!();
+multiversx_sc::derive_imports!();
 
-use elrond_wasm::types::Address;
-use elrond_wasm_debug::{rust_biguint, testing_framework::BlockchainStateWrapper};
+use multiversx_sc::types::Address;
+use multiversx_sc_scenario::{rust_biguint, testing_framework::BlockchainStateWrapper};
 
 pub const ESDT_MINTER_WASM_PATH: &'static str = "output/esdt-minter.wasm";
 pub const PIGGY_BANK_WASM_PATH: &'static str = "output/piggy-bank.wasm";

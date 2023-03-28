@@ -2,9 +2,9 @@
 
 mod esdt_minter_proxy;
 
-elrond_wasm::imports!();
+multiversx_sc::imports!();
 
-#[elrond_wasm::contract]
+#[multiversx_sc::contract]
 pub trait PiggyBank {
     // #################   proxy    #################
 
