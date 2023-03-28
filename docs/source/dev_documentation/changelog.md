@@ -13,6 +13,7 @@
 
 ### Fixed
 
+- Error when providing absolute path for `Scenes`
 - Commit change when auto bumping changelog version
 - Make the pylint test fail if a pylint error is detected
 

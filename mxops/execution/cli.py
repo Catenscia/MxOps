@@ -60,7 +60,7 @@ def execute_cli(args: Namespace):
         ScenarioData.get().save()
 
     for element in args.elements:
-        element_path = Path('./' + element)
+        element_path = Path(element)
         if os.path.isfile(element_path):
             execute_scene(element_path)
         elif os.path.isdir(element_path):
