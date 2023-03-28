@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Added
+
+- Networks enumerations can be parsed by their short or full names
+
+### Modified
+
+- Switch integration tests contracts from elrond-wasm to multiversx-sc
+- Add diverse precision on contribution
+
 ### Fixed
 
 - Commit change when auto bumping changelog version

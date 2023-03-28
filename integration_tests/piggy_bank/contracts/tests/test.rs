@@ -1,7 +1,7 @@
-elrond_wasm::imports!();
-elrond_wasm::derive_imports!();
+multiversx_sc::imports!();
+multiversx_sc::derive_imports!();
 
-use elrond_wasm_debug::{rust_biguint, DebugApi};
+use multiversx_sc_scenario::{rust_biguint, DebugApi};
 
 pub mod common;
 use crate::common::{blockchain_mod::*, setup_contracts};

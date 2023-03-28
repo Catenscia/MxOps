@@ -49,8 +49,8 @@ Here is the above `Scene`, but this time with the MxOps syntax:
 
   ```yaml
   allowed_networks:
-    - DEV
-    - MAIN
+    - devnet
+    - mainnet
 
   allowed_scenario:
     - "deploy_stake_withdraw"

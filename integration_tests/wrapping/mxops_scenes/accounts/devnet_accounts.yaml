@@ -1,5 +1,5 @@
 allowed_networks:
-  - DEV
+  - devnet
 
 allowed_scenario:
   - "integration_test_wrapping"

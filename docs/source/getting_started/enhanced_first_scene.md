@@ -12,7 +12,7 @@ We will write the `Scene`  `mxops_scenes/accounts/devnet.yaml` with no step at a
 
 ```yaml
 allowed_networks:
-    - DEV
+    - devnet
 
 allowed_scenario:
     - ".*"
@@ -28,7 +28,7 @@ For example if you wanted to execute this tutorial on the local net, you could c
 
 ```yaml
 allowed_networks:
-    - LOCAL
+    - localnet
 
 allowed_scenario:
     - ".*"
@@ -51,8 +51,8 @@ Create the new file `mxops_scenes/deploy.yaml`:
 
 ```yaml
 allowed_networks:
-    - DEV
-    - LOCAL
+    - devnet
+    - localnet
 
 allowed_scenario:
     - mxops_tutorial_enhanced_first_scene
@@ -115,8 +115,8 @@ But let's finish our `Scene` named `mxops_scenes/ping_pong.yaml` by adding the p
 
 ```yaml
 allowed_networks:
-    - DEV
-    - LOCAL
+    - devnet
+    - localnet
 
 allowed_scenario:
     - mxops_tutorial_enhanced_first_scene
@@ -175,7 +175,7 @@ export PING_PONG_AMOUNT=1000000000000000000
 export PONG_WAIT_TIME=1
 
 mxops execute \
-        -n DEV \
+        -n devnet \
         -s mxops_tutorial_enhanced_first_scene \
         mxops_scenes/accounts/devnet.yaml \
         mxops_scenes/deploy.yaml
@@ -186,7 +186,7 @@ This will give you an output like this:
 ```bash
 MxOps  Copyright (C) 2023  Catenscia
 This program comes with ABSOLUTELY NO WARRANTY
-[2023-02-24 07:21:10,414 data INFO] Scenario mxops_tutorial_enhanced_first_scene created for network DEV [data:287 in create_scenario]
+[2023-02-24 07:21:10,414 data INFO] Scenario mxops_tutorial_enhanced_first_scene created for network devnet [data:287 in create_scenario]
 [2023-02-24 07:21:10,414 scene INFO] Executing scene mxops_scenes/accounts/devnet.yaml [scene:69 in execute_scene]
 [2023-02-24 07:21:10,518 scene INFO] Executing scene mxops_scenes/deploy.yaml [scene:69 in execute_scene]
 [2023-02-24 07:21:10,521 steps INFO] Deploying contract egld-ping-pong [steps:100 in execute]
@@ -198,7 +198,7 @@ To ping and pong the contract, we can use this:
 
 ```bash
 mxops execute \
-        -n DEV \
+        -n devnet \
         -s mxops_tutorial_enhanced_first_scene \
         mxops_scenes/accounts/devnet.yaml \
         mxops_scenes/ping_pong.yaml
@@ -207,7 +207,7 @@ mxops execute \
 ```bash
 MxOps  Copyright (C) 2023  Catenscia
 This program comes with ABSOLUTELY NO WARRANTY
-[2023-02-24 07:21:24,667 data INFO] Scenario mxops_tutorial_enhanced_first_scene loaded for network DEV [data:262 in load_scenario]
+[2023-02-24 07:21:24,667 data INFO] Scenario mxops_tutorial_enhanced_first_scene loaded for network devnet [data:262 in load_scenario]
 [2023-02-24 07:21:24,667 scene INFO] Executing scene mxops_scenes/accounts/devnet.yaml [scene:69 in execute_scene]
 [2023-02-24 07:21:24,823 scene INFO] Executing scene mxops_scenes/ping_pong.yaml [scene:69 in execute_scene]
 [2023-02-24 07:21:24,826 steps INFO] Query on getPingAmount for egld-ping-pong [steps:211 in execute]
@@ -228,16 +228,16 @@ You can now ping and pong the contract again, without making a new deployment ea
 Let's take a look at the data of the current `Scenario`:
 
 ```bash
-mxops data get -n DEV -s mxops_tutorial_enhanced_first_scene
+mxops data get -n devnet -s mxops_tutorial_enhanced_first_scene
 ```
 
 ```bash
 MxOps  Copyright (C) 2023  Catenscia
 This program comes with ABSOLUTELY NO WARRANTY
-[2023-02-24 17:39:46,283 data INFO] Scenario mxops_tutorial_enhanced_first_scene loaded for network DEV [data:262 in load_scenario]
+[2023-02-24 17:39:46,283 data INFO] Scenario mxops_tutorial_enhanced_first_scene loaded for network devnet [data:262 in load_scenario]
 {
     "name": "mxops_tutorial_enhanced_first_scene",
-    "network": "DEV",
+    "network": "devnet",
     "creation_time": 1677219670,
     "last_update_time": 1677219685,
     "contracts_data": {

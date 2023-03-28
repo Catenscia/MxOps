@@ -1,6 +1,6 @@
 allowed_networks:
-    - DEV
-    - LOCAL
+    - devnet
+    - localnet
 
 allowed_scenario:
     - mxops_tutorial_enhanced_first_scene

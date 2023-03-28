@@ -20,4 +20,4 @@ If you want this tool to improve, please tell us your issues and proposals!
 
 And if you're motivated, we will always welcome hepling hands onboard :grin: !
 
-Read the [contribution guidelines](./CONTRIBUTING.md) for more :wink:
+Read the [contribution guidelines](https://github.com/Catenscia/MxOps/blob/main/CONTRIBUTING.md) for more :wink:

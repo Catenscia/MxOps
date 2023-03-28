@@ -1,10 +1,10 @@
 #![no_std]
 
-elrond_wasm::imports!();
-elrond_wasm::derive_imports!();
+multiversx_sc::imports!();
+multiversx_sc::derive_imports!();
 
-#[elrond_wasm::contract]
-pub trait EsdtMinter: elrond_wasm_modules::default_issue_callbacks::DefaultIssueCallbacksModule {
+#[multiversx_sc::contract]
+pub trait EsdtMinter: multiversx_sc_modules::default_issue_callbacks::DefaultIssueCallbacksModule {
     // #################   storage    #################
 
     /// Token that will be issued and minted by the contract

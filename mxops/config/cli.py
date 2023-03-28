@@ -6,7 +6,7 @@ This module contains the cli for the config subpackage
 from argparse import _SubParsersAction, Namespace, RawDescriptionHelpFormatter
 import json
 
-from mxops.enums import NetworkEnum
+from mxops.enums import parse_network_enum
 from mxops.config.config import Config, dump_default_config
 
 
@@ -24,7 +24,7 @@ def add_subparser(subparsers_action: _SubParsersAction):
     config_parser.add_argument('-n',
                                '--network',
                                help='Name of the network to use',
-                               type=NetworkEnum)
+                               type=parse_network_enum)
 
     config_parser.add_argument('-o',
                                '--options',

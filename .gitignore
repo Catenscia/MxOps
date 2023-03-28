@@ -2,6 +2,8 @@
 
 mxops_config.ini
 tutorials/**/contract
+logs
+testnet/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
