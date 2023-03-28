@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+if ! [[ " ${1} " =~ " localnet "|" devnet " ]]; then
+    echo "Piggy bank tests not available on ${1}"
+    exit 0
+fi
+
 # execute integration test for money print
 python -m mxops \
             data \
