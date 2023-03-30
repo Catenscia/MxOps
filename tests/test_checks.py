@@ -4,7 +4,6 @@ from pathlib import Path
 from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
 from mxops.errors import CheckFailed
 from mxops.execution.checks import TransfersCheck
-
 from mxops.execution.msc import ExpectedTransfer, OnChainTransfer
 
 

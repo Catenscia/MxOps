@@ -83,7 +83,7 @@ class TransfersCheck(Check):
     def __post_init__(self):
         """
         After the initialisation of an instance, if the inner steps are
-        found to be Dict, will try to convert them to Steps instances.
+        found to be Dict, will try to convert them to TransfersCheck instances.
         Usefull for easy loading from yaml files
         """
         if self.condition not in ['exact', 'included']:
@@ -113,7 +113,8 @@ class TransfersCheck(Check):
             try:
                 i_tr = onchain_transfers.index(expected_transfer)
             except ValueError:
-                LOGGER.error(f'Expected transfer found no match:\n{expected_transfer}')
+                evaluated_transfer = expected_transfer.get_dynamic_evaluated()
+                LOGGER.error(f'Expected transfer found no match:\n{evaluated_transfer}')
                 return False
             onchain_transfers.pop(i_tr)
 
