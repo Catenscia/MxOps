@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
+from mxops.errors import CheckFailed
 from mxops.execution.checks import TransfersCheck
 
 from mxops.execution.msc import ExpectedTransfer, OnChainTransfer
@@ -76,6 +77,11 @@ def test_exact_add_liquidity_transfers_check(test_data_folder_path: Path):
 
     transfer_check = TransfersCheck(expected_transfers, condition='exact', include_gas_refund=True)
     refund_result = transfer_check.get_check_status(onchain_tx)
+    try:
+        transfer_check.raise_on_failure(onchain_tx)
+        raise RuntimeError('Above line should raise an error')
+    except CheckFailed:
+        pass
 
     transfer_check = TransfersCheck(
         expected_transfers,

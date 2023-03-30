@@ -31,11 +31,13 @@ class Check:
         :param onchain_tx: transaction to perform the check on
         :type onchain_tx: TransactionOnNetwork
         """
+
         try:
-            if not self.get_check_status(onchain_tx):
-                raise errors.CheckFailed(self, onchain_tx)
+            check_status = self.get_check_status(onchain_tx)
         except Exception as err:
             raise errors.CheckFailed(self, onchain_tx) from err
+        if not check_status:
+            raise errors.CheckFailed(self, onchain_tx)
 
     def get_check_status(self, onchain_tx: TransactionOnNetwork) -> bool:
         """
