@@ -5,12 +5,17 @@ This module contains the classes used to check on-chain transactions
 """
 from dataclasses import dataclass
 import sys
-from typing import Dict, List
+from typing import Dict, List, Literal
 
 from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
 
 from mxops import errors
-from mxops.execution.network import raise_on_errors
+from mxops.execution.msc import ExpectedTransfer
+from mxops.execution.network import get_on_chain_transfers, raise_on_errors
+from mxops.utils.logger import get_logger
+
+
+LOGGER = get_logger('Checks')
 
 
 @dataclass
@@ -48,12 +53,12 @@ class Check:
 @dataclass
 class SuccessCheck(Check):
     """
-    Check that verify that an on-chain transaction is successful
+    Check that an on-chain transaction is successful
     """
 
     def get_check_status(self, onchain_tx: TransactionOnNetwork) -> bool:
         """
-        Check that verify that an on-chain transaction is successful
+        Check that an on-chain transaction is successful
 
         :param onchain_tx: transaction to perform the check on
         :type onchain_tx: TransactionOnNetwork
@@ -61,6 +66,58 @@ class SuccessCheck(Check):
         :rtype: bool
         """
         raise_on_errors(onchain_tx)
+        return True
+
+
+@dataclass
+class TransfersCheck(Check):
+    """
+    Check the transfers that an on-chain transaction contains specified transfers
+    """
+    expected_transfers: List[ExpectedTransfer]
+    condition: Literal['exact', 'included'] = 'exact'
+    include_gas_refund: bool = False
+
+    def __post_init__(self):
+        """
+        After the initialisation of an instance, if the inner steps are
+        found to be Dict, will try to convert them to Steps instances.
+        Usefull for easy loading from yaml files
+        """
+        if self.condition not in ['exact', 'included']:
+            raise ValueError((f'{self.condition} is not an accepted value for '
+                              'TransfersCheck.condition'))
+        expected_transfers = []
+        for transfer in self.expected_transfers:
+            if isinstance(transfer, Dict):
+                expected_transfers.append(ExpectedTransfer(**transfer))
+            elif isinstance(transfer, ExpectedTransfer):
+                expected_transfers.append(transfer)
+            else:
+                raise TypeError(f'Type {type(transfer)} not supproted for ExpectedTransfer')
+        self.expected_transfers = expected_transfers
+
+    def get_check_status(self, onchain_tx: TransactionOnNetwork) -> bool:
+        """
+        Check the transfers that an on-chain transaction contains specified transfers
+
+        :param onchain_tx: _description_
+        :type onchain_tx: TransactionOnNetwork
+        :return: true if correct transfers were found
+        :rtype: bool
+        """
+        onchain_transfers = get_on_chain_transfers(onchain_tx, self.include_gas_refund)
+        for expected_transfer in self.expected_transfers:
+            try:
+                i_tr = onchain_transfers.index(expected_transfer)
+            except ValueError:
+                LOGGER.error(f'Expected transfer found no match:\n{expected_transfer}')
+                return False
+            onchain_transfers.pop(i_tr)
+
+        if self.condition == 'exact' and len(onchain_transfers) > 0:
+            LOGGER.error(f'Found {len(onchain_transfers)} more transfers than expected')
+            return False
         return True
 
 

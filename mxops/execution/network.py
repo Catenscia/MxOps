@@ -193,7 +193,10 @@ def get_transfers_from_data(sender: str, receiver: str, data: str) -> List[OnCha
     return []
 
 
-def get_on_chain_transfers(on_chain_tx: TransactionOnNetwork, include_refund: bool = False) -> List[OnChainTransfer]:
+def get_on_chain_transfers(
+        on_chain_tx: TransactionOnNetwork,
+        include_refund: bool = False
+) -> List[OnChainTransfer]:
     """
     Extract from an on-chain transaction the tokens transfers that were operated in this
     transaction.
