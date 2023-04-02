@@ -114,12 +114,14 @@ class TransfersCheck(Check):
                 i_tr = onchain_transfers.index(expected_transfer)
             except ValueError:
                 evaluated_transfer = expected_transfer.get_dynamic_evaluated()
-                LOGGER.error(f'Expected transfer found no match:\n{evaluated_transfer}')
+                LOGGER.error((f'Expected transfer found no match:\n{evaluated_transfer} '
+                              f'Remaining on-chain transfers:\n{onchain_transfers}'))
                 return False
             onchain_transfers.pop(i_tr)
 
         if self.condition == 'exact' and len(onchain_transfers) > 0:
-            LOGGER.error(f'Found {len(onchain_transfers)} more transfers than expected')
+            LOGGER.error((f'Found {len(onchain_transfers)} more transfers than expected:'
+                          f'\n {onchain_transfers}'))
             return False
         return True
 
