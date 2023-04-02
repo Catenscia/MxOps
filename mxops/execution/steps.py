@@ -227,7 +227,6 @@ class ContractQueryStep(Step):
                 scenario_data.set_contract_value(self.contract,
                                                  expected_result['save_key'],
                                                  parsed_result)
-
         LOGGER.info('Query successful')
 
 
