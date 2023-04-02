@@ -1,8 +1,12 @@
 import json
 from pathlib import Path
 
+from multiversx_sdk_cli.accounts import Account, Address
 from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
+
+from mxops.data.data import InternalContractData, ScenarioData
 from mxops.errors import CheckFailed
+from mxops.execution.account import AccountsManager
 from mxops.execution.checks import TransfersCheck
 from mxops.execution.msc import ExpectedTransfer, OnChainTransfer
 
@@ -37,6 +41,46 @@ def test_transfers_equality():
             assert onchain_transfers[i] != onchain_transfers[j]
 
     assert expected_transfers == onchain_transfers
+
+
+def test_data_load_equality():
+    # Given
+    AccountsManager._accounts['owner'] = Account(
+        Address('erd1zzugxvypryhfym7qrnnkxvrlh8d9ylw2s0399q5tzp43g297plcq4p6d30'))
+    scenario = ScenarioData.get()
+    contract_data = InternalContractData(
+        contract_id="egld-ping-pong",
+        address="erd1qqqqqqqqqqqqqpgqpxkd9qgyyxykq5l6d8v9zud99hpwh7l0plcq3dae77",
+        saved_values={
+                "PingAmount": 1000000000000000000
+        },
+        wasm_hash="1383133d22b8be01c4dc6dfda448dbf0b70ba1acb348a50dd3224b9c8bb21757",
+        deploy_time=1677261606,
+        last_upgrade_time=1677261606
+
+    )
+    scenario.add_contract_data(contract_data)
+
+    expected_transfer = ExpectedTransfer(
+        sender='[owner]',
+        receiver='%egld-ping-pong%address',
+        token='EGLD',
+        amount='%egld-ping-pong%PingAmount'
+    )
+
+    on_chain_transfers = [
+        OnChainTransfer(
+            sender='erd1zzugxvypryhfym7qrnnkxvrlh8d9ylw2s0399q5tzp43g297plcq4p6d30',
+            receiver='erd1qqqqqqqqqqqqqpgqpxkd9qgyyxykq5l6d8v9zud99hpwh7l0plcq3dae77',
+            token='EGLD',
+            amount='1000000000000000000')
+    ]
+
+    # When
+    index = on_chain_transfers.index(expected_transfer)
+
+    # Then
+    assert index == 0
 
 
 def test_exact_add_liquidity_transfers_check(test_data_folder_path: Path):
