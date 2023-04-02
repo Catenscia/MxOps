@@ -63,7 +63,7 @@ class ExpectedTransfer:
         attributes_to_extract = ['sender', 'receiver', 'token', 'amount']
         for attribute_name in attributes_to_extract:
             extracted_value = utils.retrieve_value_from_string(str(getattr(self, attribute_name)))
-            evaluations[attribute_name] = str(extracted_value)
+            evaluations[attribute_name] = extracted_value
         return ExpectedTransfer(**evaluations)
 
     def __eq__(self, other: Any) -> bool:
@@ -78,7 +78,7 @@ class ExpectedTransfer:
             evaluated_self.sender,
             evaluated_self.receiver,
             evaluated_self.token,
-            evaluated_self.amount) == (evaluated_other.sender,
-                                       evaluated_other.receiver,
-                                       evaluated_other.token,
-                                       evaluated_other.amount)
+            str(evaluated_self.amount)) == (evaluated_other.sender,
+                                            evaluated_other.receiver,
+                                            evaluated_other.token,
+                                            str(evaluated_other.amount))
