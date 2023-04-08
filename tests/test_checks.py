@@ -17,7 +17,9 @@ def test_transfers_equality():
         ExpectedTransfer('A', 'B', 'tokenA', '15'),
         ExpectedTransfer('A', 'B', 'tokenA', '18'),
         ExpectedTransfer('C', 'B', 'tokenA', '15'),
-        ExpectedTransfer('A', 'D', 'tokenA', '15'),
+        ExpectedTransfer('A', 'D', 'tokenA', 15),
+        ExpectedTransfer('A', 'D', 'MyNFT', 1, nonce=3661),
+        ExpectedTransfer('A', 'D', 'MySFT', 15848, nonce=210),
     ]
 
     onchain_transfers = [
@@ -25,6 +27,8 @@ def test_transfers_equality():
         OnChainTransfer('A', 'B', 'tokenA', '18'),
         OnChainTransfer('C', 'B', 'tokenA', '15'),
         OnChainTransfer('A', 'D', 'tokenA', '15'),
+        OnChainTransfer('A', 'D', 'MyNFT-0e4d', '1'),
+        OnChainTransfer('A', 'D', 'MySFT-d2', '15848'),
     ]
 
     # When
