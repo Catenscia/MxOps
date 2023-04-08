@@ -41,7 +41,8 @@ external_contracts:
 
 ## Scene
 
-As we will to interact with wrapped eGLD, we will need to have its token identifier. The simplest way is to make a query to the wrapper contract and save the token identifier in the `Scenario`.
+As we want to interact with wrapped eGLD, we will need to have its token identifier. The simplest way
+is to make a query to the wrapper contract and save the token identifier in the `Scenario`.
 
 ```yaml
   - type: ContractQuery
@@ -53,7 +54,8 @@ As we will to interact with wrapped eGLD, we will need to have its token identif
         result_type: str
 ```
 
-We can then wrap some eGLD by calling the endpoint "wrapEgld"
+We can then wrap some eGLD by calling the endpoint "wrapEgld". To be sure that everything went alright, we will check that the transaction
+was successful, that the eGLD was sent to the contract and that we received wrapped eGLD in exchange.
 
 ```yaml
   - type: ContractCall
@@ -62,9 +64,23 @@ We can then wrap some eGLD by calling the endpoint "wrapEgld"
     endpoint: wrapEgld
     value: 10000
     gas_limit: 3000000
+    checks:
+      - type: Success
+
+      - type: Transfers
+        condition: exact
+        expected_transfers:
+          - sender: "[user]"
+            receiver: "%egld_wrapper_shard_2%address"
+            token: EGLD
+            amount: 10000
+          - sender: "%egld_wrapper_shard_2%address"
+            receiver: "[user]"
+            token: "%egld_wrapper_shard_2%WrappedTokenIdentifier"
+            amount: 10000
 ```
 
-And lastly we can unwrap our WEGLD using the token identifier we saved earlier:
+And lastly we can unwrap our WEGLD:
 
 ```yaml
   - type: ContractCall
@@ -76,6 +92,20 @@ And lastly we can unwrap our WEGLD using the token identifier we saved earlier:
       - token_identifier: "%egld_wrapper_shard_2%WrappedTokenIdentifier"
         amount: 10000
         nonce: 0
+    checks:
+      - type: Success
+
+      - type: Transfers
+        condition: exact
+        expected_transfers:
+          - sender: "[user]"
+            receiver: "%egld_wrapper_shard_2%address"
+            token: "%egld_wrapper_shard_2%WrappedTokenIdentifier"
+            amount: 10000
+          - sender: "%egld_wrapper_shard_2%address"
+            receiver: "[user]"
+            token: EGLD
+            amount: 10000
 ```
 
 We can put these three `Steps` in a new file at `mxops_scenes/01_scene.yaml` and here is the complete content:
@@ -105,6 +135,20 @@ steps:
     endpoint: wrapEgld
     value: 10000
     gas_limit: 3000000
+    checks:
+      - type: Success
+
+      - type: Transfers
+        condition: exact
+        expected_transfers:
+          - sender: "[user]"
+            receiver: "%egld_wrapper_shard_2%address"
+            token: EGLD
+            amount: 10000
+          - sender: "%egld_wrapper_shard_2%address"
+            receiver: "[user]"
+            token: "%egld_wrapper_shard_2%WrappedTokenIdentifier"
+            amount: 10000
 
   - type: ContractCall
     sender: user
@@ -115,6 +159,20 @@ steps:
       - token_identifier: "%egld_wrapper_shard_2%WrappedTokenIdentifier"
         amount: 10000
         nonce: 0
+    checks:
+      - type: Success
+
+      - type: Transfers
+        condition: exact
+        expected_transfers:
+          - sender: "[user]"
+            receiver: "%egld_wrapper_shard_2%address"
+            token: "%egld_wrapper_shard_2%WrappedTokenIdentifier"
+            amount: 10000
+          - sender: "%egld_wrapper_shard_2%address"
+            receiver: "[user]"
+            token: EGLD
+            amount: 10000
 ```
 
 ### Execution

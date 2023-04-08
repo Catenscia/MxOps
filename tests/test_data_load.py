@@ -21,7 +21,6 @@ def test_scenario_loading(scenario_path: Path):
     # Then
     assert scenario.network == NetworkEnum.DEV
     assert scenario.name == "mxops_tutorial_first_scene"
-    print(type(scenario.contracts_data), scenario.contracts_data)
     assert scenario.contracts_data == {
         "egld-ping-pong": InternalContractData(
             contract_id="egld-ping-pong",

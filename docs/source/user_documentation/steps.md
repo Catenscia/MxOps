@@ -49,7 +49,7 @@ checks:  # optional, by default it will contain a transaction success check
   - type: Success  
 ```
 
-`SuccessCheck` tells `MxOps` to verify that the transaction went without errors. If an error is found, the execution will be stopped. In some use cases, for example if you want to launch 100s of txs, you can deactivate this parameter for faster execution.
+To get more information on the `checks` attribute, heads to the {doc}`checks` section.
 
 ## Contract Query Step
 

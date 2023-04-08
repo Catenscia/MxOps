@@ -4,6 +4,7 @@
 
 ### Added
 
+- `TransfersCheck` to verify the transfers of a `ContractCallStep`
 - Networks enumerations can be parsed by their short or full names
 
 ### Modified

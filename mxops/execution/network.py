@@ -193,13 +193,18 @@ def get_transfers_from_data(sender: str, receiver: str, data: str) -> List[OnCha
     return []
 
 
-def get_on_chain_transfers(on_chain_tx: TransactionOnNetwork) -> List[OnChainTransfer]:
+def get_on_chain_transfers(
+        on_chain_tx: TransactionOnNetwork,
+        include_refund: bool = False
+) -> List[OnChainTransfer]:
     """
     Extract from an on-chain transaction the tokens transfers that were operated in this
     transaction.
 
     :param on_chain_tx: on-chain transaction to inspect
     :type on_chain_tx: TransactionOnNetwork
+    :param include_refund: if gas refund should be included in the transfers returned
+    :type include_refund: bool, default to False
     :return: list of executed transfer
     :rtype: List[OnChainTransfer]
     """
@@ -228,7 +233,7 @@ def get_on_chain_transfers(on_chain_tx: TransactionOnNetwork) -> List[OnChainTra
     for result in on_chain_tx.contract_results.items:
         sender, receiver = result.sender.bech32(), result.receiver.bech32()
         amount = str(result.value)
-        if amount != "0" and not result.is_refund:
+        if amount != "0" and (include_refund or not result.is_refund):
             transfers.append(OnChainTransfer(
                 sender,
                 receiver,

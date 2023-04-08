@@ -106,6 +106,46 @@ def test_add_liquidity(test_data_folder_path: Path):
     assert transfers == expected_result
 
 
+def test_add_liquidity_with_refund(test_data_folder_path: Path):
+    # Given
+    with open(test_data_folder_path / 'api_responses' / 'add_liquidity.json') as file:
+        tx = TransactionOnNetwork.from_proxy_http_response(**json.load(file))
+
+    # When
+    transfers = ntk.get_on_chain_transfers(tx, True)
+
+    # Then
+    expected_result = [
+        OnChainTransfer(
+            'erd1n775edthxhyrhntcutmqfspanmjvscumxuydmm83xumlahz75kfsgp62ss',
+            'erd1qqqqqqqqqqqqqpgqav09xenkuqsdyeyy5evqyhuusvu4gl3t2jpss57g8x',
+            'WEGLD-bd4d79',
+            '2662383390769244262'),
+        OnChainTransfer(
+            'erd1n775edthxhyrhntcutmqfspanmjvscumxuydmm83xumlahz75kfsgp62ss',
+            'erd1qqqqqqqqqqqqqpgqav09xenkuqsdyeyy5evqyhuusvu4gl3t2jpss57g8x',
+            'RIDE-7d18e9',
+            '1931527217545745197301'),
+        OnChainTransfer(
+            'erd1qqqqqqqqqqqqqpgqav09xenkuqsdyeyy5evqyhuusvu4gl3t2jpss57g8x',
+            'erd1n775edthxhyrhntcutmqfspanmjvscumxuydmm83xumlahz75kfsgp62ss',
+            'EGLDRIDE-7bd51a',
+            '1224365948567992620'),
+        OnChainTransfer(
+            'erd1qqqqqqqqqqqqqpgqav09xenkuqsdyeyy5evqyhuusvu4gl3t2jpss57g8x',
+            'erd1n775edthxhyrhntcutmqfspanmjvscumxuydmm83xumlahz75kfsgp62ss',
+            'RIDE-7d18e9',
+            '37'),
+        OnChainTransfer(
+            'erd1n775edthxhyrhntcutmqfspanmjvscumxuydmm83xumlahz75kfsgp62ss',
+            'erd1n775edthxhyrhntcutmqfspanmjvscumxuydmm83xumlahz75kfsgp62ss',
+            'EGLD',
+            '14546790000000'),
+    ]
+
+    assert transfers == expected_result
+
+
 def test_claim(test_data_folder_path: Path):
     # Given
     with open(test_data_folder_path / 'api_responses' / 'claim.json') as file:

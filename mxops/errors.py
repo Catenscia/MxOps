@@ -214,10 +214,10 @@ class CheckFailed(Exception):
     To be raised when an on-chain transaction check fails
     """
 
-    def __init__(self, check: dataclass, tx: TransactionOnNetwork, *args: object) -> None:
+    def __init__(self, check: dataclass, tx: TransactionOnNetwork) -> None:
         self.check = check
         self.tx = tx
-        super().__init__(*args)()
+        super().__init__()
 
     def __str__(self) -> str:
         return f'Check failed on transaction {get_tx_link(self.tx.hash)}\nCheck: {self.check}'

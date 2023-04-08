@@ -22,3 +22,5 @@ PiggyBank
 PingAmount
 pylint
 runtime
+SuccessCheck
+TransfersCheck

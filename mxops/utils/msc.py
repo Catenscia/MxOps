@@ -71,3 +71,19 @@ def get_file_hash(file_path: Path) -> str:
             file_hash.update(file_block)
             file_block = file.read(block_size)
     return file_hash.hexdigest()
+
+
+def int_to_pair_hex(number: int) -> str:
+    """
+    Transform an integer into its hex representation (without the 0x) and
+    ensure that there is an even number of characters by filling with 0 if necessary
+
+    :param number: number to conver
+    :type number: int
+    :return: hex representation of the number
+    :rtype: str
+    """
+    hex_str = hex(number)[2:]
+    if len(hex_str) % 2:
+        return '0' + hex_str
+    return hex_str
