@@ -28,6 +28,7 @@ If you are new here, we recommend going first to the :doc:`getting_started/prese
    user_documentation/scenario
    user_documentation/scenes
    user_documentation/steps
+   user_documentation/checks
    user_documentation/values
    user_documentation/execution
    user_documentation/config

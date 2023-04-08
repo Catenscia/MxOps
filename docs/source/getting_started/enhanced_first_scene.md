@@ -79,7 +79,7 @@ Three important changes:
 - We changed the `Scenario` name to "mxops_tutorial_enhanced_first_scene"
 - Instead of writing the ping amount and the pong wait time directly in the scene, we will pull them from environment variables.
 
-## Ping and Pong
+## PingAmount and Query
 
 We can now write the final `Scene`of this tutorial. And for this occasion let's introduce a new component: The `ContractQuery` `Step`. This tells `Mxops` to query the view of a contract and optionally you can save the results and/or print it.
 
@@ -110,6 +110,35 @@ We can reuse this value during the ping `Step`:
 ```
 
 This 'save&reuse' workflow allows you to make complex and dynamic `Scenes`: it can save you a ton of time in situations like complex and interdependent multi-deployment.
+
+## Transfer Check
+
+MxOps checks by default that a transaction is successful. In our case, we would also like to check that the eGLD transfer was correctly executed during the ping and pong transaction. This is done by specifying a `TransfersCheck` in the `ContractCall` `Step`:
+
+```yaml
+  - type: ContractCall
+    sender: owner
+    contract: "egld-ping-pong"
+    endpoint: ping
+    gas_limit: 3000000
+    value: "%egld-ping-pong%PingAmount"
+    checks:
+      - type: Success
+
+      - type: Transfers
+        condition: exact
+        expected_transfers:
+          - sender: "[owner]"
+            receiver: "%egld-ping-pong%address"
+            token: EGLD
+            amount: "%egld-ping-pong%PingAmount"
+```
+
+We take advantages of the variable format of MxOps to specify the value for the transfer. The above check tells MxOps that the transaction should contain only one transfer, and that it should be an eGLD transfer of `PingAmount` token from the user `owner` to the `egld-ping-pong` contract.
+
+```{warning}
+If you forget to specify the `Success` `Check`, MxOps will not check that the transaction is successful.
+```
 
 But let's finish our `Scene` named `mxops_scenes/ping_pong.yaml` by adding the pong `Step`:
 
