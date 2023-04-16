@@ -231,6 +231,42 @@ def get_contract_instance(contract_str: str) -> SmartContract:
     raise errors.ParsingError(contract_str, 'contract address')
 
 
+def get_address_instance(address_str: str) -> Address:
+    """
+    From a string return an Address instance.
+    The input will be parsed to dynamically evaluate values from the environment, the config, saved
+    data or from the defined contracts or accounts.
+
+    :param address_str: raw address or address entity designation
+    :type address_str: str
+    :return: address instance corresponding to the input
+    :rtype: Address
+    """
+    # try to see if the string is a valid address
+    try:
+        return Address(address_str)
+    except BadAddressFormatError:
+        pass
+    # otherwise try to parse it as a mxops value
+    evaluated_address_str = retrieve_value_from_string(address_str)
+    try:
+        return SmartContract(Address(evaluated_address_str))
+    except BadAddressFormatError:
+        pass
+    # else try to see if it is a valid contract id
+    evaluated_address_str = retrieve_value_from_string(f'%{address_str}%address')
+    try:
+        return SmartContract(Address(evaluated_address_str))
+    except BadAddressFormatError:
+        pass
+    # finally try to see if it designate a defined account
+    try:
+        return AccountsManager.get_account(address_str).address
+    except errors.UnknownAccount:
+        pass
+    raise errors.ParsingError(address_str, 'address_str address')
+
+
 def parse_query_result(result: QueryResult, expected_return: str) -> Any:
     """
     Take the return of a query and tries to parse it in the specified return type
