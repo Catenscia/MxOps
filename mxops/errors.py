@@ -29,6 +29,13 @@ class ParsingError(Exception):
         super().__init__(message)
 
 
+class NewTokenIdentifierNotFound(Exception):
+    """
+    To be raised when the token identifier of newly issued token was not found in the results
+    of the transaction
+    """
+
+
 #############################################################
 #
 #                   Data Managment Errors
