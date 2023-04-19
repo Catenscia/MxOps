@@ -14,6 +14,7 @@ from multiversx_sdk_cli.contracts import CodeMetadata
 from mxops.data.data import InternalContractData, ScenarioData
 from mxops.execution.account import AccountsManager
 from mxops.execution import contract_interactions as cti
+from mxops.execution import token_managment as tkm
 from mxops.execution.checks import Check, SuccessCheck, instanciate_checks
 from mxops.execution.msc import EsdtTransfer
 from mxops.execution.network import raise_on_errors, send, send_and_wait_for_result
@@ -228,6 +229,56 @@ class ContractQueryStep(Step):
                                                  expected_result['save_key'],
                                                  parsed_result)
         LOGGER.info('Query successful')
+
+
+@dataclass
+class FungibleIssueStep(Step):
+    """
+    Represents the issuance of a fungible token
+    """
+    sender: str
+    token_name: str
+    token_ticker: str
+    initial_supply: int
+    num_decimals: int
+    can_freeze: bool = False
+    can_wipe: bool = False
+    can_pause: bool = False
+    can_mint: bool = False
+    can_burn: bool = False
+    can_change_owner: bool = False
+    can_upgrade: bool = False
+    can_add_special_roles: bool = False
+
+    def execute(self):
+        """
+        Execute a fungible token issuance and save the token identifier of the created token
+        """
+        LOGGER.info(f'Issuing fungible token named {self.token_name} for the account {self.sender}')
+        scenario_data = ScenarioData.get()
+        sender = AccountsManager.get_account(self.sender)
+
+        tx = tkm.build_fungible_issue_tx(
+            sender,
+            self.token_name,
+            self.token_ticker,
+            self.initial_supply,
+            self.num_decimals,
+            self.can_freeze,
+            self.can_wipe,
+            self.can_pause,
+            self.can_mint,
+            self.can_change_owner,
+            self.can_upgrade,
+            self.can_add_special_roles
+        )
+
+        on_chain_tx = send_and_wait_for_result(tx)
+        raise_on_errors(on_chain_tx)
+
+        token_identifier = tkm.extract_new_token_identifier(on_chain_tx)
+        LOGGER.info(f'Newly issued token got the identifier {token_identifier}')
+        # TODO save the token identifier to the Scenario data
 
 
 def instanciate_steps(raw_steps: List[Dict]) -> List[Step]:
