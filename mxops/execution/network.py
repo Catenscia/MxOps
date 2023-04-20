@@ -3,10 +3,12 @@ author: Etienne Wallet
 
 This module contains the functions to pass transactions to the proxy and to monitor them
 """
-from typing import List
+import time
+from typing import List, Union
 
-from multiversx_sdk_cli.transactions import Transaction
+from multiversx_sdk_cli.transactions import Transaction as CliTransaction
 from multiversx_sdk_cli.accounts import Address
+from multiversx_sdk_core import Transaction
 from multiversx_sdk_network_providers import ProxyNetworkProvider
 from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
 
@@ -15,34 +17,47 @@ from mxops import errors
 from mxops.execution.msc import OnChainTransfer
 
 
-def send(tx: Transaction) -> str:
+def send(tx: Union[CliTransaction, Transaction]) -> str:
     """
     Send a transaction through the proxy without waiting for a return
 
     :param tx: transaction to send
-    :type tx: Transaction
+    :type tx: Union[CliTransaction, Transaction]
     :return: hash of the transaction
     :rtype: str
     """
     config = Config.get_config()
     proxy = ProxyNetworkProvider(config.get('PROXY'))
-    return tx.send(proxy)
+    return proxy.send_transaction(tx)
 
 
-def send_and_wait_for_result(tx: Transaction) -> Transaction:
+def send_and_wait_for_result(tx: Union[CliTransaction, Transaction]) -> TransactionOnNetwork:
     """
     Transmit a transaction to a proxy constructed with the config.
     Wait for the result of the transaction and return the on-chainfinalised transaction.
 
     :param tx: transaction to send
-    :type tx: Transaction
+    :type tx: Union[CliTransaction, Transaction]
     :return: on chain finalised transaction
-    :rtype: Transaction
+    :rtype: TransactionOnNetwork
     """
     config = Config.get_config()
     proxy = ProxyNetworkProvider(config.get('PROXY'))
+
     timeout = int(config.get('TX_TIMEOUT'))
-    return tx.send_wait_result(proxy, timeout)
+    refresh_period = int(config.get('TX_REFRESH_PERIOD'))
+
+    tx_hash = proxy.send_transaction(tx)
+    num_periods_to_wait = int(timeout / refresh_period)
+
+    for _ in range(0, num_periods_to_wait):
+        time.sleep(refresh_period)
+
+        on_chain_tx = proxy.get_transaction(tx_hash)
+        if on_chain_tx.is_completed:
+            return on_chain_tx
+
+    raise errors.UnfinalizedTransactionException
 
 
 def raise_on_errors(on_chain_tx: TransactionOnNetwork):
