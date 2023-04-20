@@ -106,7 +106,12 @@ def execute_scene(scene_path: Path):
             scenario_data.set_contract_value(contract_id, 'address', address)
         except errors.UnknownContract:
             # otherwise create the contract data
-            scenario_data.add_contract_data(ExternalContractData(contract_id, address, {}))
+            scenario_data.add_contract_data(ExternalContractData(
+                contract_id=contract_id,
+                address=address,
+                saved_values={}
+            )
+            )
 
     # execute steps
     for step in scene.steps:
