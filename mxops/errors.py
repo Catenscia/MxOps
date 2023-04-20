@@ -94,6 +94,27 @@ class ContractIdAlreadyExists(Exception):
         super().__init__(message)
 
 
+class UnknownToken(Exception):
+    """
+    To be raised when a specified token is not found is a scenario
+    """
+
+    def __init__(self, scenario_name: str, token_name: str) -> None:
+        message = (f'Token named {token_name} is unkown in '
+                   f'scenario {scenario_name}')
+        super().__init__(message)
+
+
+class TokenNameAlreadyExists(Exception):
+    """
+    To be raised when there is a conflict with token name
+    """
+
+    def __init__(self, token_name: str) -> None:
+        message = f'Token named {token_name} already exists'
+        super().__init__(message)
+
+
 class ScenarioNameAlreadyExists(Exception):
     """
     To be raised when there is a conflict with scenario name
