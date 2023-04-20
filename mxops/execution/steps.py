@@ -11,7 +11,8 @@ from typing import Dict, List
 
 from multiversx_sdk_cli.contracts import CodeMetadata
 
-from mxops.data.data import InternalContractData, ScenarioData
+from mxops.data.data import InternalContractData, ScenarioData, TokenData
+from mxops.enums import TokenTypeEnum
 from mxops.execution.account import AccountsManager
 from mxops.execution import contract_interactions as cti
 from mxops.execution import token_managment as tkm
@@ -123,12 +124,12 @@ class ContractDeployStep(Step):
 
         creation_timestamp = on_chain_tx.to_dictionary()['timestamp']
         contract_data = InternalContractData(
-            self.contract_id,
-            contract.address.bech32(),
-            {},
-            get_file_hash(wasm_path),
-            creation_timestamp,
-            creation_timestamp,
+            contract_id=self.contract_id,
+            address=contract.address.bech32(),
+            saved_values={},
+            wasm_hash=get_file_hash(wasm_path),
+            deploy_time=creation_timestamp,
+            last_upgrade_time=creation_timestamp,
         )
         scenario_data.add_contract_data(contract_data)
 
@@ -272,13 +273,21 @@ class FungibleIssueStep(Step):
             self.can_upgrade,
             self.can_add_special_roles
         )
-
         on_chain_tx = send_and_wait_for_result(tx)
         raise_on_errors(on_chain_tx)
+        sender.nonce += 1
+        LOGGER.info(f'Call successful: {get_tx_link(on_chain_tx.hash)}')
 
         token_identifier = tkm.extract_new_token_identifier(on_chain_tx)
         LOGGER.info(f'Newly issued token got the identifier {token_identifier}')
-        # TODO save the token identifier to the Scenario data
+        scenario_data.add_token_data(TokenData(
+            name=self.token_name,
+            ticker=self.token_ticker,
+            decimals=self.num_decimals,
+            identifier=token_identifier,
+            saved_values={},
+            type=TokenTypeEnum.FUNGIBLE
+        ))
 
 
 def instanciate_steps(raw_steps: List[Dict]) -> List[Step]:
