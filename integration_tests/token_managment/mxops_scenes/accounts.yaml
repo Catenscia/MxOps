@@ -1,0 +1,11 @@
+allowed_networks:
+  - devnet
+  - localnet
+
+allowed_scenario:
+  - "integration_test_token_managment.*"
+
+accounts:
+  # erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw
+  - account_name: user_a
+    pem_path: ./integration_tests/token_managment/wallets/user_a.pem
