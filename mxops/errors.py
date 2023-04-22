@@ -115,6 +115,17 @@ class TokenNameAlreadyExists(Exception):
         super().__init__(message)
 
 
+class UnknownRootName(Exception):
+    """
+    To be raised when a specified root name is not found is a scenario
+    """
+
+    def __init__(self, scenario_name: str, root_name: str) -> None:
+        message = (f'Root named {root_name} is unkown in '
+                   f'scenario {scenario_name}')
+        super().__init__(message)
+
+
 class ScenarioNameAlreadyExists(Exception):
     """
     To be raised when there is a conflict with scenario name

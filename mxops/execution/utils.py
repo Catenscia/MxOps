@@ -89,7 +89,7 @@ def retrieve_value_from_config(arg: str) -> str:
 def retrieve_value_from_scenario_data(arg: str) -> str:
     """
     Retrieve the value of an argument from scenario data.
-    the argument must formated like this: %<contract_id>%<attribute>
+    the argument must formated like this: %<root_name>%<attribute>
 
     :param arg: name of the variable formated as above
     :type arg: str
@@ -98,12 +98,12 @@ def retrieve_value_from_scenario_data(arg: str) -> str:
     """
     inner_arg, desired_type = retrieve_specified_type(arg)
     try:
-        contract_id, value_key = inner_arg[1:].split('%')
+        root_name, value_key = inner_arg[1:].split('%')
     except Exception as err:
         raise errors.WrongScenarioDataReference from err
 
     scenario_data = ScenarioData.get()
-    retrieved_value = scenario_data.get_contract_value(contract_id, value_key)
+    retrieved_value = scenario_data.get_value(root_name, value_key)
     return convert_arg(retrieved_value, desired_type)
 
 

@@ -265,6 +265,28 @@ class _ScenarioData:
             raise errors.TokenNameAlreadyExists(token_data.name)
         self.tokens_data[token_data.name] = token_data
 
+    def get_value(self, root_name: str, value_key: str) -> Any:
+        """
+        Search within tokens data and contracts data the value saved under the provided key
+
+        :param root_name: contract id or token name that hosts the value
+        :type root_name: str
+        :param value_key: key under which the value is savedd
+        :type value_key: str
+        :return: value saved
+        :rtype: Any
+        """
+        try:
+            return self.get_contract_value(root_name, value_key)
+        except errors.UnknownContract:
+            pass
+
+        try:
+            return self.get_token_value(root_name, value_key)
+        except errors.UnknownToken:
+            pass
+        raise errors.UnknownRootName(self.name, root_name)
+
     def save(self):
         """
         Save this scenario data where it belongs.
