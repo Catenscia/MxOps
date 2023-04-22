@@ -24,7 +24,6 @@
         "My Token": {
             "name": "My Token",
             "ticker": "MTK",
-            "decimals": 3,
             "identifier": "MTK-abcdef",
             "saved_values": {},
             "type": "fungible"

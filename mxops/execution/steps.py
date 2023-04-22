@@ -283,7 +283,6 @@ class FungibleIssueStep(Step):
         scenario_data.add_token_data(TokenData(
             name=self.token_name,
             ticker=self.token_ticker,
-            decimals=self.num_decimals,
             identifier=token_identifier,
             saved_values={},
             type=TokenTypeEnum.FUNGIBLE

@@ -52,7 +52,6 @@ def test_token_data_loading():
         'My Token': TokenData(
             name='My Token',
             ticker='MTK',
-            decimals=3,
             identifier='MTK-abcdef',
             saved_values={},
             type=TokenTypeEnum.FUNGIBLE

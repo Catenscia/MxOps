@@ -131,7 +131,6 @@ class TokenData(SavedValuesData):
     """
     name: str
     ticker: str
-    decimals: int
     identifier: str
     type: mxops_enums.TokenTypeEnum
 
