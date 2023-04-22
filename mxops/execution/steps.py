@@ -15,7 +15,7 @@ from mxops.data.data import InternalContractData, ScenarioData, TokenData
 from mxops.enums import TokenTypeEnum
 from mxops.execution.account import AccountsManager
 from mxops.execution import contract_interactions as cti
-from mxops.execution import token_managment as tkm
+from mxops.execution import token_management as tkm
 from mxops.execution.checks import Check, SuccessCheck, instanciate_checks
 from mxops.execution.msc import EsdtTransfer
 from mxops.execution.network import raise_on_errors, send, send_and_wait_for_result

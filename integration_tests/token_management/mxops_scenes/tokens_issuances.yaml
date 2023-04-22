@@ -3,7 +3,7 @@ allowed_networks:
   - localnet
 
 allowed_scenario:
-  - "integration_test_token_managment.*"
+  - "integration_test_token_management.*"
 
 steps:
   - type: FungibleIssue

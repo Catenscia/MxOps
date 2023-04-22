@@ -38,7 +38,7 @@ class NewTokenIdentifierNotFound(Exception):
 
 #############################################################
 #
-#                   Data Managment Errors
+#                   Data Management Errors
 #
 #############################################################
 
