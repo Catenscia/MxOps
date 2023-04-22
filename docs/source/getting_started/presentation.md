@@ -65,10 +65,10 @@ Here is the above `Scene`, but this time with the MxOps syntax:
       wasm_path: "./contracts/my_contract.wasm"
       contract_id: "my-contract"
       gas_limit: 50000000
-      upgradeable: True
-      readable: False
-      payable: False
-      payable_by_sc: True
+      upgradeable: true
+      readable: false
+      payable: false
+      payable_by_sc: true
 
     - type: ContractCall
       sender: owner

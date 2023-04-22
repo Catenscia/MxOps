@@ -134,10 +134,10 @@ The `ContractStep` will look like this:
     arguments:
       - 500000000000000000 # 0.5eGLD
       - 1 # 1 sec
-    upgradeable: True
-    readable: False
-    payable: False
-    payable_by_sc: True
+    upgradeable: true
+    readable: false
+    payable: false
+    payable_by_sc: true
 ```
 
 #### Step 2: Ping
@@ -190,10 +190,10 @@ steps:
     arguments:
       - 500000000000000000
       - 1
-    upgradeable: True
-    readable: False
-    payable: False
-    payable_by_sc: True
+    upgradeable: true
+    readable: false
+    payable: false
+    payable_by_sc: true
 
   - type: ContractCall
     sender: owner

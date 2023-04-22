@@ -18,10 +18,10 @@ steps:
     arguments:
       - 125000000
       - 120
-    upgradeable: True
-    readable: False
-    payable: False
-    payable_by_sc: False
+    upgradeable: true
+    readable: false
+    payable: false
+    payable_by_sc: false
 
   - type: ContractCall
     sender: owner
@@ -51,4 +51,4 @@ steps:
     expected_results:
       - save_key: TokenIdentifier
         result_type: str
-    print_results: True
+    print_results: true

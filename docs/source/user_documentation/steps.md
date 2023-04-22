@@ -19,10 +19,10 @@ contract_id: my_first_sc
 gas_limit: 1584000
 arguments:  # optional, if any args must be submitted
     - 100
-upgradeable: True
-readable: False
-payable: False
-payable_by_sc: True
+upgradeable: true
+readable: false
+payable: false
+payable_by_sc: true
 ```
 
 ## Contract Call Step
@@ -64,7 +64,7 @@ arguments: []
 expected_results:  # list of results excpected from the query output
   - save_key: EsdtIdentifier
     result_type: str
-print_results: False  # if the query results should be printed in the console
+print_results: false  # if the query results should be printed in the console
 ```
 
 Currently allowed values for `result_type`: [`number`, `str`]
@@ -103,7 +103,7 @@ steps:
       - TokenIdentifier4
       - $LOOP_VAR  # nonce
       - "%my_first_sc%TokenIdentifier4Amount%"  # result of the query
-    check_for_errors: False
+    check_for_errors: false
 ```
 
 Instead of using `var_start` and `var_end` for the loop variable, a custom list of values can be provided with the keyword `var_list` like below.

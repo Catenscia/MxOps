@@ -67,10 +67,10 @@ steps:
     arguments:
       - "$PING_PONG_AMOUNT:int"
       - "$PONG_WAIT_TIME:int"
-    upgradeable: True
-    readable: False
-    payable: False
-    payable_by_sc: True
+    upgradeable: true
+    readable: false
+    payable: false
+    payable_by_sc: true
 ```
 
 Three important changes:
