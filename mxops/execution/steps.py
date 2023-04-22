@@ -289,6 +289,179 @@ class FungibleIssueStep(Step):
         ))
 
 
+@dataclass
+class NonFungibleIssueStep(Step):
+    """
+    Represents the issuance of a non fungible token
+    """
+    sender: str
+    token_name: str
+    token_ticker: str
+    can_freeze: bool = False
+    can_wipe: bool = False
+    can_pause: bool = False
+    can_mint: bool = False
+    can_burn: bool = False
+    can_change_owner: bool = False
+    can_upgrade: bool = False
+    can_add_special_roles: bool = False
+    can_transfer_nft_create_role: bool = False
+
+    def execute(self):
+        """
+        Execute a non fungible token issuance and save the token identifier of the created token
+        """
+        LOGGER.info(
+            f'Issuing non fungible token named {self.token_name} for the account {self.sender}'
+        )
+        scenario_data = ScenarioData.get()
+        sender = AccountsManager.get_account(self.sender)
+
+        tx = tkm.build_non_fungible_issue_tx(
+            sender,
+            self.token_name,
+            self.token_ticker,
+            self.can_freeze,
+            self.can_wipe,
+            self.can_pause,
+            self.can_mint,
+            self.can_change_owner,
+            self.can_upgrade,
+            self.can_add_special_roles,
+            self.can_transfer_nft_create_role
+        )
+        on_chain_tx = send_and_wait_for_result(tx)
+        raise_on_errors(on_chain_tx)
+        sender.nonce += 1
+        LOGGER.info(f'Call successful: {get_tx_link(on_chain_tx.hash)}')
+
+        token_identifier = tkm.extract_new_token_identifier(on_chain_tx)
+        LOGGER.info(f'Newly issued token got the identifier {token_identifier}')
+        scenario_data.add_token_data(TokenData(
+            name=self.token_name,
+            ticker=self.token_ticker,
+            identifier=token_identifier,
+            saved_values={},
+            type=TokenTypeEnum.NON_FUNGIBLE
+        ))
+
+
+@dataclass
+class SemiFungibleIssueStep(Step):
+    """
+    Represents the issuance of a semi fungible token
+    """
+    sender: str
+    token_name: str
+    token_ticker: str
+    can_freeze: bool = False
+    can_wipe: bool = False
+    can_pause: bool = False
+    can_mint: bool = False
+    can_burn: bool = False
+    can_change_owner: bool = False
+    can_upgrade: bool = False
+    can_add_special_roles: bool = False
+    can_transfer_nft_create_role: bool = False
+
+    def execute(self):
+        """
+        Execute a semi fungible token issuance and save the token identifier of the created token
+        """
+        LOGGER.info(
+            f'Issuing semi fungible token named {self.token_name} for the account {self.sender}'
+        )
+        scenario_data = ScenarioData.get()
+        sender = AccountsManager.get_account(self.sender)
+
+        tx = tkm.build_semi_fungible_issue_tx(
+            sender,
+            self.token_name,
+            self.token_ticker,
+            self.can_freeze,
+            self.can_wipe,
+            self.can_pause,
+            self.can_mint,
+            self.can_change_owner,
+            self.can_upgrade,
+            self.can_add_special_roles,
+            self.can_transfer_nft_create_role
+        )
+        on_chain_tx = send_and_wait_for_result(tx)
+        raise_on_errors(on_chain_tx)
+        sender.nonce += 1
+        LOGGER.info(f'Call successful: {get_tx_link(on_chain_tx.hash)}')
+
+        token_identifier = tkm.extract_new_token_identifier(on_chain_tx)
+        LOGGER.info(f'Newly issued token got the identifier {token_identifier}')
+        scenario_data.add_token_data(TokenData(
+            name=self.token_name,
+            ticker=self.token_ticker,
+            identifier=token_identifier,
+            saved_values={},
+            type=TokenTypeEnum.SEMI_FUNGIBLE
+        ))
+
+
+@dataclass
+class MetaIssueStep(Step):
+    """
+    Represents the issuance of a meta fungible token
+    """
+    sender: str
+    token_name: str
+    token_ticker: str
+    num_decimals: int
+    can_freeze: bool = False
+    can_wipe: bool = False
+    can_pause: bool = False
+    can_mint: bool = False
+    can_burn: bool = False
+    can_change_owner: bool = False
+    can_upgrade: bool = False
+    can_add_special_roles: bool = False
+    can_transfer_nft_create_role: bool = False
+
+    def execute(self):
+        """
+        Execute a meta token issuance and save the token identifier of the created token
+        """
+        LOGGER.info(
+            f'Issuing meta fungible token named {self.token_name} for the account {self.sender}'
+        )
+        scenario_data = ScenarioData.get()
+        sender = AccountsManager.get_account(self.sender)
+
+        tx = tkm.build_meta_issue_tx(
+            sender,
+            self.token_name,
+            self.token_ticker,
+            self.num_decimals,
+            self.can_freeze,
+            self.can_wipe,
+            self.can_pause,
+            self.can_mint,
+            self.can_change_owner,
+            self.can_upgrade,
+            self.can_add_special_roles,
+            self.can_transfer_nft_create_role
+        )
+        on_chain_tx = send_and_wait_for_result(tx)
+        raise_on_errors(on_chain_tx)
+        sender.nonce += 1
+        LOGGER.info(f'Call successful: {get_tx_link(on_chain_tx.hash)}')
+
+        token_identifier = tkm.extract_new_token_identifier(on_chain_tx)
+        LOGGER.info(f'Newly issued token got the identifier {token_identifier}')
+        scenario_data.add_token_data(TokenData(
+            name=self.token_name,
+            ticker=self.token_ticker,
+            identifier=token_identifier,
+            saved_values={},
+            type=TokenTypeEnum.SEMI_FUNGIBLE
+        ))
+
+
 def instanciate_steps(raw_steps: List[Dict]) -> List[Step]:
     """
     Take steps as dictionaries and convert them to their corresponding step classes.
