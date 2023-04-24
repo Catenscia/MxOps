@@ -18,9 +18,13 @@ mandos
 multiversx
 MultiversX
 mxpy
+mx
+py
+NFT
 OptionalValue
 pem
 sc
+SFT
 testnet
 txs
 WEGLD

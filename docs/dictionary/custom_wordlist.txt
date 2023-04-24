@@ -5,6 +5,7 @@ blockchains
 ChangeLog
 config
 configparser
+cli
 customization
 customizations
 DevOps

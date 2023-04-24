@@ -6,7 +6,9 @@ In other words, a `Scene` contains a series of `Steps` that tells what `MxOps` s
 Several type of `Steps` exists, to allow users to easily construct complex `Scenes`.
 If you feel something is missing, please make a suggestion in the [github](https://github.com/Catenscia/MxOps/discussions/categories/ideas)!
 
-## Contract Deploy Step
+## Contract Steps
+
+### Contract Deploy Step
 
 This `Step` is used to deploy a contract. The address of the new contract will be
 saved in the `Scenario` (specified at execution time) under the provided id to allow future interactions.
@@ -25,7 +27,7 @@ payable: false
 payable_by_sc: true
 ```
 
-## Contract Call Step
+### Contract Call Step
 
 This `Step` is used to call the endpoint of a deployed contract.
 
@@ -51,7 +53,7 @@ checks:  # optional, by default it will contain a transaction success check
 
 To get more information on the `checks` attribute, heads to the {doc}`checks` section.
 
-## Contract Query Step
+### Contract Query Step
 
 This `Step` is used to fetch some data from a contract and save it locally for later use in the `Scenario` (specified at execution time).
 For example to fetch the identifier of a token created by a contract and stored in a `FungibleTokenMapper` with a view set up as `getEsdtIdentifier`.
@@ -71,7 +73,123 @@ Currently allowed values for `result_type`: [`number`, `str`]
 
 (loop_step_target)=
 
-## Loop Step
+## Token Management Steps
+
+### Fungible Token Steps
+
+#### Issuance Step
+
+This `Step` is used to issue a new fungible token, a initial supply of tokens will be sent to the issuer.
+
+```yaml
+type: FungibleIssue
+sender: user
+token_name: MyToken           # must be unique in a Scenario
+token_ticker: MTK
+initial_supply: 1000000000    # 1,000,000.000 MTK
+num_decimals: 3
+can_freeze: false             # optional, defaults to false
+can_wipe: false               # optional, defaults to false
+can_pause: false              # optional, defaults to false
+can_mint: false               # optional, defaults to false
+can_burn: false               # optional, defaults to false
+can_change_owner: false       # optional, defaults to false
+can_upgrade: false            # optional, defaults to false
+can_add_special_roles: false  # optional, defaults to false
+```
+
+The results of the transaction will be saved. You can make a reference to this token in later `Steps` using its name, for example to retrieve the token identifier: `%MyToken%identifier`.
+
+```{warning}
+To avoid data collision within `MxOps`, `token_name` should be unique within a `Scenario` and should not have a name identical to a `contract_id` in the same `Scenario`.
+```
+
+### NFT, SFT and Meta Token Steps
+
+Aside from the issuance `Steps`, NFT, SFT and Meta tokens share common methods. The associated steps are listed here.
+
+#### NFT Issuance Step
+
+This `Step` is used to issue a new non fungible token (NFT).
+
+```yaml
+type: NonFungibleIssue
+sender: user
+token_name: MyNFT                     # must be unique in a Scenario
+token_ticker: MNFT
+can_freeze: false                     # optional, defaults to false
+can_wipe: false                       # optional, defaults to false
+can_pause: false                      # optional, defaults to false
+can_mint: false                       # optional, defaults to false
+can_burn: false                       # optional, defaults to false
+can_change_owner: false               # optional, defaults to false
+can_upgrade: false                    # optional, defaults to false
+can_add_special_roles: false          # optional, defaults to false
+can_transfer_nft_create_role: false   # optional, defaults to false
+```
+
+The results of the transaction will be saved. You can make a reference to this token in later `Steps` using its name, for example to retrieve the token identifier: `%MyToken%identifier`.
+
+```{warning}
+To avoid data collision within `MxOps`, `token_name` should be unique within a `Scenario` and should not have a name identical to a `contract_id` in the same `Scenario`.
+```
+
+#### SFT Issuance Step
+
+This `Step` is used to issue a new semi fungible token (NFT).
+
+```yaml
+type: SemiFungibleIssue
+sender: user
+token_name: MySFT                     # must be unique in a Scenario
+token_ticker: MSFT
+can_freeze: false                     # optional, defaults to false
+can_wipe: false                       # optional, defaults to false
+can_pause: false                      # optional, defaults to false
+can_mint: false                       # optional, defaults to false
+can_burn: false                       # optional, defaults to false
+can_change_owner: false               # optional, defaults to false
+can_upgrade: false                    # optional, defaults to false
+can_add_special_roles: false          # optional, defaults to false
+can_transfer_nft_create_role: false   # optional, defaults to false
+```
+
+The results of the transaction will be saved. You can make a reference to this token in later `Steps` using its name, for example to retrieve the token identifier: `%MyToken%identifier`.
+
+```{warning}
+To avoid data collision within `MxOps`, `token_name` should be unique within a `Scenario` and should not have a name identical to a `contract_id` in the same `Scenario`.
+```
+
+#### Meta Issuance Step
+
+This `Step` is used to issue a new non fungible token (NFT).
+
+```yaml
+type: MetaIssue
+sender: user
+token_name: MyMeta                      # must be unique in a Scenario
+token_ticker: MMT
+num_decimals: 3
+can_freeze: false                       # optional, defaults to false
+can_wipe: false                         # optional, defaults to false
+can_pause: false                        # optional, defaults to false
+can_mint: false                         # optional, defaults to false
+can_burn: false                         # optional, defaults to false
+can_change_owner: false                 # optional, defaults to false
+can_upgrade: false                      # optional, defaults to false
+can_add_special_roles: false            # optional, defaults to false
+can_transfer_nft_create_role: false     # optional, defaults to false
+```
+
+The results of the transaction will be saved. You can make a reference to this token in later `Steps` using its name, for example to retrieve the token identifier: `%MyToken%identifier`.
+
+```{warning}
+To avoid data collision within `MxOps`, `token_name` should be unique within a `Scenario` and should not have a name identical to a `contract_id` in the same `Scenario`.
+```
+
+## Miscellaneous Steps
+
+### Loop Step
 
 This steps allows to run a set of steps for a given number of times.
 A loop variable is created and can be used as an arguments for the steps inside the loop.
