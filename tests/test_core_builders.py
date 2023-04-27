@@ -1,7 +1,7 @@
 from multiversx_sdk_core import Address
 from multiversx_sdk_core.transaction_builders import DefaultTransactionBuildersConfiguration
 
-from mxops.execution import token_management
+from mxops.execution import token_management_builders
 
 
 def test_fungible_issue_payload():
@@ -9,7 +9,7 @@ def test_fungible_issue_payload():
     builder_config = DefaultTransactionBuildersConfiguration(
         chain_id='D'
     )
-    builder = token_management.FungibleTokenIssueBuilder(
+    builder = token_management_builders.FungibleTokenIssueBuilder(
         builder_config,
         Address.from_bech32('erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw'),
         'MyToken',
@@ -39,7 +39,7 @@ def test_non_fungible_issue_payload():
     builder_config = DefaultTransactionBuildersConfiguration(
         chain_id='D'
     )
-    builder = token_management.NonFungibleTokenIssueBuilder(
+    builder = token_management_builders.NonFungibleTokenIssueBuilder(
         builder_config,
         Address.from_bech32('erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw'),
         'MyToken',
@@ -65,7 +65,7 @@ def test_semi_fungible_issue_payload():
     builder_config = DefaultTransactionBuildersConfiguration(
         chain_id='D'
     )
-    builder = token_management.SemiFungibleTokenIssueBuilder(
+    builder = token_management_builders.SemiFungibleTokenIssueBuilder(
         builder_config,
         Address.from_bech32('erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw'),
         'MyToken',
@@ -93,7 +93,7 @@ def test_meta_fungible_issue_payload():
     builder_config = DefaultTransactionBuildersConfiguration(
         chain_id='D'
     )
-    builder = token_management.MetaFungibleTokenIssueBuilder(
+    builder = token_management_builders.MetaFungibleTokenIssueBuilder(
         builder_config,
         Address.from_bech32('erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw'),
         'MyToken',

@@ -7,12 +7,15 @@ from dataclasses import dataclass, field
 import os
 from pathlib import Path
 import sys
-from typing import Dict, List
+from typing import ClassVar, Dict, List, Set
 
 from multiversx_sdk_cli.contracts import CodeMetadata
+from multiversx_sdk_core import Address
+from mxops.config.config import Config
 
 from mxops.data.data import InternalContractData, ScenarioData, TokenData
 from mxops.enums import TokenTypeEnum
+from mxops.execution import token_management_builders, utils
 from mxops.execution.account import AccountsManager
 from mxops.execution import contract_interactions as cti
 from mxops.execution import token_management as tkm
@@ -460,6 +463,107 @@ class MetaIssueStep(Step):
             saved_values={},
             type=TokenTypeEnum.SEMI_FUNGIBLE
         ))
+
+
+@dataclass
+class ManageTokenRolesStep(Step):
+    """
+    A base step to set or unset roles on a token.
+    Can not be used on its own: on must use the child classes
+    """
+    sender: str
+    is_set: bool
+    token_identifier: str
+    target: str
+    roles: List[str]
+    ALLOWED_ROLES: ClassVar[Set] = set()
+
+    def execute(self):
+        """
+        Execute a transaction to manage the roles of an address on a token
+        """
+
+        config = Config.get_config()
+        builder_config = token_management_builders.MyDefaultTransactionBuildersConfiguration(
+            chain_id=config.get('CHAIN')
+        )
+
+        sender = AccountsManager.get_account(self.sender)
+        token_identifier = utils.retrieve_value_from_string(self.token_identifier)
+        roles = utils.retrieve_values_from_strings(self.roles)
+        target = Address.from_bech32(utils.retrieve_value_from_string(self.target))
+
+        LOGGER.info(f'Setting roles {self.roles} on the token {token_identifier}'
+                    f' ({self.token_identifier}) for the address {target} ({self.target})'
+                    )
+
+        builder = token_management_builders.ManageTokenRolesBuilder(
+            builder_config,
+            sender.address,
+            self.is_set,
+            token_identifier,
+            target,
+            roles,
+            nonce=sender.nonce
+        )
+        tx = builder.build()
+        tx.signature = sender.signer.sign(tx)
+        sender.nonce += 1
+
+        on_chain_tx = send_and_wait_for_result(tx)
+        raise_on_errors(on_chain_tx)
+        LOGGER.info(f'Call successful: {get_tx_link(on_chain_tx.hash)}')
+
+    def __post_init__(self):
+        for role in self.roles:
+            if role not in self.ALLOWED_ROLES:
+                raise ValueError(f'role {role} is not in allowed roles {self.ALLOWED_ROLES}')
+
+
+@dataclass
+class ManageFungibleTokenRolesStep(ManageTokenRolesStep):
+    """
+    This step is used to set or unset roles for an adress on a fungible token
+    """
+    ALLOWED_ROLES: ClassVar[Set] = {
+        'ESDTRoleLocalBurn',
+        'ESDTRoleLocalMint',
+        'ESDTTransferRole'
+    }
+
+
+@dataclass
+class ManageNonFungibleTokenRolesStep(ManageTokenRolesStep):
+    """
+    This step is used to set or unset roles for an adress on a non fungible token
+    """
+    ALLOWED_ROLES: ClassVar[Set] = {
+        'ESDTRoleNFTCreate',
+        'ESDTRoleNFTBurn',
+        'ESDTRoleNFTUpdateAttributes',
+        'ESDTRoleNFTAddURI',
+        'ESDTTransferRole'
+    }
+
+
+@dataclass
+class ManageSemiFungibleTokenRolesStep(ManageTokenRolesStep):
+    """
+    This step is used to set or unset roles for an adress on a semi fungible token
+    """
+    ALLOWED_ROLES: ClassVar[Set] = {
+        'ESDTRoleNFTCreate',
+        'ESDTRoleNFTBurn',
+        'ESDTRoleNFTAddQuantity',
+        'ESDTTransferRole'
+    }
+
+
+@dataclass
+class ManageMetaTokenRolesStep(ManageSemiFungibleTokenRolesStep):
+    """
+    This step is used to set or unset roles for an adress on a meta token
+    """
 
 
 def instanciate_steps(raw_steps: List[Dict]) -> List[Step]:

@@ -147,6 +147,18 @@ def retrieve_value_from_string(arg: str) -> Any:
     return arg
 
 
+def retrieve_values_from_strings(args: List[str]) -> List[Any]:
+    """
+    Dynamically evaluate the value of each element of the provided list
+
+    :param args: args to evaluate
+    :type args: List[str]
+    :return: evaluated arguments
+    :rtype: List[Any]
+    """
+    return [retrieve_value_from_string(arg) for arg in args]
+
+
 def format_tx_arguments(arguments: List[Any]) -> List[Any]:
     """
     Transform the arguments so they can be recognised by mxpy
