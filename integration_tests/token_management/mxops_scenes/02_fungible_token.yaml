@@ -1,0 +1,26 @@
+allowed_networks:
+  - devnet
+  - localnet
+
+allowed_scenario:
+  - "integration_test_token_management.*"
+
+steps:
+  - type: FungibleIssue
+    sender: user_a
+    token_name: MyToken
+    token_ticker: MTK
+    initial_supply: 1000000000  # 1,000,000.000 MTK
+    num_decimals: 3
+    can_upgrade: true
+    can_add_special_roles: true
+  
+  - type: ManageFungibleTokenRoles
+    sender: user_a
+    is_set: true
+    token_identifier: "%MyToken%identifier"
+    target: "[user_a]"
+    roles:
+      - ESDTRoleLocalMint
+      - ESDTRoleLocalBurn
+

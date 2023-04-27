@@ -11,12 +11,11 @@ python -m mxops \
             data \
             delete \
             -n $1 \
-            -s integration_test_token_management_token_issuances \
+            -s integration_test_token_management \
             -y
 
 python -m mxops \
             execute \
             -n $1 \
-            -s integration_test_token_management_token_issuances \
-            "integration_tests/token_management/mxops_scenes/accounts.yaml" \
-            integration_tests/token_management/mxops_scenes/tokens_issuances.yaml
+            -s integration_test_token_management \
+            integration_tests/token_management/mxops_scenes

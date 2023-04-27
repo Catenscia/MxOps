@@ -1,0 +1,26 @@
+allowed_networks:
+  - devnet
+  - localnet
+
+allowed_scenario:
+  - "integration_test_token_management.*"
+
+steps:
+  - type: MetaIssue
+    sender: user_a
+    token_name: MyMeta
+    token_ticker: META
+    num_decimals: 3
+    can_upgrade: true
+    can_transfer_nft_create_role: true
+  
+  - type: ManageMetaTokenRoles
+    sender: user_a
+    is_set: true
+    token_identifier: "%MyMeta%identifier"
+    target: "[user_a]"
+    roles:
+      - ESDTRoleNFTCreate
+      - ESDTRoleNFTBurn
+      - ESDTRoleNFTAddQuantity
+      - ESDTTransferRole
