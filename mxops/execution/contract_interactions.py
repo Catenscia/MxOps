@@ -7,7 +7,7 @@ from typing import List, Tuple
 from multiversx_sdk_cli import config as mxpy_config
 from multiversx_sdk_cli.accounts import Account
 from multiversx_sdk_cli.contracts import CodeMetadata, SmartContract, QueryResult
-from multiversx_sdk_cli.transactions import Transaction
+from multiversx_sdk_cli.transactions import Transaction as CliTransaction
 from multiversx_sdk_cli import utils as mxpy_utils
 from multiversx_sdk_network_providers import ProxyNetworkProvider
 
@@ -22,7 +22,7 @@ def get_contract_deploy_tx(
     gas_limit: int,
     contract_args: List,
     sender: Account
-) -> Tuple[Transaction, SmartContract]:
+) -> Tuple[CliTransaction, SmartContract]:
     """
     Contruct the contract instance and the transaction used to deploy a contract.
     The transaction is not relayed to the proxy,
@@ -39,7 +39,7 @@ def get_contract_deploy_tx(
     :param sender: account to use for this transaction
     :type sender: Account
     :return: deploy transaction and contract instance created
-    :rtype: Tuple[Transaction, SmartContract]
+    :rtype: Tuple[CliTransaction, SmartContract]
     """
     config = Config.get_config()
 
@@ -60,7 +60,7 @@ def get_contract_value_call_tx(
     arguments: List,
     value: int,
     sender: Account
-) -> Transaction:
+) -> CliTransaction:
     """
     Contruct the transaction for a contract call with value provision.
     The transaction is not relayed to the proxy, this has to be done with
@@ -79,7 +79,7 @@ def get_contract_value_call_tx(
     :param sender: sender of the transaction
     :type sender: Account
     :return: call transaction to send
-    :rtype: Transaction
+    :rtype: CliTransaction
     """
     config = Config.get_config()
 
@@ -110,7 +110,7 @@ def get_contract_single_esdt_call_tx(
     arguments: List,
     esdt_transfer: EsdtTransfer,
     sender: Account
-) -> Transaction:
+) -> CliTransaction:
     """
     Contruct the transaction for a contract call with an esdt transfer.
     The transaction is not relayed to the proxy, this has to be done with
@@ -129,7 +129,7 @@ def get_contract_single_esdt_call_tx(
     :param sender: sender of the transaction
     :type sender: Account
     :return: call transaction to send
-    :rtype: Transaction
+    :rtype: CliTransaction
     """
     config = Config.get_config()
 
@@ -164,7 +164,7 @@ def get_contract_single_nft_call_tx(
     arguments: List,
     nft_transfer: EsdtTransfer,
     sender: Account
-) -> Transaction:
+) -> CliTransaction:
     """
     Contruct the transaction for a contract call with an nft transfer (NFT, SFT and Meta ESDT).
     The transaction is not relayed to the proxy, this has to be done with
@@ -183,7 +183,7 @@ def get_contract_single_nft_call_tx(
     :param sender: sender of the transaction
     :type sender: Account
     :return: call transaction to send
-    :rtype: Transaction
+    :rtype: CliTransaction
     """
     config = Config.get_config()
     self_contract = SmartContract(sender.address)
@@ -221,7 +221,7 @@ def get_contract_multiple_esdt_call_tx(
     arguments: List,
     esdt_transfers: List[EsdtTransfer],
     sender: Account
-) -> Transaction:
+) -> CliTransaction:
     """
     Contruct the transaction for a contract call with multiple esdt transfers.
     The transaction is not relayed to the proxy, this has to be done with
@@ -240,7 +240,7 @@ def get_contract_multiple_esdt_call_tx(
     :param sender: sender of the transaction
     :type sender: Account
     :return: call transaction to send
-    :rtype: Transaction
+    :rtype: CliTransaction
     """
     config = Config.get_config()
 
@@ -283,7 +283,7 @@ def get_contract_call_tx(
     value: int,
     esdt_transfers: List[EsdtTransfer],
     sender: Account
-) -> Transaction:
+) -> CliTransaction:
     """
     Contruct the transaction for a contract call
     The transaction is not relayed to the proxy, this has to be done with
@@ -304,7 +304,7 @@ def get_contract_call_tx(
     :param sender: sender of the transaction
     :type sender: Account
     :return: call transaction to send
-    :rtype: Transaction
+    :rtype: CliTransaction
     """
     n_transfers = len(esdt_transfers)
 

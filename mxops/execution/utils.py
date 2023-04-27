@@ -6,7 +6,7 @@ This module contains some utilities functions for the execution sub package
 import os
 from typing import Any, List, Optional, Tuple
 
-from multiversx_sdk_cli.accounts import Address
+from multiversx_sdk_cli.accounts import Address as CliAddress
 from multiversx_sdk_cli.contracts import QueryResult, SmartContract
 from multiversx_sdk_cli.errors import BadAddressFormatError
 
@@ -107,7 +107,7 @@ def retrieve_value_from_scenario_data(arg: str) -> str:
     return convert_arg(retrieved_value, desired_type)
 
 
-def retrieve_address_from_account(arg: str) -> str:
+def retrieve_address_from_account(arg: str) -> CliAddress:
     """
     Retrieve an address from the accounts manager.
     the argument must formated like this: [user]
@@ -115,7 +115,7 @@ def retrieve_address_from_account(arg: str) -> str:
     :param arg: name of the variable formated as above
     :type arg: str
     :return: address from the scenario
-    :rtype: str
+    :rtype: CliAddress
     """
     try:
         arg = arg[1:-1]
@@ -123,7 +123,7 @@ def retrieve_address_from_account(arg: str) -> str:
         raise errors.WrongScenarioDataReference from err
 
     account = AccountsManager.get_account(arg)
-    return account.address.bech32()
+    return account.address
 
 
 def retrieve_value_from_string(arg: str) -> Any:
@@ -137,7 +137,7 @@ def retrieve_value_from_string(arg: str) -> Any:
     :rtype: Any
     """
     if arg.startswith('['):
-        return retrieve_address_from_account(arg)
+        return retrieve_address_from_account(arg).bech32()
     if arg.startswith('$'):
         return retrieve_value_from_env(arg)
     if arg.startswith('&'):
@@ -163,10 +163,10 @@ def format_tx_arguments(arguments: List[Any]) -> List[Any]:
         formated_arg = arg
         if isinstance(arg, str):
             if arg.startswith('erd') and len(arg) == 62:
-                formated_arg = '0x' + Address(arg).hex()
+                formated_arg = '0x' + CliAddress(arg).hex()
             elif not arg.startswith('0x'):
                 formated_arg = 'str:' + arg
-        elif isinstance(arg, Address):
+        elif isinstance(arg, CliAddress):
             formated_arg = '0x' + arg.hex()
 
         formated_arguments.append(formated_arg)
@@ -186,19 +186,19 @@ def get_contract_instance(contract_str: str) -> SmartContract:
     """
     # try to see if the string is a valid address
     try:
-        return SmartContract(Address(contract_str))
+        return SmartContract(CliAddress(contract_str))
     except BadAddressFormatError:
         pass
     # otherwise try to parse it as a mxops value
     contract_address = retrieve_value_from_string(contract_str)
     try:
-        return SmartContract(Address(contract_address))
+        return SmartContract(CliAddress(contract_address))
     except BadAddressFormatError:
         pass
     # lastly try to see if it is a valid contract id
     contract_address = retrieve_value_from_string(f'%{contract_str}%address')
     try:
-        return SmartContract(Address(contract_address))
+        return SmartContract(CliAddress(contract_address))
     except BadAddressFormatError:
         pass
     raise errors.ParsingError(contract_str, 'contract address')
