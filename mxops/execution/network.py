@@ -57,7 +57,7 @@ def send_and_wait_for_result(tx: Union[CliTransaction, Transaction]) -> Transact
         if on_chain_tx.is_completed:
             return on_chain_tx
 
-    raise errors.UnfinalizedTransactionException
+    raise errors.UnfinalizedTransactionException(on_chain_tx)
 
 
 def raise_on_errors(on_chain_tx: TransactionOnNetwork):
