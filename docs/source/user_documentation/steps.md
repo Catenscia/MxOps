@@ -104,6 +104,24 @@ The results of the transaction will be saved. You can make a reference to this t
 To avoid data collision within `MxOps`, `token_name` should be unique within a `Scenario` and should not have a name identical to a `contract_id` in the same `Scenario`.
 ```
 
+#### Role Management Step
+
+This `Step` is used to set or unset roles for an address on a fungible token.
+
+```yaml
+type: ManageFungibleTokenRoles
+sender: user_a
+is_set: true   # if false, this will unset the provided roles
+token_identifier: MTK-abcdef
+target: erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw
+roles:  # choose one or several of the roles below
+  - ESDTRoleLocalMint
+  - ESDTRoleLocalBurn
+  - ESDTTransferRole
+```
+
+Details on the roles can be found [here](https://docs.multiversx.com/tokens/esdt-tokens/#setting-and-unsetting-special-roles).
+
 ### NFT, SFT and Meta Token Steps
 
 Aside from the issuance `Steps`, NFT, SFT and Meta tokens share common methods. The associated steps are listed here.
@@ -186,6 +204,64 @@ The results of the transaction will be saved. You can make a reference to this t
 ```{warning}
 To avoid data collision within `MxOps`, `token_name` should be unique within a `Scenario` and should not have a name identical to a `contract_id` in the same `Scenario`.
 ```
+
+#### NFT Role Management Step
+
+This `Step` is used to set or unset roles for an address on a non fungible token.
+
+```yaml
+type: ManageNonFungibleTokenRoles
+sender: user_a
+is_set: true   # if false, this will unset the provided roles
+token_identifier: MNFT-abcdef
+target: erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw
+roles:  # choose one or several of the roles below
+  - ESDTRoleNFTCreate
+  - ESDTRoleNFTBurn
+  - ESDTRoleNFTUpdateAttributes
+  - ESDTRoleNFTAddURI
+  - ESDTTransferRole
+```
+
+Details on the roles can be found [here](https://docs.multiversx.com/tokens/nft-tokens#roles).
+
+#### SFT Role Management Step
+
+This `Step` is used to set or unset roles for an address on a semi fungible token.
+
+```yaml
+type: ManageSemiFungibleTokenRoles
+sender: user_a
+is_set: true   # if false, this will unset the provided roles
+token_identifier: MNFT-abcdef
+target: erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw
+roles:  # choose one or several of the roles below
+  - ESDTRoleNFTCreate
+  - ESDTRoleNFTBurn
+  - ESDTRoleNFTAddQuantity
+  - ESDTTransferRole
+```
+
+Details on the roles can be found [here](https://docs.multiversx.com/tokens/nft-tokens#roles).
+
+#### Meta Role Management Step
+
+This `Step` is used to set or unset roles for an address on a meta token.
+
+```yaml
+type: ManageMetaTokenRoles
+sender: user_a
+is_set: true   # if false, this will unset the provided roles
+token_identifier: META-abcdef
+target: erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw
+roles:  # choose one or several of the roles below
+  - ESDTRoleNFTCreate
+  - ESDTRoleNFTBurn
+  - ESDTRoleNFTAddQuantity
+  - ESDTTransferRole
+```
+
+Details on the roles can be found [here](https://docs.multiversx.com/tokens/nft-tokens#roles).
 
 ## Miscellaneous Steps
 
