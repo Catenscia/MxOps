@@ -473,10 +473,18 @@ def instanciate_steps(raw_steps: List[Dict]) -> List[Step]:
     """
     steps_list = []
     for raw_step in raw_steps:
-        step_class_name = raw_step.pop('type') + 'Step'
+        step_type: str = raw_step.pop('type')
+        step_class_name = step_type if step_type.endswith('Step') else step_type + 'Step'
+
         try:
             step_class_object = getattr(sys.modules[__name__], step_class_name)
         except AttributeError as err:
-            raise ValueError(f'Unkown step type: {step_class_name}') from err
-        steps_list.append(step_class_object(**raw_step))
+            raise errors.UnkownStep(step_type) from err
+        if not issubclass(step_class_object, Step):
+            raise errors.UnkownStep(step_type)
+        try:
+            step = step_class_object(**raw_step)
+        except Exception as err:
+            raise errors.InvalidStepDefinition(step_type, raw_step) from err
+        steps_list.append(step)
     return steps_list
