@@ -53,10 +53,10 @@ steps:
     arguments:
       - arg1
       - arg2
-    upgradeable: True
-    readable: False
-    payable: False
-    payable_by_sc: False
+    upgradeable: true
+    readable: false
+    payable: false
+    payable_by_sc: false
 
   - type: ContractCall
     sender: alice

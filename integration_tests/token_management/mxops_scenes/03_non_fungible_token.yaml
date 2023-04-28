@@ -1,0 +1,38 @@
+allowed_networks:
+  - devnet
+  - localnet
+
+allowed_scenario:
+  - "integration_test_token_management.*"
+
+steps:
+  - type: NonFungibleIssue
+    sender: user_a
+    token_name: MyNFT
+    token_ticker: MNFT
+    can_upgrade: true
+    can_transfer_nft_create_role: true
+  
+  - type: ManageNonFungibleTokenRoles
+    sender: user_a
+    is_set: true
+    token_identifier: "%MyNFT%identifier"
+    target: "[user_a]"
+    roles:
+      - ESDTRoleNFTCreate
+      - ESDTRoleNFTBurn
+      - ESDTRoleNFTUpdateAttributes
+      - ESDTRoleNFTAddURI
+      - ESDTTransferRole
+  
+  - type: NonFungibleMint
+    sender: user_a
+    token_identifier: "%MyNFT%identifier"
+    amount: 1  # can only be one for NFT
+    name: "Beautiful NFT"
+    royalties: 750
+    hash: "00"
+    attributes: "metadata:ipfsCID/song.json;tags:song,beautiful,music"
+    uris:
+      - https://mypng.com/1
+      - https://mysftjpg.com/1

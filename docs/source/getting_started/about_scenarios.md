@@ -13,7 +13,7 @@ This section will give you a basic understanding of `Scenarios`, you can always 
 
 `Scenarios` are virtual context in which data can be saved and reused. The first use case is during deployment: Once a contract is deployed, one need to save the address that has been assigned to the contract for later interactions.
 
-`Scenarios` save contract data using their `contract-id`. This means that the same `contract-id` can be use in different `Scenarios` but also in different networks (main, dev...).
+`Scenarios` save contract data using their `contract_id`. This means that the same `contract_id` can be use in different `Scenarios` but also in different networks (main, dev...).
 This allows maximum reusability for the `Scenes` as you don't have to monitor which ids has already been taken in your others `Scenarios`.
 
 ## Persistence
@@ -47,18 +47,19 @@ This program comes with ABSOLUTELY NO WARRANTY
             "last_upgrade_time": 1677134892,
             "is_external": false
         }
-    }
+    },
+    "tokens_data": {}
 }
 ```
 
 You can see that our `Scenario` has only one contract at the moment: it is the ping-pong contract we deployed earlier.
 
-If you were to execute other `Scenes` in the scenario `mxops_tutorial_first_scene` you will be able to reference to the deployed contract by simply using its `contract-id`. In fact that is already what you have been doing when using `ContractCalls`:
+If you were to execute other `Scenes` in the scenario `mxops_tutorial_first_scene` you will be able to reference to the deployed contract by simply using its `contract_id`. In fact that is already what you have been doing when using `ContractCalls`:
 
 ```yaml
   - type: ContractCall
     sender: owner
-    contract: "egld-ping-pong"  # the contract-id is used instead of the bech32 address
+    contract: "egld-ping-pong"  # the contract_id is used instead of the bech32 address
     endpoint: pong
     gas_limit: 3000000
 ```

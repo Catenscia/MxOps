@@ -192,10 +192,10 @@ contract_id: "abc-esdt-minter"
 gas_limit: 50000000
 arguments:
     - 100
-upgradeable: True
-readable: False
-payable: False
-payable_by_sc: True
+upgradeable: true
+readable: false
+payable: false
+payable_by_sc: true
 ```
 
 ##### Token Issuance
@@ -229,7 +229,7 @@ arguments: []
 expected_results:
     - save_key: EsdtIdentifier
     result_type: str
-print_results: True
+print_results: true
 ```
 
 ##### Results
@@ -253,10 +253,10 @@ steps:
     gas_limit: 50000000
     arguments:
       - 100
-    upgradeable: True
-    readable: False
-    payable: False
-    payable_by_sc: True
+    upgradeable: true
+    readable: false
+    payable: false
+    payable_by_sc: true
 
   - type: ContractCall
     sender: owner
@@ -276,7 +276,7 @@ steps:
     expected_results:
       - save_key: EsdtIdentifier
         result_type: str
-    print_results: True
+    print_results: true
 ```
 
 #### PiggyBank Initialization
@@ -301,10 +301,10 @@ gas_limit: 80000000
 arguments:
     - "%abc-esdt-minter%EsdtIdentifier"
     - "%abc-esdt-minter%address"
-upgradeable: True
-readable: False
-payable: False
-payable_by_sc: True
+upgradeable: true
+readable: false
+payable: false
+payable_by_sc: true
 ```
 
 ##### Interest Whitelist
@@ -343,10 +343,10 @@ steps:
     arguments:
       - "%abc-esdt-minter%EsdtIdentifier"
       - "%abc-esdt-minter%address"
-    upgradeable: True
-    readable: False
-    payable: False
-    payable_by_sc: True
+    upgradeable: true
+    readable: false
+    payable: false
+    payable_by_sc: true
 
   - type: ContractCall
     sender: owner

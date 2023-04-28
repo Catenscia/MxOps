@@ -92,7 +92,7 @@ def test_address_from_account():
 
     # When
     arg = f'[{account_name}]'
-    retrieved_value = utils.retrieve_address_from_account(arg)
+    retrieved_value = utils.retrieve_address_from_account(arg).bech32()
 
     # Then
     assert retrieved_value == address

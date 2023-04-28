@@ -6,13 +6,13 @@ To be as dynamic as possible, MxOps allows runtime evaluation of variables. This
 
 Values are specified as below:
 
-`"<symbol><name>:<type>"`
+`"<symbol><name>:<return_type>"`
 
 for example:
 
 - `"$MY_VAR:int"`
 - `"&MY_VAR:str"`
-- `"%CONTRACT_ID%MY_VAR:int"`
+- `"%ROOT_ID%MY_VAR:int"`
 
 ### Symbol
 
@@ -24,9 +24,16 @@ The symbol is used to indicate which data source to use.
 | $      | Environment variable        |
 | %      | Scenario data               |
 
-### Type
+Data saved within a `Scenario` are saved under a root name (for example a contract id). This root name must be used to create a reference to the data:
 
-For now, only two types are supported:
+| Data type | Root name     | Example                |
+|-----------|---------------|------------------------|
+| contract  | `contract_id` | "%my_contract%address" |
+| token     | `token_name`  | "%my_token%identifier" |
+
+### Return Type
+
+For now, only two return types are supported:
 
 - `int`
 - `str`
