@@ -23,4 +23,9 @@ steps:
     roles:
       - ESDTRoleLocalMint
       - ESDTRoleLocalBurn
+  
+  - type: FungibleMint
+    sender: user_a
+    token_identifier: "%MyToken%identifier"
+    amount: 100000000  # 100,000.000 MTK
 

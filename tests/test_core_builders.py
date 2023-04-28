@@ -116,3 +116,25 @@ def test_meta_fungible_issue_payload():
                             b'@63616e55706772616465@74727565'
                             b'@63616e5472616e736665724e4654437265617465526f6c65@74727565'
                             )
+
+
+def test_fungible_mint_payload():
+    # Given
+    builder_config = token_management_builders.MyDefaultTransactionBuildersConfiguration(
+        chain_id='D'
+    )
+    builder = token_management_builders.FungibleMintBuilder(
+        builder_config,
+        Address.from_bech32('erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw'),
+        'MTK-235663',
+        100000000
+    )
+
+    # When
+    payload = builder.build_payload()
+
+    # Then
+    assert payload.data == (b'ESDTLocalMint'
+                            b'@4d544b2d323335363633'
+                            b'@05f5e100'
+                            )

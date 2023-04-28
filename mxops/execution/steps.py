@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 import os
 from pathlib import Path
 import sys
-from typing import ClassVar, Dict, List, Set
+from typing import ClassVar, Dict, List, Set, Union
 
 from multiversx_sdk_cli.contracts import CodeMetadata
 from multiversx_sdk_core import Address
@@ -564,6 +564,52 @@ class ManageMetaTokenRolesStep(ManageSemiFungibleTokenRolesStep):
     """
     This step is used to set or unset roles for an adress on a meta token
     """
+
+
+@dataclass
+class FungibleMintStep(Step):
+    """
+    This step is used to mint an additional supply for an already existing fungible token
+    """
+    sender: str
+    token_identifier: str
+    amount: Union[str, int]
+
+    def execute(self):
+        """
+        Execute a transaction to mint an additional supply for an already existing fungible token
+        """
+        config = Config.get_config()
+        builder_config = token_management_builders.MyDefaultTransactionBuildersConfiguration(
+            chain_id=config.get('CHAIN')
+        )
+
+        sender = AccountsManager.get_account(self.sender)
+        token_identifier = utils.retrieve_value_from_string(self.token_identifier)
+        if isinstance(self.amount, str):
+            amount = utils.retrieve_value_from_string(self.amount)
+        else:
+            amount = self.amount
+
+        LOGGER.info(
+            f'Minting additional supply of {amount} ({self.amount}) for the token '
+            f' {token_identifier} ({self.token_identifier})'
+        )
+
+        builder = token_management_builders.FungibleMintBuilder(
+            builder_config,
+            sender.address,
+            token_identifier,
+            amount,
+            nonce=sender.nonce
+        )
+        tx = builder.build()
+        tx.signature = sender.signer.sign(tx)
+        sender.nonce += 1
+
+        on_chain_tx = send_and_wait_for_result(tx)
+        raise_on_errors(on_chain_tx)
+        LOGGER.info(f'Call successful: {get_tx_link(on_chain_tx.hash)}')
 
 
 def instanciate_steps(raw_steps: List[Dict]) -> List[Step]:

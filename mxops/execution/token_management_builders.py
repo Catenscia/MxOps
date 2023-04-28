@@ -24,6 +24,7 @@ class MyDefaultTransactionBuildersConfiguration(DefaultTransactionBuildersConfig
     Extend the default configuration of multiversx_sdk_core with more parameters
     """
     gas_limit_esdt_roles = 60000000
+    gas_limit_fungible_mint = 300000
 
 
 class TokenIssueBuilder(TransactionBuilder):
@@ -364,4 +365,43 @@ class ManageTokenRolesBuilder(TransactionBuilder):
             arg_to_string(self.token_identifier),
             arg_to_string(self.target),
             *args_to_strings(self.roles)
+        ]
+
+
+class IESDTManagmentConfiguration(ITransactionBuilderConfiguration, Protocol):
+    gas_limit_fungible_mint: IGasLimit
+
+
+class FungibleMintBuilder(TransactionBuilder):
+    """
+    Class to create the transaction to mint additional supply for
+    an already existing fungible token
+    """
+
+    def __init__(self,
+                 config: IESDTManagmentConfiguration,
+                 sender: IAddress,
+                 token_identifier: ITokenIdentifier,
+                 amount_as_integer: int,
+                 nonce: Optional[INonce] = None,
+                 value: Optional[ITransactionValue] = None,
+                 gas_limit: Optional[IGasLimit] = None,
+                 gas_price: Optional[IGasPrice] = None
+                 ) -> None:
+        super().__init__(config, nonce, value, gas_limit, gas_price)
+        self.gas_limit_fungible_mint = config.gas_limit_fungible_mint
+
+        self.sender = sender
+        self.receiver = sender
+        self.token_identifier = token_identifier
+        self.amount_as_integer = amount_as_integer
+
+    def _estimate_execution_gas(self) -> IGasLimit:
+        return self.gas_limit_fungible_mint
+
+    def _build_payload_parts(self) -> List[str]:
+        return [
+            "ESDTLocalMint",
+            arg_to_string(self.token_identifier),
+            arg_to_string(self.amount_as_integer)
         ]

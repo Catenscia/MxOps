@@ -83,7 +83,7 @@ This `Step` is used to issue a new fungible token, a initial supply of tokens wi
 
 ```yaml
 type: FungibleIssue
-sender: user
+sender: alice
 token_name: MyToken           # must be unique in a Scenario
 token_ticker: MTK
 initial_supply: 1000000000    # 1,000,000.000 MTK
@@ -110,7 +110,7 @@ This `Step` is used to set or unset roles for an address on a fungible token.
 
 ```yaml
 type: ManageFungibleTokenRoles
-sender: user_a
+sender: alice
 is_set: true   # if false, this will unset the provided roles
 token_identifier: MTK-abcdef
 target: erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw
@@ -122,6 +122,17 @@ roles:  # choose one or several of the roles below
 
 Details on the roles can be found [here](https://docs.multiversx.com/tokens/esdt-tokens/#setting-and-unsetting-special-roles).
 
+#### Mint Step
+
+This `Step` is used to mint an additional supply for an already existing fungible token.
+
+```yaml
+type: FungibleMint
+sender: alice
+token_identifier: MTK-abcdef
+amount: 100000000
+```
+
 ### NFT, SFT and Meta Token Steps
 
 Aside from the issuance `Steps`, NFT, SFT and Meta tokens share common methods. The associated steps are listed here.
@@ -132,7 +143,7 @@ This `Step` is used to issue a new non fungible token (NFT).
 
 ```yaml
 type: NonFungibleIssue
-sender: user
+sender: alice
 token_name: MyNFT                     # must be unique in a Scenario
 token_ticker: MNFT
 can_freeze: false                     # optional, defaults to false
@@ -158,7 +169,7 @@ This `Step` is used to issue a new semi fungible token (NFT).
 
 ```yaml
 type: SemiFungibleIssue
-sender: user
+sender: alice
 token_name: MySFT                     # must be unique in a Scenario
 token_ticker: MSFT
 can_freeze: false                     # optional, defaults to false
@@ -184,7 +195,7 @@ This `Step` is used to issue a new non fungible token (NFT).
 
 ```yaml
 type: MetaIssue
-sender: user
+sender: alice
 token_name: MyMeta                      # must be unique in a Scenario
 token_ticker: MMT
 num_decimals: 3
@@ -211,7 +222,7 @@ This `Step` is used to set or unset roles for an address on a non fungible token
 
 ```yaml
 type: ManageNonFungibleTokenRoles
-sender: user_a
+sender: alice
 is_set: true   # if false, this will unset the provided roles
 token_identifier: MNFT-abcdef
 target: erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw
@@ -231,7 +242,7 @@ This `Step` is used to set or unset roles for an address on a semi fungible toke
 
 ```yaml
 type: ManageSemiFungibleTokenRoles
-sender: user_a
+sender: alice
 is_set: true   # if false, this will unset the provided roles
 token_identifier: MNFT-abcdef
 target: erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw
@@ -250,7 +261,7 @@ This `Step` is used to set or unset roles for an address on a meta token.
 
 ```yaml
 type: ManageMetaTokenRoles
-sender: user_a
+sender: alice
 is_set: true   # if false, this will unset the provided roles
 token_identifier: META-abcdef
 target: erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw
