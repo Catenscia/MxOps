@@ -24,3 +24,15 @@ steps:
       - ESDTRoleNFTUpdateAttributes
       - ESDTRoleNFTAddURI
       - ESDTTransferRole
+  
+  - type: NonFungibleMint
+    sender: user_a
+    token_identifier: "%MyNFT%identifier"
+    amount: 1  # can only be one for NFT
+    name: "Beautiful NFT"
+    royalties: 750
+    hash: "00"
+    attributes: "metadata:ipfsCID/song.json;tags:song,beautiful,music"
+    uris:
+      - https://mypng.com/1
+      - https://mysftjpg.com/1

@@ -586,10 +586,7 @@ class FungibleMintStep(Step):
 
         sender = AccountsManager.get_account(self.sender)
         token_identifier = utils.retrieve_value_from_string(self.token_identifier)
-        if isinstance(self.amount, str):
-            amount = utils.retrieve_value_from_string(self.amount)
-        else:
-            amount = self.amount
+        amount = utils.retrieve_value_from_any(self.amount)
 
         LOGGER.info(
             f'Minting additional supply of {amount} ({self.amount}) for the token '
@@ -610,6 +607,63 @@ class FungibleMintStep(Step):
         on_chain_tx = send_and_wait_for_result(tx)
         raise_on_errors(on_chain_tx)
         LOGGER.info(f'Call successful: {get_tx_link(on_chain_tx.hash)}')
+
+
+@dataclass
+class NonFungibleMintStep(Step):
+    """
+    This step is used to mint a new nonce for an already existing non fungible token.
+    It can be used for NFTs, SFTs and Meta tokens.
+    """
+    sender: str
+    token_identifier: str
+    amount: Union[str, int]
+    name: str = ''
+    royalties: Union[str, int] = 0
+    hash: str = ''
+    attributes: str = ''
+    uris: List[str] = field(default_factory=lambda: [])
+
+    def execute(self):
+        """
+        Execute a transaction to mint a new nonce for an already existing non fungible token
+        """
+        config = Config.get_config()
+        builder_config = token_management_builders.MyDefaultTransactionBuildersConfiguration(
+            chain_id=config.get('CHAIN')
+        )
+
+        sender = AccountsManager.get_account(self.sender)
+        token_identifier = utils.retrieve_value_from_string(self.token_identifier)
+        amount = utils.retrieve_value_from_any(self.amount)
+
+        LOGGER.info(
+            f'Minting new nonce with a supply of {amount} ({self.amount}) for the token '
+            f' {token_identifier} ({self.token_identifier})'
+        )
+
+        builder = token_management_builders.NonFungibleMintBuilder(
+            builder_config,
+            sender.address,
+            token_identifier,
+            amount,
+            utils.retrieve_value_from_string(self.name),
+            utils.retrieve_value_from_any(self.royalties),
+            utils.retrieve_value_from_string(self.hash),
+            utils.retrieve_value_from_string(self.attributes),
+            utils.retrieve_values_from_strings(self.uris),
+            nonce=sender.nonce
+        )
+        tx = builder.build()
+        tx.signature = sender.signer.sign(tx)
+        sender.nonce += 1
+
+        on_chain_tx = send_and_wait_for_result(tx)
+        raise_on_errors(on_chain_tx)
+        LOGGER.info(f'Call successful: {get_tx_link(on_chain_tx.hash)}')
+
+        new_nonce = tkm.extract_new_nonce(on_chain_tx)
+        LOGGER.info(f'Newly issued nonce is {new_nonce}')
 
 
 def instanciate_steps(raw_steps: List[Dict]) -> List[Step]:

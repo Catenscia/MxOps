@@ -24,7 +24,8 @@ class MyDefaultTransactionBuildersConfiguration(DefaultTransactionBuildersConfig
     Extend the default configuration of multiversx_sdk_core with more parameters
     """
     gas_limit_esdt_roles = 60000000
-    gas_limit_fungible_mint = 300000
+    gas_limit_mint = 300000
+    gas_limit_store_per_byte = 50000
 
 
 class TokenIssueBuilder(TransactionBuilder):
@@ -368,8 +369,9 @@ class ManageTokenRolesBuilder(TransactionBuilder):
         ]
 
 
-class IESDTManagmentConfiguration(ITransactionBuilderConfiguration, Protocol):
-    gas_limit_fungible_mint: IGasLimit
+class IESDTMintConfiguration(ITransactionBuilderConfiguration, Protocol):
+    gas_limit_mint: IGasLimit
+    gas_limit_store_per_byte: IGasLimit
 
 
 class FungibleMintBuilder(TransactionBuilder):
@@ -379,7 +381,7 @@ class FungibleMintBuilder(TransactionBuilder):
     """
 
     def __init__(self,
-                 config: IESDTManagmentConfiguration,
+                 config: IESDTMintConfiguration,
                  sender: IAddress,
                  token_identifier: ITokenIdentifier,
                  amount_as_integer: int,
@@ -389,7 +391,7 @@ class FungibleMintBuilder(TransactionBuilder):
                  gas_price: Optional[IGasPrice] = None
                  ) -> None:
         super().__init__(config, nonce, value, gas_limit, gas_price)
-        self.gas_limit_fungible_mint = config.gas_limit_fungible_mint
+        self.gas_limit_mint = config.gas_limit_mint
 
         self.sender = sender
         self.receiver = sender
@@ -397,11 +399,66 @@ class FungibleMintBuilder(TransactionBuilder):
         self.amount_as_integer = amount_as_integer
 
     def _estimate_execution_gas(self) -> IGasLimit:
-        return self.gas_limit_fungible_mint
+        return self.gas_limit_mint
 
     def _build_payload_parts(self) -> List[str]:
         return [
             "ESDTLocalMint",
             arg_to_string(self.token_identifier),
             arg_to_string(self.amount_as_integer)
+        ]
+
+
+class NonFungibleMintBuilder(TransactionBuilder):
+    """
+    Builder to construct the transaction to mint a new non fungible token (ide a new nonce).
+    This can be used for NFTs, SFTs and Meta tokens.
+    """
+
+    def __init__(self,
+                 config: IESDTMintConfiguration,
+                 sender: IAddress,
+                 token_identifier: ITokenIdentifier,
+                 amount_as_integer: int,
+                 name: str,
+                 royalties: int,
+                 hash: str,
+                 attributes: str,
+                 uris: List[str],
+                 nonce: Optional[INonce] = None,
+                 value: Optional[ITransactionValue] = None,
+                 gas_limit: Optional[IGasLimit] = None,
+                 gas_price: Optional[IGasPrice] = None
+                 ) -> None:
+        super().__init__(config, nonce, value, gas_limit, gas_price)
+        self.gas_limit_mint = config.gas_limit_mint
+        self.gas_limit_per_byte = config.gas_limit_per_byte
+        self.gas_limit_store_per_byte = config.gas_limit_store_per_byte
+
+        self.sender = sender
+        self.receiver = sender
+        self.token_identifier = token_identifier
+        self.amount_as_integer = amount_as_integer
+        self.name = name
+        self.royalties = royalties
+        self.hash = hash
+        self.attributes = attributes
+        self.uris = uris
+
+    def _estimate_execution_gas(self) -> IGasLimit:
+        n_data_bytes = len(self.build_payload().data)
+        additionnal_gas = n_data_bytes * (self.gas_limit_per_byte + self.gas_limit_store_per_byte)
+        return self.gas_limit_mint + additionnal_gas
+
+    def _build_payload_parts(self) -> List[str]:
+        formatted_uris = args_to_strings(self.uris) if len(self.uris) else ['']
+        return [
+            "ESDTNFTCreate",
+            arg_to_string(self.token_identifier),
+            arg_to_string(self.amount_as_integer),
+            arg_to_string(self.name),
+            arg_to_string(self.royalties),
+            arg_to_string(self.hash),
+            arg_to_string(self.attributes),
+            *formatted_uris
         ]

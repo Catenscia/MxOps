@@ -345,3 +345,23 @@ def extract_new_token_identifier(on_chain_tx: TransactionOnNetwork) -> str:
         return token_identifier_topic.raw.decode('utf-8')
     except Exception as err:
         raise errors.ParsingError(token_identifier_topic.hex(), 'token identifier') from err
+
+
+def extract_new_nonce(on_chain_tx: TransactionOnNetwork) -> int:
+    """
+    Extract the new created nonce from a successful mint transaction
+
+    :param on_chain_tx: on chain transaction with results fetched from the gateway of the api
+    :type on_chain_tx: TransactionOnNetwork
+    :return: created nonce
+    :rtype: int
+    """
+    try:
+        nonce_topic = on_chain_tx.logs.events[0].topics[1]
+    except IndexError as err:
+        raise errors.NewTokenIdentifierNotFound from err
+
+    try:
+        return int(nonce_topic.hex(), 16)
+    except Exception as err:
+        raise errors.ParsingError(nonce_topic.hex(), 'nonce') from err

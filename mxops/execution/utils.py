@@ -159,6 +159,21 @@ def retrieve_values_from_strings(args: List[str]) -> List[Any]:
     return [retrieve_value_from_string(arg) for arg in args]
 
 
+def retrieve_value_from_any(arg: Any) -> Any:
+    """
+    Dynamically evaluate the provided argument depending on its type.
+    Otherwise it will be returned itself
+
+    :param arg: argument to evaluate
+    :type arg: Any
+    :return: evaluated argument
+    :rtype: Any
+    """
+    if isinstance(arg, str):
+        return retrieve_value_from_string(arg)
+    return arg
+
+
 def format_tx_arguments(arguments: List[Any]) -> List[Any]:
     """
     Transform the arguments so they can be recognised by mxpy

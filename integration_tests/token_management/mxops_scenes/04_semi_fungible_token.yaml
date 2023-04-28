@@ -23,3 +23,15 @@ steps:
       - ESDTRoleNFTBurn
       - ESDTRoleNFTAddQuantity
       - ESDTTransferRole
+  
+  - type: NonFungibleMint
+    sender: user_a
+    token_identifier: "%MySFT%identifier"
+    amount: 100000000  # 100,000 MSFT
+    name: "Beautiful SFT"
+    royalties: 750
+    hash: "00"
+    attributes: "metadata:ipfsCID/song.json;tags:song,beautiful,music"
+    uris:
+      - https://mypng.com/1
+      - https://mysftjpg.com/1

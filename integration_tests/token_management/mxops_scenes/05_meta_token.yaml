@@ -24,3 +24,8 @@ steps:
       - ESDTRoleNFTBurn
       - ESDTRoleNFTAddQuantity
       - ESDTTransferRole
+  
+  - type: NonFungibleMint
+    sender: user_a
+    token_identifier: "%MyMeta%identifier"
+    amount: 100000000  # 100,000.000 META

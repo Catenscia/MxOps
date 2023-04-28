@@ -274,6 +274,27 @@ roles:  # choose one or several of the roles below
 
 Details on the roles can be found [here](https://docs.multiversx.com/tokens/nft-tokens#roles).
 
+#### Non Fungible Mint Step
+
+This `Step` is used to mint a new nonce for an already existing non fungible token.
+It can be used for NFTs, SFTs and Meta tokens.
+
+```yaml
+type: NonFungibleMint
+sender: alice
+token_identifier: TOKE-abcdef
+amount: 1  # must be 1 for NFT but any number for SFT and Meta
+name: "Beautiful NFT"                                               # optional
+royalties: 750                                                      # optional, here it is equals to 7.5%
+hash: "00"                                                          # optional
+attributes: "metadata:ipfsCID/song.json;tags:song,beautiful,music"  # optional
+uris:                                                               # optional
+  - https://mypng.com/1
+  - https://mysftjpg.com/1
+```
+
+You can find more information in the MultiversX documentation about [non fungible creation](https://docs.multiversx.com/tokens/nft-tokens#creation-of-an-nft) and [non fungible attributes](https://docs.multiversx.com/tokens/nft-tokens#nftsft-fields).
+
 ## Miscellaneous Steps
 
 ### Loop Step

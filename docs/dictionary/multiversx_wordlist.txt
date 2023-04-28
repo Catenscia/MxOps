@@ -21,10 +21,12 @@ mxpy
 mx
 py
 NFT
+NFTs
 OptionalValue
 pem
 sc
 SFT
+SFTs
 testnet
 txs
 WEGLD
