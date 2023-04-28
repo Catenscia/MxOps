@@ -231,7 +231,7 @@ def get_contract_instance(contract_str: str) -> SmartContract:
     raise errors.ParsingError(contract_str, 'contract address')
 
 
-def get_address_instance(address_str: str) -> Address:
+def get_address_instance(address_str: str) -> CliAddress:
     """
     From a string return an Address instance.
     The input will be parsed to dynamically evaluate values from the environment, the config, saved
@@ -240,23 +240,23 @@ def get_address_instance(address_str: str) -> Address:
     :param address_str: raw address or address entity designation
     :type address_str: str
     :return: address instance corresponding to the input
-    :rtype: Address
+    :rtype: CliAddress
     """
     # try to see if the string is a valid address
     try:
-        return Address(address_str)
+        return CliAddress(address_str)
     except BadAddressFormatError:
         pass
     # otherwise try to parse it as a mxops value
     evaluated_address_str = retrieve_value_from_string(address_str)
     try:
-        return SmartContract(Address(evaluated_address_str))
+        return SmartContract(CliAddress(evaluated_address_str))
     except BadAddressFormatError:
         pass
     # else try to see if it is a valid contract id
     evaluated_address_str = retrieve_value_from_string(f'%{address_str}%address')
     try:
-        return SmartContract(Address(evaluated_address_str))
+        return SmartContract(CliAddress(evaluated_address_str))
     except BadAddressFormatError:
         pass
     # finally try to see if it designate a defined account
