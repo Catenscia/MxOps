@@ -9,6 +9,8 @@ from typing import Any, List, Optional, Tuple
 from multiversx_sdk_cli.accounts import Address as CliAddress
 from multiversx_sdk_cli.contracts import QueryResult, SmartContract
 from multiversx_sdk_cli.errors import BadAddressFormatError
+from multiversx_sdk_core.address import Address
+from multiversx_sdk_core.errors import ErrBadAddress
 
 from mxops.config.config import Config
 from mxops.data.data import ScenarioData
@@ -231,7 +233,7 @@ def get_contract_instance(contract_str: str) -> SmartContract:
     raise errors.ParsingError(contract_str, 'contract address')
 
 
-def get_address_instance(address_str: str) -> CliAddress:
+def get_address_instance(address_str: str) -> Address:
     """
     From a string return an Address instance.
     The input will be parsed to dynamically evaluate values from the environment, the config, saved
@@ -240,28 +242,29 @@ def get_address_instance(address_str: str) -> CliAddress:
     :param address_str: raw address or address entity designation
     :type address_str: str
     :return: address instance corresponding to the input
-    :rtype: CliAddress
+    :rtype: Address
     """
     # try to see if the string is a valid address
     try:
-        return CliAddress(address_str)
-    except BadAddressFormatError:
+        return Address.from_bech32(address_str)
+    except ErrBadAddress:
         pass
     # otherwise try to parse it as a mxops value
     evaluated_address_str = retrieve_value_from_string(address_str)
     try:
-        return SmartContract(CliAddress(evaluated_address_str))
-    except BadAddressFormatError:
+        return Address.from_bech32(evaluated_address_str)
+    except ErrBadAddress:
         pass
     # else try to see if it is a valid contract id
-    evaluated_address_str = retrieve_value_from_string(f'%{address_str}%address')
     try:
-        return SmartContract(CliAddress(evaluated_address_str))
-    except BadAddressFormatError:
+        evaluated_address_str = retrieve_value_from_string(f'%{address_str}%address')
+        return Address.from_bech32(evaluated_address_str)
+    except (ErrBadAddress, errors.UnknownRootName):
         pass
     # finally try to see if it designate a defined account
     try:
-        return AccountsManager.get_account(address_str).address
+        account = AccountsManager.get_account(address_str)
+        return Address.from_bech32(account.address.bech32())
     except errors.UnknownAccount:
         pass
     raise errors.ParsingError(address_str, 'address_str address')
