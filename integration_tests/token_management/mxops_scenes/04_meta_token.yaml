@@ -7,25 +7,24 @@ allowed_scenario:
 
 steps:
   - type: MetaIssue
-    sender: user_a
-    token_name: MyMeta
-    token_ticker: META
+    sender: thomas
+    token_name: ThomasMeta
+    token_ticker: TMT
     num_decimals: 3
     can_upgrade: true
     can_transfer_nft_create_role: true
   
   - type: ManageMetaTokenRoles
-    sender: user_a
+    sender: thomas
     is_set: true
-    token_identifier: "%MyMeta%identifier"
-    target: "[user_a]"
+    token_identifier: "%ThomasMeta%identifier"
+    target: "[thomas]"
     roles:
       - ESDTRoleNFTCreate
       - ESDTRoleNFTBurn
       - ESDTRoleNFTAddQuantity
-      - ESDTTransferRole
   
   - type: NonFungibleMint
-    sender: user_a
-    token_identifier: "%MyMeta%identifier"
-    amount: 100000000  # 100,000.000 META
+    sender: thomas
+    token_identifier: "%ThomasMeta%identifier"
+    amount: 100000000  # 100,000.000 TMT

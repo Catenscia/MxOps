@@ -7,26 +7,25 @@ allowed_scenario:
 
 steps:
   - type: SemiFungibleIssue
-    sender: user_a
-    token_name: MySFT
+    sender: marthe
+    token_name: MartheSFT
     token_ticker: MSFT
     can_upgrade: true
     can_transfer_nft_create_role: true
   
   - type: ManageSemiFungibleTokenRoles
-    sender: user_a
+    sender: marthe
     is_set: true
-    token_identifier: "%MySFT%identifier"
-    target: "[user_a]"
+    token_identifier: "%MartheSFT%identifier"
+    target: "[marthe]"
     roles:
       - ESDTRoleNFTCreate
       - ESDTRoleNFTBurn
       - ESDTRoleNFTAddQuantity
-      - ESDTTransferRole
   
   - type: NonFungibleMint
-    sender: user_a
-    token_identifier: "%MySFT%identifier"
+    sender: marthe
+    token_identifier: "%MartheSFT%identifier"
     amount: 100000000  # 100,000 MSFT
     name: "Beautiful SFT"
     royalties: 750
@@ -34,4 +33,4 @@ steps:
     attributes: "metadata:ipfsCID/song.json;tags:song,beautiful,music"
     uris:
       - https://mypng.com/1
-      - https://mysftjpg.com/1
+      - https://MartheSFTjpg.com/1
