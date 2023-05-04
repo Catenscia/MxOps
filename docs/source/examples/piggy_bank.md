@@ -393,7 +393,7 @@ steps:
         expected_transfers:
           - sender: "%abc-esdt-minter%address"
             receiver: "[user]"
-            token: "%abc-esdt-minter%EsdtIdentifier"
+            token_identifier: "%abc-esdt-minter%EsdtIdentifier"
             amount: 100000
 ```
 

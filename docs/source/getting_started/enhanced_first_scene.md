@@ -130,7 +130,7 @@ MxOps checks by default that a transaction is successful. In our case, we would 
         expected_transfers:
           - sender: "[owner]"
             receiver: "%egld-ping-pong%address"
-            token: EGLD
+            token_identifier: EGLD
             amount: "%egld-ping-pong%PingAmount"
 ```
 

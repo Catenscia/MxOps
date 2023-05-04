@@ -68,7 +68,7 @@ def test_data_load_equality():
     expected_transfer = ExpectedTransfer(
         sender='[owner]',
         receiver='%egld-ping-pong%address',
-        token='EGLD',
+        token_identifier='EGLD',
         amount='%egld-ping-pong%PingAmount'
     )
 
@@ -76,7 +76,7 @@ def test_data_load_equality():
         OnChainTransfer(
             sender='erd1zzugxvypryhfym7qrnnkxvrlh8d9ylw2s0399q5tzp43g297plcq4p6d30',
             receiver='erd1qqqqqqqqqqqqqpgqpxkd9qgyyxykq5l6d8v9zud99hpwh7l0plcq3dae77',
-            token='EGLD',
+            token_identifier='EGLD',
             amount='1000000000000000000')
     ]
 

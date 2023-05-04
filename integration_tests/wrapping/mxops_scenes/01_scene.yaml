@@ -31,11 +31,11 @@ steps:
         expected_transfers:
           - sender: "[user]"
             receiver: "%egld_wrapper_shard_2%address"
-            token: EGLD
+            token_identifier: EGLD
             amount: 10000
           - sender: "%egld_wrapper_shard_2%address"
             receiver: "[user]"
-            token: "%egld_wrapper_shard_2%WrappedTokenIdentifier"
+            token_identifier: "%egld_wrapper_shard_2%WrappedTokenIdentifier"
             amount: 10000
 
   - type: ContractCall
@@ -56,9 +56,9 @@ steps:
         expected_transfers:
           - sender: "[user]"
             receiver: "%egld_wrapper_shard_2%address"
-            token: "%egld_wrapper_shard_2%WrappedTokenIdentifier"
+            token_identifier: "%egld_wrapper_shard_2%WrappedTokenIdentifier"
             amount: 10000
           - sender: "%egld_wrapper_shard_2%address"
             receiver: "[user]"
-            token: EGLD
+            token_identifier: EGLD
             amount: 10000
