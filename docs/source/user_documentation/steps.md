@@ -329,7 +329,6 @@ steps:
       - TokenIdentifier4
       - $LOOP_VAR  # nonce
       - "%my_first_sc%TokenIdentifier4Amount%"  # result of the query
-    check_for_errors: false
 ```
 
 Instead of using `var_start` and `var_end` for the loop variable, a custom list of values can be provided with the keyword `var_list` like below.
