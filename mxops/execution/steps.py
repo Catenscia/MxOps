@@ -10,9 +10,11 @@ import sys
 from typing import ClassVar, Dict, List, Set, Union
 
 from multiversx_sdk_cli.contracts import CodeMetadata
-from multiversx_sdk_core import Address
-from mxops.config.config import Config
+from multiversx_sdk_core import Address, TokenPayment
+from multiversx_sdk_core import transaction_builders as tx_builder
+from multiversx_sdk_core.serializer import arg_to_string
 
+from mxops.config.config import Config
 from mxops.data.data import InternalContractData, ScenarioData, TokenData
 from mxops.enums import TokenTypeEnum
 from mxops.execution import token_management_builders, utils
@@ -666,6 +668,225 @@ class NonFungibleMintStep(Step):
         LOGGER.info(f'Newly issued nonce is {new_nonce}')
 
 
+@dataclass
+class EgldTransferStep(Step):
+    """
+    This step is used to transfer some eGLD to an address
+    """
+    sender: str
+    receiver: str
+    amount: Union[str, int]
+    check_success: bool = True
+
+    def execute(self):
+        """
+        Execute an eGLD transfer transaction
+        """
+        config = Config.get_config()
+        builder_config = token_management_builders.MyDefaultTransactionBuildersConfiguration(
+            chain_id=config.get('CHAIN')
+        )
+
+        sender = AccountsManager.get_account(self.sender)
+        receiver_address = utils.get_address_instance(self.receiver)
+        amount = int(utils.retrieve_value_from_any(self.amount))
+        payment = TokenPayment.egld_from_integer(amount)
+
+        LOGGER.info(f'Sending {amount} eGLD from {self.sender} to {self.receiver}')
+
+        builder = tx_builder.EGLDTransferBuilder(
+            config=builder_config,
+            sender=sender.address,
+            receiver=receiver_address,
+            payment=payment,
+            nonce=sender.nonce
+        )
+
+        tx = builder.build()
+        tx.signature = sender.signer.sign(tx)
+        sender.nonce += 1
+
+        if self.check_success:
+            on_chain_tx = send_and_wait_for_result(tx)
+            raise_on_errors(on_chain_tx)
+            LOGGER.info(f'Transaction successful: {get_tx_link(on_chain_tx.hash)}')
+        else:
+            send(tx)
+            LOGGER.info('Transaction sent')
+
+
+@dataclass
+class FungibleTransferStep(Step):
+    """
+    This step is used to transfer some fungible ESDT to an address
+    """
+    sender: str
+    receiver: str
+    token_identifier: str
+    amount: Union[str, int]
+    check_success: bool = True
+
+    def execute(self):
+        """
+        Execute a fungible ESDT transfer transaction
+        """
+        config = Config.get_config()
+        builder_config = token_management_builders.MyDefaultTransactionBuildersConfiguration(
+            chain_id=config.get('CHAIN')
+        )
+
+        sender = AccountsManager.get_account(self.sender)
+        receiver_address = utils.get_address_instance(self.receiver)
+        token_identifier = utils.retrieve_value_from_string(self.token_identifier)
+        amount = int(utils.retrieve_value_from_any(self.amount))
+        payment = TokenPayment.fungible_from_integer(token_identifier, amount, 0)
+
+        LOGGER.info(f'Sending {amount} {token_identifier} from {self.sender} to {self.receiver}')
+
+        builder = tx_builder.ESDTTransferBuilder(
+            config=builder_config,
+            sender=sender.address,
+            receiver=receiver_address,
+            payment=payment,
+            nonce=sender.nonce
+        )
+
+        tx = builder.build()
+        tx.signature = sender.signer.sign(tx)
+        sender.nonce += 1
+
+        if self.check_success:
+            on_chain_tx = send_and_wait_for_result(tx)
+            raise_on_errors(on_chain_tx)
+            LOGGER.info(f'Transaction successful: {get_tx_link(on_chain_tx.hash)}')
+        else:
+            send(tx)
+            LOGGER.info('Transaction sent')
+
+
+@dataclass
+class NonFungibleTransferStep(Step):
+    """
+    This step is used to transfer some non fungible ESDT to an address
+    """
+    sender: str
+    receiver: str
+    token_identifier: str
+    nonce: Union[str, int]
+    amount: Union[str, int]
+    check_success: bool = True
+
+    def execute(self):
+        """
+        Execute a fungible ESDT transfer transaction
+        """
+        config = Config.get_config()
+        builder_config = token_management_builders.MyDefaultTransactionBuildersConfiguration(
+            chain_id=config.get('CHAIN')
+        )
+
+        sender = AccountsManager.get_account(self.sender)
+        receiver_address = utils.get_address_instance(self.receiver)
+        token_identifier = utils.retrieve_value_from_string(self.token_identifier)
+        nonce = int(utils.retrieve_value_from_any(self.nonce))
+        amount = int(utils.retrieve_value_from_any(self.amount))
+        payment = TokenPayment.meta_esdt_from_integer(token_identifier, nonce, amount, 0)
+
+        LOGGER.info(f'Sending {amount} {token_identifier}-{arg_to_string(nonce)} '
+                    f'from {self.sender} to {self.receiver}')
+
+        builder = tx_builder.ESDTNFTTransferBuilder(
+            config=builder_config,
+            sender=sender.address,
+            destination=receiver_address,
+            payment=payment,
+            nonce=sender.nonce
+        )
+
+        tx = builder.build()
+        tx.signature = sender.signer.sign(tx)
+        sender.nonce += 1
+
+        if self.check_success:
+            on_chain_tx = send_and_wait_for_result(tx)
+            raise_on_errors(on_chain_tx)
+            LOGGER.info(f'Transaction successful: {get_tx_link(on_chain_tx.hash)}')
+        else:
+            send(tx)
+            LOGGER.info('Transaction sent')
+
+
+@dataclass
+class MultiTransfersStep(Step):
+    """
+    This step is used to transfer multiple ESDTs to an address
+    """
+    sender: str
+    receiver: str
+    transfers: List[EsdtTransfer]
+    check_success: bool = True
+
+    def __post_init__(self):
+        """
+        After the initialisation of an instance, if the esdt transfers are
+        found to be Dict,
+        will try to convert them to EsdtTransfers instances.
+        Usefull for easy loading from yaml files
+        """
+        checked_transfers = []
+        for trf in self.transfers:
+            if isinstance(trf, EsdtTransfer):
+                checked_transfers.append(trf)
+            elif isinstance(trf, Dict):
+                checked_transfers.append(EsdtTransfer(**trf))
+            else:
+                raise ValueError(f'Unexpected type: {type(trf)}')
+        self.transfers = checked_transfers
+
+    def execute(self):
+        """
+        Execute a multi ESDT transfers transaction
+        """
+        config = Config.get_config()
+        builder_config = token_management_builders.MyDefaultTransactionBuildersConfiguration(
+            chain_id=config.get('CHAIN')
+        )
+
+        sender = AccountsManager.get_account(self.sender)
+        receiver_address = utils.get_address_instance(self.receiver)
+
+        payments = [
+            TokenPayment.meta_esdt_from_integer(
+                utils.retrieve_value_from_string(transfer.token_identifier),
+                int(utils.retrieve_value_from_any(transfer.nonce)),
+                int(utils.retrieve_value_from_any(transfer.amount)),
+                0) for transfer in self.transfers
+        ]
+
+        LOGGER.info('Sending multiple payments '
+                    f'from {self.sender} to {self.receiver}')
+
+        builder = tx_builder.MultiESDTNFTTransferBuilder(
+            config=builder_config,
+            sender=sender.address,
+            destination=receiver_address,
+            payments=payments,
+            nonce=sender.nonce
+        )
+
+        tx = builder.build()
+        tx.signature = sender.signer.sign(tx)
+        sender.nonce += 1
+
+        if self.check_success:
+            on_chain_tx = send_and_wait_for_result(tx)
+            raise_on_errors(on_chain_tx)
+            LOGGER.info(f'Transaction successful: {get_tx_link(on_chain_tx.hash)}')
+        else:
+            send(tx)
+            LOGGER.info('Transaction sent')
+
+
 def instanciate_steps(raw_steps: List[Dict]) -> List[Step]:
     """
     Take steps as dictionaries and convert them to their corresponding step classes.
@@ -678,6 +899,8 @@ def instanciate_steps(raw_steps: List[Dict]) -> List[Step]:
     steps_list = []
     for raw_step in raw_steps:
         step_type: str = raw_step.pop('type')
+        if raw_step.pop('skip', False):
+            continue
         step_class_name = step_type if step_type.endswith('Step') else step_type + 'Step'
 
         try:
