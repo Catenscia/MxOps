@@ -4,7 +4,8 @@
 
 ### Added
 
-- Added `Steps` for token issuance, roles management and minting (fungible & non fungible)
+- `Steps` for token transfers  (eGLD, fungible & non fungible)
+- `Steps` for token issuance, roles management and minting (fungible & non fungible)
 - `TransfersCheck` to verify the transfers of a `ContractCallStep`
 - Networks enumerations can be parsed by their short or full names
 
