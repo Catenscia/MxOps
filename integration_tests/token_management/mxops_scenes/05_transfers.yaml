@@ -1,0 +1,54 @@
+allowed_networks:
+  - devnet
+  - localnet
+
+allowed_scenario:
+  - "integration_test_token_management.*"
+
+steps:
+  - type: FungibleTransfer
+    sender: jean
+    receiver: marie
+    token_identifier: "%JeanToken%identifier"
+    amount: 100000  # 100.000 JTK
+
+  - type: NonFungibleTransfer
+    sender: marc
+    receiver: marie
+    token_identifier: "%MarcNFT%identifier"
+    amount: 1  # 1 MNFT
+    nonce: 1
+
+  - type: NonFungibleTransfer
+    sender: marthe
+    receiver: marie
+    token_identifier: "%MartheSFT%identifier"
+    amount: 100  # 100 MSFT
+    nonce: 1
+
+  - type: NonFungibleTransfer
+    sender: thomas
+    receiver: marie
+    token_identifier: "%ThomasMeta%identifier"
+    amount: 1000  # 1.000 TMT
+    nonce: 1
+  
+  - type: MultiTransfers
+    sender: marie
+    receiver: emmanuel
+    transfers:
+      - token_identifier: "%JeanToken%identifier"
+        nonce: 0
+        amount: 100000  # 100.000 JTK
+
+      - token_identifier: "%MarcNFT%identifier"
+        amount: 1  # 1 MNFT
+        nonce: 1
+
+      - token_identifier: "%MartheSFT%identifier"
+        amount: 100  # 100 MSFT
+        nonce: 1
+
+      - token_identifier: "%ThomasMeta%identifier"
+        amount: 1000  # 1.000 TMT
+        nonce: 1

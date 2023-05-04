@@ -7,25 +7,25 @@ allowed_scenario:
 
 steps:
   - type: FungibleIssue
-    sender: user_a
-    token_name: MyToken
-    token_ticker: MTK
-    initial_supply: 1000000000  # 1,000,000.000 MTK
+    sender: jean
+    token_name: JeanToken
+    token_ticker: JTK
+    initial_supply: 1000000000  # 1,000,000.000 JTK
     num_decimals: 3
     can_upgrade: true
     can_add_special_roles: true
   
   - type: ManageFungibleTokenRoles
-    sender: user_a
+    sender: jean
     is_set: true
-    token_identifier: "%MyToken%identifier"
-    target: "[user_a]"
+    token_identifier: "%JeanToken%identifier"
+    target: "[jean]"
     roles:
       - ESDTRoleLocalMint
       - ESDTRoleLocalBurn
   
   - type: FungibleMint
-    sender: user_a
-    token_identifier: "%MyToken%identifier"
-    amount: 100000000  # 100,000.000 MTK
+    sender: jean
+    token_identifier: "%JeanToken%identifier"
+    amount: 100000000  # 100,000.000 JTK
 

@@ -329,7 +329,6 @@ steps:
       - TokenIdentifier4
       - $LOOP_VAR  # nonce
       - "%my_first_sc%TokenIdentifier4Amount%"  # result of the query
-    check_for_errors: false
 ```
 
 Instead of using `var_start` and `var_end` for the loop variable, a custom list of values can be provided with the keyword `var_list` like below.
@@ -344,3 +343,54 @@ steps:
 
 You will notice that some symbols are used in the arguments of the above `ContractCall`. These are here to dynamically fetch values from different sources.
 Heads up to the {doc}`values` section for more information.
+
+## EGLD Transfer Step
+
+This step is used to transfer eGLD from an address to another
+
+```yaml
+type: EgldTransfer
+sender: bob
+receiver: alice  # you can also write bech32 address here
+amount: 7895651689
+```
+
+## Fungible Transfer Step
+
+This step is used to transfer classic (fungible) ESDT from an address to another
+
+```yaml
+type: FungibleTransfer
+sender: bob
+receiver: alice
+token_identifier: "MYTOK-a123ec"
+amount: 7895651689
+```
+
+## Non Fungible Transfer Step
+
+This step is used to transfer a NFT, some SFT or some Meta ESDT from an address to another
+
+```yaml
+type: NonFungibleTransfer
+sender: bob
+receiver: alice
+token_identifier: "MTESDT-a123ec"
+nonce: 4
+amount: 65481  # 1 for NFT
+```
+
+## Multi Transfers Step
+
+```yaml
+type: MutliTransfers
+sender: bob
+receiver: alice
+transfers:
+  - token_identifier: "MYSFT-a123ec"
+    amount: 25
+    nonce: 4
+  - token_identifier: "FUNG-a123ec"
+    amount: 87941198416
+    nonce: 0  # 0 for fungible ESDT
+```

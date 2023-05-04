@@ -7,17 +7,17 @@ allowed_scenario:
 
 steps:
   - type: NonFungibleIssue
-    sender: user_a
-    token_name: MyNFT
+    sender: marc
+    token_name: MarcNFT
     token_ticker: MNFT
     can_upgrade: true
     can_transfer_nft_create_role: true
   
   - type: ManageNonFungibleTokenRoles
-    sender: user_a
+    sender: marc
     is_set: true
-    token_identifier: "%MyNFT%identifier"
-    target: "[user_a]"
+    token_identifier: "%MarcNFT%identifier"
+    target: "[marc]"
     roles:
       - ESDTRoleNFTCreate
       - ESDTRoleNFTBurn
@@ -25,9 +25,17 @@ steps:
       - ESDTRoleNFTAddURI
       - ESDTTransferRole
   
+  - type: ManageNonFungibleTokenRoles
+    sender: marc
+    is_set: true
+    token_identifier: "%MarcNFT%identifier"
+    target: "[marie]"
+    roles:
+      - ESDTTransferRole
+  
   - type: NonFungibleMint
-    sender: user_a
-    token_identifier: "%MyNFT%identifier"
+    sender: marc
+    token_identifier: "%MarcNFT%identifier"
     amount: 1  # can only be one for NFT
     name: "Beautiful NFT"
     royalties: 750

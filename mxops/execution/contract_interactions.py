@@ -1,5 +1,5 @@
 """
-Module with deploy functions for the contracts
+Module with deploy, call and queries functions for the contracts
 """
 from pathlib import Path
 from typing import List, Tuple

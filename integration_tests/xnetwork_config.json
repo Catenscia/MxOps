@@ -1,0 +1,9 @@
+{
+    "shouldHaveElasticSearch": true,
+    "shouldHaveMySQL": true,
+    "shouldHaveRedis": true,
+    "shouldHaveRabbitMQ": true,
+    "shouldHaveApi": true,
+    "numberOfShards": 3,
+    "initialEGLDAddress": "erd1yy995sn9drrlj7qvzgpcyfgexl7kh9u33l3zqp5np20vw5p2jmwq7s4ark"
+}
