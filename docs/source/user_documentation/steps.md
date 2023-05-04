@@ -346,7 +346,7 @@ Heads up to the {doc}`values` section for more information.
 
 ## EGLD Transfer Step
 
-This step is used to transer eGLD from an address to another
+This step is used to transfer eGLD from an address to another
 
 ```yaml
 type: EgldTransfer
@@ -355,24 +355,24 @@ receiver: alice  # you can also write bech32 address here
 amount: 7895651689
 ```
 
-## ESDT Transfer Step
+## Fungible Transfer Step
 
-This step is used to transfer classic ESDT from an address to another
+This step is used to transfer classic (fungible) ESDT from an address to another
 
 ```yaml
-type: EsdtTransfer
+type: FungibleTransfer
 sender: bob
 receiver: alice
 token_identifier: "MYTOK-a123ec"
 amount: 7895651689
 ```
 
-## ESDT NFT Transfer Step
+## Non Fungible Transfer Step
 
 This step is used to transfer a NFT, some SFT or some Meta ESDT from an address to another
 
 ```yaml
-type: NftTransfer
+type: NonFungibleTransfer
 sender: bob
 receiver: alice
 token_identifier: "MTESDT-a123ec"
@@ -380,10 +380,10 @@ nonce: 4
 amount: 65481  # 1 for NFT
 ```
 
-## Multi ESDT NFT Transfers Step
+## Multi Transfers Step
 
 ```yaml
-type: SftTransfer
+type: MutliTransfers
 sender: bob
 receiver: alice
 transfers:
@@ -392,5 +392,5 @@ transfers:
     nonce: 4
   - token_identifier: "FUNG-a123ec"
     amount: 87941198416
-    nonce: 0  # 0 for classic ESDT
+    nonce: 0  # 0 for fungible ESDT
 ```
