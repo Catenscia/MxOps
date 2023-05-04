@@ -1,0 +1,37 @@
+allowed_networks:
+  - localnet
+  - devnet
+
+allowed_scenario:
+  - "integration_test.*"
+
+accounts:
+  - account_name: emmanuel  # erd1yy995sn9drrlj7qvzgpcyfgexl7kh9u33l3zqp5np20vw5p2jmwq7s4ark
+    pem_path: ./integration_tests/wallets/emmanuel.pem
+
+  - account_name: françois  # erd1gyqgmmxmg9fttvug4dx5hs4ggewgsaz2al4zankfkr0x8jyd3h9s2est3m
+    pem_path: ./integration_tests/wallets/françois.pem
+
+  - account_name: jacques  # erd1gvclvcfp7y586cfyg9ammcw39ld3cltqqkeu7lz86ws5fredufssjs6rlr
+    pem_path: ./integration_tests/wallets/jacques.pem
+
+  - account_name: jean  # erd1czt3wrd9qfsgqyfrgk9p48ug38s7qnlzqvvaquqcaz07wlk0dwnspwn7x0
+    pem_path: ./integration_tests/wallets/jean.pem
+
+  - account_name: marc  # erd1g9ysagkr3aev8lxudcxl8j5nk77uy0aa3y26aaxhhu55k4dqccaqt9vvwp
+    pem_path: ./integration_tests/wallets/marc.pem
+
+  - account_name: marie  # erd1tpkdh44yyyx5zwuukmdvry2u7uajgc3l5gf04e45gepfprwchyrswjw5vs
+    pem_path: ./integration_tests/wallets/marie.pem
+
+  - account_name: marthe  # erd10xth2hqqxnj2nckt0fqcq004ns2wckews6ygu6nu5tp9cwrxnu6sy4qlxt
+    pem_path: ./integration_tests/wallets/marthe.pem
+
+  - account_name: paul  # erd1u07h7vlhktwasayzt6uwpaq6nzkdyhf0d9kpxeye8n9mqztrmmwqfhruwv
+    pem_path: ./integration_tests/wallets/paul.pem
+
+  - account_name: pierre  # erd156ph6mcjqv5vzwjq9fctalg9kvk27y9sgs23sugltsy7sa23xw4svyhr2w
+    pem_path: ./integration_tests/wallets/pierre.pem
+
+  - account_name: thomas  # erd1ngpjmxuzgvnsdxesy66e354sk77ce22vv8augpms6lx2vyjq3dqssfwyqu
+    pem_path: ./integration_tests/wallets/thomas.pem
