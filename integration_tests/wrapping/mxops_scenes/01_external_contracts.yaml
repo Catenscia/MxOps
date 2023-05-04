@@ -4,9 +4,5 @@ allowed_networks:
 allowed_scenario:
   - "integration_test_wrapping"
 
-accounts:
-  - account_name: user
-    pem_path: ./integration_tests/wrapping/wallets/devnet_user.pem
-
 external_contracts:
   egld_wrapper_shard_2: erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc

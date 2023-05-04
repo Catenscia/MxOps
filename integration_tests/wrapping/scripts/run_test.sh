@@ -17,5 +17,5 @@ python -m mxops \
             execute \
             -n $1 \
             -s integration_test_wrapping \
-            "integration_tests/wrapping/mxops_scenes/accounts/${1}_accounts.yaml" \
+            integration_tests/setup_scenes/01_accounts.yaml \
             integration_tests/wrapping/mxops_scenes/
