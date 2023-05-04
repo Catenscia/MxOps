@@ -105,13 +105,13 @@ def extract_simple_esdt_transfer(sender: str, receiver: str, data: str) -> OnCha
         raise ValueError(f'Data does not describe a simple ESDT transfer: {data}')
 
     try:
-        _, token, amount, *_ = data.split('@')
-        token = bytearray.fromhex(token).decode()
+        _, token_identifier, amount, *_ = data.split('@')
+        token_identifier = bytearray.fromhex(token_identifier).decode()
         amount = str(int(amount, 16))
     except Exception as err:
         raise errors.ParsingError(data, 'ESDTTransfer') from err
 
-    return OnChainTransfer(sender, receiver, token, amount)
+    return OnChainTransfer(sender, receiver, token_identifier, amount)
 
 
 def extract_nft_transfer(sender: str, receiver: str, data: str) -> OnChainTransfer:
@@ -131,13 +131,13 @@ def extract_nft_transfer(sender: str, receiver: str, data: str) -> OnChainTransf
         raise ValueError(f'Data does not describe a nft transfer: {data}')
 
     try:
-        _, token, nonce, amount, *_ = data.split('@')
-        token = bytearray.fromhex(token).decode() + '-' + nonce
+        _, token_identifier, nonce, amount, *_ = data.split('@')
+        token_identifier = bytearray.fromhex(token_identifier).decode() + '-' + nonce
         amount = str(int(amount, 16))
     except Exception as err:
         raise errors.ParsingError(data, 'ESDTNFTTransfer') from err
 
-    return OnChainTransfer(sender, receiver, token, amount)
+    return OnChainTransfer(sender, receiver, token_identifier, amount)
 
 
 def extract_multi_transfer(sender: str, data: str) -> List[OnChainTransfer]:
@@ -164,14 +164,14 @@ def extract_multi_transfer(sender: str, data: str) -> List[OnChainTransfer]:
     transfers = []
     for i in range(n_transfers):
         try:
-            token, nonce, amount = details[3*i:3*(i+1)]
-            token = bytearray.fromhex(token).decode()
+            token_identifier, nonce, amount = details[3*i:3*(i+1)]
+            token_identifier = bytearray.fromhex(token_identifier).decode()
             amount = str(int(amount, 16))
         except Exception as err:
             raise errors.ParsingError(data, 'MultiESDTNFTTransfer') from err
         if nonce != '':
-            token += f'-{nonce}'
-        transfers.append(OnChainTransfer(sender, receiver, token, amount))
+            token_identifier += f'-{nonce}'
+        transfers.append(OnChainTransfer(sender, receiver, token_identifier, amount))
 
     return transfers
 

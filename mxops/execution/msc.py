@@ -28,17 +28,21 @@ class OnChainTransfer:
     """
     sender: str
     receiver: str
-    token: str
+    token_identifier: str
     amount: str
 
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, ExpectedTransfer):
             return other == self
         if isinstance(other, OnChainTransfer):
-            return (self.sender, self.receiver, self.token, self.amount) == (other.sender,
-                                                                             other.receiver,
-                                                                             other.token,
-                                                                             other.amount)
+            return (
+                self.sender,
+                self.receiver,
+                self.token_identifier,
+                self.amount) == (other.sender,
+                                 other.receiver,
+                                 other.token_identifier,
+                                 other.amount)
         raise NotImplementedError
 
 
@@ -49,7 +53,7 @@ class ExpectedTransfer:
     """
     sender: str
     receiver: str
-    token: str
+    token_identifier: str
     amount: Union[int, str]
     nonce: Optional[Union[str, int]] = None
 
@@ -81,13 +85,13 @@ class ExpectedTransfer:
         :rtype: ExpectedTransfer
         """
         evaluations = {}
-        attributes_to_extract = ['sender', 'receiver', 'token', 'amount']
+        attributes_to_extract = ['sender', 'receiver', 'token_identifier', 'amount']
         for attribute_name in attributes_to_extract:
             extracted_value = utils.retrieve_value_from_string(str(getattr(self, attribute_name)))
             evaluations[attribute_name] = extracted_value
         hex_nonce = self.get_hex_nonce()
         if hex_nonce is not None:
-            evaluations['token'] += '-' + hex_nonce
+            evaluations['token_identifier'] += '-' + hex_nonce
         return ExpectedTransfer(**evaluations)
 
     def __eq__(self, other: Any) -> bool:
@@ -101,8 +105,8 @@ class ExpectedTransfer:
         return (
             evaluated_self.sender,
             evaluated_self.receiver,
-            evaluated_self.token,
+            evaluated_self.token_identifier,
             str(evaluated_self.amount)) == (evaluated_other.sender,
                                             evaluated_other.receiver,
-                                            evaluated_other.token,
+                                            evaluated_other.token_identifier,
                                             str(evaluated_other.amount))

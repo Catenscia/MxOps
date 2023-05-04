@@ -72,11 +72,11 @@ was successful, that the eGLD was sent to the contract and that we received wrap
         expected_transfers:
           - sender: "[user]"
             receiver: "%egld_wrapper_shard_2%address"
-            token: EGLD
+            token_identifier: EGLD
             amount: 10000
           - sender: "%egld_wrapper_shard_2%address"
             receiver: "[user]"
-            token: "%egld_wrapper_shard_2%WrappedTokenIdentifier"
+            token_identifier: "%egld_wrapper_shard_2%WrappedTokenIdentifier"
             amount: 10000
 ```
 
@@ -100,11 +100,11 @@ And lastly we can unwrap our WEGLD:
         expected_transfers:
           - sender: "[user]"
             receiver: "%egld_wrapper_shard_2%address"
-            token: "%egld_wrapper_shard_2%WrappedTokenIdentifier"
+            token_identifier: "%egld_wrapper_shard_2%WrappedTokenIdentifier"
             amount: 10000
           - sender: "%egld_wrapper_shard_2%address"
             receiver: "[user]"
-            token: EGLD
+            token_identifier: EGLD
             amount: 10000
 ```
 
@@ -143,11 +143,11 @@ steps:
         expected_transfers:
           - sender: "[user]"
             receiver: "%egld_wrapper_shard_2%address"
-            token: EGLD
+            token_identifier: EGLD
             amount: 10000
           - sender: "%egld_wrapper_shard_2%address"
             receiver: "[user]"
-            token: "%egld_wrapper_shard_2%WrappedTokenIdentifier"
+            token_identifier: "%egld_wrapper_shard_2%WrappedTokenIdentifier"
             amount: 10000
 
   - type: ContractCall
@@ -167,11 +167,11 @@ steps:
         expected_transfers:
           - sender: "[user]"
             receiver: "%egld_wrapper_shard_2%address"
-            token: "%egld_wrapper_shard_2%WrappedTokenIdentifier"
+            token_identifier: "%egld_wrapper_shard_2%WrappedTokenIdentifier"
             amount: 10000
           - sender: "%egld_wrapper_shard_2%address"
             receiver: "[user]"
-            token: EGLD
+            token_identifier: EGLD
             amount: 10000
 ```
 

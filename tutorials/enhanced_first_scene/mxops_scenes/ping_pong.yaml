@@ -28,7 +28,7 @@ steps:
         expected_transfers:
           - sender: "[owner]"
             receiver: "%egld-ping-pong%address"
-            token: EGLD
+            token_identifier: EGLD
             amount: "%egld-ping-pong%PingAmount"
 
   - type: ContractCall
@@ -44,5 +44,5 @@ steps:
         expected_transfers:
           - sender: "%egld-ping-pong%address"
             receiver: "[owner]"
-            token: EGLD
+            token_identifier: EGLD
             amount: "%egld-ping-pong%PingAmount"
