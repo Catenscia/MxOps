@@ -137,7 +137,7 @@ MxOps checks by default that a transaction is successful. In our case, we would 
 We take advantages of the variable format of MxOps to specify the value for the transfer. The above check tells MxOps that the transaction should contain only one transfer, and that it should be an eGLD transfer of `PingAmount` token from the user `owner` to the `egld-ping-pong` contract.
 
 ```{warning}
-If you forget to specify the `Success` `Check`, MxOps will not check that the transaction is successful.
+By default if checks are not specified by the user, MxOps will by default run a `SuccessCheck` on each transaction. However if you are using the `checks` keyword, don't forget to add the `SuccessCheck` if you need it!
 ```
 
 But let's finish our `Scene` named `mxops_scenes/ping_pong.yaml` by adding the pong `Step`:
