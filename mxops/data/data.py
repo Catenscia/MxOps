@@ -485,6 +485,7 @@ def delete_scenario_data(scenario_name: str, ask_confirmation: bool = True):
             return
     try:
         os.remove(scenario_path.as_posix())
+        LOGGER.info(f'The data of the scenario {scenario_name} has been deleted')
     except FileNotFoundError:
         LOGGER.warning((f'The scenario {scenario_name} does'
                         ' not have any data recorded'))
