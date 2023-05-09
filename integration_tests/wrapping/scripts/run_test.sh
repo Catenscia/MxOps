@@ -7,15 +7,9 @@ if ! [[ " ${1} " =~ " devnet " ]]; then
 fi
 
 python -m mxops \
-            data \
-            delete \
-            -n $1 \
-            -s integration_test_wrapping \
-            -y
-
-python -m mxops \
             execute \
             -n $1 \
             -s integration_test_wrapping \
+            -d \
             integration_tests/setup_scenes/01_accounts.yaml \
             integration_tests/wrapping/mxops_scenes/

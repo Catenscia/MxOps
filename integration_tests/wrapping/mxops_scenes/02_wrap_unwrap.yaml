@@ -17,7 +17,7 @@ steps:
         result_type: str
 
   - type: ContractCall
-    sender: thomas
+    sender: marc
     contract: egld_wrapper_shard_2
     endpoint: wrapEgld
     value: 10000
@@ -29,17 +29,17 @@ steps:
         condition: exact
         include_gas_refund: false  # optional, false by default
         expected_transfers:
-          - sender: "[thomas]"
+          - sender: "[marc]"
             receiver: "%egld_wrapper_shard_2%address"
             token_identifier: EGLD
             amount: 10000
           - sender: "%egld_wrapper_shard_2%address"
-            receiver: "[thomas]"
+            receiver: "[marc]"
             token_identifier: "%egld_wrapper_shard_2%WrappedTokenIdentifier"
             amount: 10000
 
   - type: ContractCall
-    sender: thomas
+    sender: marc
     contract: egld_wrapper_shard_2
     endpoint: unwrapEgld
     gas_limit: 3000000
@@ -54,11 +54,11 @@ steps:
         condition: exact
         include_gas_refund: false  # optional, false by default
         expected_transfers:
-          - sender: "[thomas]"
+          - sender: "[marc]"
             receiver: "%egld_wrapper_shard_2%address"
             token_identifier: "%egld_wrapper_shard_2%WrappedTokenIdentifier"
             amount: 10000
           - sender: "%egld_wrapper_shard_2%address"
-            receiver: "[thomas]"
+            receiver: "[marc]"
             token_identifier: EGLD
             amount: 10000
