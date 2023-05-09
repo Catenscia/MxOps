@@ -8,12 +8,12 @@ When executing `Scenes`, you will need to supply a network, a scenario and any n
 mxops execute [-h] -s SCENARIO -n NETWORK [-c] [-d] elements [elements ...]
 ```
 
-| Argument   | Short Handle | Description                                                                  |
-|------------|--------------|------------------------------------------------------------------------------|
-| --scenario | -s           | Mandatory, the name of the `Scenario` in which the execution will take place |
-| --network  | -n           | Mandatory, the multiversX network onto whitch the execution will take place  |
-| --clean    | -c           | Optional, clean (delete) the data of the `Scenario` before the execution     |
-| --delete   | -d           | Optional, delete the data of the `Scenario` after the execution              |
+| Argument     | Short Handle   | Description                                                     |
+|--------------|----------------|-----------------------------------------------------------------|
+| `--scenario` | `-s`           | Mandatory, the name of the `Scenario` in which the execution<br>will take place |
+| `--network`  | `-n`           | Mandatory, the MultiversX network onto which the execution<br>will take place   |
+| `--clean`    | `-c`           | Optional, clean (delete) the data of the `Scenario` before<br>the execution     |
+| `--delete`   | `-d`           | Optional, delete the data of the `Scenario` after the execution |
 
 You supply as many elements as you want for the execution. An element can be a `Scene` (yaml file)
 or a folder of `Scenes`. You will find below some examples.
