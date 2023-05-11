@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 1.1.0 - 2023-05-11
+
 ### Added
 
 - CLI options to clean/delete `Scenario` data before or after execution
