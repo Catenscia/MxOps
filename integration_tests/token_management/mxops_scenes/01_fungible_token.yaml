@@ -1,0 +1,31 @@
+allowed_networks:
+  - devnet
+  - localnet
+
+allowed_scenario:
+  - "integration_test_token_management.*"
+
+steps:
+  - type: FungibleIssue
+    sender: jean
+    token_name: JeanToken
+    token_ticker: JTK
+    initial_supply: 1000000000  # 1,000,000.000 JTK
+    num_decimals: 3
+    can_upgrade: true
+    can_add_special_roles: true
+  
+  - type: ManageFungibleTokenRoles
+    sender: jean
+    is_set: true
+    token_identifier: "%JeanToken%identifier"
+    target: "[jean]"
+    roles:
+      - ESDTRoleLocalMint
+      - ESDTRoleLocalBurn
+  
+  - type: FungibleMint
+    sender: jean
+    token_identifier: "%JeanToken%identifier"
+    amount: 100000000  # 100,000.000 JTK
+

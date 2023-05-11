@@ -7,7 +7,7 @@ At execution time, the user will designate the `Scenario` in which the actions w
 
 `Scenes` are written in yaml format. Each file will contain the following elements:
 
-- `allowed_network*`: a list of the network onto which the `Scene` is allowed to be run. Allowed values are: [`LOCAL`, `TEST`, `DEV`, `MAIN`].
+- `allowed_network*`: a list of the network onto which the `Scene` is allowed to be run. Allowed values are: [`localnet`, `testnet`, `devnet`, `mainnet`].
 - `allowed_scenario*`: a list of the scenario into which the `Scene` is allowed to be run. Regex can be used here.
 - `accounts`: a list of the accounts details. This can be defined only once per execution (so in only one file in the case where several files were submitted). Each account will be designated by its `account_name` in the `Steps`.
 - `external_contracts`: a dictionary of external contract addresses. The keys will be used as contract ids by MxOps. This can be defined only once per scenario.
@@ -21,8 +21,8 @@ At execution time, the user will designate the `Scenario` in which the actions w
 
 # list of network onto which this scene can be run
 allowed_networks:
-  - MAIN
-  - DEV
+  - mainnet
+  - devnet
 
 # list of scenario into which this scene can be run
 allowed_scenario:
@@ -53,10 +53,10 @@ steps:
     arguments:
       - arg1
       - arg2
-    upgradeable: True
-    readable: False
-    payable: False
-    payable_by_sc: False
+    upgradeable: true
+    readable: false
+    payable: false
+    payable_by_sc: false
 
   - type: ContractCall
     sender: alice

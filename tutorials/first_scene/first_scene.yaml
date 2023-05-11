@@ -1,5 +1,5 @@
 allowed_networks:
-    - DEV
+    - devnet
 
 allowed_scenario:
     - mxops_tutorial_first_scene
@@ -18,10 +18,10 @@ steps:
     arguments:
       - 500000000000000000
       - 1
-    upgradeable: True
-    readable: False
-    payable: False
-    payable_by_sc: True
+    upgradeable: true
+    readable: false
+    payable: false
+    payable_by_sc: true
 
   - type: ContractCall
     sender: owner

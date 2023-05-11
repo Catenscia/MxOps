@@ -76,7 +76,7 @@ We will use bob as the contract owner and alice as a user.
 
 ```yaml
 allowed_networks:
-  - LOCAL
+  - localnet
 
 allowed_scenario:
   - "piggy_bank.*"
@@ -94,7 +94,7 @@ Same as above, but we replace the wallets by the ones on the devnet and we chang
 
 ```yaml
 allowed_networks:
-  - DEV
+  - devnet
 
 allowed_scenario:
   - "piggy_bank.*"
@@ -170,9 +170,9 @@ We will allow this scene (and all the next scenes) to be run on all networks exc
 
 ```yaml
 allowed_networks:
-  - LOCAL
-  - TEST
-  - DEV
+  - localnet
+  - testnet
+  - devnet
 
 allowed_scenario:
   - "piggy_bank.*"
@@ -192,10 +192,10 @@ contract_id: "abc-esdt-minter"
 gas_limit: 50000000
 arguments:
     - 100
-upgradeable: True
-readable: False
-payable: False
-payable_by_sc: True
+upgradeable: true
+readable: false
+payable: false
+payable_by_sc: true
 ```
 
 ##### Token Issuance
@@ -229,7 +229,7 @@ arguments: []
 expected_results:
     - save_key: EsdtIdentifier
     result_type: str
-print_results: True
+print_results: true
 ```
 
 ##### Results
@@ -238,9 +238,9 @@ Our file `mxops_scenes/user_exploit/01_esdt_minter_init.yaml` should now look li
 
 ```yaml
 allowed_networks:
-  - LOCAL
-  - TEST
-  - DEV
+  - localnet
+  - testnet
+  - devnet
 
 allowed_scenario:
   - "piggy_bank.*"
@@ -253,10 +253,10 @@ steps:
     gas_limit: 50000000
     arguments:
       - 100
-    upgradeable: True
-    readable: False
-    payable: False
-    payable_by_sc: True
+    upgradeable: true
+    readable: false
+    payable: false
+    payable_by_sc: true
 
   - type: ContractCall
     sender: owner
@@ -276,7 +276,7 @@ steps:
     expected_results:
       - save_key: EsdtIdentifier
         result_type: str
-    print_results: True
+    print_results: true
 ```
 
 #### PiggyBank Initialization
@@ -301,10 +301,10 @@ gas_limit: 80000000
 arguments:
     - "%abc-esdt-minter%EsdtIdentifier"
     - "%abc-esdt-minter%address"
-upgradeable: True
-readable: False
-payable: False
-payable_by_sc: True
+upgradeable: true
+readable: false
+payable: false
+payable_by_sc: true
 ```
 
 ##### Interest Whitelist
@@ -327,9 +327,9 @@ The file `mxops_scenes/user_exploit/02_piggy_bank_init.yaml` should look like th
 
 ```yaml
 allowed_networks:
-  - LOCAL
-  - TEST
-  - DEV
+  - localnet
+  - testnet
+  - devnet
 
 allowed_scenario:
   - "piggy_bank.*"
@@ -343,10 +343,10 @@ steps:
     arguments:
       - "%abc-esdt-minter%EsdtIdentifier"
       - "%abc-esdt-minter%address"
-    upgradeable: True
-    readable: False
-    payable: False
-    payable_by_sc: True
+    upgradeable: true
+    readable: false
+    payable: false
+    payable_by_sc: true
 
   - type: ContractCall
     sender: owner
@@ -363,9 +363,9 @@ In the scene `mxops_scenes/user_exploit/03_airdrop.yaml`, the owner will add an 
 
 ```yaml
 allowed_networks:
-  - LOCAL
-  - TEST
-  - DEV
+  - localnet
+  - testnet
+  - devnet
 
 allowed_scenario:
   - "piggy_bank.*"
@@ -385,6 +385,16 @@ steps:
     contract: "abc-esdt-minter"
     endpoint: claimAirdrop
     gas_limit: 5000000
+    checks:
+      - type: Success
+
+      - type: Transfers
+        condition: exact
+        expected_transfers:
+          - sender: "%abc-esdt-minter%address"
+            receiver: "[user]"
+            token_identifier: "%abc-esdt-minter%EsdtIdentifier"
+            amount: 100000
 ```
 
 #### Money Print
@@ -396,9 +406,9 @@ We will execute this scenario using a `LoopStep`. The loop variable will be the 
 
 ```yaml
 allowed_networks:
-  - LOCAL
-  - TEST
-  - DEV
+  - localnet
+  - testnet
+  - devnet
 
 allowed_scenario:
   - "piggy_bank.*"
@@ -466,7 +476,7 @@ As we are making some tests, we want to delete the data from any previous execut
 mxops \
     data \
     delete \
-    -n DEV \
+    -n devnet \
     -s piggy_bank_user_exploit
 ```
 
@@ -480,7 +490,7 @@ After that we can execute all the `Scenes`in the order we wrote them.
 ```bash
 mxops \
     execute \
-    -n DEV \
+    -n devnet \
     -s piggy_bank_user_exploit \
     mxops_scenes/accounts/devnet_accounts.yaml \
     mxops_scenes
@@ -491,7 +501,7 @@ This should give you on output similar to this:
 ```bash
 MxOps  Copyright (C) 2023  Catenscia
 This program comes with ABSOLUTELY NO WARRANTY
-[2023-01-24 21:26:45,650 data INFO] Scenario piggy_bank_user_exploit created for network DEV [data:259 in create_scenario]
+[2023-01-24 21:26:45,650 data INFO] Scenario piggy_bank_user_exploit created for network devnet [data:259 in create_scenario]
 [2023-01-24 21:26:45,650 scene INFO] Executing scene mxops_scenes/accounts/devnet_accounts.yaml [scene:68 in execute_scene]
 [2023-01-24 21:26:46,099 scene INFO] Executing scene mxops_scenes/user_exploit/01_esdt_minter_init.yaml [scene:68 in execute_scene]
 [2023-01-24 21:26:46,121 steps INFO] Deploying contract abc-esdt-minter [steps:106 in execute]
@@ -541,7 +551,7 @@ You can access this data using command lines.
 For example, to see all the data saved under our piggy_bank_user_exploit `Scenario`:
 
 ```bash
-mxops data get -n DEV -s piggy_bank_user_exploit
+mxops data get -n devnet -s piggy_bank_user_exploit
 ```
 
 This should give you a result similar to this:
@@ -549,10 +559,10 @@ This should give you a result similar to this:
 ```bash
 MxOps  Copyright (C) 2023  Catenscia
 This program comes with ABSOLUTELY NO WARRANTY
-[2023-01-24 21:36:14,175 data INFO] Scenario piggy_bank_user_exploit loaded for network DEV [data:234 in load_scenario]
+[2023-01-24 21:36:14,175 data INFO] Scenario piggy_bank_user_exploit loaded for network devnet [data:234 in load_scenario]
 {
     "name": "piggy_bank_user_exploit",
-    "network": "DEV",
+    "network": "devnet",
     "creation_time": 1674592005,
     "last_update_time": 1674592054,
     "contracts_data": {

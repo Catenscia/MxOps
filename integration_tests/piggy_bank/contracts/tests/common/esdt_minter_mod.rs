@@ -1,9 +1,8 @@
-elrond_wasm::imports!();
-elrond_wasm::derive_imports!();
+multiversx_sc::imports!();
+multiversx_sc::derive_imports!();
 
-use elrond_wasm_debug::{
-    managed_biguint, managed_token_id, rust_biguint, testing_framework::ContractObjWrapper,
-    tx_mock::TxResult, DebugApi,
+use multiversx_sc_scenario::{
+    managed_biguint, managed_token_id, rust_biguint, testing_framework::ContractObjWrapper, DebugApi, whitebox::TxResult
 };
 use esdt_minter::EsdtMinter;
 

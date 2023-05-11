@@ -1,0 +1,36 @@
+allowed_networks:
+  - devnet
+  - localnet
+
+allowed_scenario:
+  - "integration_test_token_management.*"
+
+steps:
+  - type: SemiFungibleIssue
+    sender: marthe
+    token_name: MartheSFT
+    token_ticker: MSFT
+    can_upgrade: true
+    can_transfer_nft_create_role: true
+  
+  - type: ManageSemiFungibleTokenRoles
+    sender: marthe
+    is_set: true
+    token_identifier: "%MartheSFT%identifier"
+    target: "[marthe]"
+    roles:
+      - ESDTRoleNFTCreate
+      - ESDTRoleNFTBurn
+      - ESDTRoleNFTAddQuantity
+  
+  - type: NonFungibleMint
+    sender: marthe
+    token_identifier: "%MartheSFT%identifier"
+    amount: 100000000  # 100,000 MSFT
+    name: "Beautiful SFT"
+    royalties: 750
+    hash: "00"
+    attributes: "metadata:ipfsCID/song.json;tags:song,beautiful,music"
+    uris:
+      - https://mypng.com/1
+      - https://MartheSFTjpg.com/1

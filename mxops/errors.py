@@ -5,7 +5,7 @@ Errors used in the MxOps package
 """
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, List
+from typing import Any, Dict, List
 
 from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
 
@@ -29,9 +29,16 @@ class ParsingError(Exception):
         super().__init__(message)
 
 
+class NewTokenIdentifierNotFound(Exception):
+    """
+    To be raised when the token identifier of newly issued token was not found in the results
+    of the transaction
+    """
+
+
 #############################################################
 #
-#                   Data Managment Errors
+#                   Data Management Errors
 #
 #############################################################
 
@@ -84,6 +91,38 @@ class ContractIdAlreadyExists(Exception):
 
     def __init__(self, contract_id: str) -> None:
         message = f'Contract id {contract_id} already exists'
+        super().__init__(message)
+
+
+class UnknownToken(Exception):
+    """
+    To be raised when a specified token is not found is a scenario
+    """
+
+    def __init__(self, scenario_name: str, token_name: str) -> None:
+        message = (f'Token named {token_name} is unkown in '
+                   f'scenario {scenario_name}')
+        super().__init__(message)
+
+
+class TokenNameAlreadyExists(Exception):
+    """
+    To be raised when there is a conflict with token name
+    """
+
+    def __init__(self, token_name: str) -> None:
+        message = f'Token named {token_name} already exists'
+        super().__init__(message)
+
+
+class UnknownRootName(Exception):
+    """
+    To be raised when a specified root name is not found is a scenario
+    """
+
+    def __init__(self, scenario_name: str, root_name: str) -> None:
+        message = (f'Root named {root_name} is unkown in '
+                   f'scenario {scenario_name}')
         super().__init__(message)
 
 
@@ -214,10 +253,43 @@ class CheckFailed(Exception):
     To be raised when an on-chain transaction check fails
     """
 
-    def __init__(self, check: dataclass, tx: TransactionOnNetwork, *args: object) -> None:
+    def __init__(self, check: dataclass, tx: TransactionOnNetwork) -> None:
         self.check = check
         self.tx = tx
-        super().__init__(*args)()
+        super().__init__()
 
     def __str__(self) -> str:
         return f'Check failed on transaction {get_tx_link(self.tx.hash)}\nCheck: {self.check}'
+
+
+#############################################################
+#
+#                   User Errors
+#
+#############################################################
+
+class UnkownStep(Exception):
+    """
+    to be raised when the user provide a step name that is unkown
+    """
+
+    def __init__(self, step_name: str) -> None:
+        self.step_name = step_name
+        super().__init__()
+
+    def __str__(self) -> str:
+        return f'Unkown Step name: {self.step_name}'
+
+
+class InvalidStepDefinition(Exception):
+    """
+    to be raised when the arguments provided by the user for a Step are not valid
+    """
+
+    def __init__(self, step_name: str, parameters: Dict) -> None:
+        self.step_name = step_name
+        self.parameters = parameters
+        super().__init__()
+
+    def __str__(self) -> str:
+        return f'Step {self.step_name} received invalid parameters {self.parameters}'

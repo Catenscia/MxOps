@@ -1,7 +1,6 @@
 # MxOps Presentation
 
-MxOps is a python package created to automate MultiversX smart contracts deployments, calls and queries.
-Inspired from DevOps tools, it aims to ease and make reproducible any set of these interactions with smart-contracts.
+MxOps is a python package created to automate MultiversX transactions: be it smart contracts deployments, calls, queries or just simple transfers. Inspired from DevOps tools and built on top of [mxpy](https://github.com/multiversx/mx-sdk-py-cli), it aims to ease and make reproducible any set of these interactions with the blockchain.
 
 MxOps aims to be useful in these situations:
 
@@ -11,11 +10,12 @@ MxOps aims to be useful in these situations:
 
 ## User Flow
 
-MxOps works with simple yaml files called `Scenes`. In these `Scenes` you will simply describe the different elements that will be used to interact with your smart-contracts.
-During execution, MxOps will save two types of data locally on you computer:
+MxOps works with simple yaml files called `Scenes`. In these `Scenes` you will simply describe the different elements that will be used to interact with the blockchain.
+During execution, MxOps will save some data locally on your computer:
 
 - deployment addresses for new contracts
-- query results (only when specified)
+- token identifier for new tokens
+- query results when specified
 
 This data is accessible to MxOps and can be reused within `Scenes`.
 
@@ -49,8 +49,8 @@ Here is the above `Scene`, but this time with the MxOps syntax:
 
   ```yaml
   allowed_networks:
-    - DEV
-    - MAIN
+    - devnet
+    - mainnet
 
   allowed_scenario:
     - "deploy_stake_withdraw"
@@ -65,10 +65,10 @@ Here is the above `Scene`, but this time with the MxOps syntax:
       wasm_path: "./contracts/my_contract.wasm"
       contract_id: "my-contract"
       gas_limit: 50000000
-      upgradeable: True
-      readable: False
-      payable: False
-      payable_by_sc: True
+      upgradeable: true
+      readable: false
+      payable: false
+      payable_by_sc: true
 
     - type: ContractCall
       sender: owner

@@ -79,7 +79,7 @@ As said above, we will work on the devnet so write these lines at the top of the
 
 ```yaml
 allowed_networks:
-    - DEV
+    - devnet
 ```
 
 We will also add the following lines, but you don't have to bother with what they do at the moment.
@@ -134,10 +134,10 @@ The `ContractStep` will look like this:
     arguments:
       - 500000000000000000 # 0.5eGLD
       - 1 # 1 sec
-    upgradeable: True
-    readable: False
-    payable: False
-    payable_by_sc: True
+    upgradeable: true
+    readable: false
+    payable: false
+    payable_by_sc: true
 ```
 
 #### Step 2: Ping
@@ -171,7 +171,7 @@ With this, we finished our first scene and your file `first_scene.yaml` should n
 
 ```yaml
 allowed_networks:
-    - DEV
+    - devnet
 
 allowed_scenario:
     - mxops_tutorial_first_scene
@@ -190,10 +190,10 @@ steps:
     arguments:
       - 500000000000000000
       - 1
-    upgradeable: True
-    readable: False
-    payable: False
-    payable_by_sc: True
+    upgradeable: true
+    readable: false
+    payable: false
+    payable_by_sc: true
 
   - type: ContractCall
     sender: owner
@@ -224,7 +224,7 @@ This is the command to execute your scene:
 
 ```bash
 mxops execute \
-        -n DEV \
+        -n devnet \
         -s mxops_tutorial_first_scene \
         first_scene.yaml
 ```
@@ -236,7 +236,7 @@ Once finished, the output of your console should look like this:
 ```bash
 MxOps  Copyright (C) 2023  Catenscia
 This program comes with ABSOLUTELY NO WARRANTY
-[2023-02-23 07:48:10,748 data INFO] Scenario mxops_tutorial_first_scene created for network DEV [data:287 in create_scenario]
+[2023-02-23 07:48:10,748 data INFO] Scenario mxops_tutorial_first_scene created for network devnet [data:287 in create_scenario]
 [2023-02-23 07:48:10,749 scene INFO] Executing scene first_scene.yaml [scene:69 in execute_scene]
 [2023-02-23 07:48:10,849 steps INFO] Deploying contract egld-ping-pong [steps:100 in execute]
 [2023-02-23 07:48:16,198 steps INFO] Deploy successful on erd1qqqqqqqqqqqqqpgq0048vv3uk6l6cdreezpallvduy4qnfv2plcq74464k

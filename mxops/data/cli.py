@@ -10,7 +10,7 @@ import json
 from mxops.data import path
 from mxops.config.config import Config
 from mxops.data.data import ScenarioData, delete_scenario_data
-from mxops.enums import NetworkEnum
+from mxops.enums import parse_network_enum
 
 
 def add_subparser(subparsers_action: _SubParsersAction):
@@ -35,7 +35,7 @@ def add_subparser(subparsers_action: _SubParsersAction):
     get_parser.add_argument('-n',
                             '--network',
                             help='Name of the network to use',
-                            type=NetworkEnum,
+                            type=parse_network_enum,
                             required=True)
 
     get_parser.add_argument('-p',
@@ -59,7 +59,7 @@ def add_subparser(subparsers_action: _SubParsersAction):
     delete_parser.add_argument('-n',
                                '--network',
                                help='Name of the network to use',
-                               type=NetworkEnum,
+                               type=parse_network_enum,
                                required=True)
 
     delete_parser.add_argument('-s',

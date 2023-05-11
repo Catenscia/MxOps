@@ -6,9 +6,11 @@ This module contains some utilities functions for the execution sub package
 import os
 from typing import Any, List, Optional, Tuple
 
-from multiversx_sdk_cli.accounts import Address
+from multiversx_sdk_cli.accounts import Address as CliAddress
 from multiversx_sdk_cli.contracts import QueryResult, SmartContract
 from multiversx_sdk_cli.errors import BadAddressFormatError
+from multiversx_sdk_core.address import Address
+from multiversx_sdk_core.errors import ErrBadAddress
 
 from mxops.config.config import Config
 from mxops.data.data import ScenarioData
@@ -89,7 +91,7 @@ def retrieve_value_from_config(arg: str) -> str:
 def retrieve_value_from_scenario_data(arg: str) -> str:
     """
     Retrieve the value of an argument from scenario data.
-    the argument must formated like this: %<contract_id>%<attribute>
+    the argument must formated like this: %<root_name>%<attribute>
 
     :param arg: name of the variable formated as above
     :type arg: str
@@ -98,16 +100,16 @@ def retrieve_value_from_scenario_data(arg: str) -> str:
     """
     inner_arg, desired_type = retrieve_specified_type(arg)
     try:
-        contract_id, value_key = inner_arg[1:].split('%')
+        root_name, value_key = inner_arg[1:].split('%')
     except Exception as err:
         raise errors.WrongScenarioDataReference from err
 
     scenario_data = ScenarioData.get()
-    retrieved_value = scenario_data.get_contract_value(contract_id, value_key)
+    retrieved_value = scenario_data.get_value(root_name, value_key)
     return convert_arg(retrieved_value, desired_type)
 
 
-def retrieve_address_from_account(arg: str) -> str:
+def retrieve_address_from_account(arg: str) -> CliAddress:
     """
     Retrieve an address from the accounts manager.
     the argument must formated like this: [user]
@@ -115,7 +117,7 @@ def retrieve_address_from_account(arg: str) -> str:
     :param arg: name of the variable formated as above
     :type arg: str
     :return: address from the scenario
-    :rtype: str
+    :rtype: CliAddress
     """
     try:
         arg = arg[1:-1]
@@ -123,7 +125,7 @@ def retrieve_address_from_account(arg: str) -> str:
         raise errors.WrongScenarioDataReference from err
 
     account = AccountsManager.get_account(arg)
-    return account.address.bech32()
+    return account.address
 
 
 def retrieve_value_from_string(arg: str) -> Any:
@@ -137,13 +139,40 @@ def retrieve_value_from_string(arg: str) -> Any:
     :rtype: Any
     """
     if arg.startswith('['):
-        return retrieve_address_from_account(arg)
+        return retrieve_address_from_account(arg).bech32()
     if arg.startswith('$'):
         return retrieve_value_from_env(arg)
     if arg.startswith('&'):
         return retrieve_value_from_config(arg)
     if arg.startswith('%'):
         return retrieve_value_from_scenario_data(arg)
+    return arg
+
+
+def retrieve_values_from_strings(args: List[str]) -> List[Any]:
+    """
+    Dynamically evaluate the value of each element of the provided list
+
+    :param args: args to evaluate
+    :type args: List[str]
+    :return: evaluated arguments
+    :rtype: List[Any]
+    """
+    return [retrieve_value_from_string(arg) for arg in args]
+
+
+def retrieve_value_from_any(arg: Any) -> Any:
+    """
+    Dynamically evaluate the provided argument depending on its type.
+    Otherwise it will be returned itself
+
+    :param arg: argument to evaluate
+    :type arg: Any
+    :return: evaluated argument
+    :rtype: Any
+    """
+    if isinstance(arg, str):
+        return retrieve_value_from_string(arg)
     return arg
 
 
@@ -163,10 +192,10 @@ def format_tx_arguments(arguments: List[Any]) -> List[Any]:
         formated_arg = arg
         if isinstance(arg, str):
             if arg.startswith('erd') and len(arg) == 62:
-                formated_arg = '0x' + Address(arg).hex()
+                formated_arg = '0x' + CliAddress(arg).hex()
             elif not arg.startswith('0x'):
                 formated_arg = 'str:' + arg
-        elif isinstance(arg, Address):
+        elif isinstance(arg, CliAddress):
             formated_arg = '0x' + arg.hex()
 
         formated_arguments.append(formated_arg)
@@ -186,22 +215,59 @@ def get_contract_instance(contract_str: str) -> SmartContract:
     """
     # try to see if the string is a valid address
     try:
-        return SmartContract(Address(contract_str))
+        return SmartContract(CliAddress(contract_str))
     except BadAddressFormatError:
         pass
     # otherwise try to parse it as a mxops value
     contract_address = retrieve_value_from_string(contract_str)
     try:
-        return SmartContract(Address(contract_address))
+        return SmartContract(CliAddress(contract_address))
     except BadAddressFormatError:
         pass
     # lastly try to see if it is a valid contract id
     contract_address = retrieve_value_from_string(f'%{contract_str}%address')
     try:
-        return SmartContract(Address(contract_address))
+        return SmartContract(CliAddress(contract_address))
     except BadAddressFormatError:
         pass
     raise errors.ParsingError(contract_str, 'contract address')
+
+
+def get_address_instance(address_str: str) -> Address:
+    """
+    From a string return an Address instance.
+    The input will be parsed to dynamically evaluate values from the environment, the config, saved
+    data or from the defined contracts or accounts.
+
+    :param address_str: raw address or address entity designation
+    :type address_str: str
+    :return: address instance corresponding to the input
+    :rtype: Address
+    """
+    # try to see if the string is a valid address
+    try:
+        return Address.from_bech32(address_str)
+    except ErrBadAddress:
+        pass
+    # otherwise try to parse it as a mxops value
+    evaluated_address_str = retrieve_value_from_string(address_str)
+    try:
+        return Address.from_bech32(evaluated_address_str)
+    except ErrBadAddress:
+        pass
+    # else try to see if it is a valid contract id
+    try:
+        evaluated_address_str = retrieve_value_from_string(f'%{address_str}%address')
+        return Address.from_bech32(evaluated_address_str)
+    except (ErrBadAddress, errors.UnknownRootName):
+        pass
+    # finally try to see if it designate a defined account
+    try:
+        account = AccountsManager.get_account(address_str)
+        return Address.from_bech32(account.address.bech32())
+    except errors.UnknownAccount:
+        pass
+    raise errors.ParsingError(address_str, 'address_str address')
 
 
 def parse_query_result(result: QueryResult, expected_return: str) -> Any:

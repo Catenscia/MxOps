@@ -1,10 +1,10 @@
 #!/bin/bash
 
 mxops data delete \
-            -n DEV \
+            -n devnet \
             -s mxops_tutorial_first_scene
 
 mxops execute \
-        -n DEV \
+        -n devnet \
         -s mxops_tutorial_first_scene \
         first_scene.yaml

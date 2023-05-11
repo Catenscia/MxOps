@@ -4,6 +4,8 @@ devnet
 egld
 eGLD
 EgldOrEsdtTokenIdentifier
+Elrond
+elrond
 esdt
 ESDT
 ESDTmapper
@@ -13,10 +15,18 @@ localnet
 mainnet
 Maiar
 mandos
+multiversx
 MultiversX
 mxpy
+mx
+py
+NFT
+NFTs
 OptionalValue
 pem
+sc
+SFT
+SFTs
 testnet
 txs
 WEGLD

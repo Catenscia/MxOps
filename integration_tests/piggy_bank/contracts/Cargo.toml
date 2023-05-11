@@ -7,14 +7,14 @@ publish = false
 [dev-dependencies]
 num-bigint = "0.4.2"
 
-[dependencies.elrond-wasm]
-version = "0.38.0"
-
-[dev-dependencies.elrond-wasm-debug]
-version = "0.38.0"
+[dependencies.multiversx-sc]
+version = "0.39.5"
 
 [dev-dependencies.esdt-minter]
 path = "esdt-minter"
 
 [dev-dependencies.piggy-bank]
 path = "piggy-bank"
+
+[dev-dependencies.multiversx-sc-scenario]
+version = "0.39.5"

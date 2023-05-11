@@ -13,7 +13,7 @@ This section will give you a basic understanding of `Scenarios`, you can always 
 
 `Scenarios` are virtual context in which data can be saved and reused. The first use case is during deployment: Once a contract is deployed, one need to save the address that has been assigned to the contract for later interactions.
 
-`Scenarios` save contract data using their `contract-id`. This means that the same `contract-id` can be use in different `Scenarios` but also in different networks (main, dev...).
+`Scenarios` save contract data using their `contract_id`. This means that the same `contract_id` can be use in different `Scenarios` but also in different networks (main, dev...).
 This allows maximum reusability for the `Scenes` as you don't have to monitor which ids has already been taken in your others `Scenarios`.
 
 ## Persistence
@@ -23,7 +23,7 @@ Unless you specifically decide to delete it, the data stored in a `Scenario` is 
 For example, we can see what data has been saved when we executed our first `Scene`. Try this command:
 
 ```bash
-mxops data get -n DEV -s mxops_tutorial_first_scene
+mxops data get -n devnet -s mxops_tutorial_first_scene
 ```
 
 This will give you the following output:
@@ -31,10 +31,10 @@ This will give you the following output:
 ```bash
 MxOps  Copyright (C) 2023  Catenscia
 This program comes with ABSOLUTELY NO WARRANTY
-[2023-02-24 18:07:55,003 data INFO] Scenario mxops_tutorial_first_scene loaded for network DEV [data:262 in load_scenario]
+[2023-02-24 18:07:55,003 data INFO] Scenario mxops_tutorial_first_scene loaded for network devnet [data:262 in load_scenario]
 {
     "name": "mxops_tutorial_first_scene",
-    "network": "DEV",
+    "network": "devnet",
     "creation_time": 1677134890,
     "last_update_time": 1677134896,
     "contracts_data": {
@@ -47,18 +47,19 @@ This program comes with ABSOLUTELY NO WARRANTY
             "last_upgrade_time": 1677134892,
             "is_external": false
         }
-    }
+    },
+    "tokens_data": {}
 }
 ```
 
 You can see that our `Scenario` has only one contract at the moment: it is the ping-pong contract we deployed earlier.
 
-If you were to execute other `Scenes` in the scenario `mxops_tutorial_first_scene` you will be able to reference to the deployed contract by simply using its `contract-id`. In fact that is already what you have been doing when using `ContractCalls`:
+If you were to execute other `Scenes` in the scenario `mxops_tutorial_first_scene` you will be able to reference to the deployed contract by simply using its `contract_id`. In fact that is already what you have been doing when using `ContractCalls`:
 
 ```yaml
   - type: ContractCall
     sender: owner
-    contract: "egld-ping-pong"  # the contract-id is used instead of the bech32 address
+    contract: "egld-ping-pong"  # the contract_id is used instead of the bech32 address
     endpoint: pong
     gas_limit: 3000000
 ```

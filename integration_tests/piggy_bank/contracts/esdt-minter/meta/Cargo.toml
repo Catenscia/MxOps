@@ -5,10 +5,14 @@ edition = "2018"
 publish = false
 authors = [ "Etienne Wallet",]
 
-[dev-dependencies]
-
 [dependencies.esdt-minter]
 path = ".."
 
-[dependencies.elrond-wasm-debug]
-version = "0.38.0"
+[dependencies.multiversx-sc]
+version = "0.39.5"
+
+[dependencies.multiversx-sc-meta]
+version = "0.39.5"
+
+[dependencies.multiversx-sc-wasm-adapter]
+version = "0.39.5"

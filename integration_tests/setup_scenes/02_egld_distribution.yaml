@@ -1,0 +1,61 @@
+allowed_networks:
+  - localnet
+  - devnet
+
+allowed_scenario:
+  - "integration_test.*"
+
+steps:
+  - type: EgldTransfer
+    sender: emmanuel
+    receiver: françois
+    amount: 1000000000000000000  # 1 eGLD
+    check_success: true
+
+  - type: EgldTransfer
+    sender: emmanuel
+    receiver: "[jacques]"  # both syntax can be used in the receiver field
+    amount: 1000000000000000000  # 1 eGLD
+    check_success: true
+
+  - type: EgldTransfer
+    sender: emmanuel
+    receiver: jean
+    amount: 1000000000000000000  # 1 eGLD
+    check_success: true
+
+  - type: EgldTransfer
+    sender: emmanuel
+    receiver: marc
+    amount: 1000000000000000000  # 1 eGLD
+    check_success: true
+
+  - type: EgldTransfer
+    sender: emmanuel
+    receiver: marie
+    amount: 1000000000000000000  # 1 eGLD
+    check_success: true
+
+  - type: EgldTransfer
+    sender: emmanuel
+    receiver: marthe
+    amount: 1000000000000000000  # 1 eGLD
+    check_success: true
+
+  - type: EgldTransfer
+    sender: emmanuel
+    receiver: paul
+    amount: 1000000000000000000  # 1 eGLD
+    check_success: true
+
+  - type: EgldTransfer
+    sender: emmanuel
+    receiver: pierre
+    amount: 1000000000000000000  # 1 eGLD
+    check_success: true
+
+  - type: EgldTransfer
+    sender: emmanuel
+    receiver: thomas
+    amount: 1000000000000000000  # 1 eGLD
+    check_success: true

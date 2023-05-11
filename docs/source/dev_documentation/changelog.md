@@ -2,6 +2,27 @@
 
 ## Unreleased
 
+## 1.1.0 - 2023-05-11
+
+### Added
+
+- CLI options to clean/delete `Scenario` data before or after execution
+- `Steps` for token transfers  (eGLD, fungible & non fungible)
+- `Steps` for token issuance, roles management and minting (fungible & non fungible)
+- `TransfersCheck` to verify the transfers of a `ContractCallStep`
+- Networks enumerations can be parsed by their short or full names
+
+### Modified
+
+- Switch integration tests contracts from elrond-wasm to multiversx-sc
+- Add diverse precision on contribution
+
+### Fixed
+
+- Error when providing absolute path for `Scenes`
+- Commit change when auto bumping changelog version
+- Make the pylint test fail if a pylint error is detected
+
 ## 1.0.0 - 2023-03-09
 
 ### Added
@@ -21,24 +42,12 @@
 - Reorganize integration tests folders, scripts and scenario names
 - Convert the "Getting Started" section to a complete chapter in the documentation
 
-### Removed
-
-- None
-
 ## 0.1.1 - 2023-01-24
 
 ### Added
 
 - Readthedocs yaml configuration file to fix compilation
 - Full user tutorial in the sphinx documentation
-
-### Changed
-
-- None
-
-### Removed
-
-- None
 
 ## 0.1.0 - 2023-01-23
 

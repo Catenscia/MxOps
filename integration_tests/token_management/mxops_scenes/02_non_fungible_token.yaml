@@ -1,0 +1,46 @@
+allowed_networks:
+  - devnet
+  - localnet
+
+allowed_scenario:
+  - "integration_test_token_management.*"
+
+steps:
+  - type: NonFungibleIssue
+    sender: marc
+    token_name: MarcNFT
+    token_ticker: MNFT
+    can_upgrade: true
+    can_transfer_nft_create_role: true
+  
+  - type: ManageNonFungibleTokenRoles
+    sender: marc
+    is_set: true
+    token_identifier: "%MarcNFT%identifier"
+    target: "[marc]"
+    roles:
+      - ESDTRoleNFTCreate
+      - ESDTRoleNFTBurn
+      - ESDTRoleNFTUpdateAttributes
+      - ESDTRoleNFTAddURI
+      - ESDTTransferRole
+  
+  - type: ManageNonFungibleTokenRoles
+    sender: marc
+    is_set: true
+    token_identifier: "%MarcNFT%identifier"
+    target: "[marie]"
+    roles:
+      - ESDTTransferRole
+  
+  - type: NonFungibleMint
+    sender: marc
+    token_identifier: "%MarcNFT%identifier"
+    amount: 1  # can only be one for NFT
+    name: "Beautiful NFT"
+    royalties: 750
+    hash: "00"
+    attributes: "metadata:ipfsCID/song.json;tags:song,beautiful,music"
+    uris:
+      - https://mypng.com/1
+      - https://mysftjpg.com/1
