@@ -18,6 +18,23 @@ LOGGER = get_logger("data-IO")
 CHECKPOINT_SEP = "___CHECKPOINT___"
 
 
+def get_scenario_full_name(scenario_name: str, checkpoint: str = "") -> str:
+    """
+    Construct the full name of a scenario with contains the name of the scenario
+    and potentially the checkpoint separator and the checkpoint
+
+    :param scenario_name: name of the scenario
+    :type scenario_name: str
+    :param checkpoint: name of the checkpoint, defaults to ""
+    :type checkpoint: str, optional
+    :return: full name of the scenario
+    :rtype: str
+    """
+    if checkpoint == "":
+        return scenario_name
+    return f"{scenario_name}{CHECKPOINT_SEP}{checkpoint}"
+
+
 def get_data_path() -> Path:
     """
     Return the folder path where to store the data created by this project.
@@ -62,8 +79,8 @@ def get_scenario_file_path(scenario_name: str, checkpoint_name: str = "") -> Pat
     data_path = get_data_path()
     config = Config.get_config()
     network = config.get_network()
-    file_suffix = CHECKPOINT_SEP + checkpoint_name if checkpoint_name else ""
-    return data_path / network.name / f"{scenario_name}{file_suffix}.json"
+    scenario_full_name = get_scenario_full_name(scenario_name, checkpoint_name)
+    return data_path / network.name / f"{scenario_full_name}.json"
 
 
 def get_all_scenarios_names() -> List[str]:

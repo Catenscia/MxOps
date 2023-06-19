@@ -290,12 +290,15 @@ class _ScenarioData:
             pass
         raise errors.UnknownRootName(self.name, root_name)
 
-    def save(self):
+    def save(self, checkpoint: str = ""):
         """
         Save this scenario data where it belongs.
-        Overwrite any existing file
+        Overwrite any existing file. Will save a checkpoint if provided
+
+        :param checkpoint: contract id or token name that hosts the value
+        :type checkpoint: str
         """
-        scenario_path = get_scenario_file_path(self.name)
+        scenario_path = get_scenario_file_path(self.name, checkpoint)
         with open(scenario_path.as_posix(), "w", encoding="utf-8") as file:
             json.dump(self.to_dict(), file)
 
@@ -330,16 +333,20 @@ class _ScenarioData:
         self.last_update_time = int(time.time())
 
     @classmethod
-    def load_from_name(cls, scenario_name: str) -> _ScenarioData:
+    def load_from_name(
+        cls, scenario_name: str, checkpoint_name: str = ""
+    ) -> _ScenarioData:
         """
         Retrieve the locally saved scenario data and instantiate it
 
         :param scenario_name: name of the scenario to load
         :type scenario_name: str
+        :param checkpoint_name: name of the checkpoint of the scenario to load
+        :type checkpoint_name: str
         :return: loaded scenario data
         :rtype: _ScenarioData
         """
-        scenario_path = get_scenario_file_path(scenario_name)
+        scenario_path = get_scenario_file_path(scenario_name, checkpoint_name)
         return cls.load_from_path(scenario_path)
 
     @classmethod
@@ -412,24 +419,24 @@ class ScenarioData:  # pylint: disable=too-few-public-methods
         return cls._instance
 
     @classmethod
-    def load_scenario(cls, scenario_name: str):
+    def load_scenario(cls, scenario_name: str, checkpoint_name: str = ""):
         """
         Load scenario data singleton.
 
         :param scenario_name: name of the scenario to load
         :type scenario_name: str
+        :param checkpoint_name: name of the checkpoint of the scenario to load
+        :type checkpoint_name: str
         """
         if cls._instance is not None:
             raise errors.UnloadedScenario
         try:
-            cls._instance = _ScenarioData.load_from_name(scenario_name)
+            cls._instance = _ScenarioData.load_from_name(scenario_name, checkpoint_name)
         except FileNotFoundError as err:
             raise errors.UnknownScenario(scenario_name) from err
         config = Config.get_config()
         network = config.get_network()
-        LOGGER.info(
-            (f"Scenario {scenario_name} loaded for " f"network {network.value}")
-        )
+        LOGGER.info(f"Scenario {scenario_name} loaded for network {network.value}")
 
     @classmethod
     def create_scenario(cls, scenario_name: str):

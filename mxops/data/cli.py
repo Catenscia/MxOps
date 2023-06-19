@@ -10,8 +10,10 @@ from argparse import (
     Namespace,
     RawDescriptionHelpFormatter,
 )
+import argparse
 from importlib import resources
 import json
+from typing import Literal
 
 from mxops.data import path
 from mxops.config.config import Config
@@ -111,6 +113,48 @@ def add_subparser(subparsers_action: _SubParsersAction):
         "-y", "--yes", action="store_true", help="Skip confirmation step"
     )
 
+    # add a checkpoint command
+    checkpoint_parser = data_subparsers_actions.add_parser("checkpoint")
+    checkpoint_parser.add_argument(
+        "-n",
+        "--network",
+        help="Name of the network to use",
+        type=parse_network_enum,
+        required=True,
+    )
+
+    checkpoint_parser.add_argument(
+        "-s", "--scenario", help="Name of the scenario for the checkpoint"
+    )
+
+    checkpoint_parser.add_argument(
+        "-c",
+        "--checkpoint",
+        required=True,
+        help="Name of the checkpoint of the scenario to create/load/delete",
+    )
+
+    checkpoint_parser.add_argument(
+        "-a",
+        "--action",
+        type=valid_checkpoint_action,
+        help="Name of the checkpoint of the scenario to create/load/delete",
+    )
+
+
+def valid_checkpoint_action(action: str) -> Literal["create", "load", "delete"]:
+    """
+    validate the action value for the checkpoint subparser
+
+    :rtype: the loaded action
+    """
+    if action not in ["create", "load", "delete"]:
+        raise argparse.ArgumentTypeError(
+            f"Invalid action type: {action}. "
+            "Valid actions are 'create', 'load', 'delete'"
+        )
+    return action
+
 
 def execute_cli(args: Namespace):  # pylint: disable=R0912
     """
@@ -128,7 +172,7 @@ def execute_cli(args: Namespace):  # pylint: disable=R0912
 
     if sub_command == "get":
         if args.scenario:
-            ScenarioData.load_scenario(args.scenario)
+            ScenarioData.load_scenario(args.scenario, args.checkpoint)
             print(json.dumps(ScenarioData.get().to_dict(), indent=4))
         elif args.list:
             scenarios_names = path.get_all_scenarios_names()
@@ -151,5 +195,18 @@ def execute_cli(args: Namespace):  # pylint: disable=R0912
                 delete_scenario_data(scenario, ask_confirmation=False)
         else:
             raise ArgumentError(None, "This set of options is not valid")
+    elif sub_command == "checkpoint":
+        if args.action == "create":
+            ScenarioData.load_scenario(args.scenario)
+            scenario = ScenarioData.get()
+            scenario.save(args.checkpoint)
+        elif args.action == "load":
+            ScenarioData.load_scenario(args.scenario, args.checkpoint)
+            scenario = ScenarioData.get()
+            scenario.save()
+        elif args.action == "delete":
+            delete_scenario_data(args.scenario, args.checkpoint)
+        else:
+            raise ArgumentError(None, f"Unkown checkpoint action: {args.action}")
     else:
         raise ArgumentError(None, f"Unkown command: {args.command}")
