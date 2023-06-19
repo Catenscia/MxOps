@@ -495,7 +495,7 @@ def delete_scenario_data(
     """
     checkpoints_names = get_all_checkpoints_names(scenario_name)
     if checkpoint_name != "":
-        if not checkpoint_name in checkpoints_names:
+        if checkpoint_name not in checkpoints_names:
             raise ValueError(
                 f"Scenario {scenario_name} does not contains a checkpoint named "
                 f"{checkpoint_name}.\nList of existing checkpoints: {checkpoints_names}"
