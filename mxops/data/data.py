@@ -12,7 +12,7 @@ import time
 from typing import Any, Dict, Optional
 
 from mxops.config.config import Config
-from mxops.data.path import get_scenario_file_path
+from mxops.data.path import get_all_checkpoints_names, get_scenario_file_path
 from mxops import enums as mxops_enums
 from mxops import errors
 from mxops.utils.logger import get_logger
@@ -471,29 +471,47 @@ def check_scenario_file(scenario_name: str) -> bool:
     return Path(file_path).exists()
 
 
-def delete_scenario_data(scenario_name: str, ask_confirmation: bool = True):
+def delete_scenario_data(
+    scenario_name: str, checkpoint_name: str = "", ask_confirmation: bool = True
+):
     """
     Delete locally save data for a given scenario
 
     :param scenario_name: name of the scenario to delete
     :type scenario_name: str
+    :param checkpoint_name: name of the checkpoint to delete. If not specified, all the
+        checkpoints and the current scenario data will be deleted.
+    :type checkpoint_name: str
     :param ask_confirmation: if a deletion confirmation should be asked,
                              defaults to True
     :type ask_confirmation: bool
     """
-    scenario_path = get_scenario_file_path(scenario_name)
-    if ask_confirmation:
-        message = (
-            f"Confirm the deletion of the scenario {scenario_name} "
-            f"located at {scenario_path.as_posix()}. (y/n)"
-        )
-        if input(message).lower() not in ("y", "yes"):
-            print("User aborted deletion")
-            return
-    try:
-        os.remove(scenario_path.as_posix())
-        LOGGER.info(f"The data of the scenario {scenario_name} has been deleted")
-    except FileNotFoundError:
-        LOGGER.warning(
-            (f"The scenario {scenario_name} does" " not have any data recorded")
-        )
+    checkpoints_names = get_all_checkpoints_names(scenario_name)
+    if checkpoint_name != "":
+        if not checkpoint_name in checkpoints_names:
+            raise ValueError(
+                f"Scenario {scenario_name} does not contains a checkpoint named "
+                f"{checkpoint_name}.\nList of existing checkpoints: {checkpoints_names}"
+            )
+        checkpoints_names = [checkpoint_name]
+    else:
+        checkpoints_names = [""] + checkpoints_names
+
+    for ckp in checkpoints_names:
+        description = f"scenario {scenario_name}"
+        if ckp != "":
+            description += f" checkpoint {ckp}"
+        scenario_path = get_scenario_file_path(scenario_name, ckp)
+        if ask_confirmation:
+            message = (
+                f"Confirm the deletion of the {description} "
+                f"located at {scenario_path.as_posix()}. (y/n)"
+            )
+            if input(message).lower() not in ("y", "yes"):
+                print("User aborted deletion")
+                continue
+        try:
+            os.remove(scenario_path.as_posix())
+            LOGGER.info(f"The data of the {description} has been deleted")
+        except FileNotFoundError:
+            LOGGER.warning(f"The {description} does not have any data recorded")

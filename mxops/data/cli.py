@@ -6,6 +6,7 @@ This module contains the cli for the data subpackage
 from argparse import (
     _SubParsersAction,
     ArgumentError,
+    ArgumentParser,
     Namespace,
     RawDescriptionHelpFormatter,
 )
@@ -25,7 +26,7 @@ def add_subparser(subparsers_action: _SubParsersAction):
     :param subparsers_action: subparsers interface for the parent parser
     :type subparsers_action: _SubParsersAction[ArgumentParser]
     """
-    data_parser = subparsers_action.add_parser(
+    data_parser: ArgumentParser = subparsers_action.add_parser(
         "data", formatter_class=RawDescriptionHelpFormatter
     )
 
@@ -57,11 +58,21 @@ def add_subparser(subparsers_action: _SubParsersAction):
         "-l",
         "--list",
         action="store_true",
-        help=("Display the names of all scenarios saved" " for the specified network"),
+        help="Display the names of all scenarios saved" " for the specified network",
     )
 
     get_parser.add_argument(
         "-s", "--scenario", help="Name of the scenario of which to display the content"
+    )
+
+    get_parser.add_argument(
+        "-c",
+        "--checkpoint",
+        default="",
+        help=(
+            "Name of the checkpoint of the scenario to inspect,"
+            "default leads to current data"
+        ),
     )
 
     # add delete command
@@ -77,6 +88,16 @@ def add_subparser(subparsers_action: _SubParsersAction):
 
     delete_parser.add_argument(
         "-s", "--scenario", help="Name of the scenario for the data deletion"
+    )
+
+    delete_parser.add_argument(
+        "-c",
+        "--checkpoint",
+        default="",
+        help=(
+            "Name of the checkpoint of the scenario to delete,"
+            "default will delete all checkpoints and current scenario data"
+        ),
     )
 
     delete_parser.add_argument(
@@ -119,7 +140,7 @@ def execute_cli(args: Namespace):  # pylint: disable=R0912
             raise ArgumentError(None, "This set of options is not valid")
     elif sub_command == "delete":
         if args.scenario:
-            delete_scenario_data(args.scenario, not args.yes)
+            delete_scenario_data(args.scenario, args.checkpoint, not args.yes)
         elif args.all:
             scenarios_names = path.get_all_scenarios_names()
             message = "Confirm deletion of all scenario. (y/n)"
@@ -127,7 +148,7 @@ def execute_cli(args: Namespace):  # pylint: disable=R0912
                 print("User aborted deletion")
                 return
             for scenario in scenarios_names:
-                delete_scenario_data(scenario, False)
+                delete_scenario_data(scenario, ask_confirmation=False)
         else:
             raise ArgumentError(None, "This set of options is not valid")
     else:

@@ -73,7 +73,7 @@ def execute_cli(args: Namespace):
     Config.set_network(args.network)
 
     if args.clean:
-        delete_scenario_data(args.scenario, False)
+        delete_scenario_data(args.scenario, ask_confirmation=False)
 
     try:
         ScenarioData.load_scenario(args.scenario)
@@ -91,4 +91,4 @@ def execute_cli(args: Namespace):
             raise ValueError(f"{element_path} is not a file nor a directory")
 
     if args.delete:
-        delete_scenario_data(args.scenario, False)
+        delete_scenario_data(args.scenario, ask_confirmation=False)

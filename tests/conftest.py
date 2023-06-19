@@ -37,4 +37,4 @@ def scenario_data():
     )
 
     yield _scenario_data
-    delete_scenario_data("pytest_scenario", False)
+    delete_scenario_data("pytest_scenario", ask_confirmation=False)
