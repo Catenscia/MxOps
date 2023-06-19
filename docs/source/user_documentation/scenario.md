@@ -21,7 +21,7 @@ The files are organized as below:
         <Network>
             |
             <my_scenario>.json
-        
+
 ```
 
 Where:
@@ -48,7 +48,7 @@ Below sections show some command examples. You can always use `mxops data --help
 To print out all the existing `Scenario` on a specified network:
 
 ```bash
-mxops data get -n <NETWORK> -l
+mxops data get -n <network> -l
 ```
 
 ### Scenario Data
@@ -56,7 +56,7 @@ mxops data get -n <NETWORK> -l
 To print out all the existing data for a `Scenario` on a specified network:
 
 ```bash
-mxops data get -n <NETWORK> -s <scenario>
+mxops data get -n <network> -s <scenario>
 ```
 
 ### Delete Scenario
@@ -64,5 +64,45 @@ mxops data get -n <NETWORK> -s <scenario>
 To delete all the data from a `Scenario`
 
 ```bash
-mxops data delete -n <NETWORK> -s <scenario>
+mxops data delete -n <network> -s <scenario>
+```
+
+### Checkpoints
+
+Sometimes you need to deploy numerous tokens and external contracts to setup your testing
+environment. For example when you project relies on xExchange and you want to fully replicate the tokens, pools,
+farms and others.
+Such setup takes a long time to execute, even when it is automated as most of the transactions have to be made sequentially.
+
+To address this, MxOps has the notion of `Scenario` checkpoints. It allows you to save the data of a scenario in its current state so that you won't need to repeat certain actions.
+
+Here is an example use-case:
+
+1. Execute some `Scenes` that create some tokens
+2. Create a checkpoint named `tokens_checkpoint`
+3. Execute some `Scenes` that setup some external contracts (ex a wrapper-sc)
+4. Create a checkpoint named `external_contracts_checkpoint`
+5. Execute the `Scenes` that test your smart-contracts
+6. Revert to checkpoint `tokens_checkpoint` or `external_contracts_checkpoint` depending on your needs so that you can use the tokens or the external contracts without creating/deploying them again.
+
+#### Create a Checkpoint
+
+To save the current state of a `Scenario` as a checkpoint.
+
+```bash
+mxops data checkpoint -n <network> -s <scenario> -c <checkpoint> -a create
+```
+
+#### Load a Checkpoint
+
+Overwrite the current state of a `Scenario` with the data of a checkpoint.
+
+```bash
+mxops data checkpoint -n <network> -s <scenario> -c <checkpoint> -a load
+```
+
+```{warning}
+Checkpoint only save the local data of a `Scenario`, it does not perform any blockchain
+operation: It can not revert a smart-contract in a certain state. If your scenario needs
+every contracts to be as new, you will need to redeploy them each time.
 ```

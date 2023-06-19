@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- Checkpoints for `Scenario`
+
 ### Fixed
 
 - Bug with the `skip confirmation` CLI command
