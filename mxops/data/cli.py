@@ -109,7 +109,7 @@ def execute_cli(args: Namespace):  # pylint: disable=R0912
         elif args.all:
             scenarios_names = path.get_all_scenarios_names()
             message = 'Confirm deletion of all scenario. (y/n)'
-            if not args.yes or input(message).lower() not in ('y', 'yes'):
+            if not args.yes and input(message).lower() not in ("y", "yes"):
                 print('User aborted deletion')
                 return
             for scenario in scenarios_names:
