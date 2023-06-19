@@ -21,14 +21,14 @@ If you use the `checks` keywords, make sure to add the `SuccessCheck` like this:
 ```yaml
 type: ContractCall
 sender: alice
-contract-id: my_first_sc
+contract: my_first_sc
 endpoint: myEndpoint
 gas_limit: 60000000
 arguments:
   - arg1
 value: 0
 checks:
-  - type: Success 
+  - type: Success
 ```
 
 In some cases, you may want to send many transactions quickly, without checking their results.
@@ -38,7 +38,7 @@ gaining a significant time.
 ```yaml
 type: ContractCall
 sender: alice
-contract-id: my_first_sc
+contract: my_first_sc
 endpoint: myEndpoint
 gas_limit: 60000000
 arguments:
@@ -59,7 +59,7 @@ in exchange.
 ```yaml
 type: ContractCall
 sender: alice
-contract-id: super-swap-sc
+contract: super-swap-sc
 endpoint: superSell
 gas_limit: 60000000
 esdt_transfers:
@@ -74,7 +74,7 @@ checks:
 
   - type: Transfers
     condition: exact
-    include_gas_refund: false  # optional, false by default
+    include_gas_refund: false # optional, false by default
     expected_transfers:
       - sender: "[alice]"
         receiver: "%super-swap-sc%address"
@@ -84,7 +84,7 @@ checks:
         receiver: "%super-swap-sc%address"
         token_identifier: XMEX-e45d41
         amount: 848491898
-        nonce: 721  # can write 721 as integer or "0d21" for its hex representation 
+        nonce: 721 # can write 721 as integer or "0d21" for its hex representation
       - sender: "%super-swap-sc%address"
         receiver: "[alice]"
         token_identifier: EGLD
@@ -98,7 +98,7 @@ included in the on-chain transaction.
 ```yaml
 type: ContractCall
 sender: alice
-contract-id: super-swap-sc
+contract: super-swap-sc
 endpoint: superSell
 gas_limit: 60000000
 esdt_transfers:
