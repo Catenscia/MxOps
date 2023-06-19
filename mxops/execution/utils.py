@@ -31,8 +31,8 @@ def retrieve_specified_type(arg: str) -> Tuple[str, Optional[str]]:
     :return: inner arg and name of the desired type if it exists
     :rtype: Tuple[str, Optional[str]]
     """
-    if ':' in arg:
-        return arg.split(':')
+    if ":" in arg:
+        return arg.split(":")
     return arg, None
 
 
@@ -48,9 +48,9 @@ def convert_arg(arg: Any, desired_type: Optional[str]) -> Any:
     :return: converted argument if a specified type was provided
     :rtype: Any
     """
-    if desired_type == 'str':
+    if desired_type == "str":
         return str(arg)
-    if desired_type == 'int':
+    if desired_type == "int":
         return int(arg)
     return arg
 
@@ -64,8 +64,8 @@ def retrieve_value_from_env(arg: str) -> str:
     :return: value saved in the environment
     :rtype: str
     """
-    if not arg.startswith('$'):
-        raise ValueError(f'the argument as no $ sign: {arg}')
+    if not arg.startswith("$"):
+        raise ValueError(f"the argument as no $ sign: {arg}")
     inner_arg, desired_type = retrieve_specified_type(arg)
     retrieved_value = os.environ[inner_arg[1:]]
     return convert_arg(retrieved_value, desired_type)
@@ -80,8 +80,8 @@ def retrieve_value_from_config(arg: str) -> str:
     :return: value saved in the config
     :rtype: str
     """
-    if not arg.startswith('&'):
-        raise ValueError(f'the argument as no & sign: {arg}')
+    if not arg.startswith("&"):
+        raise ValueError(f"the argument as no & sign: {arg}")
     inner_arg, desired_type = retrieve_specified_type(arg)
     config = Config.get_config()
     retrieved_value = config.get(inner_arg[1:].upper())
@@ -100,7 +100,7 @@ def retrieve_value_from_scenario_data(arg: str) -> str:
     """
     inner_arg, desired_type = retrieve_specified_type(arg)
     try:
-        root_name, value_key = inner_arg[1:].split('%')
+        root_name, value_key = inner_arg[1:].split("%")
     except Exception as err:
         raise errors.WrongScenarioDataReference from err
 
@@ -138,13 +138,13 @@ def retrieve_value_from_string(arg: str) -> Any:
     :return: untouched argument or retrieved value
     :rtype: Any
     """
-    if arg.startswith('['):
+    if arg.startswith("["):
         return retrieve_address_from_account(arg).bech32()
-    if arg.startswith('$'):
+    if arg.startswith("$"):
         return retrieve_value_from_env(arg)
-    if arg.startswith('&'):
+    if arg.startswith("&"):
         return retrieve_value_from_config(arg)
-    if arg.startswith('%'):
+    if arg.startswith("%"):
         return retrieve_value_from_scenario_data(arg)
     return arg
 
@@ -187,16 +187,18 @@ def format_tx_arguments(arguments: List[Any]) -> List[Any]:
     """
     formated_arguments = []
     for arg in arguments:
-        if isinstance(arg, str):  # done a first time as int arg can be entered as string
+        if isinstance(
+            arg, str
+        ):  # done a first time as int arg can be entered as string
             arg = retrieve_value_from_string(arg)
         formated_arg = arg
         if isinstance(arg, str):
-            if arg.startswith('erd') and len(arg) == 62:
-                formated_arg = '0x' + CliAddress(arg).hex()
-            elif not arg.startswith('0x'):
-                formated_arg = 'str:' + arg
+            if arg.startswith("erd") and len(arg) == 62:
+                formated_arg = "0x" + CliAddress(arg).hex()
+            elif not arg.startswith("0x"):
+                formated_arg = "str:" + arg
         elif isinstance(arg, CliAddress):
-            formated_arg = '0x' + arg.hex()
+            formated_arg = "0x" + arg.hex()
 
         formated_arguments.append(formated_arg)
     return formated_arguments
@@ -225,19 +227,19 @@ def get_contract_instance(contract_str: str) -> SmartContract:
     except BadAddressFormatError:
         pass
     # lastly try to see if it is a valid contract id
-    contract_address = retrieve_value_from_string(f'%{contract_str}%address')
+    contract_address = retrieve_value_from_string(f"%{contract_str}%address")
     try:
         return SmartContract(CliAddress(contract_address))
     except BadAddressFormatError:
         pass
-    raise errors.ParsingError(contract_str, 'contract address')
+    raise errors.ParsingError(contract_str, "contract address")
 
 
 def get_address_instance(address_str: str) -> Address:
     """
     From a string return an Address instance.
-    The input will be parsed to dynamically evaluate values from the environment, the config, saved
-    data or from the defined contracts or accounts.
+    The input will be parsed to dynamically evaluate values from the environment,
+    the config, saved data or from the defined contracts or accounts.
 
     :param address_str: raw address or address entity designation
     :type address_str: str
@@ -257,7 +259,7 @@ def get_address_instance(address_str: str) -> Address:
         pass
     # else try to see if it is a valid contract id
     try:
-        evaluated_address_str = retrieve_value_from_string(f'%{address_str}%address')
+        evaluated_address_str = retrieve_value_from_string(f"%{address_str}%address")
         return Address.from_bech32(evaluated_address_str)
     except (ErrBadAddress, errors.UnknownRootName):
         pass
@@ -267,7 +269,7 @@ def get_address_instance(address_str: str) -> Address:
         return Address.from_bech32(account.address.bech32())
     except errors.UnknownAccount:
         pass
-    raise errors.ParsingError(address_str, 'address_str address')
+    raise errors.ParsingError(address_str, "address_str address")
 
 
 def parse_query_result(result: QueryResult, expected_return: str) -> Any:
@@ -281,8 +283,8 @@ def parse_query_result(result: QueryResult, expected_return: str) -> Any:
     :return: parsed result of the query
     :rtype: Any
     """
-    if expected_return == 'number':
+    if expected_return == "number":
         return result.number
-    if expected_return == 'str':
+    if expected_return == "str":
         return bytes.fromhex(result.hex).decode()
-    raise ValueError(f'Unkown expected return: {expected_return}')
+    raise ValueError(f"Unkown expected return: {expected_return}")

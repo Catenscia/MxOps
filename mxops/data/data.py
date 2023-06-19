@@ -18,7 +18,7 @@ from mxops import errors
 from mxops.utils.logger import get_logger
 
 
-LOGGER = get_logger('data')
+LOGGER = get_logger("data")
 
 
 @dataclass
@@ -26,6 +26,7 @@ class SavedValuesData:
     """
     Dataclass representing an object that can store values for the environment
     """
+
     saved_values: Dict[str, Any]
 
     def set_value(self, value_key: str, value: Any):
@@ -66,8 +67,7 @@ class SavedValuesData:
         try:
             return self.saved_values[value_key]
         except KeyError as err:
-            raise ValueError(
-                f'Unkown key: {value_key} for data object {self}') from err
+            raise ValueError(f"Unkown key: {value_key} for data object {self}") from err
 
 
 @dataclass
@@ -75,6 +75,7 @@ class ContractData(SavedValuesData):
     """
     Dataclass representing the data that can be locally saved for a contract
     """
+
     contract_id: str
     address: str
 
@@ -87,7 +88,7 @@ class ContractData(SavedValuesData):
         :param value: value to save
         :type value: Any
         """
-        if value_key == 'address':
+        if value_key == "address":
             self.address = value
         else:
             super().set_value(value_key, value)
@@ -101,7 +102,7 @@ class ContractData(SavedValuesData):
         """
         self_dict = asdict(self)
         # add attribute to indicate internal/external
-        self_dict['is_external'] = isinstance(self, ExternalContractData)
+        self_dict["is_external"] = isinstance(self, ExternalContractData)
         return self_dict
 
 
@@ -111,6 +112,7 @@ class InternalContractData(ContractData):
     Dataclass representing the data that can be locally saved for a contract
     managed by MxOps
     """
+
     wasm_hash: str
     deploy_time: int
     last_upgrade_time: int
@@ -129,6 +131,7 @@ class TokenData(SavedValuesData):
     """
     Dataclass representing a token issued on MultiversX
     """
+
     name: str
     ticker: str
     identifier: str
@@ -142,7 +145,7 @@ class TokenData(SavedValuesData):
         :rtype: Dict
         """
         self_dict = asdict(self)
-        self_dict['type'] = self.type.value
+        self_dict["type"] = self.type.value
         return self_dict
 
     @classmethod
@@ -155,9 +158,7 @@ class TokenData(SavedValuesData):
         :return: instance from the input dictionary
         :rtype: TokenData
         """
-        formated_data = {
-            'type': mxops_enums.parse_token_type_enum(data['type'])
-        }
+        formated_data = {"type": mxops_enums.parse_token_type_enum(data["type"])}
         return cls(**{**data, **formated_data})
 
 
@@ -166,6 +167,7 @@ class _ScenarioData:
     """
     Dataclass representing the data that can be locally saved for a scenario
     """
+
     name: str
     network: mxops_enums.NetworkEnum
     creation_time: int
@@ -267,7 +269,8 @@ class _ScenarioData:
 
     def get_value(self, root_name: str, value_key: str) -> Any:
         """
-        Search within tokens data and contracts data the value saved under the provided key
+        Search within tokens data and contracts data the value saved under
+        the provided key
 
         :param root_name: contract id or token name that hosts the value
         :type root_name: str
@@ -293,7 +296,7 @@ class _ScenarioData:
         Overwrite any existing file
         """
         scenario_path = get_scenario_file_path(self.name)
-        with open(scenario_path.as_posix(), 'w', encoding='utf-8') as file:
+        with open(scenario_path.as_posix(), "w", encoding="utf-8") as file:
             json.dump(self.to_dict(), file)
 
     def to_dict(self) -> Dict:
@@ -317,7 +320,7 @@ class _ScenarioData:
                         self_dict[key][sub_key] = asdict(sub_value)
                     else:
                         self_dict[key][sub_key] = sub_value
-        self_dict['network'] = self.network.value
+        self_dict["network"] = self.network.value
         return self_dict
 
     def _set_update_time(self):
@@ -349,7 +352,7 @@ class _ScenarioData:
         :return: loaded scenario data
         :rtype: _ScenarioData
         """
-        with open(scenario_path.as_posix(), 'r', encoding='utf-8') as file:
+        with open(scenario_path.as_posix(), "r", encoding="utf-8") as file:
             raw_content = json.load(file)
         return cls.from_dict(raw_content)
 
@@ -364,10 +367,10 @@ class _ScenarioData:
         :rtype: ScenarioData
         """
         contracts_data = {}
-        for contract_id, contract_data in data['contracts_data'].items():
+        for contract_id, contract_data in data["contracts_data"].items():
             if isinstance(contract_data, Dict):
                 try:
-                    is_external = contract_data.pop('is_external')
+                    is_external = contract_data.pop("is_external")
                 except KeyError:
                     is_external = False
                 if is_external:
@@ -375,13 +378,13 @@ class _ScenarioData:
                 else:
                     contracts_data[contract_id] = InternalContractData(**contract_data)
 
-        tokens_data = data.get('tokens_data', {})
+        tokens_data = data.get("tokens_data", {})
         tokens_data = {k: TokenData.from_dict(v) for k, v in tokens_data.items()}
 
         formated_data = {
-            'contracts_data': contracts_data,
-            'tokens_data': tokens_data,
-            'network': mxops_enums.parse_network_enum(data['network'])
+            "contracts_data": contracts_data,
+            "tokens_data": tokens_data,
+            "network": mxops_enums.parse_network_enum(data["network"]),
         }
 
         return cls(**{**data, **formated_data})
@@ -424,8 +427,9 @@ class ScenarioData:  # pylint: disable=too-few-public-methods
             raise errors.UnknownScenario(scenario_name) from err
         config = Config.get_config()
         network = config.get_network()
-        LOGGER.info((f'Scenario {scenario_name} loaded for '
-                     f'network {network.value}'))
+        LOGGER.info(
+            (f"Scenario {scenario_name} loaded for " f"network {network.value}")
+        )
 
     @classmethod
     def create_scenario(cls, scenario_name: str):
@@ -436,21 +440,22 @@ class ScenarioData:  # pylint: disable=too-few-public-methods
         :type scenario_name: str
         """
         if check_scenario_file(scenario_name):
-            message = ('A scenario already exists under the name '
-                       f'{scenario_name}. Do you want to override it? (y/n)')
-            if input(message).lower not in ('y', 'yes'):
+            message = (
+                "A scenario already exists under the name "
+                f"{scenario_name}. Do you want to override it? (y/n)"
+            )
+            if input(message).lower not in ("y", "yes"):
                 raise errors.ScenarioNameAlreadyExists(scenario_name)
 
         config = Config.get_config()
         network = config.get_network()
         current_timestamp = int(time.time())
-        cls._instance = _ScenarioData(scenario_name,
-                                      network,
-                                      current_timestamp,
-                                      current_timestamp,
-                                      {})
-        LOGGER.info((f'Scenario {scenario_name} created for '
-                     f'network {network.value}'))
+        cls._instance = _ScenarioData(
+            scenario_name, network, current_timestamp, current_timestamp, {}
+        )
+        LOGGER.info(
+            (f"Scenario {scenario_name} created for " f"network {network.value}")
+        )
 
 
 def check_scenario_file(scenario_name: str) -> bool:
@@ -478,14 +483,17 @@ def delete_scenario_data(scenario_name: str, ask_confirmation: bool = True):
     """
     scenario_path = get_scenario_file_path(scenario_name)
     if ask_confirmation:
-        message = (f'Confirm the deletion of the scenario {scenario_name} '
-                   f'located at {scenario_path.as_posix()}. (y/n)')
-        if input(message).lower() not in ('y', 'yes'):
-            print('User aborted deletion')
+        message = (
+            f"Confirm the deletion of the scenario {scenario_name} "
+            f"located at {scenario_path.as_posix()}. (y/n)"
+        )
+        if input(message).lower() not in ("y", "yes"):
+            print("User aborted deletion")
             return
     try:
         os.remove(scenario_path.as_posix())
-        LOGGER.info(f'The data of the scenario {scenario_name} has been deleted')
+        LOGGER.info(f"The data of the scenario {scenario_name} has been deleted")
     except FileNotFoundError:
-        LOGGER.warning((f'The scenario {scenario_name} does'
-                        ' not have any data recorded'))
+        LOGGER.warning(
+            (f"The scenario {scenario_name} does" " not have any data recorded")
+        )

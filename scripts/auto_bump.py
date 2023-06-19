@@ -59,14 +59,13 @@ def get_commit_change_type(commits_messages: str) -> ChangeType:
 
 
 def get_change_to_apply(
-    version_parts: Dict[ChangeType, str],
-    commit_change_type: ChangeType
+    version_parts: Dict[ChangeType, str], commit_change_type: ChangeType
 ) -> ChangeType:
     """
-    Figure out what version change needs to be applied depending on the type of commit change
-    and the version number.
-    The main logic is that if an identical or lower change type has already been made in the current
-    release type, only the build version will be bumped.
+    Figure out what version change needs to be applied depending on the type of commit
+    change and the version number.
+    The main logic is that if an identical or lower change type has already been made
+    in the current release type, only the build version will be bumped.
 
     Examples:
 
@@ -83,7 +82,7 @@ def get_change_to_apply(
     """
     if version_parts[ChangeType.RELEASE] is None:
         if commit_change_type == ChangeType.BUILD:
-            raise ValueError('Build can not be increased if release is None')
+            raise ValueError("Build can not be increased if release is None")
         return commit_change_type
     if (
         commit_change_type == ChangeType.MINOR
@@ -108,25 +107,23 @@ def parse_args() -> Namespace:
     parser = ArgumentParser()
 
     parser.add_argument(
-        'target_branch',
+        "target_branch",
         type=str,
-        choices=['main', 'develop'],
-        help='target_branch for the PR')
+        choices=["main", "develop"],
+        help="target_branch for the PR",
+    )
+
+    parser.add_argument("version", type=str, help="current version before version bump")
 
     parser.add_argument(
-        'version',
+        "commits_messages",
         type=str,
-        help='current version before version bump')
+        help="concatenation of all commits messages to include in the version bum",
+    )
 
     parser.add_argument(
-        'commits_messages',
-        type=str,
-        help='concatenation of all commits messages to include in the version bum')
-
-    parser.add_argument(
-        '--dry-run',
-        action='store_true',
-        help='do not apply any change to the version')
+        "--dry-run", action="store_true", help="do not apply any change to the version"
+    )
 
     return parser.parse_args()
 
@@ -136,22 +133,22 @@ def main():
     Figure out the version change to apply and execute bump2version accordingly
     """
     args = parse_args()
-    print(f'version retrieved: {args.version}\n')
-    print(f'commits messages:\n{args.commits_messages}\n')
+    print(f"version retrieved: {args.version}\n")
+    print(f"commits messages:\n{args.commits_messages}\n")
     version_parts = parse_version(args.version)
-    print(f'version parts: {version_parts}')
+    print(f"version parts: {version_parts}")
 
-    if args.target_branch == 'main':
+    if args.target_branch == "main":
         change_to_apply = ChangeType.RELEASE
     else:
         commit_change_type = get_commit_change_type(args.commits_messages)
-        print(f'commit change type: {commit_change_type}')
+        print(f"commit change type: {commit_change_type}")
         change_to_apply = get_change_to_apply(version_parts, commit_change_type)
-    print(f'change to apply: {change_to_apply}')
+    print(f"change to apply: {change_to_apply}")
 
     commands = ["bump2version", "--verbose", "--commit", change_to_apply.value]
     if args.dry_run:
-        commands.append('--dry-run')
+        commands.append("--dry-run")
     complete_process = subprocess.run(commands)
     sys.exit(complete_process.returncode)
 

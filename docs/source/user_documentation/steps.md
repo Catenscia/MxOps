@@ -19,8 +19,8 @@ sender: bob
 wasm_path: "path/to/wasm"
 contract_id: my_first_sc
 gas_limit: 1584000
-arguments:  # optional, if any args must be submitted
-    - 100
+arguments: # optional, if any args must be submitted
+  - 100
 upgradeable: true
 readable: false
 payable: false
@@ -34,21 +34,21 @@ This `Step` is used to call the endpoint of a deployed contract.
 ```yaml
 type: ContractCall
 sender: alice
-contract-id: my_first_sc
+contract: my_first_sc
 endpoint: myEndpoint
 gas_limit: 60000000
-arguments:  # optional, args of the endpoint
+arguments: # optional, args of the endpoint
   - arg1
-value: 0  # optional, amount of eGLD to send
-esdt_transfers:  # optional, ESDTs to send
+value: 0 # optional, amount of eGLD to send
+esdt_transfers: # optional, ESDTs to send
   - token_identifier: ALICE-123456
     amount: 58411548
-    nonce: 0  # 0 for fungible ESDT
+    nonce: 0 # 0 for fungible ESDT
   - token_identifier: LKMEX-e45d41
     amount: 848491898
     nonce: 721
-checks:  # optional, by default it will contain a transaction success check
-  - type: Success  
+checks: # optional, by default it will contain a transaction success check
+  - type: Success
 ```
 
 To get more information on the `checks` attribute, heads to the {doc}`checks` section.
@@ -63,10 +63,10 @@ type: ContractQuery
 contract: my_first_sc
 endpoint: getEsdtIdentifier
 arguments: []
-expected_results:  # list of results excpected from the query output
+expected_results: # list of results excpected from the query output
   - save_key: EsdtIdentifier
     result_type: str
-print_results: false  # if the query results should be printed in the console
+print_results: false # if the query results should be printed in the console
 ```
 
 Currently allowed values for `result_type`: [`number`, `str`]
@@ -84,18 +84,18 @@ This `Step` is used to issue a new fungible token, a initial supply of tokens wi
 ```yaml
 type: FungibleIssue
 sender: alice
-token_name: MyToken           # must be unique in a Scenario
+token_name: MyToken # must be unique in a Scenario
 token_ticker: MTK
-initial_supply: 1000000000    # 1,000,000.000 MTK
+initial_supply: 1000000000 # 1,000,000.000 MTK
 num_decimals: 3
-can_freeze: false             # optional, defaults to false
-can_wipe: false               # optional, defaults to false
-can_pause: false              # optional, defaults to false
-can_mint: false               # optional, defaults to false
-can_burn: false               # optional, defaults to false
-can_change_owner: false       # optional, defaults to false
-can_upgrade: false            # optional, defaults to false
-can_add_special_roles: false  # optional, defaults to false
+can_freeze: false # optional, defaults to false
+can_wipe: false # optional, defaults to false
+can_pause: false # optional, defaults to false
+can_mint: false # optional, defaults to false
+can_burn: false # optional, defaults to false
+can_change_owner: false # optional, defaults to false
+can_upgrade: false # optional, defaults to false
+can_add_special_roles: false # optional, defaults to false
 ```
 
 The results of the transaction will be saved. You can make a reference to this token in later `Steps` using its name, for example to retrieve the token identifier: `%MyToken%identifier`.
@@ -111,10 +111,10 @@ This `Step` is used to set or unset roles for an address on a fungible token.
 ```yaml
 type: ManageFungibleTokenRoles
 sender: alice
-is_set: true   # if false, this will unset the provided roles
+is_set: true # if false, this will unset the provided roles
 token_identifier: MTK-abcdef
 target: erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw
-roles:  # choose one or several of the roles below
+roles: # choose one or several of the roles below
   - ESDTRoleLocalMint
   - ESDTRoleLocalBurn
   - ESDTTransferRole
@@ -144,17 +144,17 @@ This `Step` is used to issue a new non fungible token (NFT).
 ```yaml
 type: NonFungibleIssue
 sender: alice
-token_name: MyNFT                     # must be unique in a Scenario
+token_name: MyNFT # must be unique in a Scenario
 token_ticker: MNFT
-can_freeze: false                     # optional, defaults to false
-can_wipe: false                       # optional, defaults to false
-can_pause: false                      # optional, defaults to false
-can_mint: false                       # optional, defaults to false
-can_burn: false                       # optional, defaults to false
-can_change_owner: false               # optional, defaults to false
-can_upgrade: false                    # optional, defaults to false
-can_add_special_roles: false          # optional, defaults to false
-can_transfer_nft_create_role: false   # optional, defaults to false
+can_freeze: false # optional, defaults to false
+can_wipe: false # optional, defaults to false
+can_pause: false # optional, defaults to false
+can_mint: false # optional, defaults to false
+can_burn: false # optional, defaults to false
+can_change_owner: false # optional, defaults to false
+can_upgrade: false # optional, defaults to false
+can_add_special_roles: false # optional, defaults to false
+can_transfer_nft_create_role: false # optional, defaults to false
 ```
 
 The results of the transaction will be saved. You can make a reference to this token in later `Steps` using its name, for example to retrieve the token identifier: `%MyToken%identifier`.
@@ -170,17 +170,17 @@ This `Step` is used to issue a new semi fungible token (NFT).
 ```yaml
 type: SemiFungibleIssue
 sender: alice
-token_name: MySFT                     # must be unique in a Scenario
+token_name: MySFT # must be unique in a Scenario
 token_ticker: MSFT
-can_freeze: false                     # optional, defaults to false
-can_wipe: false                       # optional, defaults to false
-can_pause: false                      # optional, defaults to false
-can_mint: false                       # optional, defaults to false
-can_burn: false                       # optional, defaults to false
-can_change_owner: false               # optional, defaults to false
-can_upgrade: false                    # optional, defaults to false
-can_add_special_roles: false          # optional, defaults to false
-can_transfer_nft_create_role: false   # optional, defaults to false
+can_freeze: false # optional, defaults to false
+can_wipe: false # optional, defaults to false
+can_pause: false # optional, defaults to false
+can_mint: false # optional, defaults to false
+can_burn: false # optional, defaults to false
+can_change_owner: false # optional, defaults to false
+can_upgrade: false # optional, defaults to false
+can_add_special_roles: false # optional, defaults to false
+can_transfer_nft_create_role: false # optional, defaults to false
 ```
 
 The results of the transaction will be saved. You can make a reference to this token in later `Steps` using its name, for example to retrieve the token identifier: `%MyToken%identifier`.
@@ -196,18 +196,18 @@ This `Step` is used to issue a new non fungible token (NFT).
 ```yaml
 type: MetaIssue
 sender: alice
-token_name: MyMeta                      # must be unique in a Scenario
+token_name: MyMeta # must be unique in a Scenario
 token_ticker: MMT
 num_decimals: 3
-can_freeze: false                       # optional, defaults to false
-can_wipe: false                         # optional, defaults to false
-can_pause: false                        # optional, defaults to false
-can_mint: false                         # optional, defaults to false
-can_burn: false                         # optional, defaults to false
-can_change_owner: false                 # optional, defaults to false
-can_upgrade: false                      # optional, defaults to false
-can_add_special_roles: false            # optional, defaults to false
-can_transfer_nft_create_role: false     # optional, defaults to false
+can_freeze: false # optional, defaults to false
+can_wipe: false # optional, defaults to false
+can_pause: false # optional, defaults to false
+can_mint: false # optional, defaults to false
+can_burn: false # optional, defaults to false
+can_change_owner: false # optional, defaults to false
+can_upgrade: false # optional, defaults to false
+can_add_special_roles: false # optional, defaults to false
+can_transfer_nft_create_role: false # optional, defaults to false
 ```
 
 The results of the transaction will be saved. You can make a reference to this token in later `Steps` using its name, for example to retrieve the token identifier: `%MyToken%identifier`.
@@ -223,10 +223,10 @@ This `Step` is used to set or unset roles for an address on a non fungible token
 ```yaml
 type: ManageNonFungibleTokenRoles
 sender: alice
-is_set: true   # if false, this will unset the provided roles
+is_set: true # if false, this will unset the provided roles
 token_identifier: MNFT-abcdef
 target: erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw
-roles:  # choose one or several of the roles below
+roles: # choose one or several of the roles below
   - ESDTRoleNFTCreate
   - ESDTRoleNFTBurn
   - ESDTRoleNFTUpdateAttributes
@@ -243,10 +243,10 @@ This `Step` is used to set or unset roles for an address on a semi fungible toke
 ```yaml
 type: ManageSemiFungibleTokenRoles
 sender: alice
-is_set: true   # if false, this will unset the provided roles
+is_set: true # if false, this will unset the provided roles
 token_identifier: MNFT-abcdef
 target: erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw
-roles:  # choose one or several of the roles below
+roles: # choose one or several of the roles below
   - ESDTRoleNFTCreate
   - ESDTRoleNFTBurn
   - ESDTRoleNFTAddQuantity
@@ -262,10 +262,10 @@ This `Step` is used to set or unset roles for an address on a meta token.
 ```yaml
 type: ManageMetaTokenRoles
 sender: alice
-is_set: true   # if false, this will unset the provided roles
+is_set: true # if false, this will unset the provided roles
 token_identifier: META-abcdef
 target: erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw
-roles:  # choose one or several of the roles below
+roles: # choose one or several of the roles below
   - ESDTRoleNFTCreate
   - ESDTRoleNFTBurn
   - ESDTRoleNFTAddQuantity
@@ -283,12 +283,12 @@ It can be used for NFTs, SFTs and Meta tokens.
 type: NonFungibleMint
 sender: alice
 token_identifier: TOKE-abcdef
-amount: 1  # must be 1 for NFT but any number for SFT and Meta
-name: "Beautiful NFT"                                               # optional
-royalties: 750                                                      # optional, here it is equals to 7.5%
-hash: "00"                                                          # optional
-attributes: "metadata:ipfsCID/song.json;tags:song,beautiful,music"  # optional
-uris:                                                               # optional
+amount: 1 # must be 1 for NFT but any number for SFT and Meta
+name: "Beautiful NFT" # optional
+royalties: 750 # optional, here it is equals to 7.5%
+hash: "00" # optional
+attributes: "metadata:ipfsCID/song.json;tags:song,beautiful,music" # optional
+uris: # optional
   - https://mypng.com/1
   - https://mysftjpg.com/1
 ```
@@ -315,11 +315,11 @@ steps:
     endpoint: getSftAmount
     arguments:
       - TokenIdentifier4
-      - $LOOP_VAR  # nonce
+      - $LOOP_VAR # nonce
     expected_results:
       - save_key: TokenIdentifier4Amount
         result_type: number
-  
+
   - type: ContractCall
     sender: alice
     contract: my_first_sc
@@ -327,8 +327,8 @@ steps:
     gas_limit: 60000000
     arguments:
       - TokenIdentifier4
-      - $LOOP_VAR  # nonce
-      - "%my_first_sc%TokenIdentifier4Amount%"  # result of the query
+      - $LOOP_VAR # nonce
+      - "%my_first_sc%TokenIdentifier4Amount%" # result of the query
 ```
 
 Instead of using `var_start` and `var_end` for the loop variable, a custom list of values can be provided with the keyword `var_list` like below.
@@ -337,8 +337,7 @@ Instead of using `var_start` and `var_end` for the loop variable, a custom list 
 type: Loop
 var_name: LOOP_VAR
 var_list: [1, 5, 78, 1566]
-steps:
-    [...]
+steps: [...]
 ```
 
 You will notice that some symbols are used in the arguments of the above `ContractCall`. These are here to dynamically fetch values from different sources.
@@ -351,7 +350,7 @@ This step is used to transfer eGLD from an address to another
 ```yaml
 type: EgldTransfer
 sender: bob
-receiver: alice  # you can also write bech32 address here
+receiver: alice # you can also write bech32 address here
 amount: 7895651689
 ```
 
@@ -377,7 +376,7 @@ sender: bob
 receiver: alice
 token_identifier: "MTESDT-a123ec"
 nonce: 4
-amount: 65481  # 1 for NFT
+amount: 65481 # 1 for NFT
 ```
 
 ## Multi Transfers Step
@@ -392,5 +391,5 @@ transfers:
     nonce: 4
   - token_identifier: "FUNG-a123ec"
     amount: 87941198416
-    nonce: 0  # 0 for fungible ESDT
+    nonce: 0 # 0 for fungible ESDT
 ```

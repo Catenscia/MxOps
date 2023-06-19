@@ -14,14 +14,15 @@ from mxops.enums import NetworkEnum
 from mxops.utils.logger import get_logger
 
 
-LOGGER = get_logger('data-IO')
+LOGGER = get_logger("data-IO")
 
 
 def get_data_path() -> Path:
     """
     Return the folder path where to store the data created by this project.
     The folder will be created if it does not exists.
-    It uses the library appdirs to follow the conventions across multi OS(MAc, Linux, Windows)
+    It uses the library appdirs to follow the conventions
+    across multi OS(MAc, Linux, Windows)
     https://pypi.org/project/appdirs/
 
     :return: path of the folder to use for data saving
@@ -58,7 +59,7 @@ def get_scenario_file_path(scenario_name: str) -> Path:
     data_path = get_data_path()
     config = Config.get_config()
     network = config.get_network()
-    return data_path / network.name / f'{scenario_name}.json'
+    return data_path / network.name / f"{scenario_name}.json"
 
 
 def get_all_scenarios_names() -> List[str]:
@@ -73,7 +74,7 @@ def get_all_scenarios_names() -> List[str]:
     data_path = get_data_path()
     files = os.listdir(data_path / network.name)
 
-    return [file[:-5] for file in files if file.endswith('.json')]
+    return [file[:-5] for file in files if file.endswith(".json")]
 
 
-LOGGER.debug(f'MxOps app directory is located at {get_data_path()}')
+LOGGER.debug(f"MxOps app directory is located at {get_data_path()}")
