@@ -5,6 +5,7 @@
 ### Added
 
 - Checkpoints for `Scenario`
+- `ContractUpgradeStep`
 
 ### Fixed
 
