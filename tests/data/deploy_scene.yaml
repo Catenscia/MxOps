@@ -43,7 +43,7 @@ steps:
     gas_limit: 80000000
     arguments: []
     checks: []
-  
+
   - type: ContractQuery
     contract: SEGLD-minter
     endpoint: getTokenIdentifier
@@ -52,3 +52,15 @@ steps:
       - save_key: TokenIdentifier
         result_type: str
     print_results: true
+
+  - type: ContractUpgrade
+    sender: owner
+    wasm_path: ../contract/src/esdt-minter/output/esdt-minter.wasm
+    contract: SEGLD-minter
+    gas_limit: 50000000
+    arguments:
+      - 200
+    upgradeable: true
+    readable: false
+    payable: true
+    payable_by_sc: true
