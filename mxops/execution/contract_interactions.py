@@ -21,7 +21,7 @@ def get_contract_deploy_tx(
     metadata: CodeMetadata,
     gas_limit: int,
     contract_args: List,
-    sender: Account
+    sender: Account,
 ) -> Tuple[CliTransaction, SmartContract]:
     """
     Contruct the contract instance and the transaction used to deploy a contract.
@@ -47,8 +47,15 @@ def get_contract_deploy_tx(
     contract = SmartContract(bytecode=bytecode, metadata=metadata)
     formated_args = utils.format_tx_arguments(contract_args)
 
-    tx = contract.deploy(sender, formated_args, mxpy_config.DEFAULT_GAS_PRICE,
-                         gas_limit, 0, config.get('CHAIN'), mxpy_config.get_tx_version())
+    tx = contract.deploy(
+        sender,
+        formated_args,
+        mxpy_config.DEFAULT_GAS_PRICE,
+        gas_limit,
+        0,
+        config.get("CHAIN"),
+        mxpy_config.get_tx_version(),
+    )
 
     return tx, contract
 
@@ -59,7 +66,7 @@ def get_contract_value_call_tx(
     gas_limit: int,
     arguments: List,
     value: int,
-    sender: Account
+    sender: Account,
 ) -> CliTransaction:
     """
     Contruct the transaction for a contract call with value provision.
@@ -96,8 +103,8 @@ def get_contract_value_call_tx(
         value=value,
         gas_price=mxpy_config.DEFAULT_GAS_PRICE,
         gas_limit=gas_limit,
-        chain=config.get('CHAIN'),
-        version=mxpy_config.get_tx_version()
+        chain=config.get("CHAIN"),
+        version=mxpy_config.get_tx_version(),
     )
 
     return tx
@@ -109,7 +116,7 @@ def get_contract_single_esdt_call_tx(
     gas_limit: int,
     arguments: List,
     esdt_transfer: EsdtTransfer,
-    sender: Account
+    sender: Account,
 ) -> CliTransaction:
     """
     Contruct the transaction for a contract call with an esdt transfer.
@@ -139,19 +146,19 @@ def get_contract_single_esdt_call_tx(
         esdt_transfer.token_identifier,
         esdt_transfer.amount,
         endpoint,
-        *arguments
+        *arguments,
     ]
     formated_args = utils.format_tx_arguments(tx_arguments)
 
     tx = contract.execute(
         caller=sender,
-        function='ESDTTransfer',
+        function="ESDTTransfer",
         arguments=formated_args,
         value=0,
         gas_price=mxpy_config.DEFAULT_GAS_PRICE,
         gas_limit=gas_limit,
-        chain=config.get('CHAIN'),
-        version=mxpy_config.get_tx_version()
+        chain=config.get("CHAIN"),
+        version=mxpy_config.get_tx_version(),
     )
 
     return tx
@@ -163,10 +170,11 @@ def get_contract_single_nft_call_tx(
     gas_limit: int,
     arguments: List,
     nft_transfer: EsdtTransfer,
-    sender: Account
+    sender: Account,
 ) -> CliTransaction:
     """
-    Contruct the transaction for a contract call with an nft transfer (NFT, SFT and Meta ESDT).
+    Contruct the transaction for a contract call with an nft transfer
+    (NFT, SFT and Meta ESDT).
     The transaction is not relayed to the proxy, this has to be done with
     the result of this function.
 
@@ -196,19 +204,19 @@ def get_contract_single_nft_call_tx(
         nft_transfer.amount,
         contract.address.bech32(),
         endpoint,
-        *arguments
+        *arguments,
     ]
     formated_args = utils.format_tx_arguments(tx_arguments)
 
     tx = self_contract.execute(
         caller=sender,
-        function='ESDTNFTTransfer',
+        function="ESDTNFTTransfer",
         arguments=formated_args,
         value=0,
         gas_price=mxpy_config.DEFAULT_GAS_PRICE,
         gas_limit=gas_limit,
-        chain=config.get('CHAIN'),
-        version=mxpy_config.get_tx_version()
+        chain=config.get("CHAIN"),
+        version=mxpy_config.get_tx_version(),
     )
 
     return tx
@@ -220,7 +228,7 @@ def get_contract_multiple_esdt_call_tx(
     gas_limit: int,
     arguments: List,
     esdt_transfers: List[EsdtTransfer],
-    sender: Account
+    sender: Account,
 ) -> CliTransaction:
     """
     Contruct the transaction for a contract call with multiple esdt transfers.
@@ -247,29 +255,28 @@ def get_contract_multiple_esdt_call_tx(
     self_contract = SmartContract(sender.address)
     contract = utils.get_contract_instance(contract_str)
 
-    tx_arguments = [
-        contract.address.bech32(),
-        len(esdt_transfers)
-    ]
+    tx_arguments = [contract.address.bech32(), len(esdt_transfers)]
     for esdt_transfer in esdt_transfers:
-        tx_arguments.extend([
-            esdt_transfer.token_identifier,
-            esdt_transfer.nonce,
-            esdt_transfer.amount,
-        ])
+        tx_arguments.extend(
+            [
+                esdt_transfer.token_identifier,
+                esdt_transfer.nonce,
+                esdt_transfer.amount,
+            ]
+        )
 
     tx_arguments.extend([endpoint, *arguments])
     formated_args = utils.format_tx_arguments(tx_arguments)
 
     tx = self_contract.execute(
         caller=sender,
-        function='MultiESDTNFTTransfer',
+        function="MultiESDTNFTTransfer",
         arguments=formated_args,
         value=0,
         gas_price=mxpy_config.DEFAULT_GAS_PRICE,
         gas_limit=gas_limit,
-        chain=config.get('CHAIN'),
-        version=mxpy_config.get_tx_version()
+        chain=config.get("CHAIN"),
+        version=mxpy_config.get_tx_version(),
     )
 
     return tx
@@ -282,7 +289,7 @@ def get_contract_call_tx(
     arguments: List,
     value: int,
     esdt_transfers: List[EsdtTransfer],
-    sender: Account
+    sender: Account,
 ) -> CliTransaction:
     """
     Contruct the transaction for a contract call
@@ -309,40 +316,30 @@ def get_contract_call_tx(
     n_transfers = len(esdt_transfers)
 
     if n_transfers == 0:
-        tx = get_contract_value_call_tx(contract_str,
-                                        endpoint,
-                                        gas_limit,
-                                        arguments,
-                                        value,
-                                        sender)
+        tx = get_contract_value_call_tx(
+            contract_str, endpoint, gas_limit, arguments, value, sender
+        )
     elif n_transfers == 1:
         transfer = esdt_transfers[0]
         if transfer.nonce:
-            tx = get_contract_single_nft_call_tx(contract_str,
-                                                 endpoint,
-                                                 gas_limit,
-                                                 arguments,
-                                                 transfer,
-                                                 sender)
+            tx = get_contract_single_nft_call_tx(
+                contract_str, endpoint, gas_limit, arguments, transfer, sender
+            )
         else:
-            tx = get_contract_single_esdt_call_tx(contract_str,
-                                                  endpoint,
-                                                  gas_limit,
-                                                  arguments,
-                                                  transfer,
-                                                  sender)
+            tx = get_contract_single_esdt_call_tx(
+                contract_str, endpoint, gas_limit, arguments, transfer, sender
+            )
     else:
-        tx = get_contract_multiple_esdt_call_tx(contract_str,
-                                                endpoint,
-                                                gas_limit,
-                                                arguments,
-                                                esdt_transfers,
-                                                sender)
+        tx = get_contract_multiple_esdt_call_tx(
+            contract_str, endpoint, gas_limit, arguments, esdt_transfers, sender
+        )
 
     return tx
 
 
-def query_contract(contract_str: str, endpoint: str, arguments: List) -> List[QueryResult]:
+def query_contract(
+    contract_str: str, endpoint: str, arguments: List
+) -> List[QueryResult]:
     """
     Query a contract to retireve some values.
 
@@ -356,7 +353,7 @@ def query_contract(contract_str: str, endpoint: str, arguments: List) -> List[Qu
     :rtype: List[QueryResult]
     """
     config = Config.get_config()
-    proxy = ProxyNetworkProvider(config.get('PROXY'))
+    proxy = ProxyNetworkProvider(config.get("PROXY"))
 
     contract = utils.get_contract_instance(contract_str)
     formated_args = utils.format_tx_arguments(arguments)

@@ -27,11 +27,13 @@ def send(tx: Union[CliTransaction, Transaction]) -> str:
     :rtype: str
     """
     config = Config.get_config()
-    proxy = ProxyNetworkProvider(config.get('PROXY'))
+    proxy = ProxyNetworkProvider(config.get("PROXY"))
     return proxy.send_transaction(tx)
 
 
-def send_and_wait_for_result(tx: Union[CliTransaction, Transaction]) -> TransactionOnNetwork:
+def send_and_wait_for_result(
+    tx: Union[CliTransaction, Transaction]
+) -> TransactionOnNetwork:
     """
     Transmit a transaction to a proxy constructed with the config.
     Wait for the result of the transaction and return the on-chainfinalised transaction.
@@ -42,10 +44,10 @@ def send_and_wait_for_result(tx: Union[CliTransaction, Transaction]) -> Transact
     :rtype: TransactionOnNetwork
     """
     config = Config.get_config()
-    proxy = ProxyNetworkProvider(config.get('PROXY'))
+    proxy = ProxyNetworkProvider(config.get("PROXY"))
 
-    timeout = int(config.get('TX_TIMEOUT'))
-    refresh_period = int(config.get('TX_REFRESH_PERIOD'))
+    timeout = int(config.get("TX_TIMEOUT"))
+    refresh_period = int(config.get("TX_REFRESH_PERIOD"))
 
     tx_hash = proxy.send_transaction(tx)
     num_periods_to_wait = int(timeout / refresh_period)
@@ -80,15 +82,17 @@ def raise_on_errors(on_chain_tx: TransactionOnNetwork):
         raise errors.FailedTransactionError(on_chain_tx)
 
     event_identifiers = {e.identifier for e in on_chain_tx.logs.events}
-    if 'InternalVmExecutionError' in event_identifiers:
+    if "InternalVmExecutionError" in event_identifiers:
         raise errors.SmartContractExecutionError(on_chain_tx)
-    if 'internalVMErrors' in event_identifiers:
+    if "internalVMErrors" in event_identifiers:
         raise errors.InternalVmExecutionError(on_chain_tx)
-    if 'signalError' in event_identifiers:
+    if "signalError" in event_identifiers:
         raise errors.TransactionExecutionError(on_chain_tx)
 
 
-def extract_simple_esdt_transfer(sender: str, receiver: str, data: str) -> OnChainTransfer:
+def extract_simple_esdt_transfer(
+    sender: str, receiver: str, data: str
+) -> OnChainTransfer:
     """
     Extract a simple ESDT transfer from transaction data or smart contract result data
 
@@ -101,15 +105,15 @@ def extract_simple_esdt_transfer(sender: str, receiver: str, data: str) -> OnCha
     :return: Transfer found in the data
     :rtype: OnChainTransfer
     """
-    if not data.startswith('ESDTTransfer@'):
-        raise ValueError(f'Data does not describe a simple ESDT transfer: {data}')
+    if not data.startswith("ESDTTransfer@"):
+        raise ValueError(f"Data does not describe a simple ESDT transfer: {data}")
 
     try:
-        _, token_identifier, amount, *_ = data.split('@')
+        _, token_identifier, amount, *_ = data.split("@")
         token_identifier = bytearray.fromhex(token_identifier).decode()
         amount = str(int(amount, 16))
     except Exception as err:
-        raise errors.ParsingError(data, 'ESDTTransfer') from err
+        raise errors.ParsingError(data, "ESDTTransfer") from err
 
     return OnChainTransfer(sender, receiver, token_identifier, amount)
 
@@ -127,15 +131,15 @@ def extract_nft_transfer(sender: str, receiver: str, data: str) -> OnChainTransf
     :return: Transfer found in the data
     :rtype: OnChainTransfer
     """
-    if not data.startswith('ESDTNFTTransfer@'):
-        raise ValueError(f'Data does not describe a nft transfer: {data}')
+    if not data.startswith("ESDTNFTTransfer@"):
+        raise ValueError(f"Data does not describe a nft transfer: {data}")
 
     try:
-        _, token_identifier, nonce, amount, *_ = data.split('@')
-        token_identifier = bytearray.fromhex(token_identifier).decode() + '-' + nonce
+        _, token_identifier, nonce, amount, *_ = data.split("@")
+        token_identifier = bytearray.fromhex(token_identifier).decode() + "-" + nonce
         amount = str(int(amount, 16))
     except Exception as err:
-        raise errors.ParsingError(data, 'ESDTNFTTransfer') from err
+        raise errors.ParsingError(data, "ESDTNFTTransfer") from err
 
     return OnChainTransfer(sender, receiver, token_identifier, amount)
 
@@ -151,34 +155,37 @@ def extract_multi_transfer(sender: str, data: str) -> List[OnChainTransfer]:
     :return: Transfers found in the data
     :rtype: List[OnChainTransfer]
     """
-    if not data.startswith('MultiESDTNFTTransfer@'):
-        raise ValueError(f'Data does not describe a multi transfer: {data}')
+    if not data.startswith("MultiESDTNFTTransfer@"):
+        raise ValueError(f"Data does not describe a multi transfer: {data}")
 
     try:
-        _, receiver, n_transfers, *details = data.split('@')
+        _, receiver, n_transfers, *details = data.split("@")
         n_transfers = int(n_transfers, base=16)
         receiver = CliAddress(receiver).bech32()
     except Exception as err:
-        raise errors.ParsingError(data, 'MultiESDTNFTTransfer') from err
+        raise errors.ParsingError(data, "MultiESDTNFTTransfer") from err
 
     transfers = []
     for i in range(n_transfers):
         try:
-            token_identifier, nonce, amount = details[3*i:3*(i+1)]
+            token_identifier, nonce, amount = details[3 * i : 3 * (i + 1)]
             token_identifier = bytearray.fromhex(token_identifier).decode()
             amount = str(int(amount, 16))
         except Exception as err:
-            raise errors.ParsingError(data, 'MultiESDTNFTTransfer') from err
-        if nonce != '':
-            token_identifier += f'-{nonce}'
+            raise errors.ParsingError(data, "MultiESDTNFTTransfer") from err
+        if nonce != "":
+            token_identifier += f"-{nonce}"
         transfers.append(OnChainTransfer(sender, receiver, token_identifier, amount))
 
     return transfers
 
 
-def get_transfers_from_data(sender: str, receiver: str, data: str) -> List[OnChainTransfer]:
+def get_transfers_from_data(
+    sender: str, receiver: str, data: str
+) -> List[OnChainTransfer]:
     """
-    Try to extract token transfers from the data of a transaction or asmart contract result.
+    Try to extract token transfers from the data of a transaction or
+    a smart contract result.
     It relies on the transfer format of ESDT.
 
     :param sender: address of the sender of the data in bech 32
@@ -209,8 +216,7 @@ def get_transfers_from_data(sender: str, receiver: str, data: str) -> List[OnCha
 
 
 def get_on_chain_transfers(
-        on_chain_tx: TransactionOnNetwork,
-        include_refund: bool = False
+    on_chain_tx: TransactionOnNetwork, include_refund: bool = False
 ) -> List[OnChainTransfer]:
     """
     Extract from an on-chain transaction the tokens transfers that were operated in this
@@ -228,18 +234,15 @@ def get_on_chain_transfers(
     receiver = on_chain_tx.receiver.bech32()
     amount = str(on_chain_tx.value)
     if amount != "0":
-        transfers.append(OnChainTransfer(
-            sender,
-            receiver,
-            'EGLD',
-            amount
-        ))
-    elif sender != receiver and on_chain_tx.data.startswith('ESDTTransfer'):
+        transfers.append(OnChainTransfer(sender, receiver, "EGLD", amount))
+    elif sender != receiver and on_chain_tx.data.startswith("ESDTTransfer"):
         try:
-            transfers.append(extract_simple_esdt_transfer(sender, receiver, on_chain_tx.data))
+            transfers.append(
+                extract_simple_esdt_transfer(sender, receiver, on_chain_tx.data)
+            )
         except errors.ParsingError:
             pass
-    elif on_chain_tx.data.startswith('MultiESDTNFTTransfer'):
+    elif on_chain_tx.data.startswith("MultiESDTNFTTransfer"):
         try:
             transfers.extend(extract_multi_transfer(sender, on_chain_tx.data))
         except errors.ParsingError:
@@ -249,12 +252,7 @@ def get_on_chain_transfers(
         sender, receiver = result.sender.bech32(), result.receiver.bech32()
         amount = str(result.value)
         if amount != "0" and (include_refund or not result.is_refund):
-            transfers.append(OnChainTransfer(
-                sender,
-                receiver,
-                'EGLD',
-                amount
-            ))
+            transfers.append(OnChainTransfer(sender, receiver, "EGLD", amount))
         else:
             transfers.extend(get_transfers_from_data(sender, receiver, result.data))
 

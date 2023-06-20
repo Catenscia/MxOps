@@ -31,3 +31,4 @@ testnet
 txs
 WEGLD
 wrapEgld
+xExchange

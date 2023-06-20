@@ -45,7 +45,6 @@ If you are new here, we recommend going first to the :doc:`getting_started/prese
    :maxdepth: 1
    :caption: Dev Documentation
 
-   dev_documentation/backlog
    dev_documentation/changelog
 
 .. toctree::

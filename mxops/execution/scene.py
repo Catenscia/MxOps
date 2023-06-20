@@ -19,7 +19,7 @@ from mxops import errors
 from mxops.utils.logger import get_logger
 
 
-LOGGER = get_logger('scene')
+LOGGER = get_logger("scene")
 
 
 @dataclass
@@ -28,6 +28,7 @@ class Scene:
     Dataclass to represent a set of step to execute sequentially
     within a scenario.
     """
+
     allowed_networks: List[str]
     allowed_scenario: List[str]
     accounts: List[Dict] = field(default_factory=list)
@@ -53,7 +54,7 @@ def load_scene(path: Path) -> Scene:
     :return: _description_
     :rtype: List[Step]
     """
-    with open(path.as_posix(), 'r', encoding='utf-8') as file:
+    with open(path.as_posix(), "r", encoding="utf-8") as file:
         raw_scene = yaml.safe_load(file)
 
     return Scene(**raw_scene)
@@ -66,7 +67,7 @@ def execute_scene(scene_path: Path):
     :param scene_path: path to the scene file
     :type scene_path: Path
     """
-    LOGGER.info(f'Executing scene {scene_path}')
+    LOGGER.info(f"Executing scene {scene_path}")
     scene = load_scene(scene_path)
     scenario_data = ScenarioData.get()
 
@@ -74,11 +75,12 @@ def execute_scene(scene_path: Path):
     network = config.get_network()
 
     # check network authorization
-    if network.name not in scene.allowed_networks and network.value not in scene.allowed_networks:
+    if (
+        network.name not in scene.allowed_networks
+        and network.value not in scene.allowed_networks
+    ):
         raise errors.ForbiddenSceneNetwork(
-            scene_path,
-            network.value,
-            scene.allowed_networks
+            scene_path, network.value, scene.allowed_networks
         )
 
     # check scenario authorizations
@@ -89,28 +91,25 @@ def execute_scene(scene_path: Path):
             break
     if not match_found:
         raise errors.ForbiddenSceneScenario(
-            scene_path,
-            scenario_data.name,
-            scene.allowed_scenario
+            scene_path, scenario_data.name, scene.allowed_scenario
         )
 
     # load accounts
     for account in scene.accounts:
         AccountsManager.load_account(**account)
-        AccountsManager.sync_account(account['account_name'])
+        AccountsManager.sync_account(account["account_name"])
 
     # load external contracts addresses
     for contract_id, address in scene.external_contracts.items():
         try:
             # try to update the contract address while keeping data intact
-            scenario_data.set_contract_value(contract_id, 'address', address)
+            scenario_data.set_contract_value(contract_id, "address", address)
         except errors.UnknownContract:
             # otherwise create the contract data
-            scenario_data.add_contract_data(ExternalContractData(
-                contract_id=contract_id,
-                address=address,
-                saved_values={}
-            )
+            scenario_data.add_contract_data(
+                ExternalContractData(
+                    contract_id=contract_id, address=address, saved_values={}
+                )
             )
 
     # execute steps

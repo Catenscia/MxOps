@@ -25,7 +25,7 @@ def build_fungible_issue_tx(
     can_burn: bool = False,
     can_change_owner: bool = False,
     can_upgrade: bool = False,
-    can_add_special_roles: bool = False
+    can_add_special_roles: bool = False,
 ) -> Transaction:
     """
     Build a transaction to issue an ESDT fungible token.
@@ -43,29 +43,33 @@ def build_fungible_issue_tx(
     :param can_freeze: if the tokens on specific accounts can be frozen individually,
         defaults to False
     :type can_freeze: bool, optional
-    :param can_wipe: if tokens held on frozen accounts can be burnd by the token manager,
-        defaults to False
+    :param can_wipe: if tokens held on frozen accounts can be burnd
+        by the token manager, defaults to False
     :type can_wipe: bool, optional
-    :param can_pause: if all transactions of the token can be prevented, defaults to False
+    :param can_pause: if all transactions of the token can be prevented,
+        defaults to False
     :type can_pause: bool, optional
     :param can_mint: if more supply can be minted later on, defaults to False
     :type can_mint: bool, optional
     :param can_burn: if some supply can be burned, defaults to False
     :type can_burn: bool, optional
-    :param can_change_owner: if the management of the token can be transfered to another account,
-        defaults to False
+    :param can_change_owner: if the management of the token can be transfered
+        to another account, defaults to False
     :type can_change_owner: bool, optional
-    :param can_upgrade: if the properties of the token can be changed by the token manager,
-        defaults to False
+    :param can_upgrade: if the properties of the token can be changed by the
+        token manager, defaults to False
     :type can_upgrade: bool, optional
-    :param can_add_special_roles: if the token manager can add special roles, defaults to False
+    :param can_add_special_roles: if the token manager can add special roles,
+        defaults to False
     :type can_add_special_roles: bool, optional
     :return: the transaction to issue the specified fungible token
     :rtype: Transaction
     """
     config = Config.get_config()
-    builder_config = token_management_builders.MyDefaultTransactionBuildersConfiguration(
-        chain_id=config.get('CHAIN')
+    builder_config = (
+        token_management_builders.MyDefaultTransactionBuildersConfiguration(
+            chain_id=config.get("CHAIN")
+        )
     )
 
     builder = token_management_builders.FungibleTokenIssueBuilder(
@@ -83,7 +87,7 @@ def build_fungible_issue_tx(
         can_change_owner,
         can_upgrade,
         can_add_special_roles,
-        nonce=sender.nonce
+        nonce=sender.nonce,
     )
 
     tx = builder.build()
@@ -104,7 +108,7 @@ def build_non_fungible_issue_tx(
     can_change_owner: bool = False,
     can_upgrade: bool = False,
     can_add_special_roles: bool = False,
-    can_transfer_nft_create_role: bool = False
+    can_transfer_nft_create_role: bool = False,
 ) -> Transaction:
     """
     Build a transaction to issue an ESDT fungible token.
@@ -118,22 +122,24 @@ def build_non_fungible_issue_tx(
     :param can_freeze: if the tokens on specific accounts can be frozen individually,
         defaults to False
     :type can_freeze: bool, optional
-    :param can_wipe: if tokens held on frozen accounts can be burnd by the token manager,
-        defaults to False
+    :param can_wipe: if tokens held on frozen accounts can be burnd
+        by the token manager, defaults to False
     :type can_wipe: bool, optional
-    :param can_pause: if all transactions of the token can be prevented, defaults to False
+    :param can_pause: if all transactions of the token can be prevented,
+        defaults to False
     :type can_pause: bool, optional
     :param can_mint: if more supply can be minted later on, defaults to False
     :type can_mint: bool, optional
     :param can_burn: if some supply can be burned, defaults to False
     :type can_burn: bool, optional
-    :param can_change_owner: if the management of the token can be transfered to another account,
-        defaults to False
+    :param can_change_owner: if the management of the token can be transfered
+        to another account, defaults to False
     :type can_change_owner: bool, optional
-    :param can_upgrade: if the properties of the token can be changed by the token manager,
-        defaults to False
+    :param can_upgrade: if the properties of the token can be changed
+        by the token manager, defaults to False
     :type can_upgrade: bool, optional
-    :param can_add_special_roles: if the token manager can add special roles, defaults to False
+    :param can_add_special_roles: if the token manager can add special roles,
+        defaults to False
     :type can_add_special_roles: bool, optional
     :param can_transfer_nft_create_role: if the token manager transfer the create role,
         defaults to False
@@ -142,8 +148,10 @@ def build_non_fungible_issue_tx(
     :rtype: Transaction
     """
     config = Config.get_config()
-    builder_config = token_management_builders.MyDefaultTransactionBuildersConfiguration(
-        chain_id=config.get('CHAIN')
+    builder_config = (
+        token_management_builders.MyDefaultTransactionBuildersConfiguration(
+            chain_id=config.get("CHAIN")
+        )
     )
 
     builder = token_management_builders.NonFungibleTokenIssueBuilder(
@@ -160,7 +168,7 @@ def build_non_fungible_issue_tx(
         can_upgrade,
         can_add_special_roles,
         can_transfer_nft_create_role,
-        nonce=sender.nonce
+        nonce=sender.nonce,
     )
 
     tx = builder.build()
@@ -181,7 +189,7 @@ def build_semi_fungible_issue_tx(
     can_change_owner: bool = False,
     can_upgrade: bool = False,
     can_add_special_roles: bool = False,
-    can_transfer_nft_create_role: bool = False
+    can_transfer_nft_create_role: bool = False,
 ) -> Transaction:
     """
     Build a transaction to issue an ESDT fungible token.
@@ -195,22 +203,24 @@ def build_semi_fungible_issue_tx(
     :param can_freeze: if the tokens on specific accounts can be frozen individually,
         defaults to False
     :type can_freeze: bool, optional
-    :param can_wipe: if tokens held on frozen accounts can be burnd by the token manager,
-        defaults to False
+    :param can_wipe: if tokens held on frozen accounts can be burnd
+        by the token manager, defaults to False
     :type can_wipe: bool, optional
-    :param can_pause: if all transactions of the token can be prevented, defaults to False
+    :param can_pause: if all transactions of the token can be prevented,
+        defaults to False
     :type can_pause: bool, optional
     :param can_mint: if more supply can be minted later on, defaults to False
     :type can_mint: bool, optional
     :param can_burn: if some supply can be burned, defaults to False
     :type can_burn: bool, optional
-    :param can_change_owner: if the management of the token can be transfered to another account,
-        defaults to False
+    :param can_change_owner: if the management of the token can be transfered
+        to another account, defaults to False
     :type can_change_owner: bool, optional
-    :param can_upgrade: if the properties of the token can be changed by the token manager,
-        defaults to False
+    :param can_upgrade: if the properties of the token can be changed by
+        the token manager, defaults to False
     :type can_upgrade: bool, optional
-    :param can_add_special_roles: if the token manager can add special roles, defaults to False
+    :param can_add_special_roles: if the token manager can add special roles,
+        defaults to False
     :type can_add_special_roles: bool, optional
     :param can_transfer_nft_create_role: if the token manager transfer the create role,
         defaults to False
@@ -219,8 +229,10 @@ def build_semi_fungible_issue_tx(
     :rtype: Transaction
     """
     config = Config.get_config()
-    builder_config = token_management_builders.MyDefaultTransactionBuildersConfiguration(
-        chain_id=config.get('CHAIN')
+    builder_config = (
+        token_management_builders.MyDefaultTransactionBuildersConfiguration(
+            chain_id=config.get("CHAIN")
+        )
     )
 
     builder = token_management_builders.SemiFungibleTokenIssueBuilder(
@@ -237,7 +249,7 @@ def build_semi_fungible_issue_tx(
         can_upgrade,
         can_add_special_roles,
         can_transfer_nft_create_role,
-        nonce=sender.nonce
+        nonce=sender.nonce,
     )
 
     tx = builder.build()
@@ -259,7 +271,7 @@ def build_meta_issue_tx(
     can_change_owner: bool = False,
     can_upgrade: bool = False,
     can_add_special_roles: bool = False,
-    can_transfer_nft_create_role: bool = False
+    can_transfer_nft_create_role: bool = False,
 ) -> Transaction:
     """
     Build a transaction to issue an ESDT fungible token.
@@ -275,22 +287,24 @@ def build_meta_issue_tx(
     :param can_freeze: if the tokens on specific accounts can be frozen individually,
         defaults to False
     :type can_freeze: bool, optional
-    :param can_wipe: if tokens held on frozen accounts can be burnd by the token manager,
-        defaults to False
+    :param can_wipe: if tokens held on frozen accounts can be burnd
+        by the token manager, defaults to False
     :type can_wipe: bool, optional
-    :param can_pause: if all transactions of the token can be prevented, defaults to False
+    :param can_pause: if all transactions of the token can be prevented,
+        defaults to False
     :type can_pause: bool, optional
     :param can_mint: if more supply can be minted later on, defaults to False
     :type can_mint: bool, optional
     :param can_burn: if some supply can be burned, defaults to False
     :type can_burn: bool, optional
-    :param can_change_owner: if the management of the token can be transfered to another account,
-        defaults to False
+    :param can_change_owner: if the management of the token can be transfered
+        to another account, defaults to False
     :type can_change_owner: bool, optional
-    :param can_upgrade: if the properties of the token can be changed by the token manager,
-        defaults to False
+    :param can_upgrade: if the properties of the token can be changed
+        by the token manager, defaults to False
     :type can_upgrade: bool, optional
-    :param can_add_special_roles: if the token manager can add special roles, defaults to False
+    :param can_add_special_roles: if the token manager can add special roles,
+        defaults to False
     :type can_add_special_roles: bool, optional
     :param can_transfer_nft_create_role: if the token manager transfer the create role,
         defaults to False
@@ -299,8 +313,10 @@ def build_meta_issue_tx(
     :rtype: Transaction
     """
     config = Config.get_config()
-    builder_config = token_management_builders.MyDefaultTransactionBuildersConfiguration(
-        chain_id=config.get('CHAIN')
+    builder_config = (
+        token_management_builders.MyDefaultTransactionBuildersConfiguration(
+            chain_id=config.get("CHAIN")
+        )
     )
 
     builder = token_management_builders.MetaFungibleTokenIssueBuilder(
@@ -318,7 +334,7 @@ def build_meta_issue_tx(
         can_upgrade,
         can_add_special_roles,
         can_transfer_nft_create_role,
-        nonce=sender.nonce
+        nonce=sender.nonce,
     )
 
     tx = builder.build()
@@ -331,7 +347,8 @@ def extract_new_token_identifier(on_chain_tx: TransactionOnNetwork) -> str:
     """
     Extract the token id from a successful token issue transaction
 
-    :param on_chain_tx: on chain transaction with results fetched from the gateway of the api
+    :param on_chain_tx: on chain transaction with results fetched from the gateway of
+        the api
     :type on_chain_tx: TransactionOnNetwork
     :return: token identifier of the new token issued
     :rtype: str
@@ -342,16 +359,19 @@ def extract_new_token_identifier(on_chain_tx: TransactionOnNetwork) -> str:
         raise errors.NewTokenIdentifierNotFound from err
 
     try:
-        return token_identifier_topic.raw.decode('utf-8')
+        return token_identifier_topic.raw.decode("utf-8")
     except Exception as err:
-        raise errors.ParsingError(token_identifier_topic.hex(), 'token identifier') from err
+        raise errors.ParsingError(
+            token_identifier_topic.hex(), "token identifier"
+        ) from err
 
 
 def extract_new_nonce(on_chain_tx: TransactionOnNetwork) -> int:
     """
     Extract the new created nonce from a successful mint transaction
 
-    :param on_chain_tx: on chain transaction with results fetched from the gateway of the api
+    :param on_chain_tx: on chain transaction with results fetched from the gateway of
+        the api
     :type on_chain_tx: TransactionOnNetwork
     :return: created nonce
     :rtype: int
@@ -364,4 +384,4 @@ def extract_new_nonce(on_chain_tx: TransactionOnNetwork) -> int:
     try:
         return int(nonce_topic.hex(), 16)
     except Exception as err:
-        raise errors.ParsingError(nonce_topic.hex(), 'nonce') from err
+        raise errors.ParsingError(nonce_topic.hex(), "nonce") from err

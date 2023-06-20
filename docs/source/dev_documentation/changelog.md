@@ -2,12 +2,20 @@
 
 ## Unreleased
 
+### Added
+
+- Checkpoints for `Scenario`
+
+### Fixed
+
+- Bug with the `skip confirmation` CLI command
+
 ## 1.1.0 - 2023-05-11
 
 ### Added
 
 - CLI options to clean/delete `Scenario` data before or after execution
-- `Steps` for token transfers  (eGLD, fungible & non fungible)
+- `Steps` for token transfers (eGLD, fungible & non fungible)
 - `Steps` for token issuance, roles management and minting (fungible & non fungible)
 - `TransfersCheck` to verify the transfers of a `ContractCallStep`
 - Networks enumerations can be parsed by their short or full names

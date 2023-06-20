@@ -20,8 +20,8 @@ def get_explorer_tx_link(tx_hash: str) -> str:
     :rtype: str
     """
     config = Config.get_config()
-    explorer_url = config.get('EXPLORER_URL')
-    return f'{explorer_url}/transactions/{tx_hash}'
+    explorer_url = config.get("EXPLORER_URL")
+    return f"{explorer_url}/transactions/{tx_hash}"
 
 
 def get_proxy_tx_link(tx_hash: str) -> str:
@@ -34,8 +34,8 @@ def get_proxy_tx_link(tx_hash: str) -> str:
     :rtype: str
     """
     config = Config.get_config()
-    proxy = config.get('PROXY')
-    return f'{proxy}/transaction/{tx_hash}'
+    proxy = config.get("PROXY")
+    return f"{proxy}/transaction/{tx_hash}"
 
 
 def get_tx_link(tx_hash: str) -> str:
@@ -65,7 +65,7 @@ def get_file_hash(file_path: Path) -> str:
     """
     block_size = 65536
     file_hash = hashlib.sha256()
-    with open(file_path.as_posix(), 'rb') as file:
+    with open(file_path.as_posix(), "rb") as file:
         file_block = file.read(block_size)
         while len(file_block) > 0:
             file_hash.update(file_block)
@@ -85,5 +85,5 @@ def int_to_pair_hex(number: int) -> str:
     """
     hex_str = hex(number)[2:]
     if len(hex_str) % 2:
-        return '0' + hex_str
+        return "0" + hex_str
     return hex_str

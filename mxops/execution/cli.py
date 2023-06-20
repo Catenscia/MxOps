@@ -22,33 +22,41 @@ def add_subparser(subparsers_action: _SubParsersAction):
     :param subparsers_action: subparsers interface for the parent parser
     :type subparsers_action: _SubParsersAction[ArgumentParser]
     """
-    scenario_parser = subparsers_action.add_parser('execute')
-    scenario_parser.add_argument('-s',
-                                 '--scenario',
-                                 type=str,
-                                 required=True,
-                                 help=('Name of the scenario in which the '
-                                       'scene(s) will be executed'))
-    scenario_parser.add_argument('-n',
-                                 '--network',
-                                 type=parse_network_enum,
-                                 required=True,
-                                 help=('Name of the network in which the '
-                                       'scene(s) will be executed'))
-    scenario_parser.add_argument('-d',
-                                 '--delete',
-                                 action='store_true',
-                                 required=False,
-                                 help='delete the scenario data after the execution')
-    scenario_parser.add_argument('-c',
-                                 '--clean',
-                                 action='store_true',
-                                 required=False,
-                                 help='clean the scenario data before the execution')
-    scenario_parser.add_argument('elements',
-                                 nargs='+',
-                                 type=str,
-                                 help='Path to scene file and/or scene directory')
+    scenario_parser = subparsers_action.add_parser("execute")
+    scenario_parser.add_argument(
+        "-s",
+        "--scenario",
+        type=str,
+        required=True,
+        help=("Name of the scenario in which the " "scene(s) will be executed"),
+    )
+    scenario_parser.add_argument(
+        "-n",
+        "--network",
+        type=parse_network_enum,
+        required=True,
+        help=("Name of the network in which the " "scene(s) will be executed"),
+    )
+    scenario_parser.add_argument(
+        "-d",
+        "--delete",
+        action="store_true",
+        required=False,
+        help="delete the scenario data after the execution",
+    )
+    scenario_parser.add_argument(
+        "-c",
+        "--clean",
+        action="store_true",
+        required=False,
+        help="clean the scenario data before the execution",
+    )
+    scenario_parser.add_argument(
+        "elements",
+        nargs="+",
+        type=str,
+        help="Path to scene file and/or scene directory",
+    )
 
 
 def execute_cli(args: Namespace):
@@ -58,14 +66,14 @@ def execute_cli(args: Namespace):
     :param args: parsed arguments
     :type args: Namespace
     """
-    if args.command != 'execute':
-        raise ValueError(f'Command execute was expected, found {args.command}')
+    if args.command != "execute":
+        raise ValueError(f"Command execute was expected, found {args.command}")
 
     path.initialize_data_folder()
     Config.set_network(args.network)
 
     if args.clean:
-        delete_scenario_data(args.scenario, False)
+        delete_scenario_data(args.scenario, ask_confirmation=False)
 
     try:
         ScenarioData.load_scenario(args.scenario)
@@ -80,7 +88,7 @@ def execute_cli(args: Namespace):
         elif os.path.isdir(element_path):
             execute_directory(element_path)
         else:
-            raise ValueError(f'{element_path} is not a file nor a directory')
+            raise ValueError(f"{element_path} is not a file nor a directory")
 
     if args.delete:
-        delete_scenario_data(args.scenario, False)
+        delete_scenario_data(args.scenario, ask_confirmation=False)

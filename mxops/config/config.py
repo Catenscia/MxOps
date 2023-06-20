@@ -30,10 +30,12 @@ class _Config:
         self.__config = ConfigParser()
 
         if config_path is not None:
-            with open(config_path.as_posix(), 'r', encoding='utf-8') as config_file:
+            with open(config_path.as_posix(), "r", encoding="utf-8") as config_file:
                 self.__config.read_file(config_file)
         else:
-            with resources.open_text('mxops.resources', 'default_config.ini') as config_file:
+            with resources.open_text(
+                "mxops.resources", "default_config.ini"
+            ) as config_file:
                 self.__config.read_file(config_file)
 
     def get_network(self) -> NetworkEnum:
@@ -91,6 +93,7 @@ class Config:
     """
     Singleton class that serves the _Config class
     """
+
     __instance: Optional[_Config] = None
     __network: NetworkEnum = NetworkEnum.LOCAL
 
@@ -116,18 +119,19 @@ class Config:
         """
         # first check if a config is specified by env var
         try:
-            path = os.environ['MXOPS_CONFIG']
+            path = os.environ["MXOPS_CONFIG"]
         except KeyError:
             path = None
 
         if path is not None:
             if os.path.exists(path):
                 return path
-            raise ValueError(('MXOPS_CONFIG env var does not direct'
-                              ' to an existing path'))
+            raise ValueError(
+                ("MXOPS_CONFIG env var does not direct" " to an existing path")
+            )
 
         # then check if a config file is present in the working directory
-        path = Path('./mxops_config.ini')
+        path = Path("./mxops_config.ini")
         if os.path.exists(path):
             return path
 
@@ -154,14 +158,12 @@ def dump_default_config():
     """
     Take the default config and dump it in the working directory as mxops_config.ini
     """
-    dump_path = Path('./mxops_config.ini')
+    dump_path = Path("./mxops_config.ini")
     if os.path.exists(dump_path.as_posix()):
-        raise RuntimeError(('A config file already exists'
-                            ' in the working directory'))
+        raise RuntimeError(("A config file already exists" " in the working directory"))
 
-    default_content = resources.read_text('mxops.resources',
-                                          'default_config.ini')
+    default_content = resources.read_text("mxops.resources", "default_config.ini")
 
-    with open(dump_path.as_posix(), 'w+', encoding='utf-8') as dump_file:
+    with open(dump_path.as_posix(), "w+", encoding="utf-8") as dump_file:
         dump_file.write(default_content)
-    print(f'Copy of the default config dumped at {dump_path.absolute()}')
+    print(f"Copy of the default config dumped at {dump_path.absolute()}")
