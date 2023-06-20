@@ -6,6 +6,17 @@ on:
       - main
     types:
       - opened
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: "Log level"
+        required: true
+        default: "warning"
+        type: choice
+        options:
+          - info
+          - warning
+          - debug
 
 jobs:
   auto-bump:
@@ -36,8 +47,11 @@ jobs:
         run: |
           VERSION=$(bump2version --dry-run --list patch | grep current_version | sed -E 's/.*=//')
           BASE_SHA=${{ github.event.pull_request.base.sha }}
+          echo "Base SHA: $BASH_SHA"
           HEAD_SHA=${{ github.event.pull_request.head.sha }}
+          echo "Head SHA: $HEAD_SHA"
           COMMITS=$(git log --pretty=format:%s $BASE_SHA..$HEAD_SHA)
+          echo "Commits: $COMMITS"
           python scripts/auto_bump.py ${{ github.event.pull_request.base.ref }} "$VERSION" "$COMMITS"
           git push
 

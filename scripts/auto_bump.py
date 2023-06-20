@@ -11,6 +11,10 @@ import re
 import sys
 from typing import Dict
 import subprocess
+import logging
+
+logger = logging.getLogger("AutoBump")
+logger.setLevel("DEBUG")
 
 
 class ChangeType(Enum):
@@ -133,18 +137,18 @@ def main():
     Figure out the version change to apply and execute bump2version accordingly
     """
     args = parse_args()
-    print(f"version retrieved: {args.version}\n")
-    print(f"commits messages:\n{args.commits_messages}\n")
+    logger.info(f"version retrieved: {args.version}\n")
+    logger.info(f"commits messages:\n{args.commits_messages}\n")
     version_parts = parse_version(args.version)
-    print(f"version parts: {version_parts}")
+    logger.info(f"version parts: {version_parts}")
 
     if args.target_branch == "main":
         change_to_apply = ChangeType.RELEASE
     else:
         commit_change_type = get_commit_change_type(args.commits_messages)
-        print(f"commit change type: {commit_change_type}")
+        logger.info(f"commit change type: {commit_change_type}")
         change_to_apply = get_change_to_apply(version_parts, commit_change_type)
-    print(f"change to apply: {change_to_apply}")
+    logger.info(f"change to apply: {change_to_apply}")
 
     commands = ["bump2version", "--verbose", "--commit", change_to_apply.value]
     if args.dry_run:
