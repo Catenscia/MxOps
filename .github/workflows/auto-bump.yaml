@@ -26,6 +26,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -47,7 +48,7 @@ jobs:
         run: |
           VERSION=$(bump2version --dry-run --list patch | grep current_version | sed -E 's/.*=//')
           BASE_SHA=${{ github.event.pull_request.base.sha }}
-          echo "Base SHA: $BASH_SHA"
+          echo "Base SHA: $BASE_SHA"
           HEAD_SHA=${{ github.event.pull_request.head.sha }}
           echo "Head SHA: $HEAD_SHA"
           COMMITS=$(git log --pretty=format:%s $BASE_SHA..$HEAD_SHA)
