@@ -117,6 +117,20 @@ class InternalContractData(ContractData):
     deploy_time: int
     last_upgrade_time: int
 
+    def set_value(self, value_key: str, value: Any):
+        """
+        Set the a value under a specified key
+
+        :param value_key: key to save the value
+        :type value_key: str
+        :param value: value to save
+        :type value: Any
+        """
+        if value_key == "last_upgrade_time":
+            self.last_upgrade_time = value
+        else:
+            super().set_value(value_key, value)
+
 
 @dataclass
 class ExternalContractData(ContractData):

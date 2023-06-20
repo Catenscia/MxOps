@@ -60,6 +60,54 @@ def get_contract_deploy_tx(
     return tx, contract
 
 
+def get_contract_upgrade_tx(
+    contract_str: str,
+    wasm_file: Path,
+    metadata: CodeMetadata,
+    gas_limit: int,
+    contract_args: List,
+    sender: Account,
+) -> CliTransaction:
+    """
+    Construct the transaction used to upgrade a contract.
+    The transaction is not relayed to the proxy,
+    this has to be done with the result of this function.
+
+    :param contract_str: designation of the contract to call (bech32 or mxops value)
+    :type contract_str: str
+    :param wasm_file: path to the wasm file of the contract
+    :type wasm_file: Path
+    :param metadata: metadata for the contract deployment
+    :type metadata: CodeMetadata
+    :param gas_limit: gas limit for the transaction
+    :type gas_limit: int
+    :param contract_args: list of arguments to pass to the upgrade method
+    :type contract_args: List
+    :param sender: account to use for this transaction
+    :type sender: Account
+    :return: upgrade transaction
+    :rtype: CliTransaction
+    """
+    config = Config.get_config()
+
+    contract = utils.get_contract_instance(contract_str)
+    contract.bytecode = mxpy_utils.read_binary_file(wasm_file).hex()
+    contract.metadata = metadata
+    formated_args = utils.format_tx_arguments(contract_args)
+
+    tx = contract.upgrade(
+        sender,
+        formated_args,
+        mxpy_config.DEFAULT_GAS_PRICE,
+        gas_limit,
+        0,
+        config.get("CHAIN"),
+        mxpy_config.get_tx_version(),
+    )
+
+    return tx
+
+
 def get_contract_value_call_tx(
     contract_str: str,
     endpoint: str,

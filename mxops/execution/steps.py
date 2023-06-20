@@ -148,6 +148,54 @@ class ContractDeployStep(Step):
 
 
 @dataclass
+class ContractUpgradeStep(Step):
+    """
+    Represents a smart contract upgrade
+    """
+
+    sender: Dict
+    contract: str
+    wasm_path: str
+    contract: str
+    gas_limit: int
+    upgradeable: bool = True
+    readable: bool = True
+    payable: bool = False
+    payable_by_sc: bool = False
+    arguments: List = field(default_factory=lambda: [])
+
+    def execute(self):
+        """
+        Execute a contract deployment
+        """
+        LOGGER.info(f"Upgrading contract {self.contract}")
+        scenario_data = ScenarioData.get()
+
+        # contruct the transaction
+        sender = AccountsManager.get_account(self.sender)
+        metadata = CodeMetadata(
+            self.upgradeable, self.readable, self.payable, self.payable_by_sc
+        )
+        wasm_path = Path(self.wasm_path)
+        tx = cti.get_contract_upgrade_tx(
+            self.contract, wasm_path, metadata, self.gas_limit, self.arguments, sender
+        )
+        on_chain_tx = send_and_wait_for_result(tx)
+        raise_on_errors(on_chain_tx)
+        sender.nonce += 1
+        LOGGER.info(f"Upgrade successful: {get_tx_link(on_chain_tx.hash)}")
+
+        # update contract data
+        upgrade_timestamp = on_chain_tx.to_dictionary()["timestamp"]
+        try:
+            scenario_data.set_contract_value(
+                self.contract, "last_upgrade_time", upgrade_timestamp
+            )
+        except errors.UnknownContract:  # any contract can be upgraded
+            pass
+
+
+@dataclass
 class ContractCallStep(Step):
     """
     Represents a smart contract endpoint call
