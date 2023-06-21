@@ -450,7 +450,10 @@ class ScenarioData:  # pylint: disable=too-few-public-methods
             raise errors.UnknownScenario(scenario_name) from err
         config = Config.get_config()
         network = config.get_network()
-        LOGGER.info(f"Scenario {scenario_name} loaded for network {network.value}")
+        description = f"scenario {scenario_name}"
+        if checkpoint_name != "":
+            description += f" checkpoint {checkpoint_name}"
+        LOGGER.info(f"{checkpoint_name} loaded for network {network.value}")
 
     @classmethod
     def create_scenario(cls, scenario_name: str):

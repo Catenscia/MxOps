@@ -322,7 +322,7 @@ class FungibleIssueStep(Step):
         """
         LOGGER.info(
             (
-                f"Issuing fungible token named {self.token_name}"
+                f"Issuing fungible token named {self.token_name} "
                 f"for the account {self.sender}"
             )
         )
@@ -386,7 +386,7 @@ class NonFungibleIssueStep(Step):
         of the created token
         """
         LOGGER.info(
-            f"Issuing non fungible token named {self.token_name}"
+            f"Issuing non fungible token named {self.token_name} "
             f" for the account {self.sender}"
         )
         scenario_data = ScenarioData.get()
@@ -448,7 +448,7 @@ class SemiFungibleIssueStep(Step):
         of the created token
         """
         LOGGER.info(
-            f"Issuing semi fungible token named {self.token_name}"
+            f"Issuing semi fungible token named {self.token_name} "
             f" for the account {self.sender}"
         )
         scenario_data = ScenarioData.get()
@@ -510,7 +510,7 @@ class MetaIssueStep(Step):
         Execute a meta token issuance and save the token identifier of the created token
         """
         LOGGER.info(
-            f"Issuing meta fungible token named {self.token_name}"
+            f"Issuing meta fungible token named {self.token_name} "
             f" for the account {self.sender}"
         )
         scenario_data = ScenarioData.get()

@@ -19,6 +19,10 @@ from mxops.data import path
 from mxops.config.config import Config
 from mxops.data.data import ScenarioData, delete_scenario_data
 from mxops.enums import parse_network_enum
+from mxops.utils.logger import get_logger
+
+
+LOGGER = get_logger("data cli")
 
 
 def add_subparser(subparsers_action: _SubParsersAction):
@@ -200,12 +204,15 @@ def execute_cli(args: Namespace):  # pylint: disable=R0912
             ScenarioData.load_scenario(args.scenario)
             scenario = ScenarioData.get()
             scenario.save(args.checkpoint)
+            LOGGER.info(f"Checkpoint {args.checkpoint} created")
         elif args.action == "load":
             ScenarioData.load_scenario(args.scenario, args.checkpoint)
             scenario = ScenarioData.get()
             scenario.save()
+            LOGGER.info(f"Checkpoint {args.checkpoint} loaded")
         elif args.action == "delete":
             delete_scenario_data(args.scenario, args.checkpoint)
+            LOGGER.info(f"Checkpoint {args.checkpoint} deleted")
         else:
             raise ArgumentError(None, f"Unkown checkpoint action: {args.action}")
     else:
