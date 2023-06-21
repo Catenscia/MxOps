@@ -7,6 +7,7 @@ from mxops.execution.steps import (
     ContractCallStep,
     ContractDeployStep,
     ContractQueryStep,
+    ContractUpgradeStep,
 )
 
 
@@ -54,6 +55,17 @@ def test_deploy_scene_instantiation(test_data_folder_path: Path):
             arguments=[],
             expected_results=[{"save_key": "TokenIdentifier", "result_type": "str"}],
             print_results=True,
+        ),
+        ContractUpgradeStep(
+            sender="owner",
+            wasm_path="../contract/src/esdt-minter/output/esdt-minter.wasm",
+            contract="SEGLD-minter",
+            gas_limit=50000000,
+            upgradeable=True,
+            readable=False,
+            payable=True,
+            payable_by_sc=True,
+            arguments=[200],
         ),
     ]
 

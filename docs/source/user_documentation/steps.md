@@ -27,6 +27,30 @@ payable: false
 payable_by_sc: true
 ```
 
+### Contract Upgrade Step
+
+This `Step` is used to upgrade a contract.
+
+```yaml
+type: ContractUpgrade
+sender: bob
+wasm_path: "path/to/upgraded_wasm"
+contract: my_first_sc
+gas_limit: 1584000
+arguments: # optional, if any args must be submitted
+  - 100
+upgradeable: true
+readable: false
+payable: false
+payable_by_sc: true
+```
+
+```{warning}
+Be mindful of the difference in the argument name between the deploy and the update steps.
+
+`contract_id` can only refer to contract managed by MxOps whereas `contract` can be any contract.
+```
+
 ### Contract Call Step
 
 This `Step` is used to call the endpoint of a deployed contract.

@@ -33,7 +33,7 @@ pub trait EsdtMinter: multiversx_sc_modules::default_issue_callbacks::DefaultIss
     // #################   init    #################
     #[init]
     fn init(&self, interest_percentage: u64) {
-        self.interest_percentage().set_if_empty(interest_percentage);
+        self.interest_percentage().set(interest_percentage);
     }
 
     // #################   endpoints    #################
