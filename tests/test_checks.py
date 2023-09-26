@@ -50,7 +50,7 @@ def test_transfers_equality():
 def test_data_load_equality():
     # Given
     AccountsManager._accounts["owner"] = Account(
-        Address("erd1zzugxvypryhfym7qrnnkxvrlh8d9ylw2s0399q5tzp43g297plcq4p6d30")
+        Address.from_bech32("erd1zzugxvypryhfym7qrnnkxvrlh8d9ylw2s0399q5tzp43g297plcq4p6d30")
     )
     scenario = ScenarioData.get()
     contract_data = InternalContractData(

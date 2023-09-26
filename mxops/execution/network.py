@@ -7,8 +7,7 @@ import time
 from typing import List, Union
 
 from multiversx_sdk_cli.transactions import Transaction as CliTransaction
-from multiversx_sdk_cli.accounts import Address as CliAddress
-from multiversx_sdk_core import Transaction
+from multiversx_sdk_core import Address, Transaction
 from multiversx_sdk_network_providers import ProxyNetworkProvider
 from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
 
@@ -161,7 +160,7 @@ def extract_multi_transfer(sender: str, data: str) -> List[OnChainTransfer]:
     try:
         _, receiver, n_transfers, *details = data.split("@")
         n_transfers = int(n_transfers, base=16)
-        receiver = CliAddress(receiver).bech32()
+        receiver = Address.from_hex(receiver, hrp="erd").bech32()
     except Exception as err:
         raise errors.ParsingError(data, "MultiESDTNFTTransfer") from err
 
