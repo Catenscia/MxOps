@@ -5,8 +5,7 @@ Entry point for the MxOps package.
 """
 from argparse import Namespace, RawDescriptionHelpFormatter
 import argparse
-from importlib import resources
-import pkg_resources
+from importlib import resources, metadata
 
 from mxops.config import cli as config_cli
 from mxops.data import cli as data_cli
@@ -54,7 +53,7 @@ def main():
     elif args.command == "execute":
         execution_cli.execute_cli(args)
     elif args.command == "version":
-        print(pkg_resources.get_distribution("mxops").version)
+        print(metadata.version("mxops"))
 
 
 if __name__ == "__main__":
