@@ -1,6 +1,7 @@
 import os
 
 from multiversx_sdk_cli.accounts import Account
+from multiversx_sdk_core import Address
 
 from mxops.data.data import _ScenarioData
 from mxops.execution import utils
@@ -85,14 +86,14 @@ def test_value_from_config():
 
 def test_address_from_account():
     # Given
-    address = "erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th"
+    address = Address.from_bech32("erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th")
     account_name = "alice"
     account = Account(address)
     AccountsManager._accounts[account_name] = account
 
     # When
     arg = f"[{account_name}]"
-    retrieved_value = utils.retrieve_address_from_account(arg).bech32()
+    retrieved_value = utils.retrieve_address_from_account(arg)
 
     # Then
     assert retrieved_value == address
