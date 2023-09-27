@@ -7,7 +7,6 @@ import os
 from typing import Any, List, Optional, Tuple
 
 from multiversx_sdk_cli.contracts import QueryResult, SmartContract
-from multiversx_sdk_cli.errors import BadAddressFormatError
 from multiversx_sdk_core.address import Address
 from multiversx_sdk_core.errors import ErrBadAddress
 
@@ -217,19 +216,19 @@ def get_contract_instance(contract_str: str) -> SmartContract:
     # try to see if the string is a valid address
     try:
         return SmartContract(Address.from_bech32(contract_str))
-    except BadAddressFormatError:
+    except ErrBadAddress:
         pass
     # otherwise try to parse it as a mxops value
     contract_address = retrieve_value_from_string(contract_str)
     try:
         return SmartContract(Address.from_bech32(contract_address))
-    except BadAddressFormatError:
+    except ErrBadAddress:
         pass
     # lastly try to see if it is a valid contract id
     contract_address = retrieve_value_from_string(f"%{contract_str}%address")
     try:
         return SmartContract(Address.from_bech32(contract_address))
-    except BadAddressFormatError:
+    except ErrBadAddress:
         pass
     raise errors.ParsingError(contract_str, "contract address")
 
