@@ -54,8 +54,8 @@ def send_and_wait_for_result(
     for _ in range(0, num_periods_to_wait):
         time.sleep(refresh_period)
 
-        on_chain_tx = proxy.get_transaction(tx_hash)
-        if on_chain_tx.status.is_failed() or on_chain_tx.status.is_successful():
+        on_chain_tx = proxy.get_transaction(tx_hash, True)
+        if on_chain_tx.is_completed:
             return on_chain_tx
 
     raise errors.UnfinalizedTransactionException(on_chain_tx)
