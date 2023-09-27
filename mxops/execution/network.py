@@ -55,7 +55,7 @@ def send_and_wait_for_result(
         time.sleep(refresh_period)
 
         on_chain_tx = proxy.get_transaction(tx_hash)
-        if on_chain_tx.is_completed:
+        if on_chain_tx.status.is_failed() or on_chain_tx.status.is_successful():
             return on_chain_tx
 
     raise errors.UnfinalizedTransactionException(on_chain_tx)
@@ -72,13 +72,12 @@ def raise_on_errors(on_chain_tx: TransactionOnNetwork):
     :param onChainTx: on chain finalised transaction
     :type onChainTx: Transaction
     """
-    if not on_chain_tx.is_completed:
-        raise errors.UnfinalizedTransactionException(on_chain_tx)
-
     if on_chain_tx.status.is_invalid():
         raise errors.InvalidTransactionError(on_chain_tx)
     if on_chain_tx.status.is_failed():
         raise errors.FailedTransactionError(on_chain_tx)
+    if not on_chain_tx.status.is_successful() or on_chain_tx.status.is_failed():
+        raise errors.UnfinalizedTransactionException(on_chain_tx)
 
     event_identifiers = {e.identifier for e in on_chain_tx.logs.events}
     if "InternalVmExecutionError" in event_identifiers:
