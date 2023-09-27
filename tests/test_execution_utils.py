@@ -1,11 +1,10 @@
-import json
 import os
 
 from multiversx_sdk_cli.accounts import Account
 from multiversx_sdk_cli.contracts import SmartContract
 from multiversx_sdk_core import Address
 
-from mxops.data.data import _ScenarioData, ScenarioData
+from mxops.data.data import _ScenarioData
 from mxops.execution import utils
 from mxops.execution.account import AccountsManager
 
@@ -112,7 +111,9 @@ def test_get_contract_instance():
 
     # When
     contract = utils.get_contract_instance(contract_id)
-    contract_bis = utils.get_contract_instance("erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t")
+    contract_bis = utils.get_contract_instance(
+        "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t"
+    )
 
     # Then
     assert isinstance(contract, SmartContract)
