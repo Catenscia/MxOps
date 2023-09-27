@@ -1,6 +1,8 @@
 import os
 
 from multiversx_sdk_cli.accounts import Account
+from multiversx_sdk_cli.contracts import SmartContract
+from multiversx_sdk_core import Address
 
 from mxops.data.data import _ScenarioData
 from mxops.execution import utils
@@ -47,7 +49,7 @@ def test_env_value():
 def test_scenario_attribute_data():
     # Given
     contract_id = "my_test_contract"
-    address = "erd1...f217"
+    address = "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t"
 
     # When
     arg = f"%{contract_id}%address"
@@ -85,14 +87,50 @@ def test_value_from_config():
 
 def test_address_from_account():
     # Given
-    address = "erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th"
+    address = Address.from_bech32(
+        "erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th"
+    )
     account_name = "alice"
     account = Account(address)
     AccountsManager._accounts[account_name] = account
 
     # When
     arg = f"[{account_name}]"
-    retrieved_value = utils.retrieve_address_from_account(arg).bech32()
+    retrieved_value = utils.retrieve_address_from_account(arg)
 
     # Then
     assert retrieved_value == address
+
+
+def test_get_contract_instance():
+    """
+    Test that a contract can be retrieved correctly
+    """
+    # Given
+    contract_id = "my_test_contract"
+
+    # When
+    contract = utils.get_contract_instance(contract_id)
+    contract_bis = utils.get_contract_instance(
+        "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t"
+    )
+
+    # Then
+    assert isinstance(contract, SmartContract)
+    assert isinstance(contract_bis, SmartContract)
+    assert contract.address.bech32() == contract_bis.address.bech32()
+
+
+def test_retrieve_contract_address():
+    """
+    Test that a contract address can be retrieved
+    """
+    # Given
+    contract_id = "my_test_contract"
+
+    # When
+    address = utils.retrieve_value_from_string(f"%{contract_id}%address")
+
+    # Assert
+    assert isinstance(address, str)
+    address == "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t"

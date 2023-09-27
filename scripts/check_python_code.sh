@@ -43,12 +43,12 @@ echo "${OUTPUT}"
 SCORE=$(sed -n '$s/[^0-9]*\([0-9.]*\).*/\1/p' <<< "$OUTPUT")
 TEST=$(echo "${SCORE} < 9.5" |bc -l)
 
-if [ $TEST -ne 0 ]
+if echo "$OUTPUT" | grep -q "^mxops/.*: E[0-9]*"
 then
-    printf "${RED}pylint score below 9.5, test failed${NC}\n"
-    exit 3
-elif echo "$OUTPUT" | grep -q "^mxops/.*: E[0-9]*"; then
     printf "${RED}pylint has detected an error, test failed${NC}\n"
+    exit 3
+elif [ $TEST -ne 0 ]; then
+    printf "${RED}pylint score below 9.5, test failed${NC}\n"
     exit 4
 else
     printf "${GREEN}pylint success${NC}\n\n\n"

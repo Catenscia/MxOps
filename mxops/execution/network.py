@@ -7,8 +7,7 @@ import time
 from typing import List, Union
 
 from multiversx_sdk_cli.transactions import Transaction as CliTransaction
-from multiversx_sdk_cli.accounts import Address as CliAddress
-from multiversx_sdk_core import Transaction
+from multiversx_sdk_core import Address, Transaction
 from multiversx_sdk_network_providers import ProxyNetworkProvider
 from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
 
@@ -55,7 +54,7 @@ def send_and_wait_for_result(
     for _ in range(0, num_periods_to_wait):
         time.sleep(refresh_period)
 
-        on_chain_tx = proxy.get_transaction(tx_hash)
+        on_chain_tx = proxy.get_transaction(tx_hash, True)
         if on_chain_tx.is_completed:
             return on_chain_tx
 
@@ -73,13 +72,12 @@ def raise_on_errors(on_chain_tx: TransactionOnNetwork):
     :param onChainTx: on chain finalised transaction
     :type onChainTx: Transaction
     """
-    if not on_chain_tx.is_completed:
-        raise errors.UnfinalizedTransactionException(on_chain_tx)
-
     if on_chain_tx.status.is_invalid():
         raise errors.InvalidTransactionError(on_chain_tx)
     if on_chain_tx.status.is_failed():
         raise errors.FailedTransactionError(on_chain_tx)
+    if not on_chain_tx.status.is_successful() or on_chain_tx.status.is_failed():
+        raise errors.UnfinalizedTransactionException(on_chain_tx)
 
     event_identifiers = {e.identifier for e in on_chain_tx.logs.events}
     if "InternalVmExecutionError" in event_identifiers:
@@ -161,7 +159,7 @@ def extract_multi_transfer(sender: str, data: str) -> List[OnChainTransfer]:
     try:
         _, receiver, n_transfers, *details = data.split("@")
         n_transfers = int(n_transfers, base=16)
-        receiver = CliAddress(receiver).bech32()
+        receiver = Address.from_hex(receiver, hrp="erd").bech32()
     except Exception as err:
         raise errors.ParsingError(data, "MultiESDTNFTTransfer") from err
 

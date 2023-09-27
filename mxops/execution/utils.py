@@ -6,9 +6,7 @@ This module contains some utilities functions for the execution sub package
 import os
 from typing import Any, List, Optional, Tuple
 
-from multiversx_sdk_cli.accounts import Address as CliAddress
 from multiversx_sdk_cli.contracts import QueryResult, SmartContract
-from multiversx_sdk_cli.errors import BadAddressFormatError
 from multiversx_sdk_core.address import Address
 from multiversx_sdk_core.errors import ErrBadAddress
 
@@ -109,7 +107,7 @@ def retrieve_value_from_scenario_data(arg: str) -> str:
     return convert_arg(retrieved_value, desired_type)
 
 
-def retrieve_address_from_account(arg: str) -> CliAddress:
+def retrieve_address_from_account(arg: str) -> Address:
     """
     Retrieve an address from the accounts manager.
     the argument must formated like this: [user]
@@ -117,7 +115,7 @@ def retrieve_address_from_account(arg: str) -> CliAddress:
     :param arg: name of the variable formated as above
     :type arg: str
     :return: address from the scenario
-    :rtype: CliAddress
+    :rtype: Address
     """
     try:
         arg = arg[1:-1]
@@ -194,10 +192,10 @@ def format_tx_arguments(arguments: List[Any]) -> List[Any]:
         formated_arg = arg
         if isinstance(arg, str):
             if arg.startswith("erd") and len(arg) == 62:
-                formated_arg = "0x" + CliAddress(arg).hex()
+                formated_arg = "0x" + Address.from_bech32(arg).hex()
             elif not arg.startswith("0x"):
                 formated_arg = "str:" + arg
-        elif isinstance(arg, CliAddress):
+        elif isinstance(arg, Address):
             formated_arg = "0x" + arg.hex()
 
         formated_arguments.append(formated_arg)
@@ -217,20 +215,20 @@ def get_contract_instance(contract_str: str) -> SmartContract:
     """
     # try to see if the string is a valid address
     try:
-        return SmartContract(CliAddress(contract_str))
-    except BadAddressFormatError:
+        return SmartContract(Address.from_bech32(contract_str))
+    except ErrBadAddress:
         pass
     # otherwise try to parse it as a mxops value
     contract_address = retrieve_value_from_string(contract_str)
     try:
-        return SmartContract(CliAddress(contract_address))
-    except BadAddressFormatError:
+        return SmartContract(Address.from_bech32(contract_address))
+    except ErrBadAddress:
         pass
     # lastly try to see if it is a valid contract id
     contract_address = retrieve_value_from_string(f"%{contract_str}%address")
     try:
-        return SmartContract(CliAddress(contract_address))
-    except BadAddressFormatError:
+        return SmartContract(Address.from_bech32(contract_address))
+    except ErrBadAddress:
         pass
     raise errors.ParsingError(contract_str, "contract address")
 

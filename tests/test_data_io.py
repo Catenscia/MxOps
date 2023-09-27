@@ -25,7 +25,7 @@ def test_scenario_loading(scenario_path: Path):
 
     # Then
     assert scenario.network == NetworkEnum.DEV
-    assert scenario.name == "mxops_tutorial_first_scene"
+    assert scenario.name == "___test_mxops_tutorial_first_scene"
     assert scenario.contracts_data == {
         "egld-ping-pong": InternalContractData(
             contract_id="egld-ping-pong",
@@ -76,6 +76,4 @@ def test_io_unicity():
     scenario_dict = scenario.to_dict()
 
     # Then
-    print("result:", json.dumps(scenario_dict, indent=4))
-    print("expected:", json.dumps(raw_data, indent=4))
     assert scenario_dict == raw_data

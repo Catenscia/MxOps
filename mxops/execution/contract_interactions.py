@@ -9,6 +9,8 @@ from multiversx_sdk_cli.accounts import Account
 from multiversx_sdk_cli.contracts import CodeMetadata, SmartContract, QueryResult
 from multiversx_sdk_cli.transactions import Transaction as CliTransaction
 from multiversx_sdk_cli import utils as mxpy_utils
+from multiversx_sdk_core.constants import (TRANSACTION_OPTIONS_DEFAULT,
+                                           TRANSACTION_VERSION_DEFAULT)
 from multiversx_sdk_network_providers import ProxyNetworkProvider
 
 from mxops.config.config import Config
@@ -54,7 +56,9 @@ def get_contract_deploy_tx(
         gas_limit,
         0,
         config.get("CHAIN"),
-        mxpy_config.get_tx_version(),
+        TRANSACTION_VERSION_DEFAULT,
+        options=TRANSACTION_OPTIONS_DEFAULT,
+        guardian=''
     )
 
     return tx, contract
@@ -102,7 +106,9 @@ def get_contract_upgrade_tx(
         gas_limit,
         0,
         config.get("CHAIN"),
-        mxpy_config.get_tx_version(),
+        TRANSACTION_VERSION_DEFAULT,
+        options=TRANSACTION_OPTIONS_DEFAULT,
+        guardian=''
     )
 
     return tx
@@ -152,7 +158,9 @@ def get_contract_value_call_tx(
         gas_price=mxpy_config.DEFAULT_GAS_PRICE,
         gas_limit=gas_limit,
         chain=config.get("CHAIN"),
-        version=mxpy_config.get_tx_version(),
+        version=TRANSACTION_VERSION_DEFAULT,
+        options=TRANSACTION_OPTIONS_DEFAULT,
+        guardian=''
     )
 
     return tx
@@ -206,7 +214,9 @@ def get_contract_single_esdt_call_tx(
         gas_price=mxpy_config.DEFAULT_GAS_PRICE,
         gas_limit=gas_limit,
         chain=config.get("CHAIN"),
-        version=mxpy_config.get_tx_version(),
+        version=TRANSACTION_VERSION_DEFAULT,
+        options=TRANSACTION_OPTIONS_DEFAULT,
+        guardian=''
     )
 
     return tx
@@ -264,7 +274,9 @@ def get_contract_single_nft_call_tx(
         gas_price=mxpy_config.DEFAULT_GAS_PRICE,
         gas_limit=gas_limit,
         chain=config.get("CHAIN"),
-        version=mxpy_config.get_tx_version(),
+        version=TRANSACTION_VERSION_DEFAULT,
+        options=TRANSACTION_OPTIONS_DEFAULT,
+        guardian=''
     )
 
     return tx
@@ -324,7 +336,10 @@ def get_contract_multiple_esdt_call_tx(
         gas_price=mxpy_config.DEFAULT_GAS_PRICE,
         gas_limit=gas_limit,
         chain=config.get("CHAIN"),
-        version=mxpy_config.get_tx_version(),
+        version=TRANSACTION_VERSION_DEFAULT,
+        options=TRANSACTION_OPTIONS_DEFAULT,
+        guardian=''
+
     )
 
     return tx

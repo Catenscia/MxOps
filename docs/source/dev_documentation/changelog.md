@@ -6,10 +6,12 @@
 
 - Checkpoints for `Scenario`
 - `ContractUpgradeStep`
+- Auto retry for empty query results
 
 ### Fixed
 
 - Bug with the `skip confirmation` CLI command
+- Upgrade MultiversX python libraries
 
 ## 1.1.0 - 2023-05-11
 
