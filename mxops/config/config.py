@@ -3,13 +3,12 @@ author: Etienne Wallet
 
 This module contains utils functions related to path navigation
 """
-from importlib_resources import files
-
 from configparser import ConfigParser
-from importlib import resources
 import os
 from pathlib import Path
 from typing import Dict, List, Optional
+
+from importlib_resources import files
 
 from mxops.enums import NetworkEnum
 
@@ -35,8 +34,8 @@ class _Config:
             with open(config_path.as_posix(), "r", encoding="utf-8") as config_file:
                 self.__config.read_file(config_file)
         else:
-            default_config_string = files("mxops.resources").joinpath("default_config.ini").read_text()
-            self.__config.read_string(default_config_string)
+            default_config = files("mxops.resources").joinpath("default_config.ini")
+            self.__config.read_string(default_config.read_text())
 
     def get_network(self) -> NetworkEnum:
         """
@@ -162,8 +161,8 @@ def dump_default_config():
     if os.path.exists(dump_path.as_posix()):
         raise RuntimeError(("A config file already exists" " in the working directory"))
 
-    default_content = resources.read_text("mxops.resources", "default_config.ini")
+    default_config = files("mxops.resources").joinpath("default_config.ini")
 
     with open(dump_path.as_posix(), "w+", encoding="utf-8") as dump_file:
-        dump_file.write(default_content)
+        dump_file.write(default_config.read_text())
     print(f"Copy of the default config dumped at {dump_path.absolute()}")

@@ -5,7 +5,9 @@ Entry point for the MxOps package.
 """
 from argparse import Namespace, RawDescriptionHelpFormatter
 import argparse
-from importlib import resources, metadata
+from importlib import metadata
+
+from importlib_resources import files
 
 from mxops.config import cli as config_cli
 from mxops.data import cli as data_cli
@@ -21,7 +23,7 @@ def parse_args() -> Namespace:
     """
     parser = argparse.ArgumentParser(formatter_class=RawDescriptionHelpFormatter)
 
-    description = resources.read_text("mxops.resources", "parser_help.txt")
+    description = files("mxops.resources").joinpath("parser_help.txt").read_text()
     subparsers_action = parser.add_subparsers(description=description, dest="command")
 
     config_cli.add_subparser(subparsers_action)

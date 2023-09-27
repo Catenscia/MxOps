@@ -11,9 +11,10 @@ from argparse import (
     RawDescriptionHelpFormatter,
 )
 import argparse
-from importlib import resources
 import json
 from typing import Literal
+
+from importlib_resources import files
 
 from mxops.data import path
 from mxops.config.config import Config
@@ -37,8 +38,9 @@ def add_subparser(subparsers_action: _SubParsersAction):
     )
 
     # create sub parser for data cli
+    description = files("mxops.resources").joinpath("data_parser_help.txt")
     data_subparsers_actions = data_parser.add_subparsers(
-        description=resources.read_text("mxops.resources", "data_parser_help.txt"),
+        description=description.read_text(),
         dest="data_command",
     )
 
