@@ -3,6 +3,8 @@ author: Etienne Wallet
 
 This module contains utils functions related to path navigation
 """
+from importlib_resources import files
+
 from configparser import ConfigParser
 from importlib import resources
 import os
@@ -33,10 +35,8 @@ class _Config:
             with open(config_path.as_posix(), "r", encoding="utf-8") as config_file:
                 self.__config.read_file(config_file)
         else:
-            with resources.open_text(
-                "mxops.resources", "default_config.ini"
-            ) as config_file:
-                self.__config.read_file(config_file)
+            default_config_string = files("mxops.resources").joinpath("default_config.ini").read_text()
+            self.__config.read_string(default_config_string)
 
     def get_network(self) -> NetworkEnum:
         """
