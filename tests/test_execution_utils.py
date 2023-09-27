@@ -86,7 +86,9 @@ def test_value_from_config():
 
 def test_address_from_account():
     # Given
-    address = Address.from_bech32("erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th")
+    address = Address.from_bech32(
+        "erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th"
+    )
     account_name = "alice"
     account = Account(address)
     AccountsManager._accounts[account_name] = account
