@@ -7,9 +7,10 @@ from dataclasses import dataclass, field
 import os
 from pathlib import Path
 import sys
+import time
 from typing import ClassVar, Dict, List, Set, Union
 
-from multiversx_sdk_cli.contracts import CodeMetadata
+from multiversx_sdk_cli.contracts import CodeMetadata, QueryResult
 from multiversx_sdk_core import Address, TokenPayment
 from multiversx_sdk_core import transaction_builders as tx_builder
 from multiversx_sdk_core.serializer import arg_to_string
@@ -276,13 +277,23 @@ class ContractQueryStep(Step):
         """
         LOGGER.info(f"Query on {self.endpoint} for {self.contract}")
         scenario_data = ScenarioData.get()
-        results = cti.query_contract(self.contract, self.endpoint, self.arguments)
 
+        results = []
+        results_empty = True
+        n_attempts = 0
+        max_attempts = int(Config.get_config().get("MAX_QUERY_ATTEMPTS"))
+        while results_empty and n_attempts < max_attempts:
+            n_attempts += 1
+            results = cti.query_contract(self.contract, self.endpoint, self.arguments)
+            results_empty = len(results) == 0 or (len(results) == 1 and results[0] == "")
+            if results_empty:
+                time.sleep(3)
+                LOGGER.warning(f'Empty query result, retrying. Attempt n°{n_attempts}/{max_attempts}')
+
+        if results_empty:
+            raise errors.EmptyQueryResults
         if self.print_results:
             print(results)
-
-        if len(results) == 0 or (len(results) == 1 and results[0] == ""):
-            raise errors.EmptyQueryResults
         if len(self.expected_results) > 0:
             LOGGER.info("Saving Query results as contract data")
             for result, expected_result in zip(results, self.expected_results):
