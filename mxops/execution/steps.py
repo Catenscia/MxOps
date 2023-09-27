@@ -3,17 +3,19 @@ author: Etienne Wallet
 
 This module contains the classes used to execute scenes in a scenario
 """
+from __future__ import annotations
 from dataclasses import dataclass, field
 import os
 from pathlib import Path
 import sys
 import time
-from typing import ClassVar, Dict, List, Set, Union
+from typing import ClassVar, Dict, List, Optional, Set, Union
 
 from multiversx_sdk_cli.contracts import CodeMetadata
 from multiversx_sdk_core import Address, TokenPayment
 from multiversx_sdk_core import transaction_builders as tx_builder
 from multiversx_sdk_core.serializer import arg_to_string
+from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
 
 from mxops.config.config import Config
 from mxops.data.data import InternalContractData, ScenarioData, TokenData
@@ -48,6 +50,71 @@ class Step:
         by a child class or directly executed.
         """
         raise NotImplementedError
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> Step:
+        """
+        Instantiate a Step instance from a dictionary
+
+        :return: step instance
+        :rtype: Step
+        """
+        return cls(**data)
+
+
+@dataclass(kw_only=True)
+class TransactionStep(Step):
+    """
+    Represents a step that produce and send a transaction
+    """
+    sender: str
+    receiver: str
+    check_success: bool = True
+
+    def _create_builder(self) -> tx_builder.TransactionBuilder:
+        """
+        Interface for the method that will create the transaction builder
+
+        :return: builder for the transaction to send
+        :rtype: TransactionBuilder
+        """
+        raise NotImplementedError
+
+    def _post_transaction_execution(self, on_chain_tx: Optional[TransactionOnNetwork]):
+        """
+        Interface for the function that will be executed after the transaction has
+        been successfully executed
+
+        :param on_chain_tx: on chain transaction that was sent by the Step
+        :type on_chain_tx: TransactionOnNetwork
+        """
+        pass
+
+    def execute(self):
+        """
+        Interface for the method to execute the action described by a Step instance.
+        Each child class must overrid this method
+
+        :raises NotImplementedError: if this method was not overriden
+        by a child class or directly executed.
+        """
+        sender_account = AccountsManager.get_account(self.sender)
+        builder = self._create_builder()
+        tx = builder.build()
+        tx.nonce = sender_account.nonce
+        tx.signature = sender_account.signer.sign(tx)
+        sender_account.nonce += 1
+
+        if self.check_success:
+            on_chain_tx = send_and_wait_for_result(tx)
+            raise_on_errors(on_chain_tx)
+            LOGGER.info(f"Transaction successful: {get_tx_link(on_chain_tx.hash)}")
+        else:
+            on_chain_tx = None
+            send(tx)
+            LOGGER.info("Transaction sent")
+
+        self._post_transaction_execution(on_chain_tx)
 
 
 @dataclass
@@ -778,19 +845,18 @@ class NonFungibleMintStep(Step):
 
 
 @dataclass
-class EgldTransferStep(Step):
+class EgldTransferStep(TransactionStep):
     """
     This step is used to transfer some eGLD to an address
     """
-
-    sender: str
-    receiver: str
     amount: Union[str, int]
-    check_success: bool = True
 
-    def execute(self):
+    def _create_builder(self) -> tx_builder.TransactionBuilder:
         """
-        Execute an eGLD transfer transaction
+        Create the builder for the egld transfer transaction
+
+        :return: builder of the transaction
+        :rtype: tx_builder.TransactionBuilder
         """
         config = Config.get_config()
         builder_config = (
@@ -798,50 +864,34 @@ class EgldTransferStep(Step):
                 chain_id=config.get("CHAIN")
             )
         )
-
-        sender = AccountsManager.get_account(self.sender)
-        receiver_address = utils.get_address_instance(self.receiver)
         amount = int(utils.retrieve_value_from_any(self.amount))
         payment = TokenPayment.egld_from_integer(amount)
 
-        LOGGER.info(f"Sending {amount} eGLD from {self.sender} to {self.receiver}")
-
         builder = tx_builder.EGLDTransferBuilder(
             config=builder_config,
-            sender=sender.address,
-            receiver=receiver_address,
+            sender=utils.get_address_instance(self.sender),
+            receiver=utils.get_address_instance(self.receiver),
             payment=payment,
-            nonce=sender.nonce,
         )
 
-        tx = builder.build()
-        tx.signature = sender.signer.sign(tx)
-        sender.nonce += 1
-
-        if self.check_success:
-            on_chain_tx = send_and_wait_for_result(tx)
-            raise_on_errors(on_chain_tx)
-            LOGGER.info(f"Transaction successful: {get_tx_link(on_chain_tx.hash)}")
-        else:
-            send(tx)
-            LOGGER.info("Transaction sent")
+        LOGGER.info(f"Sending {amount} eGLD from {self.sender} to {self.receiver}")
+        return builder
 
 
 @dataclass
-class FungibleTransferStep(Step):
+class FungibleTransferStep(TransactionStep):
     """
     This step is used to transfer some fungible ESDT to an address
     """
-
-    sender: str
-    receiver: str
     token_identifier: str
     amount: Union[str, int]
-    check_success: bool = True
 
-    def execute(self):
+    def _create_builder(self) -> tx_builder.TransactionBuilder:
         """
-        Execute a fungible ESDT transfer transaction
+        Create the builder for the ESDT transfer transaction
+
+        :return: builder of the transaction
+        :rtype: tx_builder.TransactionBuilder
         """
         config = Config.get_config()
         builder_config = (
@@ -849,54 +899,38 @@ class FungibleTransferStep(Step):
                 chain_id=config.get("CHAIN")
             )
         )
-
-        sender = AccountsManager.get_account(self.sender)
-        receiver_address = utils.get_address_instance(self.receiver)
         token_identifier = utils.retrieve_value_from_string(self.token_identifier)
         amount = int(utils.retrieve_value_from_any(self.amount))
         payment = TokenPayment.fungible_from_integer(token_identifier, amount, 0)
 
+        builder = tx_builder.ESDTTransferBuilder(
+            config=builder_config,
+            sender=utils.get_address_instance(self.sender),
+            receiver=utils.get_address_instance(self.receiver),
+            payment=payment,
+        )
+
         LOGGER.info(
             f"Sending {amount} {token_identifier} from {self.sender} to {self.receiver}"
         )
-
-        builder = tx_builder.ESDTTransferBuilder(
-            config=builder_config,
-            sender=sender.address,
-            receiver=receiver_address,
-            payment=payment,
-            nonce=sender.nonce,
-        )
-
-        tx = builder.build()
-        tx.signature = sender.signer.sign(tx)
-        sender.nonce += 1
-
-        if self.check_success:
-            on_chain_tx = send_and_wait_for_result(tx)
-            raise_on_errors(on_chain_tx)
-            LOGGER.info(f"Transaction successful: {get_tx_link(on_chain_tx.hash)}")
-        else:
-            send(tx)
-            LOGGER.info("Transaction sent")
+        return builder
 
 
 @dataclass
-class NonFungibleTransferStep(Step):
+class NonFungibleTransferStep(TransactionStep):
     """
     This step is used to transfer some non fungible ESDT to an address
     """
-
-    sender: str
-    receiver: str
     token_identifier: str
     nonce: Union[str, int]
     amount: Union[str, int]
-    check_success: bool = True
 
-    def execute(self):
+    def _create_builder(self) -> tx_builder.TransactionBuilder:
         """
-        Execute a fungible ESDT transfer transaction
+        Create the builder for the NFT transfer transaction
+
+        :return: builder of the transaction
+        :rtype: tx_builder.TransactionBuilder
         """
         config = Config.get_config()
         builder_config = (
@@ -904,9 +938,6 @@ class NonFungibleTransferStep(Step):
                 chain_id=config.get("CHAIN")
             )
         )
-
-        sender = AccountsManager.get_account(self.sender)
-        receiver_address = utils.get_address_instance(self.receiver)
         token_identifier = utils.retrieve_value_from_string(self.token_identifier)
         nonce = int(utils.retrieve_value_from_any(self.nonce))
         amount = int(utils.retrieve_value_from_any(self.amount))
@@ -914,42 +945,26 @@ class NonFungibleTransferStep(Step):
             token_identifier, nonce, amount, 0
         )
 
+        builder = tx_builder.ESDTNFTTransferBuilder(
+            config=builder_config,
+            sender=utils.get_address_instance(self.sender),
+            destination=utils.get_address_instance(self.receiver),
+            payment=payment,
+        )
+
         LOGGER.info(
             f"Sending {amount} {token_identifier}-{arg_to_string(nonce)} "
             f"from {self.sender} to {self.receiver}"
         )
-
-        builder = tx_builder.ESDTNFTTransferBuilder(
-            config=builder_config,
-            sender=sender.address,
-            destination=receiver_address,
-            payment=payment,
-            nonce=sender.nonce,
-        )
-
-        tx = builder.build()
-        tx.signature = sender.signer.sign(tx)
-        sender.nonce += 1
-
-        if self.check_success:
-            on_chain_tx = send_and_wait_for_result(tx)
-            raise_on_errors(on_chain_tx)
-            LOGGER.info(f"Transaction successful: {get_tx_link(on_chain_tx.hash)}")
-        else:
-            send(tx)
-            LOGGER.info("Transaction sent")
+        return builder
 
 
 @dataclass
-class MultiTransfersStep(Step):
+class MultiTransfersStep(TransactionStep):
     """
     This step is used to transfer multiple ESDTs to an address
     """
-
-    sender: str
-    receiver: str
     transfers: List[EsdtTransfer]
-    check_success: bool = True
 
     def __post_init__(self):
         """
@@ -968,9 +983,12 @@ class MultiTransfersStep(Step):
                 raise ValueError(f"Unexpected type: {type(trf)}")
         self.transfers = checked_transfers
 
-    def execute(self):
+    def _create_builder(self) -> tx_builder.TransactionBuilder:
         """
-        Execute a multi ESDT transfers transaction
+        Create the builder for the multi transfer transaction
+
+        :return: builder of the transaction
+        :rtype: tx_builder.TransactionBuilder
         """
         config = Config.get_config()
         builder_config = (
@@ -978,10 +996,6 @@ class MultiTransfersStep(Step):
                 chain_id=config.get("CHAIN")
             )
         )
-
-        sender = AccountsManager.get_account(self.sender)
-        receiver_address = utils.get_address_instance(self.receiver)
-
         payments = [
             TokenPayment.meta_esdt_from_integer(
                 utils.retrieve_value_from_string(transfer.token_identifier),
@@ -992,29 +1006,17 @@ class MultiTransfersStep(Step):
             for transfer in self.transfers
         ]
 
-        LOGGER.info(
-            "Sending multiple payments " f"from {self.sender} to {self.receiver}"
-        )
-
         builder = tx_builder.MultiESDTNFTTransferBuilder(
             config=builder_config,
-            sender=sender.address,
-            destination=receiver_address,
+            sender=utils.get_address_instance(self.sender),
+            destination=utils.get_address_instance(self.receiver),
             payments=payments,
-            nonce=sender.nonce,
         )
 
-        tx = builder.build()
-        tx.signature = sender.signer.sign(tx)
-        sender.nonce += 1
-
-        if self.check_success:
-            on_chain_tx = send_and_wait_for_result(tx)
-            raise_on_errors(on_chain_tx)
-            LOGGER.info(f"Transaction successful: {get_tx_link(on_chain_tx.hash)}")
-        else:
-            send(tx)
-            LOGGER.info("Transaction sent")
+        LOGGER.info(
+            f"Sending multiple payments from {self.sender} to {self.receiver}"
+        )
+        return builder
 
 
 def instanciate_steps(raw_steps: List[Dict]) -> List[Step]:
