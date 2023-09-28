@@ -4,17 +4,20 @@ author: Etienne Wallet
 This module contains the classes used to execute scenes in a scenario
 """
 from __future__ import annotations
+import base64
 from dataclasses import dataclass, field
 import os
 from pathlib import Path
 import sys
 import time
-from typing import ClassVar, Dict, List, Optional, Set, Union
+from typing import ClassVar, Dict, List, Set, Union
 
-from multiversx_sdk_cli.contracts import CodeMetadata
-from multiversx_sdk_core import Address, TokenPayment
+from multiversx_sdk_cli.contracts import QueryResult
+from multiversx_sdk_cli.constants import DEFAULT_HRP
+from multiversx_sdk_core import Address, TokenPayment, ContractQueryBuilder, CodeMetadata
 from multiversx_sdk_core import transaction_builders as tx_builder
 from multiversx_sdk_core.serializer import arg_to_string
+from multiversx_sdk_network_providers import ProxyNetworkProvider
 from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
 
 from mxops.config.config import Config
@@ -22,7 +25,6 @@ from mxops.data.data import InternalContractData, ScenarioData, TokenData
 from mxops.enums import TokenTypeEnum
 from mxops.execution import token_management_builders, utils
 from mxops.execution.account import AccountsManager
-from mxops.execution import contract_interactions as cti
 from mxops.execution import token_management as tkm
 from mxops.execution.checks import Check, SuccessCheck, instanciate_checks
 from mxops.execution.msc import EsdtTransfer
@@ -68,8 +70,7 @@ class TransactionStep(Step):
     Represents a step that produce and send a transaction
     """
     sender: str
-    receiver: str
-    check_success: bool = True
+    checks: List[Check] = field(default_factory=lambda: [SuccessCheck()])
 
     def _create_builder(self) -> tx_builder.TransactionBuilder:
         """
@@ -80,23 +81,19 @@ class TransactionStep(Step):
         """
         raise NotImplementedError
 
-    def _post_transaction_execution(self, on_chain_tx: Optional[TransactionOnNetwork]):
+    def _post_transaction_execution(self, on_chain_tx: TransactionOnNetwork | None):
         """
         Interface for the function that will be executed after the transaction has
         been successfully executed
 
         :param on_chain_tx: on chain transaction that was sent by the Step
-        :type on_chain_tx: TransactionOnNetwork
+        :type on_chain_tx: TransactionOnNetwork | None
         """
-        pass
 
     def execute(self):
         """
-        Interface for the method to execute the action described by a Step instance.
-        Each child class must overrid this method
-
-        :raises NotImplementedError: if this method was not overriden
-        by a child class or directly executed.
+        Execute the workflow for a transaction Step: build, send, check
+        and post execute
         """
         sender_account = AccountsManager.get_account(self.sender)
         builder = self._create_builder()
@@ -105,9 +102,10 @@ class TransactionStep(Step):
         tx.signature = sender_account.signer.sign(tx)
         sender_account.nonce += 1
 
-        if self.check_success:
+        if len(self.checks) > 0:
             on_chain_tx = send_and_wait_for_result(tx)
-            raise_on_errors(on_chain_tx)
+            for check in self.checks:
+                check.raise_on_failure(on_chain_tx)
             LOGGER.info(f"Transaction successful: {get_tx_link(on_chain_tx.hash)}")
         else:
             on_chain_tx = None
@@ -155,12 +153,10 @@ class LoopStep(Step):
 
 
 @dataclass
-class ContractDeployStep(Step):
+class ContractDeployStep(TransactionStep):
     """
     Represents a smart contract deployment
     """
-
-    sender: Dict
     wasm_path: str
     contract_id: str
     gas_limit: int
@@ -168,11 +164,14 @@ class ContractDeployStep(Step):
     readable: bool = True
     payable: bool = False
     payable_by_sc: bool = False
-    arguments: List = field(default_factory=lambda: [])
+    arguments: List = field(default_factory=list)
 
-    def execute(self):
+    def _create_builder(self) -> tx_builder.TransactionBuilder:
         """
-        Execute a contract deployment
+        Create the builder for the contract deployment transaction
+
+        :return: builder of the transaction
+        :rtype: tx_builder.TransactionBuilder
         """
         LOGGER.info(f"Deploying contract {self.contract_id}")
         scenario_data = ScenarioData.get()
@@ -184,39 +183,55 @@ class ContractDeployStep(Step):
         except errors.UnknownContract:
             pass
 
-        # contruct the transaction
-        sender = AccountsManager.get_account(self.sender)
         metadata = CodeMetadata(
             self.upgradeable, self.readable, self.payable, self.payable_by_sc
         )
-        wasm_path = Path(self.wasm_path)
-        tx, contract = cti.get_contract_deploy_tx(
-            wasm_path, metadata, self.gas_limit, self.arguments, sender
-        )
-        on_chain_tx = send_and_wait_for_result(tx)
-        raise_on_errors(on_chain_tx)
-        sender.nonce += 1
-        LOGGER.info(
-            (
-                f"Deploy successful on {contract.address}"
-                f"\ntx hash: {get_tx_link(on_chain_tx.hash)}"
-            )
-        )
+        args = utils.retrieve_and_format_arguments(self.arguments)
+        print(args)
 
-        creation_timestamp = on_chain_tx.to_dictionary()["timestamp"]
+        builder = tx_builder.ContractDeploymentBuilder(
+            config=token_management_builders.get_builder_config(),
+            owner=utils.get_address_instance(self.sender),
+            deploy_arguments=args,
+            code_metadata=metadata,
+            code=Path(self.wasm_path).read_bytes(),
+            gas_limit=self.gas_limit
+        )
+        return builder
+
+    def _post_transaction_execution(self, on_chain_tx: TransactionOnNetwork | None):
+        """
+        Save the new contract data in the Scenario
+
+        :param on_chain_tx: successful deployment transaction
+        :type on_chain_tx: TransactionOnNetwork | None
+        """
+        if not isinstance(on_chain_tx, TransactionOnNetwork):
+            raise ValueError("On chain transaction is None")
+
+        scenario_data = ScenarioData.get()
+        contract_address = None
+        for event in on_chain_tx.logs.events:
+            if event.identifier == "SCDeploy":
+                hex_address = event.topics[0].hex()
+                contract_address = Address.from_hex(hex_address, hrp=DEFAULT_HRP)
+
+        if not isinstance(contract_address, Address):
+            raise errors.ParsingError(on_chain_tx, "contract deployment address")
+
         contract_data = InternalContractData(
             contract_id=self.contract_id,
-            address=contract.address.bech32(),
+            address=contract_address.bech32(),
             saved_values={},
-            wasm_hash=get_file_hash(wasm_path),
-            deploy_time=creation_timestamp,
-            last_upgrade_time=creation_timestamp,
+            wasm_hash=get_file_hash(Path(self.wasm_path)),
+            deploy_time=on_chain_tx.timestamp,
+            last_upgrade_time=on_chain_tx.timestamp,
         )
         scenario_data.add_contract_data(contract_data)
 
 
 @dataclass
-class ContractUpgradeStep(Step):
+class ContractUpgradeStep(TransactionStep):
     """
     Represents a smart contract upgrade
     """
@@ -224,7 +239,6 @@ class ContractUpgradeStep(Step):
     sender: Dict
     contract: str
     wasm_path: str
-    contract: str
     gas_limit: int
     upgradeable: bool = True
     readable: bool = True
@@ -232,51 +246,90 @@ class ContractUpgradeStep(Step):
     payable_by_sc: bool = False
     arguments: List = field(default_factory=lambda: [])
 
-    def execute(self):
+    def _create_builder(self) -> tx_builder.TransactionBuilder:
         """
-        Execute a contract deployment
+        Create the builder for the contract upgrade transaction
+
+        :return: builder of the transaction
+        :rtype: tx_builder.TransactionBuilder
         """
         LOGGER.info(f"Upgrading contract {self.contract}")
-        scenario_data = ScenarioData.get()
 
-        # contruct the transaction
-        sender = AccountsManager.get_account(self.sender)
         metadata = CodeMetadata(
             self.upgradeable, self.readable, self.payable, self.payable_by_sc
         )
-        wasm_path = Path(self.wasm_path)
-        tx = cti.get_contract_upgrade_tx(
-            self.contract, wasm_path, metadata, self.gas_limit, self.arguments, sender
-        )
-        on_chain_tx = send_and_wait_for_result(tx)
-        raise_on_errors(on_chain_tx)
-        sender.nonce += 1
-        LOGGER.info(f"Upgrade successful: {get_tx_link(on_chain_tx.hash)}")
+        args = utils.retrieve_and_format_arguments(self.arguments)
 
-        # update contract data
-        upgrade_timestamp = on_chain_tx.to_dictionary()["timestamp"]
+        builder = tx_builder.ContractUpgradeBuilder(
+            config=token_management_builders.get_builder_config(),
+            contract=utils.get_address_instance(self.contract),
+            owner=utils.get_address_instance(self.sender),
+            upgrade_arguments=args,
+            code_metadata=metadata,
+            code=Path(self.wasm_path).read_bytes(),
+            gas_limit=self.gas_limit
+        )
+        return builder
+
+    def _post_transaction_execution(self, on_chain_tx: TransactionOnNetwork | None):
+        """
+        Save the new contract data in the Scenario
+
+        :param on_chain_tx: successful upgrade transaction
+        :type on_chain_tx: TransactionOnNetwork | None
+        """
+        if not isinstance(on_chain_tx, TransactionOnNetwork):
+            raise ValueError("On chain transaction is None")
+
+        scenario_data = ScenarioData.get()
         try:
             scenario_data.set_contract_value(
-                self.contract, "last_upgrade_time", upgrade_timestamp
+                self.contract, "last_upgrade_time", on_chain_tx.timestamp
             )
         except errors.UnknownContract:  # any contract can be upgraded
             pass
 
 
 @dataclass
-class ContractCallStep(Step):
+class ContractCallStep(TransactionStep):
     """
     Represents a smart contract endpoint call
     """
-
-    sender: Dict
     contract: str
     endpoint: str
     gas_limit: int
     arguments: List = field(default_factory=lambda: [])
-    value: int = 0
+    value: int | str = 0
     esdt_transfers: List[EsdtTransfer] = field(default_factory=lambda: [])
-    checks: List[Check] = field(default_factory=lambda: [SuccessCheck()])
+
+    def _create_builder(self) -> tx_builder.TransactionBuilder:
+        """
+        Create the builder for the contract upgrade transaction
+
+        :return: builder of the transaction
+        :rtype: tx_builder.TransactionBuilder
+        """
+        LOGGER.info(f"Calling {self.endpoint} for {self.contract}")
+
+        args = utils.retrieve_and_format_arguments(self.arguments)
+        esdt_transfers = [
+            TokenPayment.meta_esdt_from_integer(utils.retrieve_value_from_string(trf.token_identifier),
+                                                utils.retrieve_value_from_any(trf.nonce),
+                                                utils.retrieve_value_from_any(trf.amount),
+                                                0) for trf in self.esdt_transfers]
+        value = utils.retrieve_value_from_any(self.value)
+
+        builder = tx_builder.ContractCallBuilder(
+            config=token_management_builders.get_builder_config(),
+            contract=utils.get_address_instance(self.contract),
+            caller=utils.get_address_instance(self.sender),
+            function_name=self.endpoint,
+            value=value,
+            call_arguments=args,
+            esdt_transfers=esdt_transfers,
+            gas_limit=self.gas_limit
+        )
+        return builder
 
     def __post_init__(self):
         """
@@ -298,52 +351,49 @@ class ContractCallStep(Step):
         if len(self.checks) > 0 and isinstance(self.checks[0], Dict):
             self.checks = instanciate_checks(self.checks)
 
-    def execute(self):
-        """
-        Execute a contract call
-        """
-        LOGGER.info(f"Calling {self.endpoint} for {self.contract}")
-        sender = AccountsManager.get_account(self.sender)
-
-        tx = cti.get_contract_call_tx(
-            self.contract,
-            self.endpoint,
-            self.gas_limit,
-            self.arguments,
-            self.value,
-            self.esdt_transfers,
-            sender,
-        )
-
-        if self.checks:
-            on_chain_tx = send_and_wait_for_result(tx)
-            for check in self.checks:
-                check.raise_on_failure(on_chain_tx)
-            LOGGER.info(f"Call successful: {get_tx_link(on_chain_tx.hash)}")
-        else:
-            tx_hash = send(tx)
-            LOGGER.info(f"Call sent: {get_tx_link(tx_hash)}")
-        sender.nonce += 1
-
 
 @dataclass
 class ContractQueryStep(Step):
     """
     Represents a smart contract query
     """
-
     contract: str
     endpoint: str
     arguments: List = field(default_factory=lambda: [])
     expected_results: List[Dict[str, str]] = field(default_factory=lambda: [])
     print_results: bool = False
 
+    def _interpret_return_data(self, data: str) -> str | QueryResult:
+        if not data:
+            return data
+
+        try:
+            as_bytes = base64.b64decode(data)
+            as_hex = as_bytes.hex()
+            try:
+                as_number = int(str(int(as_hex or "0", 16)))
+            except (ValueError, TypeError):
+                as_number = None
+            result = QueryResult(data, as_hex, as_number)
+            return result
+        except Exception as err:
+            raise errors.ParsingError(data, "QueryResult") from err
+
     def execute(self):
         """
         Execute a query and optionally save the result
         """
         LOGGER.info(f"Query on {self.endpoint} for {self.contract}")
+        config = Config.get_config()
         scenario_data = ScenarioData.get()
+        args = utils.retrieve_and_format_arguments(self.arguments)
+        builder = ContractQueryBuilder(
+            contract=utils.get_address_instance(self.contract),
+            function=self.endpoint,
+            call_arguments=args
+        )
+        query = builder.build()
+        proxy = ProxyNetworkProvider(config.get("PROXY"))
 
         results = []
         results_empty = True
@@ -351,7 +401,8 @@ class ContractQueryStep(Step):
         max_attempts = int(Config.get_config().get("MAX_QUERY_ATTEMPTS"))
         while results_empty and n_attempts < max_attempts:
             n_attempts += 1
-            results = cti.query_contract(self.contract, self.endpoint, self.arguments)
+            response = proxy.query_contract(query)
+            results = [self._interpret_return_data(resp) for resp in response.return_data]
             results_empty = (len(results) == 0 or
                              (len(results) == 1 and results[0] == ""))
             if results_empty:
@@ -377,12 +428,10 @@ class ContractQueryStep(Step):
 
 
 @dataclass
-class FungibleIssueStep(Step):
+class FungibleIssueStep(TransactionStep):
     """
     Represents the issuance of a fungible token
     """
-
-    sender: str
     token_name: str
     token_ticker: str
     initial_supply: int
@@ -396,39 +445,45 @@ class FungibleIssueStep(Step):
     can_upgrade: bool = False
     can_add_special_roles: bool = False
 
-    def execute(self):
+    def _create_builder(self) -> tx_builder.TransactionBuilder:
         """
-        Execute a fungible token issuance and save the token identifier of the
-        created token
+        Create the builder for the fungible issue transaction
+
+        :return: builder for the transaction
+        :rtype: tx_builder.TransactionBuilder
         """
         LOGGER.info(
-            (
-                f"Issuing fungible token named {self.token_name} "
-                f"for the account {self.sender}"
-            )
+            f"Issuing fungible token named {self.token_name} "
+            f" for the account {self.sender}"
         )
+        builder = token_management_builders.FungibleTokenIssueBuilder(
+            config=token_management_builders.get_builder_config(),
+            issuer=utils.get_address_instance(self.sender),
+            token_name=self.token_name,
+            token_ticker=self.token_ticker,
+            initial_supply=self.initial_supply,
+            num_decimals=self.num_decimals,
+            can_freeze=self.can_freeze,
+            can_wipe=self.can_wipe,
+            can_pause=self.can_pause,
+            can_mint=self.can_mint,
+            can_burn=self.can_burn,
+            can_change_owner=self.can_change_owner,
+            can_upgrade=self.can_upgrade,
+            can_add_special_roles=self.can_add_special_roles,
+        )
+        return builder
+
+    def _post_transaction_execution(self, on_chain_tx: TransactionOnNetwork | None):
+        """
+        Extract the newly issued token identifier and save it within the Scenario
+
+        :param on_chain_tx: successful transaction
+        :type on_chain_tx: TransactionOnNetwork | None
+        """
+        if not isinstance(on_chain_tx, TransactionOnNetwork):
+            raise ValueError("On chain transaction is None")
         scenario_data = ScenarioData.get()
-        sender = AccountsManager.get_account(self.sender)
-
-        tx = tkm.build_fungible_issue_tx(
-            sender,
-            self.token_name,
-            self.token_ticker,
-            self.initial_supply,
-            self.num_decimals,
-            self.can_freeze,
-            self.can_wipe,
-            self.can_pause,
-            self.can_mint,
-            self.can_change_owner,
-            self.can_upgrade,
-            self.can_add_special_roles,
-        )
-        on_chain_tx = send_and_wait_for_result(tx)
-        raise_on_errors(on_chain_tx)
-        sender.nonce += 1
-        LOGGER.info(f"Call successful: {get_tx_link(on_chain_tx.hash)}")
-
         token_identifier = tkm.extract_new_token_identifier(on_chain_tx)
         LOGGER.info(f"Newly issued token got the identifier {token_identifier}")
         scenario_data.add_token_data(
@@ -443,12 +498,10 @@ class FungibleIssueStep(Step):
 
 
 @dataclass
-class NonFungibleIssueStep(Step):
+class NonFungibleIssueStep(TransactionStep):
     """
     Represents the issuance of a non fungible token
     """
-
-    sender: str
     token_name: str
     token_ticker: str
     can_freeze: bool = False
@@ -461,36 +514,44 @@ class NonFungibleIssueStep(Step):
     can_add_special_roles: bool = False
     can_transfer_nft_create_role: bool = False
 
-    def execute(self):
+    def _create_builder(self) -> tx_builder.TransactionBuilder:
         """
-        Execute a non fungible token issuance and save the token identifier
-        of the created token
+        Create the builder for the non fungible issue transaction
+
+        :return: builder for the transaction
+        :rtype: tx_builder.TransactionBuilder
         """
         LOGGER.info(
             f"Issuing non fungible token named {self.token_name} "
             f" for the account {self.sender}"
         )
-        scenario_data = ScenarioData.get()
-        sender = AccountsManager.get_account(self.sender)
-
-        tx = tkm.build_non_fungible_issue_tx(
-            sender,
-            self.token_name,
-            self.token_ticker,
-            self.can_freeze,
-            self.can_wipe,
-            self.can_pause,
-            self.can_mint,
-            self.can_change_owner,
-            self.can_upgrade,
-            self.can_add_special_roles,
-            self.can_transfer_nft_create_role,
+        builder = token_management_builders.NonFungibleTokenIssueBuilder(
+            config=token_management_builders.get_builder_config(),
+            issuer=utils.get_address_instance(self.sender),
+            token_name=self.token_name,
+            token_ticker=self.token_ticker,
+            can_freeze=self.can_freeze,
+            can_wipe=self.can_wipe,
+            can_pause=self.can_pause,
+            can_mint=self.can_mint,
+            can_burn=self.can_burn,
+            can_change_owner=self.can_change_owner,
+            can_upgrade=self.can_upgrade,
+            can_add_special_roles=self.can_add_special_roles,
+            can_transfer_nft_create_role=self.can_add_special_roles
         )
-        on_chain_tx = send_and_wait_for_result(tx)
-        raise_on_errors(on_chain_tx)
-        sender.nonce += 1
-        LOGGER.info(f"Call successful: {get_tx_link(on_chain_tx.hash)}")
+        return builder
 
+    def _post_transaction_execution(self, on_chain_tx: TransactionOnNetwork | None):
+        """
+        Extract the newly issued token identifier and save it within the Scenario
+
+        :param on_chain_tx: successful transaction
+        :type on_chain_tx: TransactionOnNetwork | None
+        """
+        if not isinstance(on_chain_tx, TransactionOnNetwork):
+            raise ValueError("On chain transaction is None")
+        scenario_data = ScenarioData.get()
         token_identifier = tkm.extract_new_token_identifier(on_chain_tx)
         LOGGER.info(f"Newly issued token got the identifier {token_identifier}")
         scenario_data.add_token_data(
@@ -505,12 +566,10 @@ class NonFungibleIssueStep(Step):
 
 
 @dataclass
-class SemiFungibleIssueStep(Step):
+class SemiFungibleIssueStep(TransactionStep):
     """
     Represents the issuance of a semi fungible token
     """
-
-    sender: str
     token_name: str
     token_ticker: str
     can_freeze: bool = False
@@ -523,36 +582,44 @@ class SemiFungibleIssueStep(Step):
     can_add_special_roles: bool = False
     can_transfer_nft_create_role: bool = False
 
-    def execute(self):
+    def _create_builder(self) -> tx_builder.TransactionBuilder:
         """
-        Execute a semi fungible token issuance and save the token identifier
-        of the created token
+        Create the builder for the semi fungible issue transaction
+
+        :return: builder for the transaction
+        :rtype: tx_builder.TransactionBuilder
         """
         LOGGER.info(
             f"Issuing semi fungible token named {self.token_name} "
             f" for the account {self.sender}"
         )
-        scenario_data = ScenarioData.get()
-        sender = AccountsManager.get_account(self.sender)
-
-        tx = tkm.build_semi_fungible_issue_tx(
-            sender,
-            self.token_name,
-            self.token_ticker,
-            self.can_freeze,
-            self.can_wipe,
-            self.can_pause,
-            self.can_mint,
-            self.can_change_owner,
-            self.can_upgrade,
-            self.can_add_special_roles,
-            self.can_transfer_nft_create_role,
+        builder = token_management_builders.SemiFungibleTokenIssueBuilder(
+            config=token_management_builders.get_builder_config(),
+            issuer=utils.get_address_instance(self.sender),
+            token_name=self.token_name,
+            token_ticker=self.token_ticker,
+            can_freeze=self.can_freeze,
+            can_wipe=self.can_wipe,
+            can_pause=self.can_pause,
+            can_mint=self.can_mint,
+            can_burn=self.can_burn,
+            can_change_owner=self.can_change_owner,
+            can_upgrade=self.can_upgrade,
+            can_add_special_roles=self.can_add_special_roles,
+            can_transfer_nft_create_role=self.can_transfer_nft_create_role
         )
-        on_chain_tx = send_and_wait_for_result(tx)
-        raise_on_errors(on_chain_tx)
-        sender.nonce += 1
-        LOGGER.info(f"Call successful: {get_tx_link(on_chain_tx.hash)}")
+        return builder
 
+    def _post_transaction_execution(self, on_chain_tx: TransactionOnNetwork | None):
+        """
+        Extract the newly issued token identifier and save it within the Scenario
+
+        :param on_chain_tx: successful transaction
+        :type on_chain_tx: TransactionOnNetwork | None
+        """
+        if not isinstance(on_chain_tx, TransactionOnNetwork):
+            raise ValueError("On chain transaction is None")
+        scenario_data = ScenarioData.get()
         token_identifier = tkm.extract_new_token_identifier(on_chain_tx)
         LOGGER.info(f"Newly issued token got the identifier {token_identifier}")
         scenario_data.add_token_data(
@@ -567,12 +634,10 @@ class SemiFungibleIssueStep(Step):
 
 
 @dataclass
-class MetaIssueStep(Step):
+class MetaIssueStep(TransactionStep):
     """
     Represents the issuance of a meta fungible token
     """
-
-    sender: str
     token_name: str
     token_ticker: str
     num_decimals: int
@@ -586,36 +651,45 @@ class MetaIssueStep(Step):
     can_add_special_roles: bool = False
     can_transfer_nft_create_role: bool = False
 
-    def execute(self):
+    def _create_builder(self) -> tx_builder.TransactionBuilder:
         """
-        Execute a meta token issuance and save the token identifier of the created token
+        Create the builder for the meta issue transaction
+
+        :return: builder for the transaction
+        :rtype: tx_builder.TransactionBuilder
         """
         LOGGER.info(
-            f"Issuing meta fungible token named {self.token_name} "
+            f"Issuing meta token named {self.token_name} "
             f" for the account {self.sender}"
         )
-        scenario_data = ScenarioData.get()
-        sender = AccountsManager.get_account(self.sender)
-
-        tx = tkm.build_meta_issue_tx(
-            sender,
-            self.token_name,
-            self.token_ticker,
-            self.num_decimals,
-            self.can_freeze,
-            self.can_wipe,
-            self.can_pause,
-            self.can_mint,
-            self.can_change_owner,
-            self.can_upgrade,
-            self.can_add_special_roles,
-            self.can_transfer_nft_create_role,
+        builder = token_management_builders.MetaFungibleTokenIssueBuilder(
+            config=token_management_builders.get_builder_config(),
+            issuer=utils.get_address_instance(self.sender),
+            token_name=self.token_name,
+            token_ticker=self.token_ticker,
+            num_decimals=self.num_decimals,
+            can_freeze=self.can_freeze,
+            can_wipe=self.can_wipe,
+            can_pause=self.can_pause,
+            can_mint=self.can_mint,
+            can_burn=self.can_burn,
+            can_change_owner=self.can_change_owner,
+            can_upgrade=self.can_upgrade,
+            can_add_special_roles=self.can_add_special_roles,
+            can_transfer_nft_create_role=self.can_transfer_nft_create_role
         )
-        on_chain_tx = send_and_wait_for_result(tx)
-        raise_on_errors(on_chain_tx)
-        sender.nonce += 1
-        LOGGER.info(f"Call successful: {get_tx_link(on_chain_tx.hash)}")
+        return builder
 
+    def _post_transaction_execution(self, on_chain_tx: TransactionOnNetwork | None):
+        """
+        Extract the newly issued token identifier and save it within the Scenario
+
+        :param on_chain_tx: successful transaction
+        :type on_chain_tx: TransactionOnNetwork | None
+        """
+        if not isinstance(on_chain_tx, TransactionOnNetwork):
+            raise ValueError("On chain transaction is None")
+        scenario_data = ScenarioData.get()
         token_identifier = tkm.extract_new_token_identifier(on_chain_tx)
         LOGGER.info(f"Newly issued token got the identifier {token_identifier}")
         scenario_data.add_token_data(
@@ -624,7 +698,7 @@ class MetaIssueStep(Step):
                 ticker=self.token_ticker,
                 identifier=token_identifier,
                 saved_values={},
-                type=TokenTypeEnum.SEMI_FUNGIBLE,
+                type=TokenTypeEnum.META,
             )
         )
 
@@ -648,13 +722,6 @@ class ManageTokenRolesStep(Step):
         Execute a transaction to manage the roles of an address on a token
         """
 
-        config = Config.get_config()
-        builder_config = (
-            token_management_builders.MyDefaultTransactionBuildersConfiguration(
-                chain_id=config.get("CHAIN")
-            )
-        )
-
         sender = AccountsManager.get_account(self.sender)
         token_identifier = utils.retrieve_value_from_string(self.token_identifier)
         roles = utils.retrieve_values_from_strings(self.roles)
@@ -666,7 +733,7 @@ class ManageTokenRolesStep(Step):
         )
 
         builder = token_management_builders.ManageTokenRolesBuilder(
-            builder_config,
+            token_management_builders.get_builder_config(),
             sender.address,
             self.is_set,
             token_identifier,
@@ -755,12 +822,6 @@ class FungibleMintStep(Step):
         Execute a transaction to mint an additional supply for an already
         existing fungible token
         """
-        config = Config.get_config()
-        builder_config = (
-            token_management_builders.MyDefaultTransactionBuildersConfiguration(
-                chain_id=config.get("CHAIN")
-            )
-        )
 
         sender = AccountsManager.get_account(self.sender)
         token_identifier = utils.retrieve_value_from_string(self.token_identifier)
@@ -772,7 +833,11 @@ class FungibleMintStep(Step):
         )
 
         builder = token_management_builders.FungibleMintBuilder(
-            builder_config, sender.address, token_identifier, amount, nonce=sender.nonce
+            token_management_builders.get_builder_config(),
+            sender.address,
+            token_identifier,
+            amount,
+            nonce=sender.nonce
         )
         tx = builder.build()
         tx.signature = sender.signer.sign(tx)
@@ -804,12 +869,6 @@ class NonFungibleMintStep(Step):
         Execute a transaction to mint a new nonce for an already
         existing non fungible token
         """
-        config = Config.get_config()
-        builder_config = (
-            token_management_builders.MyDefaultTransactionBuildersConfiguration(
-                chain_id=config.get("CHAIN")
-            )
-        )
 
         sender = AccountsManager.get_account(self.sender)
         token_identifier = utils.retrieve_value_from_string(self.token_identifier)
@@ -821,7 +880,7 @@ class NonFungibleMintStep(Step):
         )
 
         builder = token_management_builders.NonFungibleMintBuilder(
-            builder_config,
+            token_management_builders.get_builder_config(),
             sender.address,
             token_identifier,
             amount,
@@ -849,6 +908,7 @@ class EgldTransferStep(TransactionStep):
     """
     This step is used to transfer some eGLD to an address
     """
+    receiver: str
     amount: Union[str, int]
 
     def _create_builder(self) -> tx_builder.TransactionBuilder:
@@ -858,17 +918,11 @@ class EgldTransferStep(TransactionStep):
         :return: builder of the transaction
         :rtype: tx_builder.TransactionBuilder
         """
-        config = Config.get_config()
-        builder_config = (
-            token_management_builders.MyDefaultTransactionBuildersConfiguration(
-                chain_id=config.get("CHAIN")
-            )
-        )
         amount = int(utils.retrieve_value_from_any(self.amount))
         payment = TokenPayment.egld_from_integer(amount)
 
         builder = tx_builder.EGLDTransferBuilder(
-            config=builder_config,
+            config=token_management_builders.get_builder_config(),
             sender=utils.get_address_instance(self.sender),
             receiver=utils.get_address_instance(self.receiver),
             payment=payment,
@@ -883,6 +937,7 @@ class FungibleTransferStep(TransactionStep):
     """
     This step is used to transfer some fungible ESDT to an address
     """
+    receiver: str
     token_identifier: str
     amount: Union[str, int]
 
@@ -893,18 +948,12 @@ class FungibleTransferStep(TransactionStep):
         :return: builder of the transaction
         :rtype: tx_builder.TransactionBuilder
         """
-        config = Config.get_config()
-        builder_config = (
-            token_management_builders.MyDefaultTransactionBuildersConfiguration(
-                chain_id=config.get("CHAIN")
-            )
-        )
         token_identifier = utils.retrieve_value_from_string(self.token_identifier)
         amount = int(utils.retrieve_value_from_any(self.amount))
         payment = TokenPayment.fungible_from_integer(token_identifier, amount, 0)
 
         builder = tx_builder.ESDTTransferBuilder(
-            config=builder_config,
+            config=token_management_builders.get_builder_config(),
             sender=utils.get_address_instance(self.sender),
             receiver=utils.get_address_instance(self.receiver),
             payment=payment,
@@ -921,6 +970,7 @@ class NonFungibleTransferStep(TransactionStep):
     """
     This step is used to transfer some non fungible ESDT to an address
     """
+    receiver: str
     token_identifier: str
     nonce: Union[str, int]
     amount: Union[str, int]
@@ -932,12 +982,6 @@ class NonFungibleTransferStep(TransactionStep):
         :return: builder of the transaction
         :rtype: tx_builder.TransactionBuilder
         """
-        config = Config.get_config()
-        builder_config = (
-            token_management_builders.MyDefaultTransactionBuildersConfiguration(
-                chain_id=config.get("CHAIN")
-            )
-        )
         token_identifier = utils.retrieve_value_from_string(self.token_identifier)
         nonce = int(utils.retrieve_value_from_any(self.nonce))
         amount = int(utils.retrieve_value_from_any(self.amount))
@@ -946,7 +990,7 @@ class NonFungibleTransferStep(TransactionStep):
         )
 
         builder = tx_builder.ESDTNFTTransferBuilder(
-            config=builder_config,
+            config=token_management_builders.get_builder_config(),
             sender=utils.get_address_instance(self.sender),
             destination=utils.get_address_instance(self.receiver),
             payment=payment,
@@ -964,6 +1008,7 @@ class MultiTransfersStep(TransactionStep):
     """
     This step is used to transfer multiple ESDTs to an address
     """
+    receiver: str
     transfers: List[EsdtTransfer]
 
     def __post_init__(self):
@@ -990,12 +1035,6 @@ class MultiTransfersStep(TransactionStep):
         :return: builder of the transaction
         :rtype: tx_builder.TransactionBuilder
         """
-        config = Config.get_config()
-        builder_config = (
-            token_management_builders.MyDefaultTransactionBuildersConfiguration(
-                chain_id=config.get("CHAIN")
-            )
-        )
         payments = [
             TokenPayment.meta_esdt_from_integer(
                 utils.retrieve_value_from_string(transfer.token_identifier),
@@ -1007,7 +1046,7 @@ class MultiTransfersStep(TransactionStep):
         ]
 
         builder = tx_builder.MultiESDTNFTTransferBuilder(
-            config=builder_config,
+            config=token_management_builders.get_builder_config(),
             sender=utils.get_address_instance(self.sender),
             destination=utils.get_address_instance(self.receiver),
             payments=payments,
