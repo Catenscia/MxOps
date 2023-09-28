@@ -6,6 +6,7 @@ This module contains the classes used to execute scenes in a scenario
 from __future__ import annotations
 import base64
 from dataclasses import dataclass, field
+from importlib.util import spec_from_file_location, module_from_spec
 import os
 from pathlib import Path
 import sys
@@ -1070,3 +1071,43 @@ def instanciate_steps(raw_steps: List[Dict]) -> List[Step]:
             raise errors.InvalidStepDefinition(step_type, raw_step) from err
         steps_list.append(step)
     return steps_list
+
+
+@dataclass
+class PythonStep(Step):
+    """
+    This Step execute a custom python function of the user
+    """
+    module_path: str
+    function: str
+    arguments: list = field(default_factory=list)
+    keyword_arguments: dict = field(default_factory=dict)
+
+    def execute(self):
+        """
+        Execute the specified function
+        """
+        module_path = Path(self.module_path)
+        module_name = module_path.stem
+        LOGGER.info(
+            f"Executing python function {self.function} from user module {module_name}"
+            )
+
+        # load module and function
+        spec = spec_from_file_location(
+            module_name,
+            module_path.as_posix()
+        )
+        user_module = module_from_spec(spec)
+        spec.loader.exec_module(user_module)
+        user_function = getattr(user_module, self.function)
+
+        # transform args and kwargs and execute
+        arguments = [utils.retrieve_value_from_any(arg) for arg in self.arguments]
+        keyword_arguments = {
+            key: utils.retrieve_value_from_any(val)
+            for key, val in self.keyword_arguments.items()
+        }
+        result = user_function(*arguments, **keyword_arguments)
+
+        LOGGER.info(f"Function result: {result}")
