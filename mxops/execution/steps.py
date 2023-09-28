@@ -14,7 +14,10 @@ from typing import ClassVar, Dict, List, Set, Union
 
 from multiversx_sdk_cli.contracts import QueryResult
 from multiversx_sdk_cli.constants import DEFAULT_HRP
-from multiversx_sdk_core import Address, TokenPayment, ContractQueryBuilder, CodeMetadata
+from multiversx_sdk_core import (Address,
+                                 TokenPayment,
+                                 ContractQueryBuilder,
+                                 CodeMetadata)
 from multiversx_sdk_core import transaction_builders as tx_builder
 from multiversx_sdk_core.serializer import arg_to_string
 from multiversx_sdk_network_providers import ProxyNetworkProvider
@@ -28,7 +31,7 @@ from mxops.execution.account import AccountsManager
 from mxops.execution import token_management as tkm
 from mxops.execution.checks import Check, SuccessCheck, instanciate_checks
 from mxops.execution.msc import EsdtTransfer
-from mxops.execution.network import raise_on_errors, send, send_and_wait_for_result
+from mxops.execution.network import send, send_and_wait_for_result
 from mxops.execution.utils import parse_query_result
 from mxops.utils.logger import get_logger
 from mxops.utils.msc import get_file_hash, get_tx_link
@@ -313,10 +316,12 @@ class ContractCallStep(TransactionStep):
 
         args = utils.retrieve_and_format_arguments(self.arguments)
         esdt_transfers = [
-            TokenPayment.meta_esdt_from_integer(utils.retrieve_value_from_string(trf.token_identifier),
-                                                utils.retrieve_value_from_any(trf.nonce),
-                                                utils.retrieve_value_from_any(trf.amount),
-                                                0) for trf in self.esdt_transfers]
+            TokenPayment.meta_esdt_from_integer(
+                utils.retrieve_value_from_string(trf.token_identifier),
+                utils.retrieve_value_from_any(trf.nonce),
+                utils.retrieve_value_from_any(trf.amount),
+                0) for trf in self.esdt_transfers
+        ]
         value = utils.retrieve_value_from_any(self.value)
 
         builder = tx_builder.ContractCallBuilder(
@@ -402,7 +407,7 @@ class ContractQueryStep(Step):
         while results_empty and n_attempts < max_attempts:
             n_attempts += 1
             response = proxy.query_contract(query)
-            results = [self._interpret_return_data(resp) for resp in response.return_data]
+            results = [self._interpret_return_data(rsp) for rsp in response.return_data]
             results_empty = (len(results) == 0 or
                              (len(results) == 1 and results[0] == ""))
             if results_empty:
@@ -704,50 +709,40 @@ class MetaIssueStep(TransactionStep):
 
 
 @dataclass
-class ManageTokenRolesStep(Step):
+class ManageTokenRolesStep(TransactionStep):
     """
     A base step to set or unset roles on a token.
     Can not be used on its own: on must use the child classes
     """
-
-    sender: str
     is_set: bool
     token_identifier: str
     target: str
     roles: List[str]
     ALLOWED_ROLES: ClassVar[Set] = set()
 
-    def execute(self):
+    def _create_builder(self) -> tx_builder.TransactionBuilder:
         """
-        Execute a transaction to manage the roles of an address on a token
-        """
+        Create the builder for the manage token roles transaction
 
-        sender = AccountsManager.get_account(self.sender)
+        :return: builder for the transaction
+        :rtype: tx_builder.TransactionBuilder
+        """
         token_identifier = utils.retrieve_value_from_string(self.token_identifier)
-        roles = utils.retrieve_values_from_strings(self.roles)
-        target = Address.from_bech32(utils.retrieve_value_from_string(self.target))
-
+        target = utils.get_address_instance(self.target)
         LOGGER.info(
-            f"Setting roles {self.roles} on the token {token_identifier}"
-            f" ({self.token_identifier}) for the address {target} ({self.target})"
+            f"Setting roles {self.roles} on the token {self.token_identifier}"
+            f" ({token_identifier}) for {self.target} ({target})"
         )
 
         builder = token_management_builders.ManageTokenRolesBuilder(
-            token_management_builders.get_builder_config(),
-            sender.address,
-            self.is_set,
-            token_identifier,
-            target,
-            roles,
-            nonce=sender.nonce,
+            config=token_management_builders.get_builder_config(),
+            sender=utils.get_address_instance(self.sender),
+            is_set=self.is_set,
+            token_identifier=token_identifier,
+            target=target,
+            roles=utils.retrieve_values_from_strings(self.roles),
         )
-        tx = builder.build()
-        tx.signature = sender.signer.sign(tx)
-        sender.nonce += 1
-
-        on_chain_tx = send_and_wait_for_result(tx)
-        raise_on_errors(on_chain_tx)
-        LOGGER.info(f"Call successful: {get_tx_link(on_chain_tx.hash)}")
+        return builder
 
     def __post_init__(self):
         for role in self.roles:
@@ -807,55 +802,42 @@ class ManageMetaTokenRolesStep(ManageSemiFungibleTokenRolesStep):
 
 
 @dataclass
-class FungibleMintStep(Step):
+class FungibleMintStep(TransactionStep):
     """
     This step is used to mint an additional supply for an already
     existing fungible token
     """
-
-    sender: str
     token_identifier: str
     amount: Union[str, int]
 
-    def execute(self):
+    def _create_builder(self) -> tx_builder.TransactionBuilder:
         """
-        Execute a transaction to mint an additional supply for an already
-        existing fungible token
-        """
+        Create the builder for the fungible mint transaction
 
-        sender = AccountsManager.get_account(self.sender)
+        :return: builder for the transaction
+        :rtype: tx_builder.TransactionBuilder
+        """
         token_identifier = utils.retrieve_value_from_string(self.token_identifier)
         amount = utils.retrieve_value_from_any(self.amount)
-
         LOGGER.info(
             f"Minting additional supply of {amount} ({self.amount}) for the token "
             f" {token_identifier} ({self.token_identifier})"
         )
-
         builder = token_management_builders.FungibleMintBuilder(
-            token_management_builders.get_builder_config(),
-            sender.address,
-            token_identifier,
-            amount,
-            nonce=sender.nonce
+            config=token_management_builders.get_builder_config(),
+            sender=utils.get_address_instance(self.sender),
+            token_identifier=token_identifier,
+            amount_as_integer=amount,
         )
-        tx = builder.build()
-        tx.signature = sender.signer.sign(tx)
-        sender.nonce += 1
-
-        on_chain_tx = send_and_wait_for_result(tx)
-        raise_on_errors(on_chain_tx)
-        LOGGER.info(f"Call successful: {get_tx_link(on_chain_tx.hash)}")
+        return builder
 
 
 @dataclass
-class NonFungibleMintStep(Step):
+class NonFungibleMintStep(TransactionStep):
     """
     This step is used to mint a new nonce for an already existing non fungible token.
     It can be used for NFTs, SFTs and Meta tokens.
     """
-
-    sender: str
     token_identifier: str
     amount: Union[str, int]
     name: str = ""
@@ -864,41 +846,41 @@ class NonFungibleMintStep(Step):
     attributes: str = ""
     uris: List[str] = field(default_factory=lambda: [])
 
-    def execute(self):
+    def _create_builder(self) -> tx_builder.TransactionBuilder:
         """
-        Execute a transaction to mint a new nonce for an already
-        existing non fungible token
-        """
+        Create the builder for the meta issue transaction
 
-        sender = AccountsManager.get_account(self.sender)
+        :return: builder for the transaction
+        :rtype: tx_builder.TransactionBuilder
+        """
         token_identifier = utils.retrieve_value_from_string(self.token_identifier)
         amount = utils.retrieve_value_from_any(self.amount)
-
         LOGGER.info(
             f"Minting new nonce with a supply of {amount} ({self.amount}) for the token"
             f" {token_identifier} ({self.token_identifier})"
         )
-
         builder = token_management_builders.NonFungibleMintBuilder(
-            token_management_builders.get_builder_config(),
-            sender.address,
-            token_identifier,
-            amount,
-            utils.retrieve_value_from_string(self.name),
-            utils.retrieve_value_from_any(self.royalties),
-            utils.retrieve_value_from_string(self.hash),
-            utils.retrieve_value_from_string(self.attributes),
-            utils.retrieve_values_from_strings(self.uris),
-            nonce=sender.nonce,
+            config=token_management_builders.get_builder_config(),
+            sender=utils.get_address_instance(self.sender),
+            token_identifier=token_identifier,
+            amount_as_integer=amount,
+            name=utils.retrieve_value_from_string(self.name),
+            royalties=utils.retrieve_value_from_any(self.royalties),
+            hash=utils.retrieve_value_from_string(self.hash),
+            attributes=utils.retrieve_value_from_string(self.attributes),
+            uris=utils.retrieve_values_from_strings(self.uris),
         )
-        tx = builder.build()
-        tx.signature = sender.signer.sign(tx)
-        sender.nonce += 1
+        return builder
 
-        on_chain_tx = send_and_wait_for_result(tx)
-        raise_on_errors(on_chain_tx)
-        LOGGER.info(f"Call successful: {get_tx_link(on_chain_tx.hash)}")
+    def _post_transaction_execution(self, on_chain_tx: TransactionOnNetwork | None):
+        """
+        Extract the newly issued nonce and print it
 
+        :param on_chain_tx: successful transaction
+        :type on_chain_tx: TransactionOnNetwork | None
+        """
+        if not isinstance(on_chain_tx, TransactionOnNetwork):
+            return
         new_nonce = tkm.extract_new_nonce(on_chain_tx)
         LOGGER.info(f"Newly issued nonce is {new_nonce}")
 
