@@ -9,6 +9,7 @@ elrond
 esdt
 ESDT
 ESDTmapper
+EsdtTransfer
 fn
 init
 localnet
@@ -24,6 +25,7 @@ NFT
 NFTs
 OptionalValue
 pem
+ProxyNetworkProvider
 sc
 SFT
 SFTs

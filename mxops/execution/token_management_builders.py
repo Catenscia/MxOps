@@ -104,7 +104,7 @@ class TokenIssueBuilder(TransactionBuilder):
 
 class FungibleTokenIssueBuilder(TokenIssueBuilder):
     """
-    Class to contruct a fungible issuance transaction
+    Class to construct a fungible issuance transaction
     This class should be included to multiversx_sdk_core.transaction_builders
     """
 
@@ -167,7 +167,7 @@ class FungibleTokenIssueBuilder(TokenIssueBuilder):
 
 class NonFungibleTokenIssueBuilder(TokenIssueBuilder):
     """
-    Class to contruct a non fungible issuance transaction
+    Class to construct a non fungible issuance transaction
     This class should be included to multiversx_sdk_core.transaction_builders
     """
 
@@ -226,7 +226,7 @@ class NonFungibleTokenIssueBuilder(TokenIssueBuilder):
 
 class SemiFungibleTokenIssueBuilder(TokenIssueBuilder):
     """
-    Class to contruct a semi fungible issuance transaction
+    Class to construct a semi fungible issuance transaction
     This class should be included to multiversx_sdk_core.transaction_builders
     """
 
@@ -285,7 +285,7 @@ class SemiFungibleTokenIssueBuilder(TokenIssueBuilder):
 
 class MetaFungibleTokenIssueBuilder(TokenIssueBuilder):
     """
-    Class to contruct a meta issuance transaction
+    Class to construct a meta issuance transaction
     This class should be included to multiversx_sdk_core.transaction_builders
     """
 
@@ -351,7 +351,8 @@ class IESDTRolesConfiguration(ITransactionBuilderConfiguration, Protocol):
 
 class ManageTokenRolesBuilder(TransactionBuilder):
     """
-    class to contruct the transaction to set or unset roles for an address on an account
+    Class to construct the transaction to set or unset roles
+    for an address on an account
     """
 
     def __init__(

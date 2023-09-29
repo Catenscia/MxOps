@@ -7,6 +7,7 @@
 - Checkpoints for `Scenario`
 - `ContractUpgradeStep`
 - Auto retry for empty query results
+- python step class
 
 ### Changed
 

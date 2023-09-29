@@ -40,6 +40,7 @@ If you are new here, we recommend going first to the :doc:`getting_started/prese
    examples/presentation
    examples/piggy_bank
    examples/wrapping
+   examples/python_steps
 
 .. toctree::
    :maxdepth: 1
