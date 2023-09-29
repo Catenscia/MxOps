@@ -368,10 +368,11 @@ class ContractQueryStep(Step):
     arguments: List = field(default_factory=lambda: [])
     expected_results: List[Dict[str, str]] = field(default_factory=lambda: [])
     print_results: bool = False
+    results: List[QueryResult] | None = field(init=False, default=None)
 
-    def _interpret_return_data(self, data: str) -> str | QueryResult:
+    def _interpret_return_data(self, data: str) -> QueryResult:
         if not data:
-            return data
+            return QueryResult('', '', None)
 
         try:
             as_bytes = base64.b64decode(data)
@@ -401,29 +402,29 @@ class ContractQueryStep(Step):
         query = builder.build()
         proxy = ProxyNetworkProvider(config.get("PROXY"))
 
-        results = []
         results_empty = True
         n_attempts = 0
         max_attempts = int(Config.get_config().get("MAX_QUERY_ATTEMPTS"))
         while results_empty and n_attempts < max_attempts:
             n_attempts += 1
             response = proxy.query_contract(query)
-            results = [self._interpret_return_data(rsp) for rsp in response.return_data]
-            results_empty = (len(results) == 0 or
-                             (len(results) == 1 and results[0] == ""))
+            self.results = [
+                self._interpret_return_data(data) for data in response.return_data
+            ]
+            results_empty = (len(self.results) == 0 or
+                             (len(self.results) == 1 and self.results[0] == ""))
             if results_empty:
                 time.sleep(3)
                 LOGGER.warning(
                     f'Empty query result, retrying. Attempt {n_attempts}/{max_attempts}'
                 )
-
         if results_empty:
             raise errors.EmptyQueryResults
         if self.print_results:
-            print(results)
+            print(self.results)
         if len(self.expected_results) > 0:
             LOGGER.info("Saving Query results as contract data")
-            for result, expected_result in zip(results, self.expected_results):
+            for result, expected_result in zip(self.results, self.expected_results):
                 parsed_result = parse_query_result(
                     result, expected_result["result_type"]
                 )
@@ -1109,5 +1110,13 @@ class PythonStep(Step):
             for key, val in self.keyword_arguments.items()
         }
         result = user_function(*arguments, **keyword_arguments)
+
+        if result:
+            if isinstance(result, str):
+                var_name = f"MXOPS_{self.function.upper()}_RESULT"
+                os.environ[var_name] = result
+            else:
+                LOGGER.warning(f"The result of the function {self.function} is not a "
+                               "string and has not been saved")
 
         LOGGER.info(f"Function result: {result}")
