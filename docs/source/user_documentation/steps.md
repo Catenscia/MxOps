@@ -6,6 +6,59 @@ In other words, a `Scene` contains a series of `Steps` that tells what `MxOps` s
 Several type of `Steps` exists, to allow users to easily construct complex `Scenes`.
 If you feel something is missing, please make a suggestion in the [github](https://github.com/Catenscia/MxOps/discussions/categories/ideas)!
 
+## Transfer Steps
+
+### EGLD Transfer Step
+
+This step is used to transfer eGLD from an address to another
+
+```yaml
+type: EgldTransfer
+sender: bob
+receiver: alice # you can also write bech32 address here
+amount: 7895651689
+```
+
+### Fungible Transfer Step
+
+This step is used to transfer classic (fungible) ESDT from an address to another
+
+```yaml
+type: FungibleTransfer
+sender: bob
+receiver: alice
+token_identifier: "MYTOK-a123ec"
+amount: 7895651689
+```
+
+### Non Fungible Transfer Step
+
+This step is used to transfer a NFT, some SFT or some Meta ESDT from an address to another
+
+```yaml
+type: NonFungibleTransfer
+sender: bob
+receiver: alice
+token_identifier: "MTESDT-a123ec"
+nonce: 4
+amount: 65481 # 1 for NFT
+```
+
+### Multi Transfers Step
+
+```yaml
+type: MutliTransfers
+sender: bob
+receiver: alice
+transfers:
+  - token_identifier: "MYSFT-a123ec"
+    amount: 25
+    nonce: 4
+  - token_identifier: "FUNG-a123ec"
+    amount: 87941198416
+    nonce: 0 # 0 for fungible ESDT
+```
+
 ## Contract Steps
 
 ### Contract Deploy Step
@@ -367,53 +420,39 @@ steps: [...]
 You will notice that some symbols are used in the arguments of the above `ContractCall`. These are here to dynamically fetch values from different sources.
 Heads up to the {doc}`values` section for more information.
 
-## EGLD Transfer Step
 
-This step is used to transfer eGLD from an address to another
+### Python Step
+
+This steps allows to execute a custom python function. You can execute whatever you want in the python function. This `Step` is here to give you maximum flexibility, making `MxOps` suitable for all the needs of you project. Here are some basic use case for the python `Step`:
+  - complex calculation (results can be saved as `MxOps` or environment values)
+  - complex query parsing
+  - randomness generation
+  - third party calls (databases, API ...)
+
+For the function, the user can provide raw arguments or can use the MxOps values format.
+If the python function return a string, it will be saved as an environment variable under the name `MXOPS_<UPPER_FUNC_NAME>_RESULT`.
 
 ```yaml
-type: EgldTransfer
-sender: bob
-receiver: alice # you can also write bech32 address here
-amount: 7895651689
+type: Python
+module_path: ./folder/my_module.py
+function: my_function
+arguments:  # optional
+  - arg1
+  - "%my_contract%query_result"  # using MxOps value
+keyword_arguments:  # optional
+  key_1: value_1
+  key_2: "$VALUE"  # using os env var
 ```
 
-## Fungible Transfer Step
-
-This step is used to transfer classic (fungible) ESDT from an address to another
-
-```yaml
-type: FungibleTransfer
-sender: bob
-receiver: alice
-token_identifier: "MYTOK-a123ec"
-amount: 7895651689
+The above `Step` will execute the function `my_function`, located at `./folder/my_module.py` that would look like this:
+```python
+def my_function(arg_1, arg2, key_1, key_2):
+    # execute anything here
+    return result  # optionally return a string result
 ```
 
-## Non Fungible Transfer Step
+You can find examples of python `Steps` in this {doc}`section<../examples/python_steps>`.
 
-This step is used to transfer a NFT, some SFT or some Meta ESDT from an address to another
-
-```yaml
-type: NonFungibleTransfer
-sender: bob
-receiver: alice
-token_identifier: "MTESDT-a123ec"
-nonce: 4
-amount: 65481 # 1 for NFT
-```
-
-## Multi Transfers Step
-
-```yaml
-type: MutliTransfers
-sender: bob
-receiver: alice
-transfers:
-  - token_identifier: "MYSFT-a123ec"
-    amount: 25
-    nonce: 4
-  - token_identifier: "FUNG-a123ec"
-    amount: 87941198416
-    nonce: 0 # 0 for fungible ESDT
+```{warning}
+MxOps is completely permissive and lets you do anything you want in the python `Step`, including changing the behavior of MxOps itself. Test everything you do on localnet and devnet before taking any action on mainnet.
 ```

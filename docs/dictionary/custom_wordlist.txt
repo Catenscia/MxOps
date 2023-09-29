@@ -1,5 +1,8 @@
+api
 AppDir
 AppFolder
+arg
+backend
 blockchain
 blockchains
 ChangeLog
@@ -10,14 +13,18 @@ customization
 customizations
 DevOps
 env
+environ
 json
 https
+os
 png
 PyPI
 pytest
 Readthedocs
 yaml
 svg
+str
+utils
 Flaticon
 reusability
 SBTS
