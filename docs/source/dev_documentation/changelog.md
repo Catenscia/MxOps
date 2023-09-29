@@ -8,6 +8,11 @@
 - `ContractUpgradeStep`
 - Auto retry for empty query results
 
+### Changed
+
+- 🚨 BREAKING CHANGE 🚨 `checks` attribute has been given for all `TransactionStep`, sometimes replacing `check_success`
+
+
 ### Fixed
 
 - Bug with the `skip confirmation` CLI command
