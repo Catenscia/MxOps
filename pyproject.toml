@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mxops"
-version = "1.2.0-dev2"
+version = "2.0.0-dev0"
 authors = [
   {name="Etienne Wallet"},
 ]
@@ -17,12 +17,14 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 dynamic = ["dependencies"]
 
 [project.scripts]
 mxops = "mxops.__main__:main"
 
+[project.urls]
+"Homepage" = "https://github.com/Catenscia/MxOps"
 
 [tool.setuptools.packages.find]
 where = ["."]
@@ -35,6 +37,8 @@ namespaces = false
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
 
-
-[project.urls]
-"Homepage" = "https://github.com/Catenscia/MxOps"
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore:ssl.PROTOCOL_TLS is deprecated:DeprecationWarning",
+    "ignore:ssl.match_hostname\\(\\) is deprecated:DeprecationWarning",
+]

@@ -1,10 +1,10 @@
-# Contract Call Checks
+# Transaction Checks
 
-When executing a smart-contract call, you may want to assert that everything went as you desired.
+When executing a `Step` that send a blockchain transaction, you may want to assert that everything went as you desired.
 `MxOps` provides you a way to do so: `Checks` are additional information you can provide when
-declaring a `ContractCallStep`.
+declaring a `Step`.
 
-If any `Check` your specified is not successful, it will stop the execution of `MxOps`
+If any of the `Checks` you specified is not successful, it will stop the execution of `MxOps`
 and raise an error.
 
 At the moment, only two types of `Checks` exists: `SuccessCheck` and `TransfersCheck`. We plan
@@ -13,7 +13,7 @@ on adding more types in the future such as `BalanceCheck`, `ErrorCheck`,
 
 ## SuccessCheck
 
-This is the most simple `Check` and is included by default on every `ContractCall`. This will verify
+This is the most simple `Check` and is included by default on every transaction `Step`. This will verify
 that the transaction went without any error.
 
 If you use the `checks` keywords, make sure to add the `SuccessCheck` like this:

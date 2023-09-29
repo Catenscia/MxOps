@@ -176,7 +176,7 @@ def retrieve_value_from_any(arg: Any) -> Any:
 
 def format_tx_arguments(arguments: List[Any]) -> List[Any]:
     """
-    Transform the arguments so they can be recognised by mxpy
+    Transform the arguments so they can be recognised by multiversx sdk core
 
     :param arguments: list of arguments to be supplied to a endpoint
     :type arguments: List[Any]
@@ -185,21 +185,30 @@ def format_tx_arguments(arguments: List[Any]) -> List[Any]:
     """
     formated_arguments = []
     for arg in arguments:
-        if isinstance(
-            arg, str
-        ):  # done a first time as int arg can be entered as string
+        # convert a first time as int arg can be entered as string
+        if isinstance(arg, str):
             arg = retrieve_value_from_string(arg)
         formated_arg = arg
         if isinstance(arg, str):
             if arg.startswith("erd") and len(arg) == 62:
-                formated_arg = "0x" + Address.from_bech32(arg).hex()
-            elif not arg.startswith("0x"):
-                formated_arg = "str:" + arg
-        elif isinstance(arg, Address):
-            formated_arg = "0x" + arg.hex()
-
+                formated_arg = Address.from_bech32(arg)
         formated_arguments.append(formated_arg)
     return formated_arguments
+
+
+def retrieve_and_format_arguments(arguments: List[Any]) -> List[Any]:
+    """
+    Retrieve the MxOps value of the arguments if necessary and transform them
+    to match multiversx sdk core format
+
+    :param arguments: lisf of arguments to be supplied
+    :type arguments: List[Any]
+    :return: format args
+    :rtype: List[Any]
+    """
+    return format_tx_arguments([
+        retrieve_value_from_any(arg) for arg in arguments
+    ])
 
 
 def get_contract_instance(contract_str: str) -> SmartContract:

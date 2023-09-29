@@ -30,6 +30,8 @@ from multiversx_sdk_core.transaction_builders import (
     DefaultTransactionBuildersConfiguration,
 )
 
+from mxops.config.config import Config
+
 
 @dataclass
 class MyDefaultTransactionBuildersConfiguration(
@@ -487,3 +489,16 @@ class NonFungibleMintBuilder(TransactionBuilder):
             arg_to_string(self.attributes),
             *formatted_uris,
         ]
+
+
+def get_builder_config() -> DefaultTransactionBuildersConfiguration:
+    """
+    Return an instance of the config for the builder
+
+    :return: config for the builder
+    :rtype: DefaultTransactionBuildersConfiguration
+    """
+    config = Config.get_config()
+    return MyDefaultTransactionBuildersConfiguration(
+            chain_id=config.get("CHAIN")
+        )
