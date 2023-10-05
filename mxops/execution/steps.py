@@ -514,8 +514,6 @@ class NonFungibleIssueStep(TransactionStep):
     can_freeze: bool = False
     can_wipe: bool = False
     can_pause: bool = False
-    can_mint: bool = False
-    can_burn: bool = False
     can_change_owner: bool = False
     can_upgrade: bool = False
     can_add_special_roles: bool = False
@@ -582,8 +580,6 @@ class SemiFungibleIssueStep(TransactionStep):
     can_freeze: bool = False
     can_wipe: bool = False
     can_pause: bool = False
-    can_mint: bool = False
-    can_burn: bool = False
     can_change_owner: bool = False
     can_upgrade: bool = False
     can_add_special_roles: bool = False
@@ -651,8 +647,6 @@ class MetaIssueStep(TransactionStep):
     can_freeze: bool = False
     can_wipe: bool = False
     can_pause: bool = False
-    can_mint: bool = False
-    can_burn: bool = False
     can_change_owner: bool = False
     can_upgrade: bool = False
     can_add_special_roles: bool = False
