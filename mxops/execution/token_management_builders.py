@@ -180,8 +180,6 @@ class NonFungibleTokenIssueBuilder(TokenIssueBuilder):
         can_freeze: bool = False,
         can_wipe: bool = False,
         can_pause: bool = False,
-        can_mint: bool = False,
-        can_burn: bool = False,
         can_change_owner: bool = False,
         can_upgrade: bool = False,
         can_add_special_roles: bool = False,
@@ -200,8 +198,6 @@ class NonFungibleTokenIssueBuilder(TokenIssueBuilder):
         self.can_freeze = can_freeze
         self.can_wipe = can_wipe
         self.can_pause = can_pause
-        self.can_mint = can_mint
-        self.can_burn = can_burn
         self.can_change_owner = can_change_owner
         self.can_upgrade = can_upgrade
         self.can_add_special_roles = can_add_special_roles
@@ -215,8 +211,6 @@ class NonFungibleTokenIssueBuilder(TokenIssueBuilder):
             "canFreeze": self.can_freeze,
             "canWipe": self.can_wipe,
             "canPause": self.can_pause,
-            "canMint": self.can_mint,
-            "canBurn": self.can_burn,
             "canChangeOwner": self.can_change_owner,
             "canUpgrade": self.can_upgrade,
             "canAddSpecialRoles": self.can_add_special_roles,
@@ -239,8 +233,6 @@ class SemiFungibleTokenIssueBuilder(TokenIssueBuilder):
         can_freeze: bool = False,
         can_wipe: bool = False,
         can_pause: bool = False,
-        can_mint: bool = False,
-        can_burn: bool = False,
         can_change_owner: bool = False,
         can_upgrade: bool = False,
         can_add_special_roles: bool = False,
@@ -259,8 +251,6 @@ class SemiFungibleTokenIssueBuilder(TokenIssueBuilder):
         self.can_freeze = can_freeze
         self.can_wipe = can_wipe
         self.can_pause = can_pause
-        self.can_mint = can_mint
-        self.can_burn = can_burn
         self.can_change_owner = can_change_owner
         self.can_upgrade = can_upgrade
         self.can_add_special_roles = can_add_special_roles
@@ -274,8 +264,6 @@ class SemiFungibleTokenIssueBuilder(TokenIssueBuilder):
             "canFreeze": self.can_freeze,
             "canWipe": self.can_wipe,
             "canPause": self.can_pause,
-            "canMint": self.can_mint,
-            "canBurn": self.can_burn,
             "canChangeOwner": self.can_change_owner,
             "canUpgrade": self.can_upgrade,
             "canAddSpecialRoles": self.can_add_special_roles,
@@ -299,8 +287,6 @@ class MetaFungibleTokenIssueBuilder(TokenIssueBuilder):
         can_freeze: bool = False,
         can_wipe: bool = False,
         can_pause: bool = False,
-        can_mint: bool = False,
-        can_burn: bool = False,
         can_change_owner: bool = False,
         can_upgrade: bool = False,
         can_add_special_roles: bool = False,
@@ -320,8 +306,6 @@ class MetaFungibleTokenIssueBuilder(TokenIssueBuilder):
         self.can_freeze = can_freeze
         self.can_wipe = can_wipe
         self.can_pause = can_pause
-        self.can_mint = can_mint
-        self.can_burn = can_burn
         self.can_change_owner = can_change_owner
         self.can_upgrade = can_upgrade
         self.can_add_special_roles = can_add_special_roles
@@ -335,8 +319,6 @@ class MetaFungibleTokenIssueBuilder(TokenIssueBuilder):
             "canFreeze": self.can_freeze,
             "canWipe": self.can_wipe,
             "canPause": self.can_pause,
-            "canMint": self.can_mint,
-            "canBurn": self.can_burn,
             "canChangeOwner": self.can_change_owner,
             "canUpgrade": self.can_upgrade,
             "canAddSpecialRoles": self.can_add_special_roles,
