@@ -33,7 +33,7 @@ def test_fungible_issue_payload():
         b"@0f4240"
         b"@03"
         b"@63616e5061757365@74727565"
-        b"@63616e55706772616465@74727565"
+        b"@63616e4164645370656369616c526f6c6573@66616c7365"
     )
 
 
@@ -59,7 +59,7 @@ def test_non_fungible_issue_payload():
         b"issueNonFungible"
         b"@4d79546f6b656e"
         b"@4d544b"
-        b"@63616e55706772616465@74727565"
+        b"@63616e4164645370656369616c526f6c6573@66616c7365"
         b"@63616e5472616e736665724e4654437265617465526f6c65@74727565"
     )
 
@@ -74,8 +74,7 @@ def test_semi_fungible_issue_payload():
         ),
         "MyToken",
         "MTK",
-        can_burn=True,
-        can_upgrade=True,
+        can_add_special_roles=True,
         can_transfer_nft_create_role=True,
     )
 
@@ -87,8 +86,7 @@ def test_semi_fungible_issue_payload():
         b"issueSemiFungible"
         b"@4d79546f6b656e"
         b"@4d544b"
-        b"@63616e4275726e@74727565"
-        b"@63616e55706772616465@74727565"
+        b"@63616e55706772616465@66616c7365"
         b"@63616e5472616e736665724e4654437265617465526f6c65@74727565"
     )
 
@@ -104,7 +102,6 @@ def test_meta_fungible_issue_payload():
         "MyToken",
         "MTK",
         3,
-        can_burn=True,
         can_upgrade=True,
         can_transfer_nft_create_role=True,
     )
@@ -118,8 +115,7 @@ def test_meta_fungible_issue_payload():
         b"@4d79546f6b656e"
         b"@4d544b"
         b"@03"
-        b"@63616e4275726e@74727565"
-        b"@63616e55706772616465@74727565"
+        b"@63616e4164645370656369616c526f6c6573@66616c7365"
         b"@63616e5472616e736665724e4654437265617465526f6c65@74727565"
     )
 

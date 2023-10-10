@@ -126,7 +126,7 @@ class Config:
             if os.path.exists(path):
                 return path
             raise ValueError(
-                ("MXOPS_CONFIG env var does not direct" " to an existing path")
+                "MXOPS_CONFIG env var does not direct" " to an existing path"
             )
 
         # then check if a config file is present in the working directory
@@ -159,7 +159,7 @@ def dump_default_config():
     """
     dump_path = Path("./mxops_config.ini")
     if os.path.exists(dump_path.as_posix()):
-        raise RuntimeError(("A config file already exists" " in the working directory"))
+        raise RuntimeError("A config file already exists" " in the working directory")
 
     default_config = files("mxops.resources").joinpath("default_config.ini")
 

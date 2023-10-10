@@ -37,7 +37,7 @@ from mxops.config.config import Config
 class MyDefaultTransactionBuildersConfiguration(
     DefaultTransactionBuildersConfiguration
 ):
-    """_
+    """
     Extend the default configuration of multiversx_sdk_core with more parameters
     """
 
@@ -50,6 +50,8 @@ class TokenIssueBuilder(TransactionBuilder):
     """
     Base class to construct a token issuance transaction
     """
+
+    TRUE_BY_DEFAULT_PROPERTIES = ("canUpgrade", "canAddSpecialRoles")
 
     def __init__(
         self,
@@ -81,19 +83,21 @@ class TokenIssueBuilder(TransactionBuilder):
     def get_token_properties(self) -> Dict:
         pass
 
-    def get_active_token_properties(self) -> List:
-        """
-        Return the names of the properties that are active on the token
-
-        :return: names of the active properties
-        :rtype: List
-        """
-        return [prop for prop, value in self.get_token_properties().items() if value]
-
     def _build_payload_parts(self) -> List[str]:
-        properties_args = [
-            (prop, "true") for prop in self.get_active_token_properties()
-        ]
+        """
+        build the payload parts for the transaction
+
+        :return: payload parts
+        :rtype: List[str]
+        """
+        properties_args = []
+        for prop, value in self.get_token_properties().items():
+            if prop in self.TRUE_BY_DEFAULT_PROPERTIES:
+                if not value:
+                    properties_args.append((prop, "false"))
+                continue
+            if value:
+                properties_args.append((prop, "true"))
         chained_properties_args = list(itertools.chain(*properties_args))
         return [
             self.issuance_endpoint,
@@ -180,8 +184,6 @@ class NonFungibleTokenIssueBuilder(TokenIssueBuilder):
         can_freeze: bool = False,
         can_wipe: bool = False,
         can_pause: bool = False,
-        can_mint: bool = False,
-        can_burn: bool = False,
         can_change_owner: bool = False,
         can_upgrade: bool = False,
         can_add_special_roles: bool = False,
@@ -200,8 +202,6 @@ class NonFungibleTokenIssueBuilder(TokenIssueBuilder):
         self.can_freeze = can_freeze
         self.can_wipe = can_wipe
         self.can_pause = can_pause
-        self.can_mint = can_mint
-        self.can_burn = can_burn
         self.can_change_owner = can_change_owner
         self.can_upgrade = can_upgrade
         self.can_add_special_roles = can_add_special_roles
@@ -215,8 +215,6 @@ class NonFungibleTokenIssueBuilder(TokenIssueBuilder):
             "canFreeze": self.can_freeze,
             "canWipe": self.can_wipe,
             "canPause": self.can_pause,
-            "canMint": self.can_mint,
-            "canBurn": self.can_burn,
             "canChangeOwner": self.can_change_owner,
             "canUpgrade": self.can_upgrade,
             "canAddSpecialRoles": self.can_add_special_roles,
@@ -239,8 +237,6 @@ class SemiFungibleTokenIssueBuilder(TokenIssueBuilder):
         can_freeze: bool = False,
         can_wipe: bool = False,
         can_pause: bool = False,
-        can_mint: bool = False,
-        can_burn: bool = False,
         can_change_owner: bool = False,
         can_upgrade: bool = False,
         can_add_special_roles: bool = False,
@@ -259,8 +255,6 @@ class SemiFungibleTokenIssueBuilder(TokenIssueBuilder):
         self.can_freeze = can_freeze
         self.can_wipe = can_wipe
         self.can_pause = can_pause
-        self.can_mint = can_mint
-        self.can_burn = can_burn
         self.can_change_owner = can_change_owner
         self.can_upgrade = can_upgrade
         self.can_add_special_roles = can_add_special_roles
@@ -274,8 +268,6 @@ class SemiFungibleTokenIssueBuilder(TokenIssueBuilder):
             "canFreeze": self.can_freeze,
             "canWipe": self.can_wipe,
             "canPause": self.can_pause,
-            "canMint": self.can_mint,
-            "canBurn": self.can_burn,
             "canChangeOwner": self.can_change_owner,
             "canUpgrade": self.can_upgrade,
             "canAddSpecialRoles": self.can_add_special_roles,
@@ -299,8 +291,6 @@ class MetaFungibleTokenIssueBuilder(TokenIssueBuilder):
         can_freeze: bool = False,
         can_wipe: bool = False,
         can_pause: bool = False,
-        can_mint: bool = False,
-        can_burn: bool = False,
         can_change_owner: bool = False,
         can_upgrade: bool = False,
         can_add_special_roles: bool = False,
@@ -320,8 +310,6 @@ class MetaFungibleTokenIssueBuilder(TokenIssueBuilder):
         self.can_freeze = can_freeze
         self.can_wipe = can_wipe
         self.can_pause = can_pause
-        self.can_mint = can_mint
-        self.can_burn = can_burn
         self.can_change_owner = can_change_owner
         self.can_upgrade = can_upgrade
         self.can_add_special_roles = can_add_special_roles
@@ -335,8 +323,6 @@ class MetaFungibleTokenIssueBuilder(TokenIssueBuilder):
             "canFreeze": self.can_freeze,
             "canWipe": self.can_wipe,
             "canPause": self.can_pause,
-            "canMint": self.can_mint,
-            "canBurn": self.can_burn,
             "canChangeOwner": self.can_change_owner,
             "canUpgrade": self.can_upgrade,
             "canAddSpecialRoles": self.can_add_special_roles,
@@ -500,6 +486,4 @@ def get_builder_config() -> DefaultTransactionBuildersConfiguration:
     :rtype: DefaultTransactionBuildersConfiguration
     """
     config = Config.get_config()
-    return MyDefaultTransactionBuildersConfiguration(
-            chain_id=config.get("CHAIN")
-        )
+    return MyDefaultTransactionBuildersConfiguration(chain_id=config.get("CHAIN"))

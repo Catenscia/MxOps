@@ -6,12 +6,10 @@ from mxops.execution.steps import PythonStep
 def test_python_step():
     # Given
     scenario_data = ScenarioData.get()
-    module_path = './tests/data/custom_user_module.py'
-    function = 'set_contract_value'
+    module_path = "./tests/data/custom_user_module.py"
+    function = "set_contract_value"
     step_1 = PythonStep(
-        module_path,
-        function,
-        ["my_test_contract", "my_test_key", "my_test_value"]
+        module_path, function, ["my_test_contract", "my_test_key", "my_test_value"]
     )
 
     step_2 = PythonStep(
@@ -20,8 +18,8 @@ def test_python_step():
         keyword_arguments={
             "contract_id": "my_test_contract",
             "value_key": "my_test_key",
-            "value": 4582
-        }
+            "value": 4582,
+        },
     )
 
     # When

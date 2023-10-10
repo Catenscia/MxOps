@@ -15,10 +15,12 @@ from typing import ClassVar, Dict, List, Set, Union
 
 from multiversx_sdk_cli.contracts import QueryResult
 from multiversx_sdk_cli.constants import DEFAULT_HRP
-from multiversx_sdk_core import (Address,
-                                 TokenPayment,
-                                 ContractQueryBuilder,
-                                 CodeMetadata)
+from multiversx_sdk_core import (
+    Address,
+    TokenPayment,
+    ContractQueryBuilder,
+    CodeMetadata,
+)
 from multiversx_sdk_core import transaction_builders as tx_builder
 from multiversx_sdk_core.serializer import arg_to_string
 from multiversx_sdk_network_providers import ProxyNetworkProvider
@@ -73,8 +75,18 @@ class TransactionStep(Step):
     """
     Represents a step that produce and send a transaction
     """
+
     sender: str
     checks: List[Check] = field(default_factory=lambda: [SuccessCheck()])
+
+    def __post_init__(self):
+        """
+        After the initialisation of an instance, if the checks are
+        found to be Dict, will try to convert them to Checks instances.
+        Usefull for easy loading from yaml files
+        """
+        if len(self.checks) > 0 and isinstance(self.checks[0], Dict):
+            self.checks = instanciate_checks(self.checks)
 
     def _create_builder(self) -> tx_builder.TransactionBuilder:
         """
@@ -161,6 +173,7 @@ class ContractDeployStep(TransactionStep):
     """
     Represents a smart contract deployment
     """
+
     wasm_path: str
     contract_id: str
     gas_limit: int
@@ -199,7 +212,7 @@ class ContractDeployStep(TransactionStep):
             deploy_arguments=args,
             code_metadata=metadata,
             code=Path(self.wasm_path).read_bytes(),
-            gas_limit=self.gas_limit
+            gas_limit=self.gas_limit,
         )
         return builder
 
@@ -271,7 +284,7 @@ class ContractUpgradeStep(TransactionStep):
             upgrade_arguments=args,
             code_metadata=metadata,
             code=Path(self.wasm_path).read_bytes(),
-            gas_limit=self.gas_limit
+            gas_limit=self.gas_limit,
         )
         return builder
 
@@ -299,6 +312,7 @@ class ContractCallStep(TransactionStep):
     """
     Represents a smart contract endpoint call
     """
+
     contract: str
     endpoint: str
     gas_limit: int
@@ -321,7 +335,9 @@ class ContractCallStep(TransactionStep):
                 utils.retrieve_value_from_string(trf.token_identifier),
                 utils.retrieve_value_from_any(trf.nonce),
                 utils.retrieve_value_from_any(trf.amount),
-                0) for trf in self.esdt_transfers
+                0,
+            )
+            for trf in self.esdt_transfers
         ]
         value = utils.retrieve_value_from_any(self.value)
 
@@ -333,7 +349,7 @@ class ContractCallStep(TransactionStep):
             value=value,
             call_arguments=args,
             esdt_transfers=esdt_transfers,
-            gas_limit=self.gas_limit
+            gas_limit=self.gas_limit,
         )
         return builder
 
@@ -344,6 +360,7 @@ class ContractCallStep(TransactionStep):
         will try to convert them to EsdtTransfers instances.
         Usefull for easy loading from yaml files
         """
+        super().__post_init__()
         checked_transfers = []
         for trf in self.esdt_transfers:
             if isinstance(trf, EsdtTransfer):
@@ -354,15 +371,13 @@ class ContractCallStep(TransactionStep):
                 raise ValueError(f"Unexpected type: {type(trf)}")
         self.esdt_transfers = checked_transfers
 
-        if len(self.checks) > 0 and isinstance(self.checks[0], Dict):
-            self.checks = instanciate_checks(self.checks)
-
 
 @dataclass
 class ContractQueryStep(Step):
     """
     Represents a smart contract query
     """
+
     contract: str
     endpoint: str
     arguments: List = field(default_factory=lambda: [])
@@ -372,7 +387,7 @@ class ContractQueryStep(Step):
 
     def _interpret_return_data(self, data: str) -> QueryResult:
         if not data:
-            return QueryResult('', '', None)
+            return QueryResult("", "", None)
 
         try:
             as_bytes = base64.b64decode(data)
@@ -397,7 +412,7 @@ class ContractQueryStep(Step):
         builder = ContractQueryBuilder(
             contract=utils.get_address_instance(self.contract),
             function=self.endpoint,
-            call_arguments=args
+            call_arguments=args,
         )
         query = builder.build()
         proxy = ProxyNetworkProvider(config.get("PROXY"))
@@ -411,12 +426,13 @@ class ContractQueryStep(Step):
             self.results = [
                 self._interpret_return_data(data) for data in response.return_data
             ]
-            results_empty = (len(self.results) == 0 or
-                             (len(self.results) == 1 and self.results[0] == ""))
+            results_empty = len(self.results) == 0 or (
+                len(self.results) == 1 and self.results[0] == ""
+            )
             if results_empty:
                 time.sleep(3)
                 LOGGER.warning(
-                    f'Empty query result, retrying. Attempt {n_attempts}/{max_attempts}'
+                    f"Empty query result, retrying. Attempt {n_attempts}/{max_attempts}"
                 )
         if results_empty:
             raise errors.EmptyQueryResults
@@ -439,6 +455,7 @@ class FungibleIssueStep(TransactionStep):
     """
     Represents the issuance of a fungible token
     """
+
     token_name: str
     token_ticker: str
     initial_supply: int
@@ -461,7 +478,7 @@ class FungibleIssueStep(TransactionStep):
         """
         LOGGER.info(
             f"Issuing fungible token named {self.token_name} "
-            f" for the account {self.sender}"
+            f"for the account {self.sender}"
         )
         builder = token_management_builders.FungibleTokenIssueBuilder(
             config=token_management_builders.get_builder_config(),
@@ -509,13 +526,12 @@ class NonFungibleIssueStep(TransactionStep):
     """
     Represents the issuance of a non fungible token
     """
+
     token_name: str
     token_ticker: str
     can_freeze: bool = False
     can_wipe: bool = False
     can_pause: bool = False
-    can_mint: bool = False
-    can_burn: bool = False
     can_change_owner: bool = False
     can_upgrade: bool = False
     can_add_special_roles: bool = False
@@ -530,7 +546,7 @@ class NonFungibleIssueStep(TransactionStep):
         """
         LOGGER.info(
             f"Issuing non fungible token named {self.token_name} "
-            f" for the account {self.sender}"
+            f"for the account {self.sender}"
         )
         builder = token_management_builders.NonFungibleTokenIssueBuilder(
             config=token_management_builders.get_builder_config(),
@@ -540,12 +556,10 @@ class NonFungibleIssueStep(TransactionStep):
             can_freeze=self.can_freeze,
             can_wipe=self.can_wipe,
             can_pause=self.can_pause,
-            can_mint=self.can_mint,
-            can_burn=self.can_burn,
             can_change_owner=self.can_change_owner,
             can_upgrade=self.can_upgrade,
             can_add_special_roles=self.can_add_special_roles,
-            can_transfer_nft_create_role=self.can_add_special_roles
+            can_transfer_nft_create_role=self.can_add_special_roles,
         )
         return builder
 
@@ -577,13 +591,12 @@ class SemiFungibleIssueStep(TransactionStep):
     """
     Represents the issuance of a semi fungible token
     """
+
     token_name: str
     token_ticker: str
     can_freeze: bool = False
     can_wipe: bool = False
     can_pause: bool = False
-    can_mint: bool = False
-    can_burn: bool = False
     can_change_owner: bool = False
     can_upgrade: bool = False
     can_add_special_roles: bool = False
@@ -598,7 +611,7 @@ class SemiFungibleIssueStep(TransactionStep):
         """
         LOGGER.info(
             f"Issuing semi fungible token named {self.token_name} "
-            f" for the account {self.sender}"
+            f"for the account {self.sender}"
         )
         builder = token_management_builders.SemiFungibleTokenIssueBuilder(
             config=token_management_builders.get_builder_config(),
@@ -608,12 +621,10 @@ class SemiFungibleIssueStep(TransactionStep):
             can_freeze=self.can_freeze,
             can_wipe=self.can_wipe,
             can_pause=self.can_pause,
-            can_mint=self.can_mint,
-            can_burn=self.can_burn,
             can_change_owner=self.can_change_owner,
             can_upgrade=self.can_upgrade,
             can_add_special_roles=self.can_add_special_roles,
-            can_transfer_nft_create_role=self.can_transfer_nft_create_role
+            can_transfer_nft_create_role=self.can_transfer_nft_create_role,
         )
         return builder
 
@@ -645,14 +656,13 @@ class MetaIssueStep(TransactionStep):
     """
     Represents the issuance of a meta fungible token
     """
+
     token_name: str
     token_ticker: str
     num_decimals: int
     can_freeze: bool = False
     can_wipe: bool = False
     can_pause: bool = False
-    can_mint: bool = False
-    can_burn: bool = False
     can_change_owner: bool = False
     can_upgrade: bool = False
     can_add_special_roles: bool = False
@@ -667,7 +677,7 @@ class MetaIssueStep(TransactionStep):
         """
         LOGGER.info(
             f"Issuing meta token named {self.token_name} "
-            f" for the account {self.sender}"
+            f"for the account {self.sender}"
         )
         builder = token_management_builders.MetaFungibleTokenIssueBuilder(
             config=token_management_builders.get_builder_config(),
@@ -678,12 +688,10 @@ class MetaIssueStep(TransactionStep):
             can_freeze=self.can_freeze,
             can_wipe=self.can_wipe,
             can_pause=self.can_pause,
-            can_mint=self.can_mint,
-            can_burn=self.can_burn,
             can_change_owner=self.can_change_owner,
             can_upgrade=self.can_upgrade,
             can_add_special_roles=self.can_add_special_roles,
-            can_transfer_nft_create_role=self.can_transfer_nft_create_role
+            can_transfer_nft_create_role=self.can_transfer_nft_create_role,
         )
         return builder
 
@@ -716,6 +724,7 @@ class ManageTokenRolesStep(TransactionStep):
     A base step to set or unset roles on a token.
     Can not be used on its own: on must use the child classes
     """
+
     is_set: bool
     token_identifier: str
     target: str
@@ -747,6 +756,7 @@ class ManageTokenRolesStep(TransactionStep):
         return builder
 
     def __post_init__(self):
+        super().__post_init__()
         for role in self.roles:
             if role not in self.ALLOWED_ROLES:
                 raise ValueError(
@@ -809,6 +819,7 @@ class FungibleMintStep(TransactionStep):
     This step is used to mint an additional supply for an already
     existing fungible token
     """
+
     token_identifier: str
     amount: Union[str, int]
 
@@ -840,6 +851,7 @@ class NonFungibleMintStep(TransactionStep):
     This step is used to mint a new nonce for an already existing non fungible token.
     It can be used for NFTs, SFTs and Meta tokens.
     """
+
     token_identifier: str
     amount: Union[str, int]
     name: str = ""
@@ -892,6 +904,7 @@ class EgldTransferStep(TransactionStep):
     """
     This step is used to transfer some eGLD to an address
     """
+
     receiver: str
     amount: Union[str, int]
 
@@ -921,6 +934,7 @@ class FungibleTransferStep(TransactionStep):
     """
     This step is used to transfer some fungible ESDT to an address
     """
+
     receiver: str
     token_identifier: str
     amount: Union[str, int]
@@ -954,6 +968,7 @@ class NonFungibleTransferStep(TransactionStep):
     """
     This step is used to transfer some non fungible ESDT to an address
     """
+
     receiver: str
     token_identifier: str
     nonce: Union[str, int]
@@ -992,6 +1007,7 @@ class MultiTransfersStep(TransactionStep):
     """
     This step is used to transfer multiple ESDTs to an address
     """
+
     receiver: str
     transfers: List[EsdtTransfer]
 
@@ -1002,6 +1018,7 @@ class MultiTransfersStep(TransactionStep):
         will try to convert them to EsdtTransfers instances.
         Usefull for easy loading from yaml files
         """
+        super().__post_init__()
         checked_transfers = []
         for trf in self.transfers:
             if isinstance(trf, EsdtTransfer):
@@ -1036,9 +1053,7 @@ class MultiTransfersStep(TransactionStep):
             payments=payments,
         )
 
-        LOGGER.info(
-            f"Sending multiple payments from {self.sender} to {self.receiver}"
-        )
+        LOGGER.info(f"Sending multiple payments from {self.sender} to {self.receiver}")
         return builder
 
 
@@ -1079,6 +1094,7 @@ class PythonStep(Step):
     """
     This Step execute a custom python function of the user
     """
+
     module_path: str
     function: str
     arguments: list = field(default_factory=list)
@@ -1092,13 +1108,10 @@ class PythonStep(Step):
         module_name = module_path.stem
         LOGGER.info(
             f"Executing python function {self.function} from user module {module_name}"
-            )
+        )
 
         # load module and function
-        spec = spec_from_file_location(
-            module_name,
-            module_path.as_posix()
-        )
+        spec = spec_from_file_location(module_name, module_path.as_posix())
         user_module = module_from_spec(spec)
         spec.loader.exec_module(user_module)
         user_function = getattr(user_module, self.function)
@@ -1116,7 +1129,9 @@ class PythonStep(Step):
                 var_name = f"MXOPS_{self.function.upper()}_RESULT"
                 os.environ[var_name] = result
             else:
-                LOGGER.warning(f"The result of the function {self.function} is not a "
-                               "string and has not been saved")
+                LOGGER.warning(
+                    f"The result of the function {self.function} is not a "
+                    "string and has not been saved"
+                )
 
         LOGGER.info(f"Function result: {result}")

@@ -18,6 +18,7 @@
 
 - Bug with the `skip confirmation` CLI command
 - Upgrade MultiversX python libraries
+- Wrong token properties set during token registration
 
 ## 1.1.0 - 2023-05-11
 
