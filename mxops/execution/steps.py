@@ -76,6 +76,15 @@ class TransactionStep(Step):
     sender: str
     checks: List[Check] = field(default_factory=lambda: [SuccessCheck()])
 
+    def __post_init__(self):
+        """
+        After the initialisation of an instance, if the checks are
+        found to be Dict, will try to convert them to Checks instances.
+        Usefull for easy loading from yaml files
+        """
+        if len(self.checks) > 0 and isinstance(self.checks[0], Dict):
+            self.checks = instanciate_checks(self.checks)
+
     def _create_builder(self) -> tx_builder.TransactionBuilder:
         """
         Interface for the method that will create the transaction builder
@@ -344,6 +353,7 @@ class ContractCallStep(TransactionStep):
         will try to convert them to EsdtTransfers instances.
         Usefull for easy loading from yaml files
         """
+        super().__post_init__()
         checked_transfers = []
         for trf in self.esdt_transfers:
             if isinstance(trf, EsdtTransfer):
@@ -353,9 +363,6 @@ class ContractCallStep(TransactionStep):
             else:
                 raise ValueError(f"Unexpected type: {type(trf)}")
         self.esdt_transfers = checked_transfers
-
-        if len(self.checks) > 0 and isinstance(self.checks[0], Dict):
-            self.checks = instanciate_checks(self.checks)
 
 
 @dataclass
@@ -461,7 +468,7 @@ class FungibleIssueStep(TransactionStep):
         """
         LOGGER.info(
             f"Issuing fungible token named {self.token_name} "
-            f" for the account {self.sender}"
+            f"for the account {self.sender}"
         )
         builder = token_management_builders.FungibleTokenIssueBuilder(
             config=token_management_builders.get_builder_config(),
@@ -528,7 +535,7 @@ class NonFungibleIssueStep(TransactionStep):
         """
         LOGGER.info(
             f"Issuing non fungible token named {self.token_name} "
-            f" for the account {self.sender}"
+            f"for the account {self.sender}"
         )
         builder = token_management_builders.NonFungibleTokenIssueBuilder(
             config=token_management_builders.get_builder_config(),
@@ -538,8 +545,6 @@ class NonFungibleIssueStep(TransactionStep):
             can_freeze=self.can_freeze,
             can_wipe=self.can_wipe,
             can_pause=self.can_pause,
-            can_mint=self.can_mint,
-            can_burn=self.can_burn,
             can_change_owner=self.can_change_owner,
             can_upgrade=self.can_upgrade,
             can_add_special_roles=self.can_add_special_roles,
@@ -594,7 +599,7 @@ class SemiFungibleIssueStep(TransactionStep):
         """
         LOGGER.info(
             f"Issuing semi fungible token named {self.token_name} "
-            f" for the account {self.sender}"
+            f"for the account {self.sender}"
         )
         builder = token_management_builders.SemiFungibleTokenIssueBuilder(
             config=token_management_builders.get_builder_config(),
@@ -604,8 +609,6 @@ class SemiFungibleIssueStep(TransactionStep):
             can_freeze=self.can_freeze,
             can_wipe=self.can_wipe,
             can_pause=self.can_pause,
-            can_mint=self.can_mint,
-            can_burn=self.can_burn,
             can_change_owner=self.can_change_owner,
             can_upgrade=self.can_upgrade,
             can_add_special_roles=self.can_add_special_roles,
@@ -661,7 +664,7 @@ class MetaIssueStep(TransactionStep):
         """
         LOGGER.info(
             f"Issuing meta token named {self.token_name} "
-            f" for the account {self.sender}"
+            f"for the account {self.sender}"
         )
         builder = token_management_builders.MetaFungibleTokenIssueBuilder(
             config=token_management_builders.get_builder_config(),
@@ -672,8 +675,6 @@ class MetaIssueStep(TransactionStep):
             can_freeze=self.can_freeze,
             can_wipe=self.can_wipe,
             can_pause=self.can_pause,
-            can_mint=self.can_mint,
-            can_burn=self.can_burn,
             can_change_owner=self.can_change_owner,
             can_upgrade=self.can_upgrade,
             can_add_special_roles=self.can_add_special_roles,
@@ -741,6 +742,7 @@ class ManageTokenRolesStep(TransactionStep):
         return builder
 
     def __post_init__(self):
+        super().__post_init__()
         for role in self.roles:
             if role not in self.ALLOWED_ROLES:
                 raise ValueError(
@@ -996,6 +998,7 @@ class MultiTransfersStep(TransactionStep):
         will try to convert them to EsdtTransfers instances.
         Usefull for easy loading from yaml files
         """
+        super().__post_init__()
         checked_transfers = []
         for trf in self.transfers:
             if isinstance(trf, EsdtTransfer):
