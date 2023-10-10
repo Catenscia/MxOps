@@ -10,8 +10,16 @@ steps:
     sender: marthe
     token_name: MartheSFT
     token_ticker: MSFT
-    can_upgrade: true
     can_transfer_nft_create_role: true
+    can_change_owner: true
+    can_upgrade: false
+    can_add_special_roles: true
+
+  - type: Python
+    module_path: ./integration_tests/token_management/scripts/checks.py
+    function: check_token_properties
+    arguments:
+      - "MartheSFT"
   
   - type: ManageSemiFungibleTokenRoles
     sender: marthe
