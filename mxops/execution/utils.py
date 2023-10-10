@@ -206,9 +206,7 @@ def retrieve_and_format_arguments(arguments: List[Any]) -> List[Any]:
     :return: format args
     :rtype: List[Any]
     """
-    return format_tx_arguments([
-        retrieve_value_from_any(arg) for arg in arguments
-    ])
+    return format_tx_arguments([retrieve_value_from_any(arg) for arg in arguments])
 
 
 def get_contract_instance(contract_str: str) -> SmartContract:
