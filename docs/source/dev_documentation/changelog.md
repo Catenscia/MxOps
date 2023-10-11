@@ -15,7 +15,7 @@
 - 🚨 BREAKING CHANGE 🚨 `checks` attribute has been given for all `TransactionStep`, sometimes replacing `check_success`
 - 🚨 BREAKING CHANGE 🚨 `.` and `[]` are used instead of `%` to specify a `Scenario` value key
 - Upgrade MultiversX python libraries
-
+- `int` is preferred over `number` for query return type
 
 ### Fixed
 
