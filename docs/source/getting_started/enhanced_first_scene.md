@@ -93,7 +93,7 @@ Such `Step` would look like this:
     endpoint: getPingAmount
     expected_results:
       - save_key: PingAmount
-        result_type: number
+        result_type: int
 ```
 
 This tells `MxOps` to save (in the current `Scenario`) the value from the query result and to attach it to the contract "egld-ping-pong" under the key name "PingAmount".
@@ -157,7 +157,7 @@ steps:
     endpoint: getPingAmount
     expected_results:
       - save_key: PingAmount
-        result_type: number
+        result_type: int
 
   - type: ContractCall
     sender: owner

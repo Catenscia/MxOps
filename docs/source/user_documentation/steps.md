@@ -146,7 +146,7 @@ expected_results: # list of results excpected from the query output
 print_results: false # if the query results should be printed in the console
 ```
 
-Currently allowed values for `result_type`: [`number`, `str`]
+Currently allowed values for `result_type`: [`int`, `str`]
 
 (loop_step_target)=
 
@@ -389,7 +389,7 @@ steps:
       - $LOOP_VAR # nonce
     expected_results:
       - save_key: TokenIdentifier4Amount
-        result_type: number
+        result_type: int
 
   - type: ContractCall
     sender: alice

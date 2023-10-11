@@ -158,7 +158,7 @@ def fetch_pool_data(contract: str) -> Tuple[int, str, str]:
     quote_token_query.execute()
     
     # extract the results (we expect to have exactly one result per query)
-    pool_price = parse_query_result(price_query.results[0], "number")
+    pool_price = parse_query_result(price_query.results[0], "int")
     base_token = parse_query_result(base_token_query.results[0], "str")
     quote_token = parse_query_result(quote_token_query.results[0], "str")
     return pool_price, base_token, quote_token

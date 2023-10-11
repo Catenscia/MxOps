@@ -12,7 +12,7 @@ steps:
     endpoint: getPingAmount
     expected_results:
       - save_key: PingAmount
-        result_type: number
+        result_type: int
 
   - type: ContractCall
     sender: owner

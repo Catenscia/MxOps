@@ -289,7 +289,7 @@ def parse_query_result(result: QueryResult, expected_return: str) -> Any:
     :return: parsed result of the query
     :rtype: Any
     """
-    if expected_return == "number":
+    if expected_return in ("number", "int"):
         return result.number
     if expected_return == "str":
         return bytes.fromhex(result.hex).decode()
