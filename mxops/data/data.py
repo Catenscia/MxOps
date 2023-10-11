@@ -4,12 +4,14 @@ author: Etienne Wallet
 This module contains the functions to load, write and update contracts data
 """
 from __future__ import annotations
+from copy import deepcopy
 from dataclasses import asdict, dataclass, field, is_dataclass
 import json
 import os
 from pathlib import Path
+import re
 import time
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from mxops.config.config import Config
 from mxops.data.path import get_all_checkpoints_names, get_scenario_file_path
@@ -21,24 +23,137 @@ from mxops.utils.logger import get_logger
 LOGGER = get_logger("data")
 
 
+def parse_value_key(path) -> List[int | str]:
+    """
+    Parse a value key string into keys and indices using regex.
+
+    e.g. "key_1.key2[2].data" -> ['key_1', 'key2', 2, 'data']
+    """
+    # This regex captures either words or numbers within square brackets
+    pattern = r"([a-zA-Z_]\w+)|\[(\d+)\]"
+    tokens = re.findall(pattern, path)
+
+    # Flatten the list and convert indices to int
+    return [int(index) if index else key for key, index in tokens]
+
+
 @dataclass
 class SavedValuesData:
     """
-    Dataclass representing an object that can store values for the environment
+    Dataclass representing an object that can store nested values for the scenario
     """
 
     saved_values: Dict[str, Any]
 
+    def _get_element(self, parsed_value_key: List[str | int]) -> Any:
+        """
+        Get the value saved under the specified value key.
+
+
+        :param parsed_value_key: parsed elements of a value key
+        :type parsed_value_key: List[str | int]
+        :return: element saved under the value key
+        :rtype: Any
+        """
+        if len(parsed_value_key) == 0:
+            raise errors.WrongDataKeyPath("Key path is empty")
+        element = self.saved_values
+        for key in parsed_value_key:
+            if isinstance(key, int):
+                if isinstance(element, (tuple, list)):
+                    try:
+                        element = element[key]
+                    except IndexError as err:
+                        raise errors.WrongDataKeyPath(
+                            f"Wrong index {repr(key)} for data element {element}"
+                        ) from err
+                else:
+                    raise errors.WrongDataKeyPath(
+                        f"Expected a tuple or a list but found {element}"
+                    )
+            else:
+                if isinstance(element, dict):
+                    try:
+                        element = element[key]
+                    except KeyError as err:
+                        raise errors.WrongDataKeyPath(
+                            f"Wrong key {repr(key)} for data element {element}"
+                        ) from err
+                else:
+                    raise errors.WrongDataKeyPath(
+                        f"Expected a dict but found {element}"
+                    )
+        return element
+
     def set_value(self, value_key: str, value: Any):
         """
-        Set the a value under a specified key
+        Set the a value under a specified value key
 
-        :param value_key: key to save the value
+        :param value_key: value key of the value to fetch
         :type value_key: str
         :param value: value to save
         :type value: Any
         """
-        self.saved_values[value_key] = value
+        parsed_value_key = parse_value_key(value_key)
+        element = self.saved_values
+
+        # verify the path and create it if necessary
+        if len(parsed_value_key) > 1:
+            for key, next_key in zip(parsed_value_key[:-1], parsed_value_key[1:]):
+                if isinstance(key, int):
+                    if isinstance(element, (tuple, list)):
+                        try:
+                            element = element[key]
+                        except IndexError as err:  # index does not exist yet
+                            if key > len(element):
+                                raise errors.WrongDataKeyPath(
+                                    f"Tried to set element {key} of a list but the list"
+                                    f" has only {len(element)} elements: {element}"
+                                ) from err
+                            element.append([] if isinstance(next_key, int) else {})
+                            element = element[key]
+                    else:
+                        raise errors.WrongDataKeyPath(
+                            f"Expected a tuple or a list but found {element}"
+                        )
+                else:
+                    if isinstance(element, dict):
+                        try:
+                            element = element[key]
+                        except KeyError:  # key does not exist yet
+                            element[key] = [] if isinstance(next_key, int) else {}
+                            element = element[key]
+                    else:
+                        raise errors.WrongDataKeyPath(
+                            f"Expected a dict but found {element}"
+                        )
+        elif len(parsed_value_key) == 0:
+            raise errors.WrongDataKeyPath("Key path is empty")
+        else:
+            next_key = parsed_value_key[0]
+
+        # set the value
+        value_copy = deepcopy(value)  # in case the value is a complexe type
+        if isinstance(next_key, int):
+            if isinstance(element, (tuple, list)):
+                try:
+                    element[next_key] = value_copy
+                except IndexError as err:
+                    if next_key > len(element):
+                        raise errors.WrongDataKeyPath(
+                            f"Tried to set element {next_key} of a list but the list "
+                            f"has only {len(element)} elements: {element}"
+                        ) from err
+                    element.append(value_copy)
+            else:
+                raise errors.WrongDataKeyPath(
+                    f"Expected a tuple or a list but found {element}"
+                )
+        else:
+            if isinstance(element, dict):
+                element[next_key] = value_copy
+            else:
+                raise errors.WrongDataKeyPath(f"Expected a dict but found {element}")
 
     def get_value(self, value_key: str) -> Any:
         """
@@ -46,28 +161,15 @@ class SavedValuesData:
 
         :param value_key: key for the value
         :type value_key: str
-        :return: value saved under the attribute or the the key provided
+        :return: value saved under the attribute or the value key provided
         :rtype: Any
         """
         try:
             return getattr(self, value_key)
         except AttributeError:
             pass
-        return self.get_saved_value(value_key)
-
-    def get_saved_value(self, value_key: str) -> Any:
-        """
-        Fetch a value saved under a key
-
-        :param value_key: key for the value
-        :type value_key: str
-        :return: value saved under the key
-        :rtype: Any
-        """
-        try:
-            return self.saved_values[value_key]
-        except KeyError as err:
-            raise ValueError(f"Unkown key: {value_key} for data object {self}") from err
+        parsed_value_key = parse_value_key(value_key)
+        return self._get_element(parsed_value_key)
 
 
 @dataclass

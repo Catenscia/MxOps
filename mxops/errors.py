@@ -185,6 +185,13 @@ class ForbiddenSceneScenario(Exception):
         super().__init__(message)
 
 
+class WrongDataKeyPath(Exception):
+    """
+    To be raised when a key path does not correspond to the saved
+    data
+    """
+
+
 #############################################################
 #
 #                   Transactions Errors
