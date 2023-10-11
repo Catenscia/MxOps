@@ -95,7 +95,7 @@ def test_key_path_fetch_errors():
         raise RuntimeError("An error should have been raised by the line above")
     except errors.WrongDataKeyPath as err:
         assert err.args == (
-            "Wrong key 'key_3' for data element {'key_1': {'key_2': "
+            "Wrong key 'key_3' in ['key_3'] for data element {'key_1': {'key_2': "
             "[{'data': "
             "'wrong value'}, {'data': 'wrong value'}, {'data': 'desired value'}]}}",
         )
@@ -104,16 +104,17 @@ def test_key_path_fetch_errors():
         raise RuntimeError("An error should have been raised by the line above")
     except errors.WrongDataKeyPath as err:
         assert err.args == (
-            "Wrong key 'key_3' for data element {'key_2': [{'data': 'wrong value'}, "
-            "{'data': 'wrong value'}, {'data': 'desired value'}]}",
+            "Wrong key 'key_3' in ['key_1', 'key_3'] for data element {'key_2': "
+            "[{'data': 'wrong value'}, {'data': 'wrong value'}, {'data': "
+            "'desired value'}]}",
         )
     try:
         saved_values.get_value("key_1.key_2[4]")
         raise RuntimeError("An error should have been raised by the line above")
     except errors.WrongDataKeyPath as err:
         assert err.args == (
-            "Wrong index 4 for data element [{'data': 'wrong value'}, "
-            "{'data': 'wrong value'}, {'data': 'desired value'}]",
+            "Wrong index 4 in ['key_1', 'key_2', 4] for data element [{'data': "
+            "'wrong value'}, {'data': 'wrong value'}, {'data': 'desired value'}]",
         )
 
 

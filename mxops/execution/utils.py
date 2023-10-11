@@ -267,9 +267,9 @@ def get_address_instance(address_str: str) -> Address:
     try:
         evaluated_address_str = retrieve_value_from_string(f"%{address_str}.address")
         return Address.from_bech32(evaluated_address_str)
-    except (ErrBadAddress, errors.UnknownRootName):
+    except (ErrBadAddress, errors.WrongDataKeyPath):
         pass
-    # finally try to see if it designate a defined account
+    # finally try to see if it designates a defined account
     try:
         account = AccountsManager.get_account(address_str)
         return Address.from_bech32(account.address.bech32())

@@ -204,7 +204,6 @@ class ContractDeployStep(TransactionStep):
             self.upgradeable, self.readable, self.payable, self.payable_by_sc
         )
         args = utils.retrieve_and_format_arguments(self.arguments)
-        print(args)
 
         builder = tx_builder.ContractDeploymentBuilder(
             config=token_management_builders.get_builder_config(),

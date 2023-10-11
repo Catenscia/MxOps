@@ -67,7 +67,8 @@ class SavedValuesData:
                         element = element[key]
                     except IndexError as err:
                         raise errors.WrongDataKeyPath(
-                            f"Wrong index {repr(key)} for data element {element}"
+                            f"Wrong index {repr(key)} in {parsed_value_key}"
+                            f" for data element {element}"
                         ) from err
                 else:
                     raise errors.WrongDataKeyPath(
@@ -79,7 +80,8 @@ class SavedValuesData:
                         element = element[key]
                     except KeyError as err:
                         raise errors.WrongDataKeyPath(
-                            f"Wrong key {repr(key)} for data element {element}"
+                            f"Wrong key {repr(key)} in {parsed_value_key}"
+                            f" for data element {element}"
                         ) from err
                 else:
                     raise errors.WrongDataKeyPath(
