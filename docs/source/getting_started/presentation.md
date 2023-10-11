@@ -92,7 +92,7 @@ Here is the above `Scene`, but this time with the MxOps syntax:
       endpoint: withdraw
       gas_limit: 5000000
       arguments:
-        - "%my-contract%ownerStakedAmount"
+        - "%my-contract.ownerStakedAmount"
 
   ```
 

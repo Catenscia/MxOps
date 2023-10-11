@@ -67,9 +67,9 @@ def test_data_load_equality():
 
     expected_transfer = ExpectedTransfer(
         sender="[owner]",
-        receiver="%egld-ping-pong%address",
+        receiver="%egld-ping-pong.address",
         token_identifier="EGLD",
-        amount="%egld-ping-pong%PingAmount",
+        amount="%egld-ping-pong.PingAmount",
     )
 
     on_chain_transfers = [

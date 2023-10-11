@@ -29,21 +29,23 @@ def parse_value_key(path) -> List[int | str]:
 
     e.g. "key_1.key2[2].data" -> ['key_1', 'key2', 2, 'data']
     """
-    # This regex captures either words or numbers within square brackets
-    pattern = r"([a-zA-Z_]\w+)|\[(\d+)\]"
+    # This regex captures:
+    # - words, possibly including hyphens
+    # - numbers within square brackets
+    pattern = r"([\w\-]+)|\[(\d+)\]"
     tokens = re.findall(pattern, path)
 
     # Flatten the list and convert indices to int
     return [int(index) if index else key for key, index in tokens]
 
 
-@dataclass
+@dataclass(kw_only=True)
 class SavedValuesData:
     """
     Dataclass representing an object that can store nested values for the scenario
     """
 
-    saved_values: Dict[str, Any]
+    saved_values: Dict[str, Any] = field(default_factory=dict)
 
     def _get_element(self, parsed_value_key: List[str | int]) -> Any:
         """
@@ -101,20 +103,21 @@ class SavedValuesData:
         if len(parsed_value_key) > 1:
             for key, next_key in zip(parsed_value_key[:-1], parsed_value_key[1:]):
                 if isinstance(key, int):
-                    if isinstance(element, (tuple, list)):
-                        try:
-                            element = element[key]
-                        except IndexError as err:  # index does not exist yet
-                            if key > len(element):
-                                raise errors.WrongDataKeyPath(
-                                    f"Tried to set element {key} of a list but the list"
-                                    f" has only {len(element)} elements: {element}"
-                                ) from err
-                            element.append([] if isinstance(next_key, int) else {})
-                            element = element[key]
+                    if isinstance(element, list):
+                        element_size = len(element)
+                        if key > element_size:
+                            raise errors.WrongDataKeyPath(
+                                f"Tried to set element {key} of a list but the list"
+                                f" has only {element_size} elements: {element}"
+                            )
+                        if key == element_size:
+                            element.append(  # pylint: disable=E1101
+                                [] if isinstance(next_key, int) else {}
+                            )
+                        element = element[key]
                     else:
                         raise errors.WrongDataKeyPath(
-                            f"Expected a tuple or a list but found {element}"
+                            f"Expected a list but found {element}"
                         )
                 else:
                     if isinstance(element, dict):
@@ -279,7 +282,7 @@ class TokenData(SavedValuesData):
 
 
 @dataclass
-class _ScenarioData:
+class _ScenarioData(SavedValuesData):
     """
     Dataclass representing the data that can be locally saved for a scenario
     """
@@ -383,10 +386,10 @@ class _ScenarioData:
             raise errors.TokenNameAlreadyExists(token_data.name)
         self.tokens_data[token_data.name] = token_data
 
-    def get_value(self, root_name: str, value_key: str) -> Any:
+    def get_value(self, value_key: str) -> Any:
         """
-        Search within tokens data and contracts data the value saved under
-        the provided key
+        Search within tokens data, contracts data and scenario saved values,
+        the value saved under the provided key
 
         :param root_name: contract id or token name that hosts the value
         :type root_name: str
@@ -395,16 +398,42 @@ class _ScenarioData:
         :return: value saved
         :rtype: Any
         """
-        try:
-            return self.get_contract_value(root_name, value_key)
-        except errors.UnknownContract:
-            pass
+        parsed_value_key = parse_value_key(value_key)
+        if len(parsed_value_key) > 1:
+            root_name = parsed_value_key[0]
+            value_sub_key = value_key[len(root_name) + 1 :]  # remove also the dot
+            try:
+                return self.get_contract_value(root_name, value_sub_key)
+            except errors.UnknownContract:
+                pass
+            try:
+                return self.get_token_value(root_name, value_sub_key)
+            except errors.UnknownToken:
+                pass
+        return super().get_value(value_key)
 
-        try:
-            return self.get_token_value(root_name, value_key)
-        except errors.UnknownToken:
-            pass
-        raise errors.UnknownRootName(self.name, root_name)
+    def set_value(self, value_key: str, value: Any):
+        """
+        Set the a value under a specified value key
+
+        :param value_key: value key of the value to fetch
+        :type value_key: str
+        :param value: value to save
+        :type value: Any
+        """
+        parsed_value_key = parse_value_key(value_key)
+        if len(parsed_value_key) > 1:
+            root_name = parsed_value_key[0]
+            value_sub_key = value_key[len(root_name) + 1 :]  # remove also the dot
+            try:
+                return self.set_contract_value(root_name, value_sub_key, value)
+            except errors.UnknownContract:
+                pass
+            try:
+                return self.set_token_value(root_name, value_sub_key, value)
+            except errors.UnknownToken:
+                pass
+        return super().set_value(value_key, value)
 
     def save(self, checkpoint: str = ""):
         """

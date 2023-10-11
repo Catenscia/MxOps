@@ -146,7 +146,7 @@ class WrongScenarioDataReference(Exception):
     def __init__(self) -> None:
         message = (
             "Scenario data reference must have the format "
-            r'"%contract_id%valuekey[:optional_format]"'
+            r'"%<value_key>[:optional_format]"'
         )
         super().__init__(message)
 

@@ -27,19 +27,19 @@ steps:
     contract: my_pool
     endpoint: GetBaseToken
     expected_results:
-      - save_key: BaseToken # -> will be accessible with "%my_pool%BaseToken"
+      - save_key: BaseToken # -> will be accessible with "%my_pool.BaseToken"
         result_type: int
   - type: ContractQuery
     contract: my_pool
     endpoint: GetQuoteToken
     expected_results:
-      - save_key: QuoteToken # -> will be accessible with "%my_pool%QuoteToken"
+      - save_key: QuoteToken # -> will be accessible with "%my_pool.QuoteToken"
         result_type: int
   - type: ContractQuery
     contract: my_pool
     endpoint: GetPoolPrice
     expected_results:
-      - save_key: PoolPrice # -> will be accessible with "%my_pool%PoolPrice"
+      - save_key: PoolPrice # -> will be accessible with "%my_pool.PoolPrice"
         result_type: int
 
   # execute the python function to compute the amount of quote token to deposit
@@ -48,7 +48,7 @@ steps:
     module_path: ./folder/my_module.py
     function: compute_deposit_amount
     keyword_arguments:  # optional
-      pool_price: "%my_pool%PoolPrice"
+      pool_price: "%my_pool.PoolPrice"
       base_amount: 1000000000000000000  # 1 assuming 18 decimals
 
   # deposit into the pool
@@ -58,10 +58,10 @@ steps:
     endpoint: deposit
     gas_limit: 60000000
     esdt_transfers:
-      - token_identifier: "%my_pool%BaseToken"
+      - token_identifier: "%my_pool.BaseToken"
         amount: 1000000000000000000
         nonce: 0
-      - token_identifier: "%my_pool%QuoteToken"
+      - token_identifier: "%my_pool.QuoteToken"
         amount: "$MXOPS_COMPUTE_DEPOSIT_AMOUNT_RESULT" # -> direct access to the function result
         nonce: 0
 ```
@@ -248,8 +248,8 @@ def interact():
     # <write anything here>
 
     # save some data within MxOps
-    scenario_data.set_contract_value("my_contract", "value_from_3rd_party", new_value_1) # -> now accessible with "%my_contract%value_from_3rd_party"
-    scenario_data.get_token_value("my_token", "value_from_3rd_party", new_value_A) # -> now accessible with "%my_token%value_from_3rd_party"
+    scenario_data.set_contract_value("my_contract", "value_from_3rd_party", new_value_1) # -> now accessible with "%my_contract.value_from_3rd_party"
+    scenario_data.get_token_value("my_token", "value_from_3rd_party", new_value_A) # -> now accessible with "%my_token.value_from_3rd_party"
 
     # or save it as an env var
     os.environ["MY_THIRD_PARTY_DATA"] = new_value_1  # -> now accessible with "$MY_THIRD_PARTY_DATA"

@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, List
 
 import pytest
 from mxops import errors
@@ -10,6 +10,7 @@ from mxops.data.data import (
     InternalContractData,
     SavedValuesData,
     TokenData,
+    parse_value_key,
 )
 from mxops.enums import NetworkEnum, TokenTypeEnum
 
@@ -53,7 +54,7 @@ def test_key_path_fetch():
     """
     # Given
     saved_values = SavedValuesData(
-        {
+        saved_values={
             "key_1": {
                 "key_2": [
                     {"data": "wrong value"},
@@ -77,7 +78,7 @@ def test_key_path_fetch_errors():
     """
     # Given
     saved_values = SavedValuesData(
-        {
+        saved_values={
             "key_1": {
                 "key_2": [
                     {"data": "wrong value"},
@@ -117,6 +118,23 @@ def test_key_path_fetch_errors():
 
 
 @pytest.mark.parametrize(
+    "value_key, expected_result",
+    [
+        ("key_1.key_2[0].data", ["key_1", "key_2", 0, "data"]),
+        ("ping_pong.address", ["ping_pong", "address"]),
+        ("ping-pong.address", ["ping-pong", "address"]),
+    ],
+)
+def test_parse_value_key(value_key: str, expected_result: List[str | int]):
+    # When
+    # Given
+    result = parse_value_key(value_key)
+
+    # Then
+    assert result == expected_result
+
+
+@pytest.mark.parametrize(
     "key_path, value",
     [
         ("key_1.key_2[0].data", "value"),
@@ -129,7 +147,7 @@ def test_key_path_set(key_path: str, value: Any):
     Test that values can be set and retrieved correctly
     """
     # Given
-    saved_values = SavedValuesData({})
+    saved_values = SavedValuesData(saved_values={})
 
     # When
     saved_values.set_value(key_path, value)
@@ -145,7 +163,7 @@ def test_key_path_set_errors():
     """
     # Given
     saved_values = SavedValuesData(
-        {
+        saved_values={
             "key_1": {
                 "key_2": [
                     {"data": "wrong value"},

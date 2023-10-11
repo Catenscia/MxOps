@@ -22,7 +22,7 @@ def retrieve_specified_type(arg: str) -> Tuple[str, Optional[str]]:
     Example:
         $MY_VAR:int
         &MY_VAR:str
-        %CONTRACT%ID%MY_VAR:int
+        %KEY_1.KEY_2[0].MY_VAR:int
 
     :param arg: string arg passed
     :type arg: str
@@ -79,31 +79,32 @@ def retrieve_value_from_config(arg: str) -> str:
     :rtype: str
     """
     if not arg.startswith("&"):
-        raise ValueError(f"the argument as no & sign: {arg}")
-    inner_arg, desired_type = retrieve_specified_type(arg)
+        raise ValueError(f"the argument has no & sign: {arg}")
+    inner_arg, desired_type = retrieve_specified_type(arg[1:])
     config = Config.get_config()
-    retrieved_value = config.get(inner_arg[1:].upper())
+    retrieved_value = config.get(inner_arg.upper())
     return convert_arg(retrieved_value, desired_type)
 
 
 def retrieve_value_from_scenario_data(arg: str) -> str:
     """
     Retrieve the value of an argument from scenario data.
-    the argument must formated like this: %<root_name>%<attribute>
+    the argument must start with '%' and can chain key and index values:
+        - "%contract_id.address"
+        - "my_random_values.times[5]"
+        - "key_1.key_2[20].data"
 
     :param arg: name of the variable formated as above
     :type arg: str
     :return: value saved in the config
     :rtype: str
     """
-    inner_arg, desired_type = retrieve_specified_type(arg)
-    try:
-        root_name, value_key = inner_arg[1:].split("%")
-    except Exception as err:
-        raise errors.WrongScenarioDataReference from err
+    if not arg.startswith("%"):
+        raise ValueError(f"the argument has no % sign: {arg}")
+    inner_arg, desired_type = retrieve_specified_type(arg[1:])
 
     scenario_data = ScenarioData.get()
-    retrieved_value = scenario_data.get_value(root_name, value_key)
+    retrieved_value = scenario_data.get_value(inner_arg)
     return convert_arg(retrieved_value, desired_type)
 
 
@@ -232,7 +233,7 @@ def get_contract_instance(contract_str: str) -> SmartContract:
     except ErrBadAddress:
         pass
     # lastly try to see if it is a valid contract id
-    contract_address = retrieve_value_from_string(f"%{contract_str}%address")
+    contract_address = retrieve_value_from_string(f"%{contract_str}.address")
     try:
         return SmartContract(Address.from_bech32(contract_address))
     except ErrBadAddress:
@@ -264,7 +265,7 @@ def get_address_instance(address_str: str) -> Address:
         pass
     # else try to see if it is a valid contract id
     try:
-        evaluated_address_str = retrieve_value_from_string(f"%{address_str}%address")
+        evaluated_address_str = retrieve_value_from_string(f"%{address_str}.address")
         return Address.from_bech32(evaluated_address_str)
     except (ErrBadAddress, errors.UnknownRootName):
         pass

@@ -24,7 +24,7 @@ steps:
   - type: ManageSemiFungibleTokenRoles
     sender: marthe
     is_set: true
-    token_identifier: "%MartheSFT%identifier"
+    token_identifier: "%MartheSFT.identifier"
     target: "[marthe]"
     roles:
       - ESDTRoleNFTCreate
@@ -33,7 +33,7 @@ steps:
   
   - type: NonFungibleMint
     sender: marthe
-    token_identifier: "%MartheSFT%identifier"
+    token_identifier: "%MartheSFT.identifier"
     amount: 100000000  # 100,000 MSFT
     name: "Beautiful SFT"
     royalties: 750
