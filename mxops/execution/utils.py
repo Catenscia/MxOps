@@ -65,7 +65,10 @@ def retrieve_value_from_env(arg: str) -> str:
     if not arg.startswith("$"):
         raise ValueError(f"the argument as no $ sign: {arg}")
     inner_arg, desired_type = retrieve_specified_type(arg)
-    retrieved_value = os.environ[inner_arg[1:]]
+    try:
+        retrieved_value = os.environ[inner_arg[1:]]
+    except KeyError as err:
+        raise errors.UnkownVariable(inner_arg[1:]) from err
     return convert_arg(retrieved_value, desired_type)
 
 
@@ -252,27 +255,26 @@ def get_address_instance(address_str: str) -> Address:
     :return: address instance corresponding to the input
     :rtype: Address
     """
-    # try to see if the string is a valid address
-    try:
-        return Address.from_bech32(address_str)
-    except ErrBadAddress:
-        pass
-    # otherwise try to parse it as a mxops value
+    # try to parse it as a mxops value
     evaluated_address_str = retrieve_value_from_string(address_str)
+
+    # try to see if the string is a valid address
     try:
         return Address.from_bech32(evaluated_address_str)
     except ErrBadAddress:
         pass
+
     # else try to see if it is a valid contract id
     try:
         evaluated_address_str = retrieve_value_from_string(f"%{address_str}.address")
         return Address.from_bech32(evaluated_address_str)
     except (ErrBadAddress, errors.WrongDataKeyPath):
         pass
+
     # finally try to see if it designates a defined account
     try:
-        account = AccountsManager.get_account(address_str)
-        return Address.from_bech32(account.address.bech32())
+        account = AccountsManager.get_account(evaluated_address_str)
+        return account.address
     except errors.UnknownAccount:
         pass
     raise errors.ParsingError(address_str, "address_str address")

@@ -13,11 +13,14 @@ dev
 Dev
 devnet
 EsdtMinter
+françois
 Freepik
 GetBaseToken
 GetPoolPrice
 GetQuoteToken
 github
+jacques
+jean
 Keystore
 Knop
 mainnet

@@ -9,6 +9,7 @@
 - Auto retry for empty query results
 - python step class
 - Value key can now of any depth for `Scenario` data
+- `SceneStep`
 
 ### Changed
 

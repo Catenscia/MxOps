@@ -370,7 +370,7 @@ You can find more information in the MultiversX documentation about [non fungibl
 
 ### Loop Step
 
-This steps allows to run a set of steps for a given number of times.
+This step allows to run a set of steps for a given number of times.
 A loop variable is created and can be used as an arguments for the steps inside the loop.
 
 ```yaml
@@ -417,7 +417,7 @@ Heads up to the {doc}`values` section for more information.
 
 ### Python Step
 
-This steps allows to execute a custom python function. You can execute whatever you want in the python function. This `Step` is here to give you maximum flexibility, making `MxOps` suitable for all the needs of you project. Here are some basic use case for the python `Step`:
+This step allows to execute a custom python function. You can execute whatever you want in the python function. This `Step` is here to give you maximum flexibility, making `MxOps` suitable for all the needs of you project. Here are some basic use case for the python `Step`:
   - complex calculation (results can be saved as `MxOps` or environment values)
   - complex query parsing
   - randomness generation
@@ -450,3 +450,27 @@ You can find examples of python `Steps` in this {doc}`section<../examples/python
 ```{warning}
 MxOps is completely permissive and lets you do anything you want in the python `Step`, including changing the behavior of MxOps itself. Test everything you do on localnet and devnet before taking any action on mainnet.
 ```
+
+### Scene Step
+
+This step simply runs a `Scene`. It can be used either to organize different executions or more importantly, to avoid copy pasting `Steps`. 
+
+```yaml
+type: Scene
+scene_path: ./integration_tests/setup_scenes/sub_scenes/send_egld.yaml
+```
+
+For example, let's say you have several transactions to make to assign a given role in your organization to a wallet and you also want to assign this role to several wallets. This can be done elegantly with the scene below:
+
+```yaml
+steps:
+  - type: Loop
+    var_name: USER_FOR_ROLE
+    var_list: [françois, jacques, jean]
+    steps:
+      - type: Scene
+        scene_path: assign_role.yaml
+```
+
+Then, all of the `Steps` is the `Scene` `assign_role.yaml` should be written while using `$USER_FOR_ROLE` instead of the address of the wallet you want to assign the role to.
+This will apply all the `Steps` to françois, jacques and jean without having to copy/paste the `Steps` for each one of them.
