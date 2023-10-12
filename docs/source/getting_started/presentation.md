@@ -84,7 +84,7 @@ Here is the above `Scene`, but this time with the MxOps syntax:
           - "[owner]"
       expected_results:
         - save_key: ownerStakedAmount
-          result_type: number
+          result_type: int
 
     - type: ContractCall
       sender: owner

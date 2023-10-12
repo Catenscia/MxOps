@@ -392,10 +392,10 @@ class ContractQueryStep(Step):
             as_bytes = base64.b64decode(data)
             as_hex = as_bytes.hex()
             try:
-                as_number = int(str(int(as_hex or "0", 16)))
+                as_int = int(str(int(as_hex or "0", 16)))
             except (ValueError, TypeError):
-                as_number = None
-            result = QueryResult(data, as_hex, as_number)
+                as_int = None
+            result = QueryResult(data, as_hex, as_int)
             return result
         except Exception as err:
             raise errors.ParsingError(data, "QueryResult") from err
