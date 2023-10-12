@@ -8,16 +8,18 @@
 - `ContractUpgradeStep`
 - Auto retry for empty query results
 - python step class
+- Value key can now of any depth for `Scenario` data
 
 ### Changed
 
 - 🚨 BREAKING CHANGE 🚨 `checks` attribute has been given for all `TransactionStep`, sometimes replacing `check_success`
+- 🚨 BREAKING CHANGE 🚨 `.` and `[]` are used instead of `%` to specify a `Scenario` value key
+- Upgrade MultiversX python libraries
 
 
 ### Fixed
 
 - Bug with the `skip confirmation` CLI command
-- Upgrade MultiversX python libraries
 - Wrong token properties set during token registration
 
 ## 1.1.0 - 2023-05-11

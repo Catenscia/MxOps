@@ -52,7 +52,7 @@ def test_scenario_attribute_data():
     address = "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t"
 
     # When
-    arg = f"%{contract_id}%address"
+    arg = f"%{contract_id}.address"
     retrieved_value = utils.retrieve_value_from_scenario_data(arg)
 
     # Then
@@ -65,7 +65,7 @@ def test_scenario_saved_data(scenario_data: _ScenarioData):
     scenario_data.set_contract_value(contract_id, "my_key", 7458)
 
     # When
-    arg = f"%{contract_id}%my_key:int"
+    arg = f"%{contract_id}.my_key:int"
     retrieved_value = utils.retrieve_value_from_scenario_data(arg)
 
     # Then
@@ -129,7 +129,7 @@ def test_retrieve_contract_address():
     contract_id = "my_test_contract"
 
     # When
-    address = utils.retrieve_value_from_string(f"%{contract_id}%address")
+    address = utils.retrieve_value_from_string(f"%{contract_id}.address")
 
     # Assert
     assert isinstance(address, str)

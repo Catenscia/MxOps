@@ -22,7 +22,7 @@ steps:
   - type: ManageMetaTokenRoles
     sender: thomas
     is_set: true
-    token_identifier: "%ThomasMeta%identifier"
+    token_identifier: "%ThomasMeta.identifier"
     target: "[thomas]"
     roles:
       - ESDTRoleNFTCreate
@@ -31,5 +31,5 @@ steps:
   
   - type: NonFungibleMint
     sender: thomas
-    token_identifier: "%ThomasMeta%identifier"
+    token_identifier: "%ThomasMeta.identifier"
     amount: 100000000  # 100,000.000 TMT

@@ -175,7 +175,7 @@ can_upgrade: false # optional, defaults to false
 can_add_special_roles: false # optional, defaults to false
 ```
 
-The results of the transaction will be saved. You can make a reference to this token in later `Steps` using its name, for example to retrieve the token identifier: `%MyToken%identifier`.
+The results of the transaction will be saved. You can make a reference to this token in later `Steps` using its name, for example to retrieve the token identifier: `%MyToken.identifier`.
 
 ```{warning}
 To avoid data collision within `MxOps`, `token_name` should be unique within a `Scenario` and should not have a name identical to a `contract_id` in the same `Scenario`.
@@ -232,7 +232,7 @@ can_add_special_roles: false # optional, defaults to false
 can_transfer_nft_create_role: false # optional, defaults to false
 ```
 
-The results of the transaction will be saved. You can make a reference to this token in later `Steps` using its name, for example to retrieve the token identifier: `%MyToken%identifier`.
+The results of the transaction will be saved. You can make a reference to this token in later `Steps` using its name, for example to retrieve the token identifier: `%MyToken.identifier`.
 
 ```{warning}
 To avoid data collision within `MxOps`, `token_name` should be unique within a `Scenario` and should not have a name identical to a `contract_id` in the same `Scenario`.
@@ -256,7 +256,7 @@ can_add_special_roles: false # optional, defaults to false
 can_transfer_nft_create_role: false # optional, defaults to false
 ```
 
-The results of the transaction will be saved. You can make a reference to this token in later `Steps` using its name, for example to retrieve the token identifier: `%MyToken%identifier`.
+The results of the transaction will be saved. You can make a reference to this token in later `Steps` using its name, for example to retrieve the token identifier: `%MyToken.identifier`.
 
 ```{warning}
 To avoid data collision within `MxOps`, `token_name` should be unique within a `Scenario` and should not have a name identical to a `contract_id` in the same `Scenario`.
@@ -281,7 +281,7 @@ can_add_special_roles: false # optional, defaults to false
 can_transfer_nft_create_role: false # optional, defaults to false
 ```
 
-The results of the transaction will be saved. You can make a reference to this token in later `Steps` using its name, for example to retrieve the token identifier: `%MyToken%identifier`.
+The results of the transaction will be saved. You can make a reference to this token in later `Steps` using its name, for example to retrieve the token identifier: `%MyToken.identifier`.
 
 ```{warning}
 To avoid data collision within `MxOps`, `token_name` should be unique within a `Scenario` and should not have a name identical to a `contract_id` in the same `Scenario`.
@@ -399,7 +399,7 @@ steps:
     arguments:
       - TokenIdentifier4
       - $LOOP_VAR # nonce
-      - "%my_first_sc%TokenIdentifier4Amount%" # result of the query
+      - "%my_first_sc.TokenIdentifier4Amount." # result of the query
 ```
 
 Instead of using `var_start` and `var_end` for the loop variable, a custom list of values can be provided with the keyword `var_list` like below.
@@ -432,7 +432,7 @@ module_path: ./folder/my_module.py
 function: my_function
 arguments:  # optional
   - arg1
-  - "%my_contract%query_result"  # using MxOps value
+  - "%my_contract.query_result"  # using MxOps value
 keyword_arguments:  # optional
   key_1: value_1
   key_2: "$VALUE"  # using os env var

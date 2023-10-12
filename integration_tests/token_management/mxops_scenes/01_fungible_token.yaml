@@ -26,7 +26,7 @@ steps:
   - type: ManageFungibleTokenRoles
     sender: jean
     is_set: true
-    token_identifier: "%JeanToken%identifier"
+    token_identifier: "%JeanToken.identifier"
     target: "[jean]"
     roles:
       - ESDTRoleLocalMint
@@ -34,5 +34,5 @@ steps:
   
   - type: FungibleMint
     sender: jean
-    token_identifier: "%JeanToken%identifier"
+    token_identifier: "%JeanToken.identifier"
     amount: 100000000  # 100,000.000 JTK

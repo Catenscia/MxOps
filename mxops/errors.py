@@ -146,7 +146,7 @@ class WrongScenarioDataReference(Exception):
     def __init__(self) -> None:
         message = (
             "Scenario data reference must have the format "
-            r'"%contract_id%valuekey[:optional_format]"'
+            r'"%<value_key>[:optional_format]"'
         )
         super().__init__(message)
 
@@ -183,6 +183,13 @@ class ForbiddenSceneScenario(Exception):
             f"Allowed scenario: {allowed_scenario}"
         )
         super().__init__(message)
+
+
+class WrongDataKeyPath(Exception):
+    """
+    To be raised when a key path does not correspond to the saved
+    data
+    """
 
 
 #############################################################
