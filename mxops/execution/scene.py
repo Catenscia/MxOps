@@ -12,8 +12,8 @@ from typing import Dict, List
 import yaml
 
 from mxops.config.config import Config
-from mxops.data.data import ExternalContractData, ScenarioData
-from mxops.execution.steps import Step, instanciate_steps
+from mxops.data.data import _ScenarioData, ExternalContractData, ScenarioData
+from mxops.execution.steps import LoopStep, SceneStep, Step, instanciate_steps
 from mxops.execution.account import AccountsManager
 from mxops import errors
 from mxops.utils.logger import get_logger
@@ -114,6 +114,24 @@ def execute_scene(scene_path: Path):
 
     # execute steps
     for step in scene.steps:
+        execute_step(step, scenario_data)
+
+
+def execute_step(step: Step, scenario_data: _ScenarioData):
+    """
+    Execute a step
+
+    :param step: step to execute
+    :type step: Step
+    :param scenario_data: data of the current Scenario
+    :type scenario_data: _ScenarioData
+    """
+    if isinstance(step, SceneStep):
+        execute_scene(Path(step.scene_path))
+    elif isinstance(step, LoopStep):
+        for sub_step in step.generate_steps():
+            execute_step(sub_step, scenario_data)
+    else:
         step.execute()
         scenario_data.save()
 

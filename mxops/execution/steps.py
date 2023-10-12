@@ -11,7 +11,7 @@ import os
 from pathlib import Path
 import sys
 import time
-from typing import ClassVar, Dict, List, Set, Union
+from typing import ClassVar, Dict, Iterator, List, Set, Union
 
 from multiversx_sdk_cli.contracts import QueryResult
 from multiversx_sdk_cli.constants import DEFAULT_HRP
@@ -143,9 +143,12 @@ class LoopStep(Step):
     var_end: int = None
     var_list: List[int] = None
 
-    def execute(self):
+    def generate_steps(self) -> Iterator[Step]:
         """
-        Execute in loop the inner steps
+        Generate the steps that sould be executed
+
+        :yield: steps to be executed
+        :rtype: Iterator[Step]
         """
         if self.var_start is not None and self.var_end is not None:
             iterator = range(self.var_start, self.var_end)
@@ -156,7 +159,14 @@ class LoopStep(Step):
         for var in iterator:
             os.environ[self.var_name] = str(var)
             for step in self.steps:
-                step.execute()
+                yield step
+
+    def execute(self):
+        """
+        Does nothing and should not be called. It is still implemented to avoid the
+        warning W0622.
+        """
+        LOGGER.warning("The execute function of a SceneStep was called")
 
     def __post_init__(self):
         """
@@ -1134,3 +1144,20 @@ class PythonStep(Step):
                 )
 
         LOGGER.info(f"Function result: {result}")
+
+
+@dataclass
+class SceneStep(Step):
+    """
+    This Step does nothing asside holding a variable
+    with the path of the scene. The actual action is operated at the `Scene` level.
+    """
+
+    scene_path: str
+
+    def execute(self):
+        """
+        Does nothing and should not be called. It is still implemented to avoid the
+        warning W0622.
+        """
+        LOGGER.warning("The execute function of a SceneStep was called")

@@ -303,6 +303,19 @@ class UnkownStep(Exception):
         return f"Unkown Step name: {self.step_name}"
 
 
+class UnkownVariable(Exception):
+    """
+    to be raised when the user provide a variable name that is unkown
+    """
+
+    def __init__(self, var_name: str) -> None:
+        self.step_name = var_name
+        super().__init__()
+
+    def __str__(self) -> str:
+        return f"Unkown variable: {self.step_name}"
+
+
 class InvalidStepDefinition(Exception):
     """
     to be raised when the arguments provided by the user for a Step are not valid
