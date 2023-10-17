@@ -2,7 +2,7 @@
 Custom module from a user
 """
 from typing import Any
-from mxops.data.data import ScenarioData
+from mxops.data.execution_data import ScenarioData
 
 
 def set_contract_value(contract_id: str, value_key: str, value: Any):

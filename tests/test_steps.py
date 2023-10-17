@@ -1,5 +1,5 @@
 import os
-from mxops.data.data import ScenarioData
+from mxops.data.execution_data import ScenarioData
 from mxops.execution.steps import PythonStep
 
 

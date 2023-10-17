@@ -4,7 +4,7 @@ from pathlib import Path
 from multiversx_sdk_cli.accounts import Account, Address
 from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
 
-from mxops.data.data import InternalContractData, ScenarioData
+from mxops.data.execution_data import InternalContractData, ScenarioData
 from mxops.errors import CheckFailed
 from mxops.execution.account import AccountsManager
 from mxops.execution.checks import TransfersCheck

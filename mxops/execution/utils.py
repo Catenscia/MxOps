@@ -11,7 +11,7 @@ from multiversx_sdk_core.address import Address
 from multiversx_sdk_core.errors import ErrBadAddress
 
 from mxops.config.config import Config
-from mxops.data.data import ScenarioData
+from mxops.data.execution_data import ScenarioData
 from mxops import errors
 from mxops.execution.account import AccountsManager
 

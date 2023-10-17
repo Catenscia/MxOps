@@ -5,7 +5,7 @@ from typing import Any, List
 import pytest
 from mxops import errors
 
-from mxops.data.data import (
+from mxops.data.execution_data import (
     _ScenarioData,
     InternalContractData,
     SavedValuesData,

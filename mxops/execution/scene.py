@@ -12,7 +12,7 @@ from typing import Dict, List
 import yaml
 
 from mxops.config.config import Config
-from mxops.data.data import _ScenarioData, ExternalContractData, ScenarioData
+from mxops.data.execution_data import _ScenarioData, ExternalContractData, ScenarioData
 from mxops.execution.steps import LoopStep, SceneStep, Step, instanciate_steps
 from mxops.execution.account import AccountsManager
 from mxops import errors

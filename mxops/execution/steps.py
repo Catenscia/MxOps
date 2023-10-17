@@ -27,7 +27,7 @@ from multiversx_sdk_network_providers import ProxyNetworkProvider
 from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
 
 from mxops.config.config import Config
-from mxops.data.data import InternalContractData, ScenarioData, TokenData
+from mxops.data.execution_data import InternalContractData, ScenarioData, TokenData
 from mxops.enums import TokenTypeEnum
 from mxops.execution import token_management_builders, utils
 from mxops.execution.account import AccountsManager
@@ -1066,38 +1066,6 @@ class MultiTransfersStep(TransactionStep):
         return builder
 
 
-def instanciate_steps(raw_steps: List[Dict]) -> List[Step]:
-    """
-    Take steps as dictionaries and convert them to their corresponding step classes.
-
-    :param raw_steps: steps to instantiate
-    :type raw_steps: List[Dict]
-    :return: steps instances
-    :rtype: List[Step]
-    """
-    steps_list = []
-    for raw_step in raw_steps:
-        step_type: str = raw_step.pop("type")
-        if raw_step.pop("skip", False):
-            continue
-        step_class_name = (
-            step_type if step_type.endswith("Step") else step_type + "Step"
-        )
-
-        try:
-            step_class_object = getattr(sys.modules[__name__], step_class_name)
-        except AttributeError as err:
-            raise errors.UnkownStep(step_type) from err
-        if not issubclass(step_class_object, Step):
-            raise errors.UnkownStep(step_type)
-        try:
-            step = step_class_object(**raw_step)
-        except Exception as err:
-            raise errors.InvalidStepDefinition(step_type, raw_step) from err
-        steps_list.append(step)
-    return steps_list
-
-
 @dataclass
 class PythonStep(Step):
     """
@@ -1161,3 +1129,35 @@ class SceneStep(Step):
         warning W0622.
         """
         LOGGER.warning("The execute function of a SceneStep was called")
+
+
+def instanciate_steps(raw_steps: List[Dict]) -> List[Step]:
+    """
+    Take steps as dictionaries and convert them to their corresponding step classes.
+
+    :param raw_steps: steps to instantiate
+    :type raw_steps: List[Dict]
+    :return: steps instances
+    :rtype: List[Step]
+    """
+    steps_list = []
+    for raw_step in raw_steps:
+        step_type: str = raw_step.pop("type")
+        if raw_step.pop("skip", False):
+            continue
+        step_class_name = (
+            step_type if step_type.endswith("Step") else step_type + "Step"
+        )
+
+        try:
+            step_class_object = getattr(sys.modules[__name__], step_class_name)
+        except AttributeError as err:
+            raise errors.UnkownStep(step_type) from err
+        if not issubclass(step_class_object, Step):
+            raise errors.UnkownStep(step_type)
+        try:
+            step = step_class_object(**raw_step)
+        except Exception as err:
+            raise errors.InvalidStepDefinition(step_type, raw_step) from err
+        steps_list.append(step)
+    return steps_list
