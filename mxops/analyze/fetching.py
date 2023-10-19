@@ -9,7 +9,7 @@ from tqdm import tqdm
 from multiversx_sdk_network_providers import GenericError, ApiNetworkProvider
 
 from mxops.config.config import Config
-from mxops.data.analyse_data import TransactionsData
+from mxops.data.analyze_data import TransactionsData
 from mxops.utils.logger import get_logger
 from mxops.utils.msc import RateThrottler
 
@@ -60,10 +60,10 @@ def update_transactions_data(txs_data: TransactionsData):
 
         most_recent_tx = sorted(raw_txs, key=lambda x: x["timestamp"], reverse=True)[0]
         most_recent_timestamp = most_recent_tx["timestamp"]
-        pbar.set_description(
-            "Transaction fetched up until "
-            f"{datetime.fromtimestamp(most_recent_timestamp, tz=timezone.utc).isoformat()}"
-        )
+        datetime_str = datetime.fromtimestamp(
+            most_recent_timestamp, tz=timezone.utc
+        ).isoformat()
+        pbar.set_description("Transaction fetched up until " f"{datetime_str}")
         pbar.update(len(raw_txs))
         txs_data.transactions_offset += len(raw_txs)
 

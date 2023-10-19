@@ -11,7 +11,7 @@ from typing import Dict
 from mxops.data.path import get_tx_file_path
 from mxops.utils.logger import get_logger
 
-LOGGER = get_logger("analyse_data")
+LOGGER = get_logger("analyze_data")
 
 
 @dataclass

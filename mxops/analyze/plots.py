@@ -3,19 +3,33 @@ author: Etienne Wallet
 
 This module handlesthe plots to create and save
 """
-from importlib_resources import files
+import sys
 import textwrap
 from typing import Dict, List
+from importlib_resources import files
 
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 import matplotlib.image as mpimg
 
-import numpy as np
 import seaborn as sns
 
-from mxops.data.analyse_data import TransactionsData
-from mxops.analyse import agglomerate
+from mxops.data.analyze_data import TransactionsData
+from mxops.analyze import agglomerate
+
+
+def get_all_plots() -> List[str]:
+    """
+    Return all the plots names of this module
+
+    :return: plot names
+    :rtype: List[str]
+    """
+    results = []
+    for func_name in dir(sys.modules[__name__]):
+        if func_name.startswith("get_") and func_name.endswith("_fig"):
+            results.append(func_name[4:-4])
+    return results
 
 
 def limit_string_length(string: str, max_length: int = 30) -> str:
@@ -33,7 +47,8 @@ def limit_string_length(string: str, max_length: int = 30) -> str:
     if len(string) <= max_length:
         return string
 
-    # If the label is longer than the maximum length, truncate it and insert '...' in the middle
+    # If the label is longer than the maximum length, truncate it
+    # and insert '...' in the middle
     half_max = max_length // 2  # Floor division to get an integer result
     return string[: half_max - 2] + "..." + string[-half_max + 1 :]
 
@@ -44,7 +59,8 @@ def get_colors(categories: List, assigned_colors: Dict | None = None) -> List:
 
     :param categories: categories that will be plotted
     :type categories: List
-    :param assigned_colors: if some colors has been already assigned to some categories. (by index), defaults to None
+    :param assigned_colors: if some colors has been already assigned to some categories
+        (specified with index), defaults to None
     :type assigned_colors: Dict | None, optional
     :return: colors to plot
     :rtype: List
@@ -147,7 +163,8 @@ def get_transactions_status_per_day_fig(txs_data: TransactionsData) -> plt.Figur
 
 def get_functions_per_day_fig(txs_data: TransactionsData) -> plt.Figure:
     """
-    Format the transactions data and create the plot of the transactions function per day
+    Format the transactions data and create the plot of the transactions
+    function per day
 
     :param txs_data: transactions data
     :type txs_data: TransactionsData
@@ -179,7 +196,7 @@ def get_functions_per_day_fig(txs_data: TransactionsData) -> plt.Figure:
     return fig
 
 
-def get_unique_users_perf_day_fig(txs_data: TransactionsData) -> plt.Figure:
+def get_unique_users_per_day_fig(txs_data: TransactionsData) -> plt.Figure:
     """
     Format the transactions data and create the plot of the unique users per day
 

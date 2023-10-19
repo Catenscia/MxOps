@@ -98,7 +98,7 @@ def extract_simple_esdt_transfer(
     :type sender: str
     :param receiver: address of the receiver of the data in bech32
     :type receiver: str
-    :param data: data to analyse for simple ESDT transfer
+    :param data: data to analyze for simple ESDT transfer
     :type data: str
     :return: Transfer found in the data
     :rtype: OnChainTransfer
@@ -124,7 +124,7 @@ def extract_nft_transfer(sender: str, receiver: str, data: str) -> OnChainTransf
     :type sender: str
     :param receiver: address of the receiver of the data in bech32
     :type receiver: str
-    :param data: data to analyse for nft transfer
+    :param data: data to analyze for nft transfer
     :type data: str
     :return: Transfer found in the data
     :rtype: OnChainTransfer
@@ -148,7 +148,7 @@ def extract_multi_transfer(sender: str, data: str) -> List[OnChainTransfer]:
 
     :param sender: address of the sender of the data in bech32
     :type sender: str
-    :param data: data to analyse for multi transfer
+    :param data: data to analyze for multi transfer
     :type data: str
     :return: Transfers found in the data
     :rtype: List[OnChainTransfer]
@@ -190,7 +190,7 @@ def get_transfers_from_data(
     :type sender: str
     :param receiver: address of the receiver of the data in bech 32
     :type receiver: str
-    :param data: data to analyse for transfers
+    :param data: data to analyze for transfers
     :type data: str
     :return: tranfers extracted from the data
     :rtype: List[OnChainTransfer]

@@ -8,7 +8,7 @@ from typing import Dict
 
 import pandas as pd
 
-from mxops.data.analyse_data import TransactionsData
+from mxops.data.analyze_data import TransactionsData
 from mxops.utils.logger import get_logger
 
 

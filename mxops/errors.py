@@ -194,7 +194,7 @@ class WrongDataKeyPath(Exception):
 
 class NoDataForContract(Exception):
     """
-    To be raised when a specified contract has no data saved (analyse submodule)
+    To be raised when a specified contract has no data saved (analyze submodule)
     """
 
     def __init__(self, contract_bech32_address: str) -> None:
