@@ -62,6 +62,11 @@ def initialize_data_folder():
             os.makedirs(network_path.as_posix())
         except FileExistsError:
             pass
+        txs_dir_path = network_path / "transactions"
+        try:
+            os.makedirs(txs_dir_path.as_posix())
+        except FileExistsError:
+            pass
 
 
 def get_scenario_file_path(scenario_name: str, checkpoint_name: str = "") -> Path:
@@ -122,6 +127,27 @@ def get_all_checkpoints_names(scenario_name: str) -> List[str]:
         for file in files
         if file.startswith(prefix) and file.endswith(".json")
     ]
+
+
+def get_tx_file_path(contract_bech32_address: str) -> Path:
+    """
+    Construct and return the path of a the file that will contains the transactions
+    of a contract.
+
+    :param contract_bech32_address: bech32 address of the contract
+    :type contract_bech32_address: str
+    :return: path to the save file
+    :rtype: Path
+    """
+    data_path = get_data_path()
+    config = Config.get_config()
+    network = config.get_network()
+    return (
+        data_path
+        / network.name
+        / "transactions"
+        / f"{contract_bech32_address}_txs.json"
+    )
 
 
 LOGGER.debug(f"MxOps app directory is located at {get_data_path()}")
