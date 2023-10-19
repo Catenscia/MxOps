@@ -192,6 +192,16 @@ class WrongDataKeyPath(Exception):
     """
 
 
+class NoDataForContract(Exception):
+    """
+    To be raised when a specified contract has no data saved (analyse submodule)
+    """
+
+    def __init__(self, contract_bech32_address: str) -> None:
+        message = f"Contract {contract_bech32_address} has no saved data"
+        super().__init__(message)
+
+
 #############################################################
 #
 #                   Transactions Errors
