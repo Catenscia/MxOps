@@ -27,7 +27,9 @@ svg
 str
 utils
 Flaticon
+README
 reusability
 SBTS
 sdk
+VScode
 wasm
