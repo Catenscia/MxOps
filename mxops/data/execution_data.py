@@ -1,7 +1,7 @@
 """
 author: Etienne Wallet
 
-This module contains the functions to load, write and update contracts data
+This module contains the functions to load, write and update scenario data
 """
 from __future__ import annotations
 from copy import deepcopy

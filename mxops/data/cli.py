@@ -18,7 +18,7 @@ from importlib_resources import files
 
 from mxops.data import path
 from mxops.config.config import Config
-from mxops.data.data import ScenarioData, delete_scenario_data
+from mxops.data.execution_data import ScenarioData, delete_scenario_data
 from mxops.enums import parse_network_enum
 from mxops.utils.logger import get_logger
 

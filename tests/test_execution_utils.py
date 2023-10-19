@@ -4,7 +4,7 @@ from multiversx_sdk_cli.accounts import Account
 from multiversx_sdk_cli.contracts import SmartContract
 from multiversx_sdk_core import Address
 
-from mxops.data.data import _ScenarioData
+from mxops.data.execution_data import _ScenarioData
 from mxops.execution import utils
 from mxops.execution.account import AccountsManager
 

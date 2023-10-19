@@ -15,8 +15,8 @@ This step is used to transfer eGLD from an address to another
 ```yaml
 type: EgldTransfer
 sender: bob
-receiver: alice # you can also write bech32 address here
-amount: 7895651689
+receiver: alice   # you can also directly write a bech32 address here
+amount: 7895651689  # integer amount here (for example 1 EGLD = 1000000000000000000)
 ```
 
 ### Fungible Transfer Step
@@ -101,7 +101,7 @@ payable_by_sc: true
 ```{warning}
 Be mindful of the difference in the argument name between the deploy and the update steps.
 
-`contract_id` can only refer to contract managed by MxOps whereas `contract` can be any contract.
+`contract_id` can only refer to a contract managed by MxOps whereas `contract` can be any contract.
 ```
 
 ### Contract Call Step
@@ -116,7 +116,7 @@ endpoint: myEndpoint
 gas_limit: 60000000
 arguments: # optional, args of the endpoint
   - arg1
-value: 0 # optional, amount of eGLD to send
+value: 0 # optional, integer amount of eGLD to send
 esdt_transfers: # optional, ESDTs to send
   - token_identifier: ALICE-123456
     amount: 58411548
@@ -161,7 +161,7 @@ This `Step` is used to issue a new fungible token, a initial supply of tokens wi
 ```yaml
 type: FungibleIssue
 sender: alice
-token_name: MyToken # must be unique in a Scenario
+token_name: MyToken # must be unique within a Scenario
 token_ticker: MTK
 initial_supply: 1000000000 # 1,000,000.000 MTK
 num_decimals: 3
@@ -188,9 +188,9 @@ This `Step` is used to set or unset roles for an address on a fungible token.
 ```yaml
 type: ManageFungibleTokenRoles
 sender: alice
-is_set: true # if false, this will unset the provided roles
 token_identifier: MTK-abcdef
 target: erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw
+is_set: true # if false, this will unset the provided roles
 roles: # choose one or several of the roles below
   - ESDTRoleLocalMint
   - ESDTRoleLocalBurn
@@ -221,7 +221,7 @@ This `Step` is used to issue a new non fungible token (NFT).
 ```yaml
 type: NonFungibleIssue
 sender: alice
-token_name: MyNFT # must be unique in a Scenario
+token_name: MyNFT # must be unique within a Scenario
 token_ticker: MNFT
 can_freeze: false # optional, defaults to false
 can_wipe: false # optional, defaults to false
@@ -245,7 +245,7 @@ This `Step` is used to issue a new semi fungible token (NFT).
 ```yaml
 type: SemiFungibleIssue
 sender: alice
-token_name: MySFT # must be unique in a Scenario
+token_name: MySFT # must be unique within a Scenario
 token_ticker: MSFT
 can_freeze: false # optional, defaults to false
 can_wipe: false # optional, defaults to false
@@ -269,7 +269,7 @@ This `Step` is used to issue a new non fungible token (NFT).
 ```yaml
 type: MetaIssue
 sender: alice
-token_name: MyMeta # must be unique in a Scenario
+token_name: MyMeta # must be unique within a Scenario
 token_ticker: MMT
 num_decimals: 3
 can_freeze: false # optional, defaults to false
@@ -294,9 +294,9 @@ This `Step` is used to set or unset roles for an address on a non fungible token
 ```yaml
 type: ManageNonFungibleTokenRoles
 sender: alice
-is_set: true # if false, this will unset the provided roles
 token_identifier: MNFT-abcdef
 target: erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw
+is_set: true # if false, this will unset the provided roles
 roles: # choose one or several of the roles below
   - ESDTRoleNFTCreate
   - ESDTRoleNFTBurn
@@ -314,9 +314,9 @@ This `Step` is used to set or unset roles for an address on a semi fungible toke
 ```yaml
 type: ManageSemiFungibleTokenRoles
 sender: alice
-is_set: true # if false, this will unset the provided roles
 token_identifier: MNFT-abcdef
 target: erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw
+is_set: true # if false, this will unset the provided roles
 roles: # choose one or several of the roles below
   - ESDTRoleNFTCreate
   - ESDTRoleNFTBurn
@@ -333,9 +333,9 @@ This `Step` is used to set or unset roles for an address on a meta token.
 ```yaml
 type: ManageMetaTokenRoles
 sender: alice
-is_set: true # if false, this will unset the provided roles
 token_identifier: META-abcdef
 target: erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw
+is_set: true # if false, this will unset the provided roles
 roles: # choose one or several of the roles below
   - ESDTRoleNFTCreate
   - ESDTRoleNFTBurn

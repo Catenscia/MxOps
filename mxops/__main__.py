@@ -9,6 +9,7 @@ from importlib import metadata
 
 from importlib_resources import files
 
+from mxops.analyze import cli as analyze_cli
 from mxops.config import cli as config_cli
 from mxops.data import cli as data_cli
 from mxops.execution import cli as execution_cli
@@ -29,6 +30,7 @@ def parse_args() -> Namespace:
     config_cli.add_subparser(subparsers_action)
     data_cli.add_subparser(subparsers_action)
     execution_cli.add_subparser(subparsers_action)
+    analyze_cli.add_subparser(subparsers_action)
 
     subparsers_action.add_parser("version")
 
@@ -54,6 +56,8 @@ def main():
         data_cli.execute_cli(args)
     elif args.command == "execute":
         execution_cli.execute_cli(args)
+    elif args.command == "analyze":
+        analyze_cli.execute_cli(args)
     elif args.command == "version":
         print(metadata.version("mxops"))
 

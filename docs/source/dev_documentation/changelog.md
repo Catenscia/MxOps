@@ -10,11 +10,13 @@
 - python step class
 - Value key can now of any depth for `Scenario` data
 - `SceneStep`
+- `analyze` module
 
 ### Changed
 
 - 🚨 BREAKING CHANGE 🚨 `checks` attribute has been given for all `TransactionStep`, sometimes replacing `check_success`
 - 🚨 BREAKING CHANGE 🚨 `.` and `[]` are used instead of `%` to specify a `Scenario` value key
+- 🚨 BREAKING CHANGE 🚨 `data.data.py` renamed into `data.execution_data.py`
 - Upgrade MultiversX python libraries
 - `int` is preferred over `number` for query return type
 

@@ -6,6 +6,7 @@ This module contains utils various functions
 from configparser import NoOptionError
 import hashlib
 from pathlib import Path
+import time
 
 from mxops.config.config import Config
 
@@ -87,3 +88,25 @@ def int_to_pair_hex(number: int) -> str:
     if len(hex_str) % 2:
         return "0" + hex_str
     return hex_str
+
+
+class RateThrottler:
+    """
+    This class represent a rate throttler
+    """
+
+    def __init__(self, number: int, period: float) -> None:
+        self.unit_period = period / number
+        self.min_next_tick_timestamp = 0
+
+    def tick(self):
+        """
+        This endpoint is meant to be called before the action to be throttled
+        is taken. If it is called faster than the allowed rate, it will wait until
+        the correct time.
+        """
+        current_timestamp = time.time()
+        delta = self.min_next_tick_timestamp - current_timestamp
+        if delta > 0:
+            time.sleep(delta)
+        self.min_next_tick_timestamp = time.time() + self.unit_period

@@ -1,4 +1,5 @@
 api
+APIs
 AppDir
 AppFolder
 arg
@@ -26,7 +27,9 @@ svg
 str
 utils
 Flaticon
+README
 reusability
 SBTS
 sdk
+VScode
 wasm

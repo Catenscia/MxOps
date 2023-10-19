@@ -3,7 +3,7 @@ from typing import Dict, List
 from multiversx_sdk_network_providers.constants import ESDT_CONTRACT_ADDRESS
 from multiversx_sdk_cli.contracts import QueryResult
 
-from mxops.data.data import ScenarioData
+from mxops.data.execution_data import ScenarioData
 from mxops.execution.steps import ContractQueryStep
 from mxops.execution.utils import parse_query_result
 

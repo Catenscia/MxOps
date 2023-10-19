@@ -19,18 +19,20 @@ At execution time, the user will designate the `Scenario` in which the actions w
 
 ```yaml
 
-# list of network onto which this scene can be run
+# List of network onto which this scene can be run
 allowed_networks:
   - mainnet
   - devnet
 
-# list of scenario into which this scene can be run
+# List of scenario into which this scene can be run
+# Regex can be used. For example ".*" allows all scenario.
 allowed_scenario:
-  - ".*"  # regex allowed here (in this case ".*" allows everything)
+    - "<scenario_name_or_regex>"
+    - "<scenario_name_or_regex>"
 
-# list of accounts details. To be defined only once per execution
-# In case of the execution of several scenes. This can be defined in a single file.
-# names have to be unique or they will override each other
+# List of the accounts that will be used in this scene or in other scenes later scenes. This means that
+# if you execute a folder of scenes for example, you only need to define the accounts in the first executed scene.
+# Names have to be unique or they will override each other
 accounts:
   - account_name: bob
     pem_path: path/to/bom_pem
@@ -38,12 +40,12 @@ accounts:
     ledger_account_index: 12
     ledger_address_index: 2
 
-# external contracts that will be called for transactions or queries in future steps
+# External contracts that will be called for transactions or queries in future steps
 external_contracts:
   egld_wrapper: erd1qqqqqqqqqqqqqpgqhe8t5jewej70zupmh44jurgn29psua5l2jps3ntjj3 
   xexchange_router: erd1qqqqqqqqqqqqqpgqq66xk9gfr4esuhem3jru86wg5hvp33a62jps2fy57p
 
-# list of the steps to execute
+# List of the steps to execute in this scene
 steps:
   - type: ContractDeploy
     sender: bob

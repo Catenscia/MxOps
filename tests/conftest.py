@@ -2,7 +2,11 @@ from pathlib import Path
 import pytest
 
 from mxops.config.config import Config
-from mxops.data.data import InternalContractData, ScenarioData, delete_scenario_data
+from mxops.data.execution_data import (
+    InternalContractData,
+    ScenarioData,
+    delete_scenario_data,
+)
 from mxops.data.path import initialize_data_folder
 from mxops.enums import NetworkEnum
 
