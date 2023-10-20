@@ -71,12 +71,12 @@ was successful, that the eGLD was sent to the contract and that we received wrap
         condition: exact
         expected_transfers:
           - sender: "[user]"
-            receiver: "%egld_wrapper_shard_2%address"
+            receiver: "%egld_wrapper_shard_2.address"
             token_identifier: EGLD
             amount: 10000
-          - sender: "%egld_wrapper_shard_2%address"
+          - sender: "%egld_wrapper_shard_2.address"
             receiver: "[user]"
-            token_identifier: "%egld_wrapper_shard_2%WrappedTokenIdentifier"
+            token_identifier: "%egld_wrapper_shard_2.WrappedTokenIdentifier"
             amount: 10000
 ```
 
@@ -89,7 +89,7 @@ And lastly we can unwrap our WEGLD:
     endpoint: unwrapEgld
     gas_limit: 3000000
     esdt_transfers:
-      - token_identifier: "%egld_wrapper_shard_2%WrappedTokenIdentifier"
+      - token_identifier: "%egld_wrapper_shard_2.WrappedTokenIdentifier"
         amount: 10000
         nonce: 0
     checks:
@@ -99,10 +99,10 @@ And lastly we can unwrap our WEGLD:
         condition: exact
         expected_transfers:
           - sender: "[user]"
-            receiver: "%egld_wrapper_shard_2%address"
-            token_identifier: "%egld_wrapper_shard_2%WrappedTokenIdentifier"
+            receiver: "%egld_wrapper_shard_2.address"
+            token_identifier: "%egld_wrapper_shard_2.WrappedTokenIdentifier"
             amount: 10000
-          - sender: "%egld_wrapper_shard_2%address"
+          - sender: "%egld_wrapper_shard_2.address"
             receiver: "[user]"
             token_identifier: EGLD
             amount: 10000
@@ -142,12 +142,12 @@ steps:
         condition: exact
         expected_transfers:
           - sender: "[user]"
-            receiver: "%egld_wrapper_shard_2%address"
+            receiver: "%egld_wrapper_shard_2.address"
             token_identifier: EGLD
             amount: 10000
-          - sender: "%egld_wrapper_shard_2%address"
+          - sender: "%egld_wrapper_shard_2.address"
             receiver: "[user]"
-            token_identifier: "%egld_wrapper_shard_2%WrappedTokenIdentifier"
+            token_identifier: "%egld_wrapper_shard_2.WrappedTokenIdentifier"
             amount: 10000
 
   - type: ContractCall
@@ -156,7 +156,7 @@ steps:
     endpoint: unwrapEgld
     gas_limit: 3000000
     esdt_transfers:
-      - token_identifier: "%egld_wrapper_shard_2%WrappedTokenIdentifier"
+      - token_identifier: "%egld_wrapper_shard_2.WrappedTokenIdentifier"
         amount: 10000
         nonce: 0
     checks:
@@ -166,10 +166,10 @@ steps:
         condition: exact
         expected_transfers:
           - sender: "[user]"
-            receiver: "%egld_wrapper_shard_2%address"
-            token_identifier: "%egld_wrapper_shard_2%WrappedTokenIdentifier"
+            receiver: "%egld_wrapper_shard_2.address"
+            token_identifier: "%egld_wrapper_shard_2.WrappedTokenIdentifier"
             amount: 10000
-          - sender: "%egld_wrapper_shard_2%address"
+          - sender: "%egld_wrapper_shard_2.address"
             receiver: "[user]"
             token_identifier: EGLD
             amount: 10000

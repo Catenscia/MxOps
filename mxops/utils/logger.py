@@ -17,12 +17,14 @@ def get_logger(name: str) -> logging.Logger:
     :rtype: logging.Logger
     """
     logger = logging.getLogger(name)
-    log_level = os.environ.get('MXOPS_LOG_LEVEL', 'INFO')
+    log_level = os.environ.get("MXOPS_LOG_LEVEL", "INFO")
     logger.setLevel(log_level)
 
     # create formatter and add it to the handlers
-    log_format = ('[%(asctime)s %(name)s %(levelname)s]'
-                  ' %(message)s [%(name)s:%(lineno)d in %(funcName)s]')
+    log_format = (
+        "[%(asctime)s %(name)s %(levelname)s]"
+        " %(message)s [%(filename)s:%(lineno)d in %(funcName)s]"
+    )
     formatter = logging.Formatter(log_format)
 
     # create console handler for logger.

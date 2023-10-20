@@ -17,18 +17,22 @@ class AccountsManager:
     This class is used to load and sync the MultiversX accounts
     This allows to handle nonce incrementation in a centralised place
     """
+
     _accounts = {}
 
     @classmethod
-    def load_account(cls,
-                     account_name: str,
-                     pem_path: Optional[str] = None,
-                     ledger_account_index: Optional[int] = None,
-                     ledger_address_index: Optional[int] = None):
+    def load_account(
+        cls,
+        account_name: str,
+        pem_path: Optional[str] = None,
+        ledger_account_index: Optional[int] = None,
+        ledger_address_index: Optional[int] = None,
+    ):
         """
         Load an account from a pem path or ledger indices
 
-        :param account_name: name that will be used to reference this account. Must be unique.
+        :param account_name: name that will be used to reference this account.
+            Must be unique.
         :type account_name: str
         :param pem_path: string path to the PEM file, defaults to None
         :type pem_path: Optional[str], optional
@@ -37,14 +41,14 @@ class AccountsManager:
         :param ledger_address_index: index of the ledger address, defaults to None
         :type ledger_address_index: Optional[int], optional
         """
-        if (ledger_account_index is not None
-                and ledger_address_index is not None):
-            cls._accounts[account_name] = LedgerAccount(ledger_account_index,
-                                                        ledger_address_index)
+        if ledger_account_index is not None and ledger_address_index is not None:
+            cls._accounts[account_name] = LedgerAccount(
+                ledger_account_index, ledger_address_index
+            )
         elif isinstance(pem_path, str):
             cls._accounts[account_name] = Account(pem_file=pem_path)
         else:
-            raise ValueError(f'{account_name} is not correctly configured')
+            raise ValueError(f"{account_name} is not correctly configured")
 
     @classmethod
     def get_account(cls, account_name: str) -> Account:
@@ -71,8 +75,8 @@ class AccountsManager:
         :type account_name: str
         """
         config = Config.get_config()
-        proxy = ProxyNetworkProvider(config.get('PROXY'))
+        proxy = ProxyNetworkProvider(config.get("PROXY"))
         try:
             cls._accounts[account_name].sync_nonce(proxy)
         except KeyError as err:
-            raise RuntimeError(f'Unkown account {account_name}') from err
+            raise RuntimeError(f"Unkown account {account_name}") from err

@@ -1,5 +1,0 @@
-[MESSAGES CONTROL]
-disable=W1203
-
-[FORMAT]
-good-names=tx,i,x,e

@@ -24,15 +24,19 @@ class ParsingError(Exception):
     To be raise when some data could not be parsed successfuly
     """
 
-    def __init__(self, raw_object: Any, parsing_target: str, ) -> None:
+    def __init__(
+        self,
+        raw_object: Any,
+        parsing_target: str,
+    ) -> None:
         message = f"Could not parse {raw_object} as {parsing_target}"
         super().__init__(message)
 
 
 class NewTokenIdentifierNotFound(Exception):
     """
-    To be raised when the token identifier of newly issued token was not found in the results
-    of the transaction
+    To be raised when the token identifier of newly issued token was not found in
+    the results of the transaction
     """
 
 
@@ -49,7 +53,7 @@ class UnknownScenario(Exception):
     """
 
     def __init__(self, scenario_name: str) -> None:
-        message = f'Scenario {scenario_name} is unkown'
+        message = f"Scenario {scenario_name} is unkown"
         super().__init__(message)
 
 
@@ -59,7 +63,7 @@ class UnloadedScenario(Exception):
     """
 
     def __init__(self) -> None:
-        message = 'Scenario data was not loaded'
+        message = "Scenario data was not loaded"
         super().__init__(message)
 
 
@@ -69,8 +73,7 @@ class UnknownContract(Exception):
     """
 
     def __init__(self, scenario_name: str, contract_id: str) -> None:
-        message = (f'Contract {contract_id} is unkown in '
-                   f'scenario {scenario_name}')
+        message = f"Contract {contract_id} is unkown in " f"scenario {scenario_name}"
         super().__init__(message)
 
 
@@ -80,7 +83,7 @@ class UnknownAccount(Exception):
     """
 
     def __init__(self, account_name: str) -> None:
-        message = f'Account {account_name} is unkown in the current scene'
+        message = f"Account {account_name} is unkown in the current scene"
         super().__init__(message)
 
 
@@ -90,7 +93,7 @@ class ContractIdAlreadyExists(Exception):
     """
 
     def __init__(self, contract_id: str) -> None:
-        message = f'Contract id {contract_id} already exists'
+        message = f"Contract id {contract_id} already exists"
         super().__init__(message)
 
 
@@ -100,8 +103,7 @@ class UnknownToken(Exception):
     """
 
     def __init__(self, scenario_name: str, token_name: str) -> None:
-        message = (f'Token named {token_name} is unkown in '
-                   f'scenario {scenario_name}')
+        message = f"Token named {token_name} is unkown in " f"scenario {scenario_name}"
         super().__init__(message)
 
 
@@ -111,7 +113,7 @@ class TokenNameAlreadyExists(Exception):
     """
 
     def __init__(self, token_name: str) -> None:
-        message = f'Token named {token_name} already exists'
+        message = f"Token named {token_name} already exists"
         super().__init__(message)
 
 
@@ -121,8 +123,7 @@ class UnknownRootName(Exception):
     """
 
     def __init__(self, scenario_name: str, root_name: str) -> None:
-        message = (f'Root named {root_name} is unkown in '
-                   f'scenario {scenario_name}')
+        message = f"Root named {root_name} is unkown in " f"scenario {scenario_name}"
         super().__init__(message)
 
 
@@ -132,7 +133,7 @@ class ScenarioNameAlreadyExists(Exception):
     """
 
     def __init__(self, scenario_name: str) -> None:
-        message = f'Scenario name {scenario_name} already exists'
+        message = f"Scenario name {scenario_name} already exists"
         super().__init__(message)
 
 
@@ -143,8 +144,10 @@ class WrongScenarioDataReference(Exception):
     """
 
     def __init__(self) -> None:
-        message = ('Scenario data reference must have the format '
-                   r'"%contract_id%valuekey[:optional_format]"')
+        message = (
+            "Scenario data reference must have the format "
+            r'"%<value_key>[:optional_format]"'
+        )
         super().__init__(message)
 
 
@@ -154,11 +157,14 @@ class ForbiddenSceneNetwork(Exception):
     a network that the scene does not allow
     """
 
-    def __init__(self, scene_path: Path, network_name: str, allowed_networks: List[str]) -> None:
-        message = (f'Scene {scene_path} not allowed to be executed '
-                   f'in the network {network_name}.\n'
-                   f'Allowed networks: {allowed_networks}'
-                   )
+    def __init__(
+        self, scene_path: Path, network_name: str, allowed_networks: List[str]
+    ) -> None:
+        message = (
+            f"Scene {scene_path} not allowed to be executed "
+            f"in the network {network_name}.\n"
+            f"Allowed networks: {allowed_networks}"
+        )
         super().__init__(message)
 
 
@@ -168,12 +174,33 @@ class ForbiddenSceneScenario(Exception):
     a scenario that the scene does not allow
     """
 
-    def __init__(self, scene_path: Path, scenario_name: str, allowed_scenario: List[str]) -> None:
-        message = (f'Scene {scene_path} not allowed to be executed '
-                   f'in the scenario {scenario_name}.\n'
-                   f'Allowed scenario: {allowed_scenario}'
-                   )
+    def __init__(
+        self, scene_path: Path, scenario_name: str, allowed_scenario: List[str]
+    ) -> None:
+        message = (
+            f"Scene {scene_path} not allowed to be executed "
+            f"in the scenario {scenario_name}.\n"
+            f"Allowed scenario: {allowed_scenario}"
+        )
         super().__init__(message)
+
+
+class WrongDataKeyPath(Exception):
+    """
+    To be raised when a key path does not correspond to the saved
+    data
+    """
+
+
+class NoDataForContract(Exception):
+    """
+    To be raised when a specified contract has no data saved (analyze submodule)
+    """
+
+    def __init__(self, contract_bech32_address: str) -> None:
+        message = f"Contract {contract_bech32_address} has no saved data"
+        super().__init__(message)
+
 
 #############################################################
 #
@@ -193,7 +220,7 @@ class TransactionError(Exception):
         super().__init__()
 
     def __str__(self) -> str:
-        return f'Error on transaction {get_tx_link(self.tx.hash)}\n'
+        return f"Error on transaction {get_tx_link(self.tx.hash)}\n"
 
 
 class FailedTransactionError(TransactionError):
@@ -248,6 +275,7 @@ class EmptyQueryResults(Exception):
 #
 #############################################################
 
+
 class CheckFailed(Exception):
     """
     To be raised when an on-chain transaction check fails
@@ -259,7 +287,10 @@ class CheckFailed(Exception):
         super().__init__()
 
     def __str__(self) -> str:
-        return f'Check failed on transaction {get_tx_link(self.tx.hash)}\nCheck: {self.check}'
+        return (
+            f"Check failed on transaction {get_tx_link(self.tx.hash)}"
+            f"\nCheck: {self.check}"
+        )
 
 
 #############################################################
@@ -267,6 +298,7 @@ class CheckFailed(Exception):
 #                   User Errors
 #
 #############################################################
+
 
 class UnkownStep(Exception):
     """
@@ -278,7 +310,20 @@ class UnkownStep(Exception):
         super().__init__()
 
     def __str__(self) -> str:
-        return f'Unkown Step name: {self.step_name}'
+        return f"Unkown Step name: {self.step_name}"
+
+
+class UnkownVariable(Exception):
+    """
+    to be raised when the user provide a variable name that is unkown
+    """
+
+    def __init__(self, var_name: str) -> None:
+        self.step_name = var_name
+        super().__init__()
+
+    def __str__(self) -> str:
+        return f"Unkown variable: {self.step_name}"
 
 
 class InvalidStepDefinition(Exception):
@@ -292,4 +337,4 @@ class InvalidStepDefinition(Exception):
         super().__init__()
 
     def __str__(self) -> str:
-        return f'Step {self.step_name} received invalid parameters {self.parameters}'
+        return f"Step {self.step_name} received invalid parameters {self.parameters}"

@@ -12,14 +12,14 @@ steps:
     endpoint: getPingAmount
     expected_results:
       - save_key: PingAmount
-        result_type: number
+        result_type: int
 
   - type: ContractCall
     sender: owner
     contract: "egld-ping-pong"
     endpoint: ping
     gas_limit: 3000000
-    value: "%egld-ping-pong%PingAmount"
+    value: "%egld-ping-pong.PingAmount"
     checks:
       - type: Success
 
@@ -27,9 +27,9 @@ steps:
         condition: exact
         expected_transfers:
           - sender: "[owner]"
-            receiver: "%egld-ping-pong%address"
+            receiver: "%egld-ping-pong.address"
             token_identifier: EGLD
-            amount: "%egld-ping-pong%PingAmount"
+            amount: "%egld-ping-pong.PingAmount"
 
   - type: ContractCall
     sender: owner
@@ -42,7 +42,7 @@ steps:
       - type: Transfers
         condition: exact
         expected_transfers:
-          - sender: "%egld-ping-pong%address"
+          - sender: "%egld-ping-pong.address"
             receiver: "[owner]"
             token_identifier: EGLD
-            amount: "%egld-ping-pong%PingAmount"
+            amount: "%egld-ping-pong.PingAmount"

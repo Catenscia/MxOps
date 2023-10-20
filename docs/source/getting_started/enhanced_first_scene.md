@@ -93,7 +93,7 @@ Such `Step` would look like this:
     endpoint: getPingAmount
     expected_results:
       - save_key: PingAmount
-        result_type: number
+        result_type: int
 ```
 
 This tells `MxOps` to save (in the current `Scenario`) the value from the query result and to attach it to the contract "egld-ping-pong" under the key name "PingAmount".
@@ -106,7 +106,7 @@ We can reuse this value during the ping `Step`:
     contract: "egld-ping-pong"
     endpoint: ping
     gas_limit: 3000000
-    value: "%egld-ping-pong%PingAmount"
+    value: "%egld-ping-pong.PingAmount"
 ```
 
 This 'save&reuse' workflow allows you to make complex and dynamic `Scenes`: it can save you a ton of time in situations like complex and interdependent multi-deployment.
@@ -121,7 +121,7 @@ MxOps checks by default that a transaction is successful. In our case, we would 
     contract: "egld-ping-pong"
     endpoint: ping
     gas_limit: 3000000
-    value: "%egld-ping-pong%PingAmount"
+    value: "%egld-ping-pong.PingAmount"
     checks:
       - type: Success
 
@@ -129,9 +129,9 @@ MxOps checks by default that a transaction is successful. In our case, we would 
         condition: exact
         expected_transfers:
           - sender: "[owner]"
-            receiver: "%egld-ping-pong%address"
+            receiver: "%egld-ping-pong.address"
             token_identifier: EGLD
-            amount: "%egld-ping-pong%PingAmount"
+            amount: "%egld-ping-pong.PingAmount"
 ```
 
 We take advantages of the variable format of MxOps to specify the value for the transfer. The above check tells MxOps that the transaction should contain only one transfer, and that it should be an eGLD transfer of `PingAmount` token from the user `owner` to the `egld-ping-pong` contract.
@@ -157,14 +157,14 @@ steps:
     endpoint: getPingAmount
     expected_results:
       - save_key: PingAmount
-        result_type: number
+        result_type: int
 
   - type: ContractCall
     sender: owner
     contract: "egld-ping-pong"
     endpoint: ping
     gas_limit: 3000000
-    value: "%egld-ping-pong%PingAmount"
+    value: "%egld-ping-pong.PingAmount"
 
   - type: ContractCall
     sender: owner

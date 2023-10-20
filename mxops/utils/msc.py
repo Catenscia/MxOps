@@ -6,6 +6,7 @@ This module contains utils various functions
 from configparser import NoOptionError
 import hashlib
 from pathlib import Path
+import time
 
 from mxops.config.config import Config
 
@@ -20,8 +21,8 @@ def get_explorer_tx_link(tx_hash: str) -> str:
     :rtype: str
     """
     config = Config.get_config()
-    explorer_url = config.get('EXPLORER_URL')
-    return f'{explorer_url}/transactions/{tx_hash}'
+    explorer_url = config.get("EXPLORER_URL")
+    return f"{explorer_url}/transactions/{tx_hash}"
 
 
 def get_proxy_tx_link(tx_hash: str) -> str:
@@ -34,8 +35,8 @@ def get_proxy_tx_link(tx_hash: str) -> str:
     :rtype: str
     """
     config = Config.get_config()
-    proxy = config.get('PROXY')
-    return f'{proxy}/transaction/{tx_hash}'
+    proxy = config.get("PROXY")
+    return f"{proxy}/transaction/{tx_hash}"
 
 
 def get_tx_link(tx_hash: str) -> str:
@@ -65,7 +66,7 @@ def get_file_hash(file_path: Path) -> str:
     """
     block_size = 65536
     file_hash = hashlib.sha256()
-    with open(file_path.as_posix(), 'rb') as file:
+    with open(file_path.as_posix(), "rb") as file:
         file_block = file.read(block_size)
         while len(file_block) > 0:
             file_hash.update(file_block)
@@ -85,5 +86,27 @@ def int_to_pair_hex(number: int) -> str:
     """
     hex_str = hex(number)[2:]
     if len(hex_str) % 2:
-        return '0' + hex_str
+        return "0" + hex_str
     return hex_str
+
+
+class RateThrottler:
+    """
+    This class represent a rate throttler
+    """
+
+    def __init__(self, number: int, period: float) -> None:
+        self.unit_period = period / number
+        self.min_next_tick_timestamp = 0
+
+    def tick(self):
+        """
+        This endpoint is meant to be called before the action to be throttled
+        is taken. If it is called faster than the allowed rate, it will wait until
+        the correct time.
+        """
+        current_timestamp = time.time()
+        delta = self.min_next_tick_timestamp - current_timestamp
+        if delta > 0:
+            time.sleep(delta)
+        self.min_next_tick_timestamp = time.time() + self.unit_period

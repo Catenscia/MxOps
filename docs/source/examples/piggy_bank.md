@@ -289,8 +289,8 @@ When we deploy the `piggy-bank` contract, we need to supply two arguments: the t
 
 We could supply theses values by hand but that would be a huge waste of time and very prone to errors. Instead we can use the {doc}`../user_documentation/values` system of `MxOps`:
 
-We can access the address of the `esdt-minter` contract we just deployed by using its id: `%abc-esdt-minter%address`.
-As we also save the token identifier, we can access it too: `%abc-esdt-minter%EsdtIdentifier`.
+We can access the address of the `esdt-minter` contract we just deployed by using its id: `%abc-esdt-minter.address`.
+As we also save the token identifier, we can access it too: `%abc-esdt-minter.EsdtIdentifier`.
 
 ```yaml
 type: ContractDeploy
@@ -299,8 +299,8 @@ wasm_path: "./contracts/piggy-bank/output/piggy-bank.wasm"
 contract_id: "abc-piggy-bank"
 gas_limit: 80000000
 arguments:
-    - "%abc-esdt-minter%EsdtIdentifier"
-    - "%abc-esdt-minter%address"
+    - "%abc-esdt-minter.EsdtIdentifier"
+    - "%abc-esdt-minter.address"
 upgradeable: true
 readable: false
 payable: false
@@ -318,7 +318,7 @@ contract: "abc-esdt-minter"
 endpoint: addInterestAddress
 gas_limit: 5000000
 arguments:
-    - "%abc-piggy-bank%address"
+    - "%abc-piggy-bank.address"
 ```
 
 ##### Results
@@ -341,8 +341,8 @@ steps:
     contract_id: "abc-piggy-bank"
     gas_limit: 80000000
     arguments:
-      - "%abc-esdt-minter%EsdtIdentifier"
-      - "%abc-esdt-minter%address"
+      - "%abc-esdt-minter.EsdtIdentifier"
+      - "%abc-esdt-minter.address"
     upgradeable: true
     readable: false
     payable: false
@@ -354,7 +354,7 @@ steps:
     endpoint: addInterestAddress
     gas_limit: 5000000
     arguments:
-      - "%abc-piggy-bank%address"
+      - "%abc-piggy-bank.address"
 ```
 
 #### Airdrop
@@ -391,9 +391,9 @@ steps:
       - type: Transfers
         condition: exact
         expected_transfers:
-          - sender: "%abc-esdt-minter%address"
+          - sender: "%abc-esdt-minter.address"
             receiver: "[user]"
-            token_identifier: "%abc-esdt-minter%EsdtIdentifier"
+            token_identifier: "%abc-esdt-minter.EsdtIdentifier"
             amount: 100000
 ```
 
@@ -423,7 +423,7 @@ steps:
         contract: "abc-piggy-bank"
         endpoint: deposit
         esdt_transfers:
-          - token_identifier: "%abc-esdt-minter%EsdtIdentifier"
+          - token_identifier: "%abc-esdt-minter.EsdtIdentifier"
             amount: "$CAPITAL_AMOUNT:int"
             nonce: 0
         gas_limit: 8000000

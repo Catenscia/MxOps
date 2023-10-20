@@ -23,4 +23,10 @@ pip install -U git+https://github.com/Catenscia/MxOps@develop
 
 If you want another branch or version, just replace "develop" by the branch or tag you want.
 
+## Extension
+
+If you use VScode, we recommend you to use the extension `mxopsHelper` which will greatly help you using `MxOps`!
+When installing, take a look at the README of the extension for the features that will assist you.
+
+
 You can now heads up to the {doc}`next section <first_scene>` to learn how to write your first scene! 💪

@@ -1,43 +1,164 @@
 """
 author: Etienne Wallet
 
-This module contains the functions to load, write and update contracts data
+This module contains the functions to load, write and update scenario data
 """
 from __future__ import annotations
+from copy import deepcopy
 from dataclasses import asdict, dataclass, field, is_dataclass
 import json
 import os
 from pathlib import Path
+import re
 import time
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from mxops.config.config import Config
-from mxops.data.path import get_scenario_file_path
+from mxops.data.path import get_all_checkpoints_names, get_scenario_file_path
 from mxops import enums as mxops_enums
 from mxops import errors
 from mxops.utils.logger import get_logger
 
 
-LOGGER = get_logger('data')
+LOGGER = get_logger("data")
 
 
-@dataclass
+def parse_value_key(path) -> List[int | str]:
+    """
+    Parse a value key string into keys and indices using regex.
+
+    e.g. "key_1.key2[2].data" -> ['key_1', 'key2', 2, 'data']
+    """
+    # This regex captures:
+    # - words, possibly including hyphens
+    # - numbers within square brackets
+    pattern = r"([\w\-]+)|\[(\d+)\]"
+    tokens = re.findall(pattern, path)
+
+    # Flatten the list and convert indices to int
+    return [int(index) if index else key for key, index in tokens]
+
+
+@dataclass(kw_only=True)
 class SavedValuesData:
     """
-    Dataclass representing an object that can store values for the environment
+    Dataclass representing an object that can store nested values for the scenario
     """
-    saved_values: Dict[str, Any]
+
+    saved_values: Dict[str, Any] = field(default_factory=dict)
+
+    def _get_element(self, parsed_value_key: List[str | int]) -> Any:
+        """
+        Get the value saved under the specified value key.
+
+
+        :param parsed_value_key: parsed elements of a value key
+        :type parsed_value_key: List[str | int]
+        :return: element saved under the value key
+        :rtype: Any
+        """
+        if len(parsed_value_key) == 0:
+            raise errors.WrongDataKeyPath("Key path is empty")
+        element = self.saved_values
+        for key in parsed_value_key:
+            if isinstance(key, int):
+                if isinstance(element, (tuple, list)):
+                    try:
+                        element = element[key]
+                    except IndexError as err:
+                        raise errors.WrongDataKeyPath(
+                            f"Wrong index {repr(key)} in {parsed_value_key}"
+                            f" for data element {element}"
+                        ) from err
+                else:
+                    raise errors.WrongDataKeyPath(
+                        f"Expected a tuple or a list but found {element}"
+                    )
+            else:
+                if isinstance(element, dict):
+                    try:
+                        element = element[key]
+                    except KeyError as err:
+                        raise errors.WrongDataKeyPath(
+                            f"Wrong key {repr(key)} in {parsed_value_key}"
+                            f" for data element {element}"
+                        ) from err
+                else:
+                    raise errors.WrongDataKeyPath(
+                        f"Expected a dict but found {element}"
+                    )
+        return element
 
     def set_value(self, value_key: str, value: Any):
         """
-        Set the a value under a specified key
+        Set the a value under a specified value key
 
-        :param value_key: key to save the value
+        :param value_key: value key of the value to fetch
         :type value_key: str
         :param value: value to save
         :type value: Any
         """
-        self.saved_values[value_key] = value
+        parsed_value_key = parse_value_key(value_key)
+        element = self.saved_values
+
+        # verify the path and create it if necessary
+        if len(parsed_value_key) > 1:
+            for key, next_key in zip(parsed_value_key[:-1], parsed_value_key[1:]):
+                if isinstance(key, int):
+                    if isinstance(element, list):
+                        element_size = len(element)
+                        if key > element_size:
+                            raise errors.WrongDataKeyPath(
+                                f"Tried to set element {key} of a list but the list"
+                                f" has only {element_size} elements: {element}"
+                            )
+                        if key == element_size:
+                            element.append(  # pylint: disable=E1101
+                                [] if isinstance(next_key, int) else {}
+                            )
+                        element = element[key]
+                    else:
+                        raise errors.WrongDataKeyPath(
+                            f"Expected a list but found {element}"
+                        )
+                else:
+                    if isinstance(element, dict):
+                        try:
+                            element = element[key]
+                        except KeyError:  # key does not exist yet
+                            element[key] = [] if isinstance(next_key, int) else {}
+                            element = element[key]
+                    else:
+                        raise errors.WrongDataKeyPath(
+                            f"Expected a dict but found {element}"
+                        )
+        elif len(parsed_value_key) == 0:
+            raise errors.WrongDataKeyPath("Key path is empty")
+        else:
+            next_key = parsed_value_key[0]
+
+        # set the value
+        value_copy = deepcopy(value)  # in case the value is a complexe type
+        if isinstance(next_key, int):
+            if isinstance(element, (tuple, list)):
+                try:
+                    element[next_key] = value_copy
+                except IndexError as err:
+                    if next_key > len(element):
+                        raise errors.WrongDataKeyPath(
+                            f"Tried to set element {next_key} of a list but the list "
+                            f"has only {len(element)} elements: {element}"
+                        ) from err
+                    element.append(value_copy)
+            else:
+                raise errors.WrongDataKeyPath(
+                    f"Expected a tuple or a list but found {element}"
+                )
+        else:
+            if isinstance(element, dict):
+                element[next_key] = value_copy
+            else:
+                raise errors.WrongDataKeyPath(f"Expected a dict but found {element}")
 
     def get_value(self, value_key: str) -> Any:
         """
@@ -45,29 +166,15 @@ class SavedValuesData:
 
         :param value_key: key for the value
         :type value_key: str
-        :return: value saved under the attribute or the the key provided
+        :return: value saved under the attribute or the value key provided
         :rtype: Any
         """
         try:
             return getattr(self, value_key)
         except AttributeError:
             pass
-        return self.get_saved_value(value_key)
-
-    def get_saved_value(self, value_key: str) -> Any:
-        """
-        Fetch a value saved under a key
-
-        :param value_key: key for the value
-        :type value_key: str
-        :return: value saved under the key
-        :rtype: Any
-        """
-        try:
-            return self.saved_values[value_key]
-        except KeyError as err:
-            raise ValueError(
-                f'Unkown key: {value_key} for data object {self}') from err
+        parsed_value_key = parse_value_key(value_key)
+        return self._get_element(parsed_value_key)
 
 
 @dataclass
@@ -75,6 +182,7 @@ class ContractData(SavedValuesData):
     """
     Dataclass representing the data that can be locally saved for a contract
     """
+
     contract_id: str
     address: str
 
@@ -87,7 +195,7 @@ class ContractData(SavedValuesData):
         :param value: value to save
         :type value: Any
         """
-        if value_key == 'address':
+        if value_key == "address":
             self.address = value
         else:
             super().set_value(value_key, value)
@@ -101,7 +209,7 @@ class ContractData(SavedValuesData):
         """
         self_dict = asdict(self)
         # add attribute to indicate internal/external
-        self_dict['is_external'] = isinstance(self, ExternalContractData)
+        self_dict["is_external"] = isinstance(self, ExternalContractData)
         return self_dict
 
 
@@ -111,9 +219,24 @@ class InternalContractData(ContractData):
     Dataclass representing the data that can be locally saved for a contract
     managed by MxOps
     """
+
     wasm_hash: str
     deploy_time: int
     last_upgrade_time: int
+
+    def set_value(self, value_key: str, value: Any):
+        """
+        Set the a value under a specified key
+
+        :param value_key: key to save the value
+        :type value_key: str
+        :param value: value to save
+        :type value: Any
+        """
+        if value_key == "last_upgrade_time":
+            self.last_upgrade_time = value
+        else:
+            super().set_value(value_key, value)
 
 
 @dataclass
@@ -129,6 +252,7 @@ class TokenData(SavedValuesData):
     """
     Dataclass representing a token issued on MultiversX
     """
+
     name: str
     ticker: str
     identifier: str
@@ -142,7 +266,7 @@ class TokenData(SavedValuesData):
         :rtype: Dict
         """
         self_dict = asdict(self)
-        self_dict['type'] = self.type.value
+        self_dict["type"] = self.type.value
         return self_dict
 
     @classmethod
@@ -155,17 +279,16 @@ class TokenData(SavedValuesData):
         :return: instance from the input dictionary
         :rtype: TokenData
         """
-        formated_data = {
-            'type': mxops_enums.parse_token_type_enum(data['type'])
-        }
+        formated_data = {"type": mxops_enums.parse_token_type_enum(data["type"])}
         return cls(**{**data, **formated_data})
 
 
 @dataclass
-class _ScenarioData:
+class _ScenarioData(SavedValuesData):
     """
     Dataclass representing the data that can be locally saved for a scenario
     """
+
     name: str
     network: mxops_enums.NetworkEnum
     creation_time: int
@@ -265,9 +388,10 @@ class _ScenarioData:
             raise errors.TokenNameAlreadyExists(token_data.name)
         self.tokens_data[token_data.name] = token_data
 
-    def get_value(self, root_name: str, value_key: str) -> Any:
+    def get_value(self, value_key: str) -> Any:
         """
-        Search within tokens data and contracts data the value saved under the provided key
+        Search within tokens data, contracts data and scenario saved values,
+        the value saved under the provided key
 
         :param root_name: contract id or token name that hosts the value
         :type root_name: str
@@ -276,24 +400,53 @@ class _ScenarioData:
         :return: value saved
         :rtype: Any
         """
-        try:
-            return self.get_contract_value(root_name, value_key)
-        except errors.UnknownContract:
-            pass
+        parsed_value_key = parse_value_key(value_key)
+        if len(parsed_value_key) > 1:
+            root_name = parsed_value_key[0]
+            value_sub_key = value_key[len(root_name) + 1 :]  # remove also the dot
+            try:
+                return self.get_contract_value(root_name, value_sub_key)
+            except errors.UnknownContract:
+                pass
+            try:
+                return self.get_token_value(root_name, value_sub_key)
+            except errors.UnknownToken:
+                pass
+        return super().get_value(value_key)
 
-        try:
-            return self.get_token_value(root_name, value_key)
-        except errors.UnknownToken:
-            pass
-        raise errors.UnknownRootName(self.name, root_name)
+    def set_value(self, value_key: str, value: Any):
+        """
+        Set the a value under a specified value key
 
-    def save(self):
+        :param value_key: value key of the value to fetch
+        :type value_key: str
+        :param value: value to save
+        :type value: Any
+        """
+        parsed_value_key = parse_value_key(value_key)
+        if len(parsed_value_key) > 1:
+            root_name = parsed_value_key[0]
+            value_sub_key = value_key[len(root_name) + 1 :]  # remove also the dot
+            try:
+                return self.set_contract_value(root_name, value_sub_key, value)
+            except errors.UnknownContract:
+                pass
+            try:
+                return self.set_token_value(root_name, value_sub_key, value)
+            except errors.UnknownToken:
+                pass
+        return super().set_value(value_key, value)
+
+    def save(self, checkpoint: str = ""):
         """
         Save this scenario data where it belongs.
-        Overwrite any existing file
+        Overwrite any existing file. Will save a checkpoint if provided
+
+        :param checkpoint: contract id or token name that hosts the value
+        :type checkpoint: str
         """
-        scenario_path = get_scenario_file_path(self.name)
-        with open(scenario_path.as_posix(), 'w', encoding='utf-8') as file:
+        scenario_path = get_scenario_file_path(self.name, checkpoint)
+        with open(scenario_path.as_posix(), "w", encoding="utf-8") as file:
             json.dump(self.to_dict(), file)
 
     def to_dict(self) -> Dict:
@@ -317,7 +470,7 @@ class _ScenarioData:
                         self_dict[key][sub_key] = asdict(sub_value)
                     else:
                         self_dict[key][sub_key] = sub_value
-        self_dict['network'] = self.network.value
+        self_dict["network"] = self.network.value
         return self_dict
 
     def _set_update_time(self):
@@ -327,16 +480,20 @@ class _ScenarioData:
         self.last_update_time = int(time.time())
 
     @classmethod
-    def load_from_name(cls, scenario_name: str) -> _ScenarioData:
+    def load_from_name(
+        cls, scenario_name: str, checkpoint_name: str = ""
+    ) -> _ScenarioData:
         """
         Retrieve the locally saved scenario data and instantiate it
 
         :param scenario_name: name of the scenario to load
         :type scenario_name: str
+        :param checkpoint_name: name of the checkpoint of the scenario to load
+        :type checkpoint_name: str
         :return: loaded scenario data
         :rtype: _ScenarioData
         """
-        scenario_path = get_scenario_file_path(scenario_name)
+        scenario_path = get_scenario_file_path(scenario_name, checkpoint_name)
         return cls.load_from_path(scenario_path)
 
     @classmethod
@@ -349,7 +506,7 @@ class _ScenarioData:
         :return: loaded scenario data
         :rtype: _ScenarioData
         """
-        with open(scenario_path.as_posix(), 'r', encoding='utf-8') as file:
+        with open(scenario_path.as_posix(), "r", encoding="utf-8") as file:
             raw_content = json.load(file)
         return cls.from_dict(raw_content)
 
@@ -364,10 +521,10 @@ class _ScenarioData:
         :rtype: ScenarioData
         """
         contracts_data = {}
-        for contract_id, contract_data in data['contracts_data'].items():
+        for contract_id, contract_data in data["contracts_data"].items():
             if isinstance(contract_data, Dict):
                 try:
-                    is_external = contract_data.pop('is_external')
+                    is_external = contract_data.pop("is_external")
                 except KeyError:
                     is_external = False
                 if is_external:
@@ -375,13 +532,13 @@ class _ScenarioData:
                 else:
                     contracts_data[contract_id] = InternalContractData(**contract_data)
 
-        tokens_data = data.get('tokens_data', {})
+        tokens_data = data.get("tokens_data", {})
         tokens_data = {k: TokenData.from_dict(v) for k, v in tokens_data.items()}
 
         formated_data = {
-            'contracts_data': contracts_data,
-            'tokens_data': tokens_data,
-            'network': mxops_enums.parse_network_enum(data['network'])
+            "contracts_data": contracts_data,
+            "tokens_data": tokens_data,
+            "network": mxops_enums.parse_network_enum(data["network"]),
         }
 
         return cls(**{**data, **formated_data})
@@ -409,23 +566,27 @@ class ScenarioData:  # pylint: disable=too-few-public-methods
         return cls._instance
 
     @classmethod
-    def load_scenario(cls, scenario_name: str):
+    def load_scenario(cls, scenario_name: str, checkpoint_name: str = ""):
         """
         Load scenario data singleton.
 
         :param scenario_name: name of the scenario to load
         :type scenario_name: str
+        :param checkpoint_name: name of the checkpoint of the scenario to load
+        :type checkpoint_name: str
         """
         if cls._instance is not None:
             raise errors.UnloadedScenario
         try:
-            cls._instance = _ScenarioData.load_from_name(scenario_name)
+            cls._instance = _ScenarioData.load_from_name(scenario_name, checkpoint_name)
         except FileNotFoundError as err:
             raise errors.UnknownScenario(scenario_name) from err
         config = Config.get_config()
         network = config.get_network()
-        LOGGER.info((f'Scenario {scenario_name} loaded for '
-                     f'network {network.value}'))
+        description = f"scenario {scenario_name}"
+        if checkpoint_name != "":
+            description += f" checkpoint {checkpoint_name}"
+        LOGGER.info(f"{checkpoint_name} loaded for network {network.value}")
 
     @classmethod
     def create_scenario(cls, scenario_name: str):
@@ -436,21 +597,22 @@ class ScenarioData:  # pylint: disable=too-few-public-methods
         :type scenario_name: str
         """
         if check_scenario_file(scenario_name):
-            message = ('A scenario already exists under the name '
-                       f'{scenario_name}. Do you want to override it? (y/n)')
-            if input(message).lower not in ('y', 'yes'):
+            message = (
+                "A scenario already exists under the name "
+                f"{scenario_name}. Do you want to override it? (y/n)"
+            )
+            if input(message).lower not in ("y", "yes"):
                 raise errors.ScenarioNameAlreadyExists(scenario_name)
 
         config = Config.get_config()
         network = config.get_network()
         current_timestamp = int(time.time())
-        cls._instance = _ScenarioData(scenario_name,
-                                      network,
-                                      current_timestamp,
-                                      current_timestamp,
-                                      {})
-        LOGGER.info((f'Scenario {scenario_name} created for '
-                     f'network {network.value}'))
+        cls._instance = _ScenarioData(
+            scenario_name, network, current_timestamp, current_timestamp, {}
+        )
+        LOGGER.info(
+            (f"Scenario {scenario_name} created for " f"network {network.value}")
+        )
 
 
 def check_scenario_file(scenario_name: str) -> bool:
@@ -466,26 +628,47 @@ def check_scenario_file(scenario_name: str) -> bool:
     return Path(file_path).exists()
 
 
-def delete_scenario_data(scenario_name: str, ask_confirmation: bool = True):
+def delete_scenario_data(
+    scenario_name: str, checkpoint_name: str = "", ask_confirmation: bool = True
+):
     """
     Delete locally save data for a given scenario
 
     :param scenario_name: name of the scenario to delete
     :type scenario_name: str
+    :param checkpoint_name: name of the checkpoint to delete. If not specified, all the
+        checkpoints and the current scenario data will be deleted.
+    :type checkpoint_name: str
     :param ask_confirmation: if a deletion confirmation should be asked,
                              defaults to True
     :type ask_confirmation: bool
     """
-    scenario_path = get_scenario_file_path(scenario_name)
-    if ask_confirmation:
-        message = (f'Confirm the deletion of the scenario {scenario_name} '
-                   f'located at {scenario_path.as_posix()}. (y/n)')
-        if input(message).lower() not in ('y', 'yes'):
-            print('User aborted deletion')
-            return
-    try:
-        os.remove(scenario_path.as_posix())
-        LOGGER.info(f'The data of the scenario {scenario_name} has been deleted')
-    except FileNotFoundError:
-        LOGGER.warning((f'The scenario {scenario_name} does'
-                        ' not have any data recorded'))
+    checkpoints_names = get_all_checkpoints_names(scenario_name)
+    if checkpoint_name != "":
+        if checkpoint_name not in checkpoints_names:
+            raise ValueError(
+                f"Scenario {scenario_name} does not contains a checkpoint named "
+                f"{checkpoint_name}.\nList of existing checkpoints: {checkpoints_names}"
+            )
+        checkpoints_names = [checkpoint_name]
+    else:
+        checkpoints_names = [""] + checkpoints_names
+
+    for ckp in checkpoints_names:
+        description = f"scenario {scenario_name}"
+        if ckp != "":
+            description += f" checkpoint {ckp}"
+        scenario_path = get_scenario_file_path(scenario_name, ckp)
+        if ask_confirmation:
+            message = (
+                f"Confirm the deletion of the {description} "
+                f"located at {scenario_path.as_posix()}. (y/n)"
+            )
+            if input(message).lower() not in ("y", "yes"):
+                print("User aborted deletion")
+                continue
+        try:
+            os.remove(scenario_path.as_posix())
+            LOGGER.info(f"The data of the {description} has been deleted")
+        except FileNotFoundError:
+            LOGGER.warning(f"The {description} does not have any data recorded")

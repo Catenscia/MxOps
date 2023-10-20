@@ -15,7 +15,7 @@ from mxops.execution.network import get_on_chain_transfers, raise_on_errors
 from mxops.utils.logger import get_logger
 
 
-LOGGER = get_logger('Checks')
+LOGGER = get_logger("Checks")
 
 
 @dataclass
@@ -76,8 +76,9 @@ class TransfersCheck(Check):
     """
     Check the transfers that an on-chain transaction contains specified transfers
     """
+
     expected_transfers: List[ExpectedTransfer]
-    condition: Literal['exact', 'included'] = 'exact'
+    condition: Literal["exact", "included"] = "exact"
     include_gas_refund: bool = False
 
     def __post_init__(self):
@@ -86,9 +87,13 @@ class TransfersCheck(Check):
         found to be Dict, will try to convert them to TransfersCheck instances.
         Usefull for easy loading from yaml files
         """
-        if self.condition not in ['exact', 'included']:
-            raise ValueError((f'{self.condition} is not an accepted value for '
-                              'TransfersCheck.condition'))
+        if self.condition not in ["exact", "included"]:
+            raise ValueError(
+                (
+                    f"{self.condition} is not an accepted value for "
+                    "TransfersCheck.condition"
+                )
+            )
         expected_transfers = []
         for transfer in self.expected_transfers:
             if isinstance(transfer, Dict):
@@ -96,7 +101,9 @@ class TransfersCheck(Check):
             elif isinstance(transfer, ExpectedTransfer):
                 expected_transfers.append(transfer)
             else:
-                raise TypeError(f'Type {type(transfer)} not supproted for ExpectedTransfer')
+                raise TypeError(
+                    f"Type {type(transfer)} not supproted for ExpectedTransfer"
+                )
         self.expected_transfers = expected_transfers
 
     def get_check_status(self, onchain_tx: TransactionOnNetwork) -> bool:
@@ -114,14 +121,22 @@ class TransfersCheck(Check):
                 i_tr = onchain_transfers.index(expected_transfer)
             except ValueError:
                 evaluated_transfer = expected_transfer.get_dynamic_evaluated()
-                LOGGER.error((f'Expected transfer found no match:\n{evaluated_transfer} '
-                              f'Remaining on-chain transfers:\n{onchain_transfers}'))
+                LOGGER.error(
+                    (
+                        f"Expected transfer found no match:\n{evaluated_transfer} "
+                        f"Remaining on-chain transfers:\n{onchain_transfers}"
+                    )
+                )
                 return False
             onchain_transfers.pop(i_tr)
 
-        if self.condition == 'exact' and len(onchain_transfers) > 0:
-            LOGGER.error((f'Found {len(onchain_transfers)} more transfers than expected:'
-                          f'\n {onchain_transfers}'))
+        if self.condition == "exact" and len(onchain_transfers) > 0:
+            LOGGER.error(
+                (
+                    f"Found {len(onchain_transfers)} more transfers than expected:"
+                    f"\n {onchain_transfers}"
+                )
+            )
             return False
         return True
 
@@ -137,10 +152,10 @@ def instanciate_checks(raw_checks: List[Dict]) -> List[Check]:
     """
     checks_list = []
     for raw_check in raw_checks:
-        check_class_name = raw_check.pop('type') + 'Check'
+        check_class_name = raw_check.pop("type") + "Check"
         try:
             check_class_object = getattr(sys.modules[__name__], check_class_name)
         except AttributeError as err:
-            raise ValueError(f'Unkown check type: {check_class_name}') from err
+            raise ValueError(f"Unkown check type: {check_class_name}") from err
         checks_list.append(check_class_object(**raw_check))
     return checks_list
