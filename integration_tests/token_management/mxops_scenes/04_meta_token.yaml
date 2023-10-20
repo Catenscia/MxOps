@@ -11,13 +11,18 @@ steps:
     token_name: ThomasMeta
     token_ticker: TMT
     num_decimals: 3
-    can_upgrade: true
-    can_transfer_nft_create_role: true
+    can_add_special_roles: true
+
+  - type: Python
+    module_path: ./integration_tests/token_management/scripts/checks.py
+    function: check_token_properties
+    arguments:
+      - "ThomasMeta"
   
   - type: ManageMetaTokenRoles
     sender: thomas
     is_set: true
-    token_identifier: "%ThomasMeta%identifier"
+    token_identifier: "%ThomasMeta.identifier"
     target: "[thomas]"
     roles:
       - ESDTRoleNFTCreate
@@ -26,5 +31,5 @@ steps:
   
   - type: NonFungibleMint
     sender: thomas
-    token_identifier: "%ThomasMeta%identifier"
+    token_identifier: "%ThomasMeta.identifier"
     amount: 100000000  # 100,000.000 TMT

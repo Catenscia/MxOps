@@ -32,6 +32,7 @@ If you are new here, we recommend going first to the :doc:`getting_started/prese
    user_documentation/values
    user_documentation/execution
    user_documentation/config
+   user_documentation/analyze
 
 .. toctree::
    :maxdepth: 1
@@ -40,12 +41,12 @@ If you are new here, we recommend going first to the :doc:`getting_started/prese
    examples/presentation
    examples/piggy_bank
    examples/wrapping
+   examples/python_steps
 
 .. toctree::
    :maxdepth: 1
    :caption: Dev Documentation
 
-   dev_documentation/backlog
    dev_documentation/changelog
 
 .. toctree::

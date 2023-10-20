@@ -8,7 +8,7 @@ NC='\033[0m'
 
 printf "${BLUE}############\n# Unit Tests\n############${NC}\n"
 
-OUTPUT=$(coverage run -m pytest --color=yes -vv)
+OUTPUT=$(coverage run -m pytest tests --color=yes -vv)
 EXIT=$?
 echo -e "${OUTPUT}"
 

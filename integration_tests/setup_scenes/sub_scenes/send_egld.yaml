@@ -1,0 +1,12 @@
+allowed_networks:
+  - localnet
+  - devnet
+
+allowed_scenario:
+  - "integration_test.*"
+
+steps:
+  - type: EgldTransfer
+    sender: emmanuel
+    receiver: $RECEIVER
+    amount: 1000000000000000000  # 1 eGLD

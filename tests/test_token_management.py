@@ -8,7 +8,7 @@ from mxops.execution import token_management
 
 def test_token_identifier_extraction(test_data_folder_path: Path):
     # Given
-    with open(test_data_folder_path / 'api_responses' / 'meta_issue.json') as file:
+    with open(test_data_folder_path / "api_responses" / "meta_issue.json") as file:
         on_chain_tx = TransactionOnNetwork.from_proxy_http_response(**json.load(file))
 
     # When
@@ -20,7 +20,7 @@ def test_token_identifier_extraction(test_data_folder_path: Path):
 
 def test_nonce_extraction(test_data_folder_path: Path):
     # Given
-    with open(test_data_folder_path / 'api_responses' / 'meta_nonce_mint.json') as file:
+    with open(test_data_folder_path / "api_responses" / "meta_nonce_mint.json") as file:
         on_chain_tx = TransactionOnNetwork.from_proxy_http_response(**json.load(file))
 
     # When

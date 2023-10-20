@@ -1,5 +1,5 @@
 """
 author: Etienne Wallet
 
-This subpackage is used to record the parameters / attributes of the deployed contracts
+This subpackage is used to host the logic for analysing on-chain contracts
 """

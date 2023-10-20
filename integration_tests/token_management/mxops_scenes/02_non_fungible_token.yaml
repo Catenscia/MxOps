@@ -12,11 +12,21 @@ steps:
     token_ticker: MNFT
     can_upgrade: true
     can_transfer_nft_create_role: true
+    can_pause: true
+    can_wipe: true
+    can_freeze: true
+    can_add_special_roles: true
+
+  - type: Python
+    module_path: ./integration_tests/token_management/scripts/checks.py
+    function: check_token_properties
+    arguments:
+      - "MarcNFT"
   
   - type: ManageNonFungibleTokenRoles
     sender: marc
     is_set: true
-    token_identifier: "%MarcNFT%identifier"
+    token_identifier: "%MarcNFT.identifier"
     target: "[marc]"
     roles:
       - ESDTRoleNFTCreate
@@ -28,14 +38,14 @@ steps:
   - type: ManageNonFungibleTokenRoles
     sender: marc
     is_set: true
-    token_identifier: "%MarcNFT%identifier"
+    token_identifier: "%MarcNFT.identifier"
     target: "[marie]"
     roles:
       - ESDTTransferRole
   
   - type: NonFungibleMint
     sender: marc
-    token_identifier: "%MarcNFT%identifier"
+    token_identifier: "%MarcNFT.identifier"
     amount: 1  # can only be one for NFT
     name: "Beautiful NFT"
     royalties: 750

@@ -1,4 +1,5 @@
 abi
+bech
 BigUint
 devnet
 egld
@@ -9,6 +10,7 @@ elrond
 esdt
 ESDT
 ESDTmapper
+EsdtTransfer
 fn
 init
 localnet
@@ -24,6 +26,7 @@ NFT
 NFTs
 OptionalValue
 pem
+ProxyNetworkProvider
 sc
 SFT
 SFTs
@@ -31,3 +34,4 @@ testnet
 txs
 WEGLD
 wrapEgld
+xExchange

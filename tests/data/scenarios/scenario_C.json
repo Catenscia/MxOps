@@ -1,5 +1,5 @@
 {
-    "name": "mxops_tutorial_first_scene",
+    "name": "___test_mxops_tutorial_first_scene",
     "network": "devnet",
     "creation_time": 1677134890,
     "last_update_time": 1677134896,
@@ -15,7 +15,7 @@
         },
         "wrapper": {
             "contract_id": "wrapper",
-            "address": "erd1qqqqqqqqqqqqqpgq0048vv3uk6l6cdreezpallvduy4qnfv2plcdr5sd8e",
+            "address": "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t",
             "saved_values": {},
             "is_external": true
         }
@@ -28,5 +28,6 @@
             "saved_values": {},
             "type": "fungible"
         }
-    }
+    },
+    "saved_values": {}
 }

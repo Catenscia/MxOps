@@ -14,11 +14,19 @@ steps:
     num_decimals: 3
     can_upgrade: true
     can_add_special_roles: true
-  
+    can_mint: true
+    can_burn: true
+
+  - type: Python
+    module_path: ./integration_tests/token_management/scripts/checks.py
+    function: check_token_properties
+    arguments:
+      - "JeanToken"
+
   - type: ManageFungibleTokenRoles
     sender: jean
     is_set: true
-    token_identifier: "%JeanToken%identifier"
+    token_identifier: "%JeanToken.identifier"
     target: "[jean]"
     roles:
       - ESDTRoleLocalMint
@@ -26,6 +34,5 @@ steps:
   
   - type: FungibleMint
     sender: jean
-    token_identifier: "%JeanToken%identifier"
+    token_identifier: "%JeanToken.identifier"
     amount: 100000000  # 100,000.000 JTK
-

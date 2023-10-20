@@ -2,12 +2,37 @@
 
 ## Unreleased
 
+## 2.0.0 - 2023-10-20
+
+### Added
+
+- Checkpoints for `Scenario`
+- `ContractUpgradeStep`
+- Auto retry for empty query results
+- python step class
+- Value key can now of any depth for `Scenario` data
+- `SceneStep`
+- `analyze` module
+
+### Changed
+
+- 🚨 BREAKING CHANGE 🚨 `checks` attribute has been given for all `TransactionStep`, sometimes replacing `check_success`
+- 🚨 BREAKING CHANGE 🚨 `.` and `[]` are used instead of `%` to specify a `Scenario` value key
+- 🚨 BREAKING CHANGE 🚨 `data.data.py` renamed into `data.execution_data.py`
+- Upgrade MultiversX python libraries
+- `int` is preferred over `number` for query return type
+
+### Fixed
+
+- Bug with the `skip confirmation` CLI command
+- Wrong token properties set during token registration
+
 ## 1.1.0 - 2023-05-11
 
 ### Added
 
 - CLI options to clean/delete `Scenario` data before or after execution
-- `Steps` for token transfers  (eGLD, fungible & non fungible)
+- `Steps` for token transfers (eGLD, fungible & non fungible)
 - `Steps` for token issuance, roles management and minting (fungible & non fungible)
 - `TransfersCheck` to verify the transfers of a `ContractCallStep`
 - Networks enumerations can be parsed by their short or full names

@@ -12,20 +12,22 @@ class NetworkEnum(Enum):
     """
     Enum describing the allowed values for the network
     """
-    MAIN = 'mainnet'
-    DEV = 'devnet'
-    TEST = 'testnet'
-    LOCAL = 'localnet'
+
+    MAIN = "mainnet"
+    DEV = "devnet"
+    TEST = "testnet"
+    LOCAL = "localnet"
 
 
 class TokenTypeEnum(Enum):
     """
     Enum describing the different token types on MultiversX
     """
-    FUNGIBLE = 'fungible'
-    NON_FUNGIBLE = 'non fungible'
-    SEMI_FUNGIBLE = 'semi fungible'
-    META = 'meta'
+
+    FUNGIBLE = "fungible"
+    NON_FUNGIBLE = "non fungible"
+    SEMI_FUNGIBLE = "semi fungible"
+    META = "meta"
 
 
 def parse_enum(value: str, enum_class: Type[Enum]) -> Enum:
@@ -47,7 +49,7 @@ def parse_enum(value: str, enum_class: Type[Enum]) -> Enum:
         return enum_class(value)
     except ValueError:
         pass
-    raise ValueError(f'{value} can not be matched to a {enum_class}')
+    raise ValueError(f"{value} can not be matched to a {enum_class}")
 
 
 def parse_network_enum(network: str) -> NetworkEnum:

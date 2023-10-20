@@ -2,7 +2,8 @@
 author: Etienne Wallet
 
 This modules contains missing transaction builders classes from multiversx_sdk_core.
-Idealy, a PR should be made to propose them to the MultiversX team: in the mean time, here they are
+Idealy, a PR should be made to propose them to the MultiversX team: in the mean time,
+here they are
 """
 from abc import abstractmethod
 from dataclasses import dataclass
@@ -10,19 +11,36 @@ import itertools
 from typing import Dict, List, Optional, Protocol
 
 from multiversx_sdk_core.serializer import arg_to_string, args_to_strings
-from multiversx_sdk_core.interfaces import (IAddress, IGasLimit, IGasPrice,
-                                            INonce, ITokenIdentifier, ITransactionValue)
+from multiversx_sdk_core.interfaces import (
+    IAddress,
+    IGasLimit,
+    IGasPrice,
+    INonce,
+    ITokenIdentifier,
+    ITransactionValue,
+)
 from multiversx_sdk_core.transaction_builders.transaction_builder import (
-    ITransactionBuilderConfiguration, TransactionBuilder)
-from multiversx_sdk_core.transaction_builders.esdt_builders import IESDTIssueConfiguration
-from multiversx_sdk_core.transaction_builders import DefaultTransactionBuildersConfiguration
+    ITransactionBuilderConfiguration,
+    TransactionBuilder,
+)
+from multiversx_sdk_core.transaction_builders.esdt_builders import (
+    IESDTIssueConfiguration,
+)
+from multiversx_sdk_core.transaction_builders import (
+    DefaultTransactionBuildersConfiguration,
+)
+
+from mxops.config.config import Config
 
 
 @dataclass
-class MyDefaultTransactionBuildersConfiguration(DefaultTransactionBuildersConfiguration):
-    """_
+class MyDefaultTransactionBuildersConfiguration(
+    DefaultTransactionBuildersConfiguration
+):
+    """
     Extend the default configuration of multiversx_sdk_core with more parameters
     """
+
     gas_limit_esdt_roles = 60000000
     gas_limit_mint = 300000
     gas_limit_store_per_byte = 50000
@@ -33,15 +51,18 @@ class TokenIssueBuilder(TransactionBuilder):
     Base class to construct a token issuance transaction
     """
 
-    def __init__(self,
-                 config: IESDTIssueConfiguration,
-                 issuer: IAddress,
-                 issuance_endpoint: str,
-                 nonce: Optional[INonce] = None,
-                 value: Optional[ITransactionValue] = None,
-                 gas_limit: Optional[IGasLimit] = None,
-                 gas_price: Optional[IGasPrice] = None
-                 ) -> None:
+    TRUE_BY_DEFAULT_PROPERTIES = ("canUpgrade", "canAddSpecialRoles")
+
+    def __init__(
+        self,
+        config: IESDTIssueConfiguration,
+        issuer: IAddress,
+        issuance_endpoint: str,
+        nonce: Optional[INonce] = None,
+        value: Optional[ITransactionValue] = None,
+        gas_limit: Optional[IGasLimit] = None,
+        gas_price: Optional[IGasPrice] = None,
+    ) -> None:
         super().__init__(config, nonce, value, gas_limit, gas_price)
         self.value = config.issue_cost
         self.gas_limit_esdt_issue = config.gas_limit_esdt_issue
@@ -62,52 +83,57 @@ class TokenIssueBuilder(TransactionBuilder):
     def get_token_properties(self) -> Dict:
         pass
 
-    def get_active_token_properties(self) -> List:
-        """
-        Return the names of the properties that are active on the token
-
-        :return: names of the active properties
-        :rtype: List
-        """
-        return [prop for prop, value in self.get_token_properties().items() if value]
-
     def _build_payload_parts(self) -> List[str]:
-        properties_args = [(prop, "true") for prop in self.get_active_token_properties()]
+        """
+        build the payload parts for the transaction
+
+        :return: payload parts
+        :rtype: List[str]
+        """
+        properties_args = []
+        for prop, value in self.get_token_properties().items():
+            if prop in self.TRUE_BY_DEFAULT_PROPERTIES:
+                if not value:
+                    properties_args.append((prop, "false"))
+                continue
+            if value:
+                properties_args.append((prop, "true"))
         chained_properties_args = list(itertools.chain(*properties_args))
         return [
             self.issuance_endpoint,
             *args_to_strings(self.get_token_args()),
-            *args_to_strings(chained_properties_args)
+            *args_to_strings(chained_properties_args),
         ]
 
 
 class FungibleTokenIssueBuilder(TokenIssueBuilder):
     """
-    Class to contruct a fungible issuance transaction
+    Class to construct a fungible issuance transaction
     This class should be included to multiversx_sdk_core.transaction_builders
     """
 
-    def __init__(self,
-                 config: IESDTIssueConfiguration,
-                 issuer: IAddress,
-                 token_name: str,
-                 token_ticker: str,
-                 initial_supply: int,
-                 num_decimals: int,
-                 can_freeze: bool = False,
-                 can_wipe: bool = False,
-                 can_pause: bool = False,
-                 can_mint: bool = False,
-                 can_burn: bool = False,
-                 can_change_owner: bool = False,
-                 can_upgrade: bool = False,
-                 can_add_special_roles: bool = False,
-                 nonce: Optional[INonce] = None,
-                 value: Optional[ITransactionValue] = None,
-                 gas_limit: Optional[IGasLimit] = None,
-                 gas_price: Optional[IGasPrice] = None
-                 ) -> None:
-        super().__init__(config, issuer, 'issue', nonce, value, gas_limit, gas_price)
+    def __init__(
+        self,
+        config: IESDTIssueConfiguration,
+        issuer: IAddress,
+        token_name: str,
+        token_ticker: str,
+        initial_supply: int,
+        num_decimals: int,
+        can_freeze: bool = False,
+        can_wipe: bool = False,
+        can_pause: bool = False,
+        can_mint: bool = False,
+        can_burn: bool = False,
+        can_change_owner: bool = False,
+        can_upgrade: bool = False,
+        can_add_special_roles: bool = False,
+        nonce: Optional[INonce] = None,
+        value: Optional[ITransactionValue] = None,
+        gas_limit: Optional[IGasLimit] = None,
+        gas_price: Optional[IGasPrice] = None,
+    ) -> None:
+        super().__init__(config, issuer, "issue", nonce, value, gas_limit, gas_price)
 
         self.token_name = token_name
         self.token_ticker = token_ticker
@@ -127,167 +153,156 @@ class FungibleTokenIssueBuilder(TokenIssueBuilder):
             self.token_name,
             self.token_ticker,
             self.initial_supply,
-            self.num_decimals
+            self.num_decimals,
         ]
 
     def get_token_properties(self) -> List:
         return {
-            'canFreeze': self.can_freeze,
-            'canWipe': self.can_wipe,
-            'canPause': self.can_pause,
-            'canMint': self.can_mint,
-            'canBurn': self.can_burn,
-            'canChangeOwner': self.can_change_owner,
-            'canUpgrade': self.can_upgrade,
-            'canAddSpecialRoles': self.can_add_special_roles
+            "canFreeze": self.can_freeze,
+            "canWipe": self.can_wipe,
+            "canPause": self.can_pause,
+            "canMint": self.can_mint,
+            "canBurn": self.can_burn,
+            "canChangeOwner": self.can_change_owner,
+            "canUpgrade": self.can_upgrade,
+            "canAddSpecialRoles": self.can_add_special_roles,
         }
 
 
 class NonFungibleTokenIssueBuilder(TokenIssueBuilder):
     """
-    Class to contruct a non fungible issuance transaction
+    Class to construct a non fungible issuance transaction
     This class should be included to multiversx_sdk_core.transaction_builders
     """
 
-    def __init__(self,
-                 config: IESDTIssueConfiguration,
-                 issuer: IAddress,
-                 token_name: str,
-                 token_ticker: str,
-                 can_freeze: bool = False,
-                 can_wipe: bool = False,
-                 can_pause: bool = False,
-                 can_mint: bool = False,
-                 can_burn: bool = False,
-                 can_change_owner: bool = False,
-                 can_upgrade: bool = False,
-                 can_add_special_roles: bool = False,
-                 can_transfer_nft_create_role: bool = False,
-                 nonce: Optional[INonce] = None,
-                 value: Optional[ITransactionValue] = None,
-                 gas_limit: Optional[IGasLimit] = None,
-                 gas_price: Optional[IGasPrice] = None
-                 ) -> None:
-        super().__init__(config, issuer, 'issueNonFungible', nonce, value, gas_limit, gas_price)
+    def __init__(
+        self,
+        config: IESDTIssueConfiguration,
+        issuer: IAddress,
+        token_name: str,
+        token_ticker: str,
+        can_freeze: bool = False,
+        can_wipe: bool = False,
+        can_pause: bool = False,
+        can_change_owner: bool = False,
+        can_upgrade: bool = False,
+        can_add_special_roles: bool = False,
+        can_transfer_nft_create_role: bool = False,
+        nonce: Optional[INonce] = None,
+        value: Optional[ITransactionValue] = None,
+        gas_limit: Optional[IGasLimit] = None,
+        gas_price: Optional[IGasPrice] = None,
+    ) -> None:
+        super().__init__(
+            config, issuer, "issueNonFungible", nonce, value, gas_limit, gas_price
+        )
 
         self.token_name = token_name
         self.token_ticker = token_ticker
         self.can_freeze = can_freeze
         self.can_wipe = can_wipe
         self.can_pause = can_pause
-        self.can_mint = can_mint
-        self.can_burn = can_burn
         self.can_change_owner = can_change_owner
         self.can_upgrade = can_upgrade
         self.can_add_special_roles = can_add_special_roles
         self.can_transfer_nft_create_role = can_transfer_nft_create_role
 
     def get_token_args(self) -> List:
-        return [
-            self.token_name,
-            self.token_ticker
-        ]
+        return [self.token_name, self.token_ticker]
 
     def get_token_properties(self) -> List:
         return {
-            'canFreeze': self.can_freeze,
-            'canWipe': self.can_wipe,
-            'canPause': self.can_pause,
-            'canMint': self.can_mint,
-            'canBurn': self.can_burn,
-            'canChangeOwner': self.can_change_owner,
-            'canUpgrade': self.can_upgrade,
-            'canAddSpecialRoles': self.can_add_special_roles,
-            'canTransferNFTCreateRole': self.can_transfer_nft_create_role,
+            "canFreeze": self.can_freeze,
+            "canWipe": self.can_wipe,
+            "canPause": self.can_pause,
+            "canChangeOwner": self.can_change_owner,
+            "canUpgrade": self.can_upgrade,
+            "canAddSpecialRoles": self.can_add_special_roles,
+            "canTransferNFTCreateRole": self.can_transfer_nft_create_role,
         }
 
 
 class SemiFungibleTokenIssueBuilder(TokenIssueBuilder):
     """
-    Class to contruct a semi fungible issuance transaction
+    Class to construct a semi fungible issuance transaction
     This class should be included to multiversx_sdk_core.transaction_builders
     """
 
-    def __init__(self,
-                 config: IESDTIssueConfiguration,
-                 issuer: IAddress,
-                 token_name: str,
-                 token_ticker: str,
-                 can_freeze: bool = False,
-                 can_wipe: bool = False,
-                 can_pause: bool = False,
-                 can_mint: bool = False,
-                 can_burn: bool = False,
-                 can_change_owner: bool = False,
-                 can_upgrade: bool = False,
-                 can_add_special_roles: bool = False,
-                 can_transfer_nft_create_role: bool = False,
-                 nonce: Optional[INonce] = None,
-                 value: Optional[ITransactionValue] = None,
-                 gas_limit: Optional[IGasLimit] = None,
-                 gas_price: Optional[IGasPrice] = None
-                 ) -> None:
-        super().__init__(config, issuer, 'issueSemiFungible', nonce, value, gas_limit, gas_price)
+    def __init__(
+        self,
+        config: IESDTIssueConfiguration,
+        issuer: IAddress,
+        token_name: str,
+        token_ticker: str,
+        can_freeze: bool = False,
+        can_wipe: bool = False,
+        can_pause: bool = False,
+        can_change_owner: bool = False,
+        can_upgrade: bool = False,
+        can_add_special_roles: bool = False,
+        can_transfer_nft_create_role: bool = False,
+        nonce: Optional[INonce] = None,
+        value: Optional[ITransactionValue] = None,
+        gas_limit: Optional[IGasLimit] = None,
+        gas_price: Optional[IGasPrice] = None,
+    ) -> None:
+        super().__init__(
+            config, issuer, "issueSemiFungible", nonce, value, gas_limit, gas_price
+        )
 
         self.token_name = token_name
         self.token_ticker = token_ticker
         self.can_freeze = can_freeze
         self.can_wipe = can_wipe
         self.can_pause = can_pause
-        self.can_mint = can_mint
-        self.can_burn = can_burn
         self.can_change_owner = can_change_owner
         self.can_upgrade = can_upgrade
         self.can_add_special_roles = can_add_special_roles
         self.can_transfer_nft_create_role = can_transfer_nft_create_role
 
     def get_token_args(self) -> List:
-        return [
-            self.token_name,
-            self.token_ticker
-        ]
+        return [self.token_name, self.token_ticker]
 
     def get_token_properties(self) -> List:
         return {
-            'canFreeze': self.can_freeze,
-            'canWipe': self.can_wipe,
-            'canPause': self.can_pause,
-            'canMint': self.can_mint,
-            'canBurn': self.can_burn,
-            'canChangeOwner': self.can_change_owner,
-            'canUpgrade': self.can_upgrade,
-            'canAddSpecialRoles': self.can_add_special_roles,
-            'canTransferNFTCreateRole': self.can_transfer_nft_create_role,
+            "canFreeze": self.can_freeze,
+            "canWipe": self.can_wipe,
+            "canPause": self.can_pause,
+            "canChangeOwner": self.can_change_owner,
+            "canUpgrade": self.can_upgrade,
+            "canAddSpecialRoles": self.can_add_special_roles,
+            "canTransferNFTCreateRole": self.can_transfer_nft_create_role,
         }
 
 
 class MetaFungibleTokenIssueBuilder(TokenIssueBuilder):
     """
-    Class to contruct a meta issuance transaction
+    Class to construct a meta issuance transaction
     This class should be included to multiversx_sdk_core.transaction_builders
     """
 
-    def __init__(self,
-                 config: IESDTIssueConfiguration,
-                 issuer: IAddress,
-                 token_name: str,
-                 token_ticker: str,
-                 num_decimals: int,
-                 can_freeze: bool = False,
-                 can_wipe: bool = False,
-                 can_pause: bool = False,
-                 can_mint: bool = False,
-                 can_burn: bool = False,
-                 can_change_owner: bool = False,
-                 can_upgrade: bool = False,
-                 can_add_special_roles: bool = False,
-                 can_transfer_nft_create_role: bool = False,
-                 nonce: Optional[INonce] = None,
-                 value: Optional[ITransactionValue] = None,
-                 gas_limit: Optional[IGasLimit] = None,
-                 gas_price: Optional[IGasPrice] = None
-                 ) -> None:
-        super().__init__(config, issuer, 'registerMetaESDT', nonce, value, gas_limit, gas_price)
+    def __init__(
+        self,
+        config: IESDTIssueConfiguration,
+        issuer: IAddress,
+        token_name: str,
+        token_ticker: str,
+        num_decimals: int,
+        can_freeze: bool = False,
+        can_wipe: bool = False,
+        can_pause: bool = False,
+        can_change_owner: bool = False,
+        can_upgrade: bool = False,
+        can_add_special_roles: bool = False,
+        can_transfer_nft_create_role: bool = False,
+        nonce: Optional[INonce] = None,
+        value: Optional[ITransactionValue] = None,
+        gas_limit: Optional[IGasLimit] = None,
+        gas_price: Optional[IGasPrice] = None,
+    ) -> None:
+        super().__init__(
+            config, issuer, "registerMetaESDT", nonce, value, gas_limit, gas_price
+        )
 
         self.token_name = token_name
         self.token_ticker = token_ticker
@@ -295,31 +310,23 @@ class MetaFungibleTokenIssueBuilder(TokenIssueBuilder):
         self.can_freeze = can_freeze
         self.can_wipe = can_wipe
         self.can_pause = can_pause
-        self.can_mint = can_mint
-        self.can_burn = can_burn
         self.can_change_owner = can_change_owner
         self.can_upgrade = can_upgrade
         self.can_add_special_roles = can_add_special_roles
         self.can_transfer_nft_create_role = can_transfer_nft_create_role
 
     def get_token_args(self) -> List:
-        return [
-            self.token_name,
-            self.token_ticker,
-            self.num_decimals
-        ]
+        return [self.token_name, self.token_ticker, self.num_decimals]
 
     def get_token_properties(self) -> List:
         return {
-            'canFreeze': self.can_freeze,
-            'canWipe': self.can_wipe,
-            'canPause': self.can_pause,
-            'canMint': self.can_mint,
-            'canBurn': self.can_burn,
-            'canChangeOwner': self.can_change_owner,
-            'canUpgrade': self.can_upgrade,
-            'canAddSpecialRoles': self.can_add_special_roles,
-            'canTransferNFTCreateRole': self.can_transfer_nft_create_role,
+            "canFreeze": self.can_freeze,
+            "canWipe": self.can_wipe,
+            "canPause": self.can_pause,
+            "canChangeOwner": self.can_change_owner,
+            "canUpgrade": self.can_upgrade,
+            "canAddSpecialRoles": self.can_add_special_roles,
+            "canTransferNFTCreateRole": self.can_transfer_nft_create_role,
         }
 
 
@@ -330,21 +337,23 @@ class IESDTRolesConfiguration(ITransactionBuilderConfiguration, Protocol):
 
 class ManageTokenRolesBuilder(TransactionBuilder):
     """
-    class to contruct the transaction to set or unset roles for an address on an account
+    Class to construct the transaction to set or unset roles
+    for an address on an account
     """
 
-    def __init__(self,
-                 config: IESDTRolesConfiguration,
-                 sender: IAddress,
-                 is_set: bool,
-                 token_identifier: ITokenIdentifier,
-                 target: IAddress,
-                 roles: List[str],
-                 nonce: Optional[INonce] = None,
-                 value: Optional[ITransactionValue] = None,
-                 gas_limit: Optional[IGasLimit] = None,
-                 gas_price: Optional[IGasPrice] = None
-                 ) -> None:
+    def __init__(
+        self,
+        config: IESDTRolesConfiguration,
+        sender: IAddress,
+        is_set: bool,
+        token_identifier: ITokenIdentifier,
+        target: IAddress,
+        roles: List[str],
+        nonce: Optional[INonce] = None,
+        value: Optional[ITransactionValue] = None,
+        gas_limit: Optional[IGasLimit] = None,
+        gas_price: Optional[IGasPrice] = None,
+    ) -> None:
         super().__init__(config, nonce, value, gas_limit, gas_price)
         self.gas_limit_esdt_roles = config.gas_limit_esdt_roles
 
@@ -365,7 +374,7 @@ class ManageTokenRolesBuilder(TransactionBuilder):
             endpoint,
             arg_to_string(self.token_identifier),
             arg_to_string(self.target),
-            *args_to_strings(self.roles)
+            *args_to_strings(self.roles),
         ]
 
 
@@ -380,16 +389,17 @@ class FungibleMintBuilder(TransactionBuilder):
     an already existing fungible token
     """
 
-    def __init__(self,
-                 config: IESDTMintConfiguration,
-                 sender: IAddress,
-                 token_identifier: ITokenIdentifier,
-                 amount_as_integer: int,
-                 nonce: Optional[INonce] = None,
-                 value: Optional[ITransactionValue] = None,
-                 gas_limit: Optional[IGasLimit] = None,
-                 gas_price: Optional[IGasPrice] = None
-                 ) -> None:
+    def __init__(
+        self,
+        config: IESDTMintConfiguration,
+        sender: IAddress,
+        token_identifier: ITokenIdentifier,
+        amount_as_integer: int,
+        nonce: Optional[INonce] = None,
+        value: Optional[ITransactionValue] = None,
+        gas_limit: Optional[IGasLimit] = None,
+        gas_price: Optional[IGasPrice] = None,
+    ) -> None:
         super().__init__(config, nonce, value, gas_limit, gas_price)
         self.gas_limit_mint = config.gas_limit_mint
 
@@ -405,31 +415,33 @@ class FungibleMintBuilder(TransactionBuilder):
         return [
             "ESDTLocalMint",
             arg_to_string(self.token_identifier),
-            arg_to_string(self.amount_as_integer)
+            arg_to_string(self.amount_as_integer),
         ]
 
 
 class NonFungibleMintBuilder(TransactionBuilder):
     """
-    Builder to construct the transaction to mint a new non fungible token (ide a new nonce).
+    Builder to construct the transaction to mint a new non fungible token
+    (ide a new nonce).
     This can be used for NFTs, SFTs and Meta tokens.
     """
 
-    def __init__(self,
-                 config: IESDTMintConfiguration,
-                 sender: IAddress,
-                 token_identifier: ITokenIdentifier,
-                 amount_as_integer: int,
-                 name: str,
-                 royalties: int,
-                 hash: str,
-                 attributes: str,
-                 uris: List[str],
-                 nonce: Optional[INonce] = None,
-                 value: Optional[ITransactionValue] = None,
-                 gas_limit: Optional[IGasLimit] = None,
-                 gas_price: Optional[IGasPrice] = None
-                 ) -> None:
+    def __init__(
+        self,
+        config: IESDTMintConfiguration,
+        sender: IAddress,
+        token_identifier: ITokenIdentifier,
+        amount_as_integer: int,
+        name: str,
+        royalties: int,
+        hash: str,
+        attributes: str,
+        uris: List[str],
+        nonce: Optional[INonce] = None,
+        value: Optional[ITransactionValue] = None,
+        gas_limit: Optional[IGasLimit] = None,
+        gas_price: Optional[IGasPrice] = None,
+    ) -> None:
         super().__init__(config, nonce, value, gas_limit, gas_price)
         self.gas_limit_mint = config.gas_limit_mint
         self.gas_limit_per_byte = config.gas_limit_per_byte
@@ -447,11 +459,13 @@ class NonFungibleMintBuilder(TransactionBuilder):
 
     def _estimate_execution_gas(self) -> IGasLimit:
         n_data_bytes = len(self.build_payload().data)
-        additionnal_gas = n_data_bytes * (self.gas_limit_per_byte + self.gas_limit_store_per_byte)
+        additionnal_gas = n_data_bytes * (
+            self.gas_limit_per_byte + self.gas_limit_store_per_byte
+        )
         return self.gas_limit_mint + additionnal_gas
 
     def _build_payload_parts(self) -> List[str]:
-        formatted_uris = args_to_strings(self.uris) if len(self.uris) else ['']
+        formatted_uris = args_to_strings(self.uris) if len(self.uris) else [""]
         return [
             "ESDTNFTCreate",
             arg_to_string(self.token_identifier),
@@ -460,5 +474,16 @@ class NonFungibleMintBuilder(TransactionBuilder):
             arg_to_string(self.royalties),
             arg_to_string(self.hash),
             arg_to_string(self.attributes),
-            *formatted_uris
+            *formatted_uris,
         ]
+
+
+def get_builder_config() -> DefaultTransactionBuildersConfiguration:
+    """
+    Return an instance of the config for the builder
+
+    :return: config for the builder
+    :rtype: DefaultTransactionBuildersConfiguration
+    """
+    config = Config.get_config()
+    return MyDefaultTransactionBuildersConfiguration(chain_id=config.get("CHAIN"))
