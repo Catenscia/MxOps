@@ -140,6 +140,8 @@ def retrieve_value_from_string(arg: str) -> Any:
     :return: untouched argument or retrieved value
     :rtype: Any
     """
+    if arg.startswith("0x"):
+        return bytes.fromhex(arg[2:])
     if arg.startswith("["):
         return retrieve_address_from_account(arg).bech32()
     if arg.startswith("$"):

@@ -115,7 +115,7 @@ class TransactionStep(Step):
         builder = self._create_builder()
         tx = builder.build()
         tx.nonce = sender_account.nonce
-        tx.signature = sender_account.signer.sign(tx)
+        tx.signature = bytes.fromhex(sender_account.sign_transaction(tx))
         sender_account.nonce += 1
 
         if len(self.checks) > 0:

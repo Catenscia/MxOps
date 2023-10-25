@@ -2,7 +2,14 @@
 
 ## Unreleased
 
+## 2.0.1 - 2023-10-25
+
 ## 2.0.0 - 2023-10-20
+
+### Fixed
+
+- Use of missing signer for LedgerAccount
+- Missing parsing of hexadecimal value as string
 
 ### Added
 
