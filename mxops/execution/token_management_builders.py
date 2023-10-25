@@ -31,6 +31,7 @@ from multiversx_sdk_core.transaction_builders import (
 )
 
 from mxops.config.config import Config
+from mxops.execution.utils import format_tx_arguments
 
 
 @dataclass
@@ -99,9 +100,10 @@ class TokenIssueBuilder(TransactionBuilder):
             if value:
                 properties_args.append((prop, "true"))
         chained_properties_args = list(itertools.chain(*properties_args))
+        token_args = format_tx_arguments(self.get_token_args())
         return [
             self.issuance_endpoint,
-            *args_to_strings(self.get_token_args()),
+            *args_to_strings(token_args),
             *args_to_strings(chained_properties_args),
         ]
 
