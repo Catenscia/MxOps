@@ -4,6 +4,10 @@
 
 ## 2.0.0 - 2023-10-20
 
+### Fixed
+
+- Use of missing signer for LedgerAccount
+
 ### Added
 
 - Checkpoints for `Scenario`
