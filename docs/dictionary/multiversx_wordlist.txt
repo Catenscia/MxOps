@@ -13,6 +13,7 @@ ESDTmapper
 EsdtTransfer
 fn
 init
+LedgerAccount
 localnet
 mainnet
 Maiar
