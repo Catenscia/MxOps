@@ -7,6 +7,7 @@
 ### Fixed
 
 - Use of missing signer for LedgerAccount
+- Missing parsing of hexadecimal value as string
 
 ### Added
 

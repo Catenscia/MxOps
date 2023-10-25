@@ -46,7 +46,7 @@ def test_non_fungible_issue_payload():
             "erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw"
         ),
         "MyToken",
-        "MTK",
+        "0x4d544b",  # test hex conversion here (MTK)
         can_upgrade=True,
         can_transfer_nft_create_role=True,
     )
