@@ -1,6 +1,8 @@
 from pathlib import Path
 import pytest
 
+from mxpyserializer.abi_serializer import AbiSerializer
+
 from mxops.config.config import Config
 from mxops.data.execution_data import (
     InternalContractData,
@@ -33,6 +35,7 @@ def scenario_data():
         InternalContractData(
             contract_id=contract_id,
             address=address,
+            serializer=AbiSerializer(),
             wasm_hash=wasm_hash,
             deploy_time=1,
             last_upgrade_time=1,

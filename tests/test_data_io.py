@@ -2,9 +2,11 @@ import json
 from pathlib import Path
 from typing import Any, List
 
+from mxpyserializer.abi_serializer import AbiSerializer
 import pytest
-from mxops import errors
 
+
+from mxops import errors
 from mxops.data.execution_data import (
     _ScenarioData,
     InternalContractData,
@@ -38,6 +40,7 @@ def test_scenario_loading(scenario_path: Path):
         "egld-ping-pong": InternalContractData(
             contract_id="egld-ping-pong",
             address="erd1qqqqqqqqqqqqqpgq0048vv3uk6l6cdreezpallvduy4qnfv2plcq74464k",
+            serializer=AbiSerializer(),
             saved_values={},
             wasm_hash=(
                 "5ce403a4f73701481cc15b2378cdc5bce3e35fa215815aa5eb9104d9f7ab2451"
@@ -220,7 +223,7 @@ def test_io_unicity():
     Test the loading and writing are consistent
     """
     # Given
-    scenario_path = Path("tests/data/scenarios/scenario_C.json")
+    scenario_path = Path("tests/data/scenarios/scenario_D.json")
     with open(scenario_path.as_posix(), encoding="utf-8") as file:
         raw_data = json.load(file)
 

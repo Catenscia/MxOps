@@ -13,6 +13,8 @@ import re
 import time
 from typing import Any, Dict, List, Optional
 
+from mxpyserializer.abi_serializer import AbiSerializer
+
 from mxops.config.config import Config
 from mxops.data.path import get_all_checkpoints_names, get_scenario_file_path
 from mxops import enums as mxops_enums
@@ -185,6 +187,7 @@ class ContractData(SavedValuesData):
 
     contract_id: str
     address: str
+    serializer: AbiSerializer
 
     def set_value(self, value_key: str, value: Any):
         """
@@ -208,9 +211,27 @@ class ContractData(SavedValuesData):
         :rtype: Dict
         """
         self_dict = asdict(self)
+        self_dict["serializer"] = {
+            "endpoints": self.serializer.endpoints,
+            "structs": self.serializer.structs,
+            "enums": self.serializer.enums,
+        }
         # add attribute to indicate internal/external
         self_dict["is_external"] = isinstance(self, ExternalContractData)
         return self_dict
+
+    def __eq__(self, other: Any) -> bool:
+        """
+        Define the equal operator
+
+        :param other: object to compare this instance with
+        :type other: Any
+        :return: if the instance is equal to the other object
+        :rtype: bool
+        """
+        if not isinstance(other, ContractData):
+            raise ValueError(f"Can not compare ContractData with {type(other)}")
+        return self.to_dict() == other.to_dict()
 
 
 @dataclass
@@ -238,6 +259,19 @@ class InternalContractData(ContractData):
         else:
             super().set_value(value_key, value)
 
+    def __eq__(self, other: Any) -> bool:
+        """
+        Define the equal operator
+
+        :param other: object to compare this instance with
+        :type other: Any
+        :return: if the instance is equal to the other object
+        :rtype: bool
+        """
+        if not isinstance(other, ContractData):
+            raise ValueError(f"Can not compare ContractData with {type(other)}")
+        return self.to_dict() == other.to_dict()
+
 
 @dataclass
 class ExternalContractData(ContractData):
@@ -245,6 +279,19 @@ class ExternalContractData(ContractData):
     Dataclass representing the data that can be locally saved for a contract
     not managed by MxOps
     """
+
+    def __eq__(self, other: Any) -> bool:
+        """
+        Define the equal operator
+
+        :param other: object to compare this instance with
+        :type other: Any
+        :return: if the instance is equal to the other object
+        :rtype: bool
+        """
+        if not isinstance(other, ContractData):
+            raise ValueError(f"Can not compare ContractData with {type(other)}")
+        return self.to_dict() == other.to_dict()
 
 
 @dataclass
@@ -527,6 +574,12 @@ class _ScenarioData(SavedValuesData):
                     is_external = contract_data.pop("is_external")
                 except KeyError:
                     is_external = False
+                try:
+                    serializer_kwargs = contract_data.pop("serializer")
+                    serializer = AbiSerializer(**serializer_kwargs)
+                except KeyError:
+                    serializer = AbiSerializer()
+                contract_data["serializer"] = serializer
                 if is_external:
                     contracts_data[contract_id] = ExternalContractData(**contract_data)
                 else:
