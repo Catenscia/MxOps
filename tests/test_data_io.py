@@ -40,7 +40,7 @@ def test_scenario_loading(scenario_path: Path):
         "egld-ping-pong": InternalContractData(
             contract_id="egld-ping-pong",
             address="erd1qqqqqqqqqqqqqpgq0048vv3uk6l6cdreezpallvduy4qnfv2plcq74464k",
-            serializer=AbiSerializer(),
+            serializer=None,
             saved_values={},
             wasm_hash=(
                 "5ce403a4f73701481cc15b2378cdc5bce3e35fa215815aa5eb9104d9f7ab2451"

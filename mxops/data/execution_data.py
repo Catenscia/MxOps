@@ -187,7 +187,7 @@ class ContractData(SavedValuesData):
 
     contract_id: str
     address: str
-    serializer: AbiSerializer
+    serializer: Optional[AbiSerializer]
 
     def set_value(self, value_key: str, value: Any):
         """
@@ -211,11 +211,10 @@ class ContractData(SavedValuesData):
         :rtype: Dict
         """
         self_dict = asdict(self)
-        self_dict["serializer"] = {
-            "endpoints": self.serializer.endpoints,
-            "structs": self.serializer.structs,
-            "enums": self.serializer.enums,
-        }
+        if self.serializer is None:
+            self_dict["serializer"] = None
+        else:
+            self_dict["serializer"] = self.serializer.to_dict()
         # add attribute to indicate internal/external
         self_dict["is_external"] = isinstance(self, ExternalContractData)
         return self_dict
@@ -576,10 +575,12 @@ class _ScenarioData(SavedValuesData):
                     is_external = False
                 try:
                     serializer_kwargs = contract_data.pop("serializer")
-                    serializer = AbiSerializer(**serializer_kwargs)
                 except KeyError:
-                    serializer = AbiSerializer()
-                contract_data["serializer"] = serializer
+                    serializer_kwargs = None
+                if isinstance(serializer_kwargs, dict):
+                    contract_data["serializer"] = AbiSerializer(**serializer_kwargs)
+                else:
+                    contract_data["serializer"] = None
                 if is_external:
                     contracts_data[contract_id] = ExternalContractData(**contract_data)
                 else:

@@ -35,3 +35,8 @@ def test_python_step():
     assert os_value_1 == "my_test_value"
     assert value_2 == 4582
     assert os_value_2 == "4582"
+
+
+def test_query_step():
+    # Given
+    pass

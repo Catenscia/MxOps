@@ -59,7 +59,7 @@ def test_data_load_equality():
     contract_data = InternalContractData(
         contract_id="egld-ping-pong",
         address="erd1qqqqqqqqqqqqqpgqpxkd9qgyyxykq5l6d8v9zud99hpwh7l0plcq3dae77",
-        serializer=AbiSerializer(),
+        serializer=None,
         saved_values={"PingAmount": 1000000000000000000},
         wasm_hash="1383133d22b8be01c4dc6dfda448dbf0b70ba1acb348a50dd3224b9c8bb21757",
         deploy_time=1677261606,

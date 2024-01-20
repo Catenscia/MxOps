@@ -5,6 +5,11 @@ allowed_networks:
 allowed_scenario:
   - ".*"
 
+external_contracts:
+  adder:
+    address: erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc
+    abi_path: tests/data/abis/adder.abi.json
+
 accounts:
   - account_name: owner
     pem_path: wallets/local_owner.pem

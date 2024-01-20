@@ -35,7 +35,7 @@ def scenario_data():
         InternalContractData(
             contract_id=contract_id,
             address=address,
-            serializer=AbiSerializer(),
+            serializer=None,
             wasm_hash=wasm_hash,
             deploy_time=1,
             last_upgrade_time=1,
