@@ -262,6 +262,11 @@ class ContractDeployStep(TransactionStep):
         if not isinstance(contract_address, Address):
             raise errors.ParsingError(on_chain_tx, "contract deployment address")
 
+        if self.abi_path is not None:
+            serializer = AbiSerializer.from_abi(Path(self.abi_path))
+        else:
+            serializer = None
+
         contract_data = InternalContractData(
             contract_id=self.contract_id,
             address=contract_address.bech32(),
@@ -269,6 +274,7 @@ class ContractDeployStep(TransactionStep):
             wasm_hash=get_file_hash(Path(self.wasm_path)),
             deploy_time=on_chain_tx.timestamp,
             last_upgrade_time=on_chain_tx.timestamp,
+            serializer=serializer,
         )
         scenario_data.add_contract_data(contract_data)
 
@@ -427,7 +433,7 @@ class ResultsSaveKeys:
         :return: results save keys if defined
         :rtype: Optional[ResultsSaveKeys]
         """
-        if isinstance(data, None):
+        if data is None:
             return None
         if isinstance(data, str):
             return ResultsSaveKeys(data, None)
@@ -463,7 +469,7 @@ class ContractQueryStep(Step):
     expected_results: List[Dict[str, str]] = field(default_factory=lambda: [])
     print_results: bool = False
     results: List[QueryResult] | None = field(init=False, default=None)
-    response: ContractQueryResponse | None = field(init=False, default=None)
+    query_response: ContractQueryResponse | None = field(init=False, default=None)
     decoded_results: List[Any] | None = field(init=False, default=None)
     results_save_keys: Optional[ResultsSaveKeys] = field(default=None)
     results_types: Union[None, List[Dict]] = field(default=None)
@@ -535,7 +541,7 @@ class ContractQueryStep(Step):
                     f"Number of results ({len(self.decoded_results)}) and save keys "
                     f"({len(sub_keys)}) doesn't match"
                 )
-            to_save = {sk: dr for sk, dr in zip(sub_keys, self.decoded_results)}
+            to_save = dict(zip(sub_keys, self.decoded_results))
             if self.results_save_keys.master_key is not None:
                 to_save = {self.results_save_keys.master_key: to_save}
         else:

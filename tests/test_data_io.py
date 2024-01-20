@@ -2,7 +2,6 @@ import json
 from pathlib import Path
 from typing import Any, List
 
-from mxpyserializer.abi_serializer import AbiSerializer
 import pytest
 
 

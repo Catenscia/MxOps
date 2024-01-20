@@ -3,7 +3,6 @@ from pathlib import Path
 
 from multiversx_sdk_cli.accounts import Account, Address
 from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
-from mxpyserializer.abi_serializer import AbiSerializer
 
 from mxops.data.execution_data import InternalContractData, ScenarioData
 from mxops.errors import CheckFailed

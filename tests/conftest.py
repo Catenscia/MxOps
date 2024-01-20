@@ -1,8 +1,6 @@
 from pathlib import Path
 import pytest
 
-from mxpyserializer.abi_serializer import AbiSerializer
-
 from mxops.config.config import Config
 from mxops.data.execution_data import (
     InternalContractData,
