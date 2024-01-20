@@ -4,7 +4,9 @@ multiversx_sc::imports!();
 multiversx_sc::derive_imports!();
 
 #[multiversx_sc::contract]
-pub trait EsdtMinter: multiversx_sc_modules::default_issue_callbacks::DefaultIssueCallbacksModule {
+pub trait EsdtMinter:
+    multiversx_sc_modules::default_issue_callbacks::DefaultIssueCallbacksModule
+{
     // #################   storage    #################
 
     /// Token that will be issued and minted by the contract
@@ -30,11 +32,14 @@ pub trait EsdtMinter: multiversx_sc_modules::default_issue_callbacks::DefaultIss
 
     // #################   views    #################
 
-    // #################   init    #################
+    // #################   init && upgrade    #################
     #[init]
     fn init(&self, interest_percentage: u64) {
         self.interest_percentage().set(interest_percentage);
     }
+
+    #[upgrade]
+    fn upgrade(&self) {}
 
     // #################   endpoints    #################
 
@@ -150,9 +155,9 @@ pub trait EsdtMinter: multiversx_sc_modules::default_issue_callbacks::DefaultIss
         token_ticker: ManagedBuffer,
         num_decimals: usize,
     ) {
-        let register_cost = self.call_value().egld_value();
+        let register_cost = &*self.call_value().egld_value();
         self.esdt_identifier().issue_and_set_all_roles(
-            register_cost,
+            register_cost.clone(),
             token_display_name,
             token_ticker,
             num_decimals,
