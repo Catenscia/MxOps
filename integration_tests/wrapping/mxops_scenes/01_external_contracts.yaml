@@ -5,4 +5,4 @@ allowed_scenario:
   - "integration_test_wrapping"
 
 external_contracts:
-  egld_wrapper_shard_2: erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc
+  egld_wrapper_shard_1: erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp

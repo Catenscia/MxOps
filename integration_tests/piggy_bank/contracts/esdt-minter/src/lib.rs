@@ -39,7 +39,9 @@ pub trait EsdtMinter:
     }
 
     #[upgrade]
-    fn upgrade(&self) {}
+    fn upgrade(&self, interest_percentage: u64) {
+        self.interest_percentage().set(interest_percentage);
+    }
 
     // #################   endpoints    #################
 

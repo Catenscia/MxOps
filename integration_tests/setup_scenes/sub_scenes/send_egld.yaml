@@ -9,4 +9,5 @@ steps:
   - type: EgldTransfer
     sender: emmanuel
     receiver: $RECEIVER
-    amount: 1000000000000000000  # 1 eGLD
+    amount: 100000000000000000  # 0.1 eGLD
+    checks: []

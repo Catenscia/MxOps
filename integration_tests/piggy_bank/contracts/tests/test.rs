@@ -46,12 +46,22 @@ fn test_interests_whitelist() {
 
     let interest_user = blockchain_setup.user_address.clone();
 
+    // add some token amount to the user and make him claim (necessary to avoid esdt transfer error)
+    add_airdrop_amount(
+        &mut blockchain_setup,
+        &esdt_minter_wrapper,
+        &interest_user,
+        150_000,
+    )
+    .assert_ok();
+    claim_airdrop(&mut blockchain_setup, &esdt_minter_wrapper, &interest_user).assert_ok();
+
     // assert user can not claim interests
     claim_interests(
         &mut blockchain_setup,
         &esdt_minter_wrapper,
         &interest_user,
-        0u64,
+        0,
     )
     .assert_user_error("Item not whitelisted");
 
@@ -63,11 +73,10 @@ fn test_interests_whitelist() {
         &mut blockchain_setup,
         &esdt_minter_wrapper,
         &interest_user,
-        0u64,
+        0,
     )
     .assert_ok();
 }
-
 
 #[test]
 fn test_piggy_cycle() {
@@ -92,7 +101,13 @@ fn test_piggy_cycle() {
     claim_airdrop(&mut blockchain_setup, &esdt_minter_wrapper, &airdrop_user).assert_ok();
 
     // make the user deposit into the piggy bank
-    user_deposit(&mut blockchain_setup, &piggy_bank_wrapper, &airdrop_user, 150_000).assert_ok();
+    user_deposit(
+        &mut blockchain_setup,
+        &piggy_bank_wrapper,
+        &airdrop_user,
+        150_000,
+    )
+    .assert_ok();
 
     // assert user has no fund left
     blockchain_setup.blockchain_wrapper.check_esdt_balance(

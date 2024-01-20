@@ -2,7 +2,8 @@ multiversx_sc::imports!();
 multiversx_sc::derive_imports!();
 
 use multiversx_sc_scenario::{
-    managed_token_id, rust_biguint, testing_framework::ContractObjWrapper, whitebox::TxResult,
+    managed_token_id, rust_biguint,
+    testing_framework::{ContractObjWrapper, TxResult},
     DebugApi,
 };
 use piggy_bank::PiggyBank;
@@ -67,7 +68,7 @@ where
 pub fn user_withdraw<PiggyBankObjBuilder>(
     blockchain_setup: &mut BlockchainSetup,
     piggy_bank_wrapper: &ContractObjWrapper<piggy_bank::ContractObj<DebugApi>, PiggyBankObjBuilder>,
-    user_address: &Address
+    user_address: &Address,
 ) -> TxResult
 where
     PiggyBankObjBuilder: 'static + Copy + Fn() -> piggy_bank::ContractObj<DebugApi>,

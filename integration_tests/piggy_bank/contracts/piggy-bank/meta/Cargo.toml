@@ -3,13 +3,12 @@ name = "piggy-bank-meta"
 version = "0.0.0"
 edition = "2018"
 publish = false
-authors = [ "Etienne Wallet",]
-
+authors = ["Etienne Wallet"]
 [dependencies.piggy-bank]
 path = ".."
 
 [dependencies.multiversx-sc]
-version = "0.39.5"
+version = "0.46.1"
 
 [dependencies.multiversx-sc-meta]
-version = "0.39.5"
+version = "0.46.1"
