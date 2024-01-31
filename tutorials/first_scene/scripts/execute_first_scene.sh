@@ -2,7 +2,8 @@
 
 mxops data delete \
             -n devnet \
-            -s mxops_tutorial_first_scene
+            -s mxops_tutorial_first_scene \
+            -y
 
 mxops execute \
         -n devnet \

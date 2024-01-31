@@ -10,9 +10,8 @@ steps:
   - type: ContractQuery
     contract: "egld-ping-pong"
     endpoint: getPingAmount
-    expected_results:
-      - save_key: PingAmount
-        result_type: int
+    results_save_keys:
+      - PingAmount
 
   - type: ContractCall
     sender: owner
@@ -28,21 +27,5 @@ steps:
         expected_transfers:
           - sender: "[owner]"
             receiver: "%egld-ping-pong.address"
-            token_identifier: EGLD
-            amount: "%egld-ping-pong.PingAmount"
-
-  - type: ContractCall
-    sender: owner
-    contract: "egld-ping-pong"
-    endpoint: pong
-    gas_limit: 3000000
-    checks:
-      - type: Success
-
-      - type: Transfers
-        condition: exact
-        expected_transfers:
-          - sender: "%egld-ping-pong.address"
-            receiver: "[owner]"
             token_identifier: EGLD
             amount: "%egld-ping-pong.PingAmount"
