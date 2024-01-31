@@ -1,9 +1,11 @@
 import json
 from pathlib import Path
+import time
 from typing import Any, List
 
 import pytest
 
+from mxpyserializer.abi_serializer import AbiSerializer
 
 from mxops import errors
 from mxops.data.execution_data import (
@@ -232,3 +234,44 @@ def test_io_unicity():
 
     # Then
     assert scenario_dict == raw_data
+
+
+def test_abiserializer_io():
+    """
+    Test that an AbiSerializer object is correctly loaded from ABI, saved and reloaded
+    from Scenario data
+    """
+    # Given
+    current_timestamp = int(time.time())
+    scenario_data = _ScenarioData(
+        "__MXOPS_TEST_SCENARIO_ARBITRAGER_IO",
+        NetworkEnum.LOCAL,
+        current_timestamp,
+        current_timestamp,
+        {},
+    )
+    serializer = AbiSerializer.from_abi(Path("tests/data/abis/adder.abi.json"))
+    contract_name = "contract-test"
+    contract_data = InternalContractData(
+        contract_id=contract_name,
+        address="erd1qqqqqqqqqqqqqpgq0048vv3uk6l6cdreezpallvduy4qnfv2plcq74464k",
+        saved_values={},
+        wasm_hash="hash",
+        deploy_time=current_timestamp,
+        last_upgrade_time=current_timestamp,
+        serializer=serializer,
+    )
+    scenario_data.add_contract_data(contract_data)
+
+    # When
+    scenario_data_to_dict = scenario_data.to_dict()
+    reloaded_scenario_data = _ScenarioData.from_dict(scenario_data_to_dict)
+
+    # Then
+    assert isinstance(
+        reloaded_scenario_data.contracts_data[contract_name].serializer, AbiSerializer
+    )
+    assert (
+        reloaded_scenario_data.contracts_data[contract_name].to_dict()
+        == scenario_data.contracts_data[contract_name].to_dict()
+    )
