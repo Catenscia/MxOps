@@ -14,7 +14,8 @@
 				"Elrond.vscode-elrond-ide",
 				"rust-lang.rust-analyzer",
 				"vadimcn.vscode-lldb",
-				"dtsvet.vscode-wasm"
+				"dtsvet.vscode-wasm",
+				"Catenscia.mxops-helper"
 			],
 			"settings": {
 				"launch": {

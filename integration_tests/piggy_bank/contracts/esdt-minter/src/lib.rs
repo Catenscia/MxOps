@@ -4,9 +4,7 @@ multiversx_sc::imports!();
 multiversx_sc::derive_imports!();
 
 #[multiversx_sc::contract]
-pub trait EsdtMinter:
-    multiversx_sc_modules::default_issue_callbacks::DefaultIssueCallbacksModule
-{
+pub trait EsdtMinter {
     // #################   storage    #################
 
     /// Token that will be issued and minted by the contract
@@ -157,13 +155,13 @@ pub trait EsdtMinter:
         token_ticker: ManagedBuffer,
         num_decimals: usize,
     ) {
-        let register_cost = &*self.call_value().egld_value();
+        let register_cost = (*self.call_value().egld_value()).clone();
         self.esdt_identifier().issue_and_set_all_roles(
-            register_cost.clone(),
+            register_cost,
             token_display_name,
             token_ticker,
             num_decimals,
-            None,
+            Some(self.callbacks().issue_callback()),
         );
     }
 
@@ -196,5 +194,19 @@ pub trait EsdtMinter:
             payment.token_identifier == self.esdt_identifier().get_token_id(),
             "Token identifier do not match the esdt token"
         );
+    }
+
+    // #################   callbacks    #################
+
+    #[callback]
+    fn issue_callback(&self, #[call_result] result: ManagedAsyncCallResult<TokenIdentifier>) {
+        match result {
+            ManagedAsyncCallResult::Ok(token_id) => {
+                self.esdt_identifier().set_token_id(token_id.clone());
+            }
+            ManagedAsyncCallResult::Err(_) => {
+                sc_panic!("Failed to issue the token");
+            }
+        }
     }
 }
