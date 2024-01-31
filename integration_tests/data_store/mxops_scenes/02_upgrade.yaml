@@ -1,0 +1,36 @@
+allowed_networks:
+    - devnet
+    - localnet
+
+allowed_scenario:
+  - "integration_test_data_store"
+
+steps:
+  - type: ContractUpgrade
+    sender: emmanuel
+    wasm_path: "./integration_tests/data_store/data-store/output/data-store.wasm"
+    abi_path: "./integration_tests/data_store/data-store/output/data-store.abi.json"
+    contract: data-store
+    gas_limit: 300000000
+    arguments:
+      - 1000000000000000000
+      - -100000000000000000
+    upgradeable: true
+    readable: false
+    payable: false
+    payable_by_sc: true
+
+  - type: ContractQuery
+    contract: data-store
+    endpoint: get_upgrade_params
+    arguments: []
+    print_results: true
+    results_save_keys: 
+      - upgrade_params
+
+  - type: Python
+    module_path: ./integration_tests/data_store/scripts/checks.py
+    function: check_storage
+    arguments:
+      - data-store
+      - '{"upgrade_params": [1000000000000000000, -100000000000000000]}'
