@@ -6,7 +6,6 @@ This module contains the functions to load, write and update scenario data
 from __future__ import annotations
 from copy import deepcopy
 from dataclasses import asdict, dataclass, field, is_dataclass
-import json
 import os
 from pathlib import Path
 import re
@@ -19,6 +18,7 @@ from mxops.config.config import Config
 from mxops.data.path import get_all_checkpoints_names, get_scenario_file_path
 from mxops import enums as mxops_enums
 from mxops import errors
+from mxops.data.utils import json_dump, json_load
 from mxops.utils.logger import get_logger
 
 
@@ -198,8 +198,8 @@ class ContractData(SavedValuesData):
         :param value: value to save
         :type value: Any
         """
-        if value_key == "address":
-            self.address = value
+        if value_key in ("address", "serializer"):
+            setattr(self, value_key, value)
         else:
             super().set_value(value_key, value)
 
@@ -492,8 +492,7 @@ class _ScenarioData(SavedValuesData):
         :type checkpoint: str
         """
         scenario_path = get_scenario_file_path(self.name, checkpoint)
-        with open(scenario_path.as_posix(), "w", encoding="utf-8") as file:
-            json.dump(self.to_dict(), file)
+        json_dump(scenario_path, self.to_dict())
 
     def to_dict(self) -> Dict:
         """
@@ -552,8 +551,7 @@ class _ScenarioData(SavedValuesData):
         :return: loaded scenario data
         :rtype: _ScenarioData
         """
-        with open(scenario_path.as_posix(), "r", encoding="utf-8") as file:
-            raw_content = json.load(file)
+        raw_content = json_load(scenario_path)
         return cls.from_dict(raw_content)
 
     @classmethod
@@ -578,7 +576,9 @@ class _ScenarioData(SavedValuesData):
                 except KeyError:
                     serializer_kwargs = None
                 if isinstance(serializer_kwargs, dict):
-                    contract_data["serializer"] = AbiSerializer(**serializer_kwargs)
+                    contract_data["serializer"] = AbiSerializer.from_dict(
+                        serializer_kwargs
+                    )
                 else:
                     contract_data["serializer"] = None
                 if is_external:

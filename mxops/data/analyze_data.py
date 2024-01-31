@@ -5,10 +5,10 @@ This module contains the functions to load, write and update transaction data
 """
 from __future__ import annotations
 from dataclasses import dataclass, field
-import json
 from typing import Dict
 
 from mxops.data.path import get_tx_file_path
+from mxops.data.utils import json_dump, json_load
 from mxops.utils.logger import get_logger
 
 LOGGER = get_logger("analyze_data")
@@ -34,8 +34,7 @@ class TransactionsData:
         :type checkpoint: str
         """
         file_path = get_tx_file_path(self.contract_beh32_address)
-        with open(file_path.as_posix(), "w", encoding="utf-8") as file:
-            json.dump(self.__dict__, file)
+        json_dump(file_path, self.__dict__)
 
     def add_transactions(self, new_raw_transactions: Dict):
         """
@@ -65,6 +64,5 @@ class TransactionsData:
         :rtype: TransactionsData
         """
         file_path = get_tx_file_path(contract_beh32_address)
-        with open(file_path.as_posix(), "r", encoding="utf-8") as file:
-            raw_data = json.load(file)
+        raw_data = json_load(file_path)
         return TransactionsData(**raw_data)

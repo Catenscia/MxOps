@@ -32,6 +32,7 @@ from mxpyserializer.abi_serializer import AbiSerializer
 
 from mxops.config.config import Config
 from mxops.data.execution_data import InternalContractData, ScenarioData, TokenData
+from mxops.data.utils import json_dumps
 from mxops.enums import TokenTypeEnum
 from mxops.execution import token_management_builders, utils
 from mxops.execution.account import AccountsManager
@@ -224,9 +225,7 @@ class ContractDeployStep(TransactionStep):
         else:
             serializer = None
 
-        retrieved_arguments = [
-            utils.retrieve_value_from_any(arg) for arg in self.arguments
-        ]
+        retrieved_arguments = utils.retrieve_value_from_any(self.arguments)
         if serializer is None:
             deploy_args = utils.format_tx_arguments(retrieved_arguments)
         else:
@@ -294,6 +293,7 @@ class ContractUpgradeStep(TransactionStep):
     payable: bool = False
     payable_by_sc: bool = False
     arguments: List = field(default_factory=lambda: [])
+    abi_path: Optional[str] = None
 
     def _create_builder(self) -> tx_builder.TransactionBuilder:
         """
@@ -307,13 +307,24 @@ class ContractUpgradeStep(TransactionStep):
         metadata = CodeMetadata(
             self.upgradeable, self.readable, self.payable, self.payable_by_sc
         )
-        args = utils.retrieve_and_format_arguments(self.arguments)
+        if self.abi_path is not None:
+            serializer = AbiSerializer.from_abi(Path(self.abi_path))
+        else:
+            serializer = None
+
+        retrieved_arguments = utils.retrieve_value_from_any(self.arguments)
+        if serializer is None:
+            upgrade_args = utils.format_tx_arguments(retrieved_arguments)
+        else:
+            upgrade_args = serializer.encode_endpoint_inputs(
+                "upgrade", retrieved_arguments
+            )
 
         builder = tx_builder.ContractUpgradeBuilder(
             config=token_management_builders.get_builder_config(),
             contract=utils.get_address_instance(self.contract),
             owner=utils.get_address_instance(self.sender),
-            upgrade_arguments=args,
+            upgrade_arguments=upgrade_args,
             code_metadata=metadata,
             code=Path(self.wasm_path).read_bytes(),
             gas_limit=self.gas_limit,
@@ -330,11 +341,20 @@ class ContractUpgradeStep(TransactionStep):
         if not isinstance(on_chain_tx, TransactionOnNetwork):
             raise ValueError("On chain transaction is None")
 
+        if self.abi_path is not None:
+            serializer = AbiSerializer.from_abi(Path(self.abi_path))
+        else:
+            serializer = None
+
         scenario_data = ScenarioData.get()
         try:
             scenario_data.set_contract_value(
                 self.contract, "last_upgrade_time", on_chain_tx.timestamp
             )
+            if serializer is not None:
+                scenario_data.set_contract_value(
+                    self.contract, "serializer", serializer
+                )
         except errors.UnknownContract:  # any contract can be upgraded
             pass
 
@@ -362,9 +382,7 @@ class ContractCallStep(TransactionStep):
         LOGGER.info(f"Calling {self.endpoint} for {self.contract}")
         scenario_data = ScenarioData.get()
 
-        retrieved_arguments = [
-            utils.retrieve_value_from_any(arg) for arg in self.arguments
-        ]
+        retrieved_arguments = utils.retrieve_value_from_any(self.arguments)
         try:
             serializer = scenario_data.get_contract_value(self.contract, "serializer")
         except errors.UnknownContract:
@@ -447,7 +465,7 @@ class ResultsSaveKeys:
                 raise ValueError(
                     "When providing a dict, only one root key should be provided"
                 )
-            master_key, sub_keys = list(data.items())
+            master_key, sub_keys = list(data.items())[0]
             if not isinstance(master_key, str):
                 raise TypeError("The root key should be a str")
             for save_key in sub_keys:
@@ -471,6 +489,7 @@ class ContractQueryStep(Step):
     results: List[QueryResult] | None = field(init=False, default=None)
     query_response: ContractQueryResponse | None = field(init=False, default=None)
     decoded_results: List[Any] | None = field(init=False, default=None)
+    saved_results: List[Any] | None = field(init=False, default=None)
     results_save_keys: Optional[ResultsSaveKeys] = field(default=None)
     results_types: Union[None, List[Dict]] = field(default=None)
 
@@ -538,8 +557,9 @@ class ContractQueryStep(Step):
         if sub_keys is not None:
             if len(sub_keys) != len(self.decoded_results):
                 raise ValueError(
-                    f"Number of results ({len(self.decoded_results)}) and save keys "
-                    f"({len(sub_keys)}) doesn't match"
+                    f"Number of results ({len(self.decoded_results)} -> "
+                    f"{self.decoded_results}) and save keys "
+                    f"({len(sub_keys)} -> {sub_keys}) doesn't match"
                 )
             to_save = dict(zip(sub_keys, self.decoded_results))
             if self.results_save_keys.master_key is not None:
@@ -547,9 +567,11 @@ class ContractQueryStep(Step):
         else:
             to_save = {self.results_save_keys.master_key: self.decoded_results}
 
+        self.saved_results = {}
         for save_key, value in to_save.items():
             if save_key is not None:
                 scenario_data.set_contract_value(self.contract, save_key, value)
+                self.saved_results[save_key] = value
 
     def execute(self):
         """
@@ -558,9 +580,7 @@ class ContractQueryStep(Step):
         LOGGER.info(f"Query on {self.endpoint} for {self.contract}")
         config = Config.get_config()
         scenario_data = ScenarioData.get()
-        retrieved_arguments = [
-            utils.retrieve_value_from_any(arg) for arg in self.arguments
-        ]
+        retrieved_arguments = utils.retrieve_value_from_any(self.arguments)
         try:
             serializer = scenario_data.get_contract_value(self.contract, "serializer")
         except errors.UnknownContract:
@@ -607,8 +627,7 @@ class ContractQueryStep(Step):
         if query_failed:
             self.results = None
             raise errors.QueryFailed
-        if self.print_results:
-            print(self.results)
+
         if len(self.expected_results) > 0:
             LOGGER.warning(
                 "expected_results is deprecated, please use results_save_key and "
@@ -625,6 +644,15 @@ class ContractQueryStep(Step):
                 )
         else:
             self.save_results()
+
+        if self.print_results:
+            if self.saved_results is not None:
+                print(json_dumps(self.saved_results))
+            elif self.decoded_results is not None:
+                print(json_dumps(self.decoded_results))
+            else:
+                print(self.results)
+
         LOGGER.info("Query successful")
 
 
@@ -1263,12 +1291,11 @@ class PythonStep(Step):
         user_function = getattr(user_module, self.function)
 
         # transform args and kwargs and execute
-        arguments = [utils.retrieve_value_from_any(arg) for arg in self.arguments]
-        keyword_arguments = {
-            key: utils.retrieve_value_from_any(val)
-            for key, val in self.keyword_arguments.items()
-        }
-        result = user_function(*arguments, **keyword_arguments)
+        retrieved_arguments = utils.retrieve_value_from_any(self.arguments)
+        retrieved_keyword_arguments = utils.retrieve_value_from_any(
+            self.keyword_arguments
+        )
+        result = user_function(*retrieved_arguments, **retrieved_keyword_arguments)
 
         if result:
             if isinstance(result, str):

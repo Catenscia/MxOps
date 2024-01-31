@@ -4,7 +4,7 @@ author: Etienne Wallet
 This module contains the cli for the config subpackage
 """
 from argparse import _SubParsersAction, Namespace, RawDescriptionHelpFormatter
-import json
+from mxops.data.utils import json_dumps
 
 from mxops.enums import parse_network_enum
 from mxops.config.config import Config, dump_default_config
@@ -75,4 +75,4 @@ def execute_cli(args: Namespace):
         print(config.get_options())
 
     if args.values:
-        print(json.dumps(config.get_values(), indent=4))
+        print(json_dumps(config.get_values()))

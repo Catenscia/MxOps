@@ -177,6 +177,13 @@ def retrieve_value_from_any(arg: Any) -> Any:
     """
     if isinstance(arg, str):
         return retrieve_value_from_string(arg)
+    if isinstance(arg, list):
+        return [retrieve_value_from_any(e) for e in arg]
+    if isinstance(arg, dict):
+        return {
+            retrieve_value_from_any(k): retrieve_value_from_any(v)
+            for k, v in arg.items()
+        }
     return arg
 
 
@@ -212,7 +219,7 @@ def retrieve_and_format_arguments(arguments: List[Any]) -> List[Any]:
     :return: format args
     :rtype: List[Any]
     """
-    return format_tx_arguments([retrieve_value_from_any(arg) for arg in arguments])
+    return format_tx_arguments(retrieve_value_from_any(arguments))
 
 
 def get_contract_instance(contract_str: str) -> SmartContract:
