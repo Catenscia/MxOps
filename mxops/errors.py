@@ -269,6 +269,12 @@ class EmptyQueryResults(Exception):
     """
 
 
+class QueryFailed(Exception):
+    """
+    To be raised when a query failed
+    """
+
+
 #############################################################
 #
 #                   Check Errors

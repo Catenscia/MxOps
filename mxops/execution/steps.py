@@ -11,7 +11,7 @@ import os
 from pathlib import Path
 import sys
 import time
-from typing import ClassVar, Dict, Iterator, List, Set, Union
+from typing import Any, ClassVar, Dict, Iterator, List, Optional, Set, Union
 
 from multiversx_sdk_cli.contracts import QueryResult
 from multiversx_sdk_cli.constants import DEFAULT_HRP
@@ -25,9 +25,14 @@ from multiversx_sdk_core import transaction_builders as tx_builder
 from multiversx_sdk_core.serializer import arg_to_string
 from multiversx_sdk_network_providers import ProxyNetworkProvider
 from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
+from multiversx_sdk_network_providers.contract_query_response import (
+    ContractQueryResponse,
+)
+from mxpyserializer.abi_serializer import AbiSerializer
 
 from mxops.config.config import Config
 from mxops.data.execution_data import InternalContractData, ScenarioData, TokenData
+from mxops.data.utils import json_dumps
 from mxops.enums import TokenTypeEnum
 from mxops.execution import token_management_builders, utils
 from mxops.execution.account import AccountsManager
@@ -187,6 +192,7 @@ class ContractDeployStep(TransactionStep):
     wasm_path: str
     contract_id: str
     gas_limit: int
+    abi_path: Optional[str] = None
     upgradeable: bool = True
     readable: bool = True
     payable: bool = False
@@ -213,12 +219,22 @@ class ContractDeployStep(TransactionStep):
         metadata = CodeMetadata(
             self.upgradeable, self.readable, self.payable, self.payable_by_sc
         )
-        args = utils.retrieve_and_format_arguments(self.arguments)
+
+        if self.abi_path is not None:
+            serializer = AbiSerializer.from_abi(Path(self.abi_path))
+        else:
+            serializer = None
+
+        retrieved_arguments = utils.retrieve_value_from_any(self.arguments)
+        if serializer is None:
+            deploy_args = utils.format_tx_arguments(retrieved_arguments)
+        else:
+            deploy_args = serializer.encode_endpoint_inputs("init", retrieved_arguments)
 
         builder = tx_builder.ContractDeploymentBuilder(
             config=token_management_builders.get_builder_config(),
             owner=utils.get_address_instance(self.sender),
-            deploy_arguments=args,
+            deploy_arguments=deploy_args,
             code_metadata=metadata,
             code=Path(self.wasm_path).read_bytes(),
             gas_limit=self.gas_limit,
@@ -245,6 +261,11 @@ class ContractDeployStep(TransactionStep):
         if not isinstance(contract_address, Address):
             raise errors.ParsingError(on_chain_tx, "contract deployment address")
 
+        if self.abi_path is not None:
+            serializer = AbiSerializer.from_abi(Path(self.abi_path))
+        else:
+            serializer = None
+
         contract_data = InternalContractData(
             contract_id=self.contract_id,
             address=contract_address.bech32(),
@@ -252,6 +273,7 @@ class ContractDeployStep(TransactionStep):
             wasm_hash=get_file_hash(Path(self.wasm_path)),
             deploy_time=on_chain_tx.timestamp,
             last_upgrade_time=on_chain_tx.timestamp,
+            serializer=serializer,
         )
         scenario_data.add_contract_data(contract_data)
 
@@ -271,6 +293,7 @@ class ContractUpgradeStep(TransactionStep):
     payable: bool = False
     payable_by_sc: bool = False
     arguments: List = field(default_factory=lambda: [])
+    abi_path: Optional[str] = None
 
     def _create_builder(self) -> tx_builder.TransactionBuilder:
         """
@@ -284,13 +307,24 @@ class ContractUpgradeStep(TransactionStep):
         metadata = CodeMetadata(
             self.upgradeable, self.readable, self.payable, self.payable_by_sc
         )
-        args = utils.retrieve_and_format_arguments(self.arguments)
+        if self.abi_path is not None:
+            serializer = AbiSerializer.from_abi(Path(self.abi_path))
+        else:
+            serializer = None
+
+        retrieved_arguments = utils.retrieve_value_from_any(self.arguments)
+        if serializer is None:
+            upgrade_args = utils.format_tx_arguments(retrieved_arguments)
+        else:
+            upgrade_args = serializer.encode_endpoint_inputs(
+                "upgrade", retrieved_arguments
+            )
 
         builder = tx_builder.ContractUpgradeBuilder(
             config=token_management_builders.get_builder_config(),
             contract=utils.get_address_instance(self.contract),
             owner=utils.get_address_instance(self.sender),
-            upgrade_arguments=args,
+            upgrade_arguments=upgrade_args,
             code_metadata=metadata,
             code=Path(self.wasm_path).read_bytes(),
             gas_limit=self.gas_limit,
@@ -307,11 +341,20 @@ class ContractUpgradeStep(TransactionStep):
         if not isinstance(on_chain_tx, TransactionOnNetwork):
             raise ValueError("On chain transaction is None")
 
+        if self.abi_path is not None:
+            serializer = AbiSerializer.from_abi(Path(self.abi_path))
+        else:
+            serializer = None
+
         scenario_data = ScenarioData.get()
         try:
             scenario_data.set_contract_value(
                 self.contract, "last_upgrade_time", on_chain_tx.timestamp
             )
+            if serializer is not None:
+                scenario_data.set_contract_value(
+                    self.contract, "serializer", serializer
+                )
         except errors.UnknownContract:  # any contract can be upgraded
             pass
 
@@ -337,8 +380,20 @@ class ContractCallStep(TransactionStep):
         :rtype: tx_builder.TransactionBuilder
         """
         LOGGER.info(f"Calling {self.endpoint} for {self.contract}")
+        scenario_data = ScenarioData.get()
 
-        args = utils.retrieve_and_format_arguments(self.arguments)
+        retrieved_arguments = utils.retrieve_value_from_any(self.arguments)
+        try:
+            serializer = scenario_data.get_contract_value(self.contract, "serializer")
+        except errors.UnknownContract:
+            serializer = None
+
+        if isinstance(serializer, AbiSerializer):
+            call_args = serializer.encode_endpoint_inputs(
+                self.endpoint, retrieved_arguments
+            )
+        else:
+            call_args = utils.format_tx_arguments(retrieved_arguments)
         esdt_transfers = [
             TokenPayment.meta_esdt_from_integer(
                 utils.retrieve_value_from_string(trf.token_identifier),
@@ -356,7 +411,7 @@ class ContractCallStep(TransactionStep):
             caller=utils.get_address_instance(self.sender),
             function_name=self.endpoint,
             value=value,
-            call_arguments=args,
+            call_arguments=call_args,
             esdt_transfers=esdt_transfers,
             gas_limit=self.gas_limit,
         )
@@ -382,6 +437,45 @@ class ContractCallStep(TransactionStep):
 
 
 @dataclass
+class ResultsSaveKeys:
+    master_key: Optional[str]
+    sub_keys: Optional[List[Optional[str]]]
+
+    @staticmethod
+    def from_input(data: Any) -> Optional[ResultsSaveKeys]:
+        """
+        Parse the user input as an instance of this class
+
+        :param data: input data for a yaml Scene file
+        :type data: Any
+        :return: results save keys if defined
+        :rtype: Optional[ResultsSaveKeys]
+        """
+        if data is None:
+            return None
+        if isinstance(data, str):
+            return ResultsSaveKeys(data, None)
+        if isinstance(data, List):
+            for save_key in data:
+                if not isinstance(save_key, str) and save_key is not None:
+                    raise TypeError(f"Save keys must be a str or None, got {save_key}")
+            return ResultsSaveKeys(None, data)
+        if isinstance(data, Dict):
+            if len(data) != 1:
+                raise ValueError(
+                    "When providing a dict, only one root key should be provided"
+                )
+            master_key, sub_keys = list(data.items())[0]
+            if not isinstance(master_key, str):
+                raise TypeError("The root key should be a str")
+            for save_key in sub_keys:
+                if not isinstance(save_key, str) and save_key is not None:
+                    raise TypeError(f"Save keys must be a str or None, got {save_key}")
+            return ResultsSaveKeys(master_key, sub_keys)
+        raise TypeError(f"ResultsSaveKeys can not parse the following input {data}")
+
+
+@dataclass
 class ContractQueryStep(Step):
     """
     Represents a smart contract query
@@ -393,8 +487,34 @@ class ContractQueryStep(Step):
     expected_results: List[Dict[str, str]] = field(default_factory=lambda: [])
     print_results: bool = False
     results: List[QueryResult] | None = field(init=False, default=None)
+    query_response: ContractQueryResponse | None = field(init=False, default=None)
+    decoded_results: List[Any] | None = field(init=False, default=None)
+    saved_results: List[Any] | None = field(init=False, default=None)
+    results_save_keys: Optional[ResultsSaveKeys] = field(default=None)
+    results_types: Union[None, List[Dict]] = field(default=None)
+
+    def __post_init__(self):
+        """
+        After the initialisation of an instance, if the esdt transfers are
+        found to be Dict,
+        will try to convert them to EsdtTransfers instances.
+        Usefull for easy loading from yaml files
+        """
+        if self.results_save_keys is not None and not isinstance(
+            self.results_save_keys, ResultsSaveKeys
+        ):
+            self.results_save_keys = ResultsSaveKeys.from_input(self.results_save_keys)
 
     def _interpret_return_data(self, data: str) -> QueryResult:
+        """
+        Function to interpret the returned data from a query when there is no Serializer
+        available
+
+        :param data: data from the query response
+        :type data: str
+        :return: Result of the query
+        :rtype: QueryResult
+        """
         if not data:
             return QueryResult("", "", None)
 
@@ -410,6 +530,49 @@ class ContractQueryStep(Step):
         except Exception as err:
             raise errors.ParsingError(data, "QueryResult") from err
 
+    def save_results(self):
+        """
+        Save the results the query. This method replace the old way that was using
+        expected_results
+        """
+        scenario_data = ScenarioData.get()
+        if self.results_save_keys is None:
+            return
+
+        # decode results if specified
+        if self.results_types is None:
+            if self.decoded_results is None:
+                raise ValueError(
+                    "No result were decoded due to lack of ABI but `results_types` was "
+                    "not specified either"
+                )
+        else:
+            data_parts = self.query_response.get_return_data_parts()
+            self.decoded_results = AbiSerializer().decode_io(
+                self.results_types, data_parts
+            )
+
+        LOGGER.info("Saving query results")
+        sub_keys = self.results_save_keys.sub_keys
+        if sub_keys is not None:
+            if len(sub_keys) != len(self.decoded_results):
+                raise ValueError(
+                    f"Number of results ({len(self.decoded_results)} -> "
+                    f"{self.decoded_results}) and save keys "
+                    f"({len(sub_keys)} -> {sub_keys}) doesn't match"
+                )
+            to_save = dict(zip(sub_keys, self.decoded_results))
+            if self.results_save_keys.master_key is not None:
+                to_save = {self.results_save_keys.master_key: to_save}
+        else:
+            to_save = {self.results_save_keys.master_key: self.decoded_results}
+
+        self.saved_results = {}
+        for save_key, value in to_save.items():
+            if save_key is not None:
+                scenario_data.set_contract_value(self.contract, save_key, value)
+                self.saved_results[save_key] = value
+
     def execute(self):
         """
         Execute a query and optionally save the result
@@ -417,37 +580,60 @@ class ContractQueryStep(Step):
         LOGGER.info(f"Query on {self.endpoint} for {self.contract}")
         config = Config.get_config()
         scenario_data = ScenarioData.get()
-        args = utils.retrieve_and_format_arguments(self.arguments)
+        retrieved_arguments = utils.retrieve_value_from_any(self.arguments)
+        try:
+            serializer = scenario_data.get_contract_value(self.contract, "serializer")
+        except errors.UnknownContract:
+            serializer = None
+
+        if isinstance(serializer, AbiSerializer):
+            query_args = serializer.encode_endpoint_inputs(
+                self.endpoint, retrieved_arguments
+            )
+        else:
+            query_args = utils.format_tx_arguments(retrieved_arguments)
+
         builder = ContractQueryBuilder(
             contract=utils.get_address_instance(self.contract),
             function=self.endpoint,
-            call_arguments=args,
+            call_arguments=query_args,
         )
         query = builder.build()
         proxy = ProxyNetworkProvider(config.get("PROXY"))
 
-        results_empty = True
+        query_failed = True
         n_attempts = 0
         max_attempts = int(Config.get_config().get("MAX_QUERY_ATTEMPTS"))
-        while results_empty and n_attempts < max_attempts:
+        while query_failed and n_attempts < max_attempts:
             n_attempts += 1
-            response = proxy.query_contract(query)
-            self.results = [
-                self._interpret_return_data(data) for data in response.return_data
-            ]
-            results_empty = len(self.results) == 0 or (
-                len(self.results) == 1 and self.results[0] == ""
-            )
-            if results_empty:
+            self.query_response = proxy.query_contract(query)
+            query_failed = self.query_response.return_code != "ok"
+            if query_failed:
                 time.sleep(3)
                 LOGGER.warning(
-                    f"Empty query result, retrying. Attempt {n_attempts}/{max_attempts}"
+                    f"Query failed: {self.query_response.return_message}. Attempt "
+                    f"{n_attempts}/{max_attempts}"
                 )
-        if results_empty:
-            raise errors.EmptyQueryResults
-        if self.print_results:
-            print(self.results)
+            else:
+                self.results = [
+                    self._interpret_return_data(data)
+                    for data in self.query_response.return_data
+                ]
+                if serializer is not None:
+                    self.decoded_results = serializer.decode_contract_query_response(
+                        self.endpoint, self.query_response
+                    )
+
+        if query_failed:
+            self.results = None
+            raise errors.QueryFailed
+
         if len(self.expected_results) > 0:
+            LOGGER.warning(
+                "expected_results is deprecated, please use results_save_key and "
+                "results_types instead. https://mxops.readthedocs.io/en/stable/user_doc"
+                "umentation/steps.html#contract-query-step"
+            )
             LOGGER.info("Saving Query results as contract data")
             for result, expected_result in zip(self.results, self.expected_results):
                 parsed_result = parse_query_result(
@@ -456,6 +642,17 @@ class ContractQueryStep(Step):
                 scenario_data.set_contract_value(
                     self.contract, expected_result["save_key"], parsed_result
                 )
+        else:
+            self.save_results()
+
+        if self.print_results:
+            if self.saved_results is not None:
+                print(json_dumps(self.saved_results))
+            elif self.decoded_results is not None:
+                print(json_dumps(self.decoded_results))
+            else:
+                print(self.results)
+
         LOGGER.info("Query successful")
 
 
@@ -1094,12 +1291,11 @@ class PythonStep(Step):
         user_function = getattr(user_module, self.function)
 
         # transform args and kwargs and execute
-        arguments = [utils.retrieve_value_from_any(arg) for arg in self.arguments]
-        keyword_arguments = {
-            key: utils.retrieve_value_from_any(val)
-            for key, val in self.keyword_arguments.items()
-        }
-        result = user_function(*arguments, **keyword_arguments)
+        retrieved_arguments = utils.retrieve_value_from_any(self.arguments)
+        retrieved_keyword_arguments = utils.retrieve_value_from_any(
+            self.keyword_arguments
+        )
+        result = user_function(*retrieved_arguments, **retrieved_keyword_arguments)
 
         if result:
             if isinstance(result, str):

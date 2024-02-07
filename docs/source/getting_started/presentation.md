@@ -53,17 +53,18 @@ Here is the above `Scene`, but this time with the MxOps syntax:
     - mainnet
 
   allowed_scenario:
-    - "deploy_stake_withdraw"
+    - deploy_stake_withdraw
 
   accounts:
     - account_name: owner
-      pem_path: "./wallets/my_devnet_wallet.pem"
+      pem_path: ./wallets/my_devnet_wallet.pem
 
   steps:
     - type: ContractDeploy
       sender: owner
-      wasm_path: "./contracts/my_contract.wasm"
-      contract_id: "my-contract"
+      wasm_path: ./contracts/my_contract.wasm
+      abi_path: ./contracts/my_contract.abi.json
+      contract_id: my-contract
       gas_limit: 50000000
       upgradeable: true
       readable: false
@@ -72,23 +73,22 @@ Here is the above `Scene`, but this time with the MxOps syntax:
 
     - type: ContractCall
       sender: owner
-      contract: "my-contract"
+      contract: my-contract
       endpoint: stake
       gas_limit: 100000000
       value: 50000000000000000
     
     - type: ContractQuery
-      contract: "my-contract"
+      contract: my-contract
       endpoint: getStakedAmount
       arguments:
           - "[owner]"
-      expected_results:
-        - save_key: ownerStakedAmount
-          result_type: int
+      results_save_keys:
+        - ownerStakedAmount
 
     - type: ContractCall
       sender: owner
-      contract: "my-contract"
+      contract: my-contract
       endpoint: withdraw
       gas_limit: 5000000
       arguments:

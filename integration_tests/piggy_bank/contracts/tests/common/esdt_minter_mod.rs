@@ -1,10 +1,12 @@
 multiversx_sc::imports!();
 multiversx_sc::derive_imports!();
 
-use multiversx_sc_scenario::{
-    managed_biguint, managed_token_id, rust_biguint, testing_framework::ContractObjWrapper, DebugApi, whitebox::TxResult
-};
 use esdt_minter::EsdtMinter;
+use multiversx_sc_scenario::{
+    managed_biguint, managed_token_id, rust_biguint,
+    testing_framework::{ContractObjWrapper, TxResult},
+    DebugApi,
+};
 
 use super::blockchain_mod::*;
 

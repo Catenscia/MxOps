@@ -11,7 +11,6 @@ from argparse import (
     RawDescriptionHelpFormatter,
 )
 import argparse
-import json
 from typing import Literal
 
 from importlib_resources import files
@@ -19,6 +18,7 @@ from importlib_resources import files
 from mxops.data import path
 from mxops.config.config import Config
 from mxops.data.execution_data import ScenarioData, delete_scenario_data
+from mxops.data.utils import json_dumps
 from mxops.enums import parse_network_enum
 from mxops.utils.logger import get_logger
 
@@ -179,11 +179,11 @@ def execute_cli(args: Namespace):  # pylint: disable=R0912
     if sub_command == "get":
         if args.scenario:
             ScenarioData.load_scenario(args.scenario, args.checkpoint)
-            print(json.dumps(ScenarioData.get().to_dict(), indent=4))
+            print(json_dumps(ScenarioData.get().to_dict()))
         elif args.list:
             scenarios_names = path.get_all_scenarios_names()
             data = {"names": sorted(scenarios_names)}
-            print(json.dumps(data, indent=4))
+            print(json_dumps(data))
         elif args.path:
             print(f"Root data path: {path.get_data_path()}")
         else:

@@ -5,10 +5,11 @@ export PONG_WAIT_TIME=1
 
 mxops data delete \
             -n devnet \
-            -s mxops_tutorial_enhanced_first_scene
+            -s mxops_tutorial_enhanced_first_scene \
+            -y
 
 mxops execute \
         -n devnet \
         -s mxops_tutorial_enhanced_first_scene \
         mxops_scenes/accounts/devnet.yaml \
-        mxops_scenes/deploy.yaml
+        mxops_scenes/01_deploy.yaml

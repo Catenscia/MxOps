@@ -1,0 +1,10 @@
+[package]
+name = "data-store-meta"
+version = "0.0.0"
+edition = "2021"
+publish = false
+[dependencies.data-store]
+path = ".."
+
+[dependencies.multiversx-sc-meta]
+version = "0.46.1"

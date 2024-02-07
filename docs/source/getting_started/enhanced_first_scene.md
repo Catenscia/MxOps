@@ -4,27 +4,29 @@ In the section we will modify our initial `Scene` that was made to deploy and in
 
 ## Account Scenes
 
-The improvement here will take advantage of the fact that when launching `MxOps`, we can specify several files and/or folders with `Scenes`.
+The improvement here will take advantage of the fact that when launching `MxOps`, we can specify several `Scenes` to be executed sequentially or even entire folders with `Scenes`.
 
 We will define the accounts in separate files per network type. Let's start by creating folder `mxops_scenes` with a sub_folder `accounts`.
 
-We will write the `Scene`  `mxops_scenes/accounts/devnet.yaml` with no step at all, just the account definition:
+We will write the `Scene`  `mxops_scenes/accounts/devnet.yaml` with no step at all, just the accounts definition:
 
 ```yaml
 allowed_networks:
     - devnet
 
 allowed_scenario:
-    - ".*"
+    - ".*"  # regex for allowing all scenarios
 
 accounts:
   - account_name: owner
     pem_path: ./wallets/my_devnet_wallet.pem
 ```
 
-To avoid any mistake, we recommend (not only for `MxOps` but in general) dedicating wallets to a single network: each wallet should interact only with a single network. This makes it harder mix-up networks.
+```{note}
+To avoid harmful mistakes, we recommend (not only for `MxOps` but in general) dedicating wallets to a single network: each wallet should interact with one and only one network. This makes it harder to mix-up networks and losing funds.
+```
 
-For example if you wanted to execute this tutorial on the local net, you could create the `mxops_scenes/accounts/local.yaml`:
+For example if you also wanted to execute this tutorial on a localnet, you could create the following `Scene` `mxops_scenes/accounts/local.yaml`:
 
 ```yaml
 allowed_networks:
@@ -40,14 +42,14 @@ accounts:
 
 Two details to notice:
 
-- a regex has been used for the allowed `Scenarios`: we want to allow all `Scenarios` as we are just specifying the account.
-- the wallets my_devnet_wallet and bob have been defined with the same name: we only have to refer to the account name "owner" in the scenes we will write later on.
+- a regex has been used for the allowed `Scenarios`: we want to allow all `Scenarios` as we are just specifying the accounts.
+- the wallets my_devnet_wallet and bob have been defined with the same `account_name`: in later `Scenes`, we only have to refer to the `account_name` "owner" and it will work both the `devnet` and the ` localnet`.
 
 ## Deploy Scene
 
 The deployment will be written in a separate `Scene` so that we can ping and pong the contract later on without having to deploy a new contract each time.
 
-Create the new file `mxops_scenes/deploy.yaml`:
+Create the new file `mxops_scenes/01_deploy.yaml`:
 
 ```yaml
 allowed_networks:
@@ -62,6 +64,7 @@ steps:
   - type: ContractDeploy
     sender: owner
     wasm_path: "./contract/ping-pong/output/ping-pong.wasm"
+    abi_path: "./contract/ping-pong/output/ping-pong.abi.json"
     contract_id: "egld-ping-pong"
     gas_limit: 40000000
     arguments:
@@ -73,17 +76,18 @@ steps:
     payable_by_sc: true
 ```
 
-Three important changes:
+Four important changes:
 
 - The devnet and the localnet have been allowed to execute this `Scene`
 - We changed the `Scenario` name to "mxops_tutorial_enhanced_first_scene"
 - Instead of writing the ping amount and the pong wait time directly in the scene, we will pull them from environment variables.
+- we added the argument `abi_file` for the `ContractDeploy` `Step`: this will allow `MxOps` to automatically parse the arguments sent to an endpoint and to automatically decode the results of a query. 
 
 ## PingAmount and Query
 
-We can now write the final `Scene`of this tutorial. And for this occasion let's introduce a new component: The `ContractQuery` `Step`. This tells `Mxops` to query the view of a contract and optionally you can save the results and/or print it.
+We can now write the final `Scenes` of this tutorial and for this occasion let's introduce a new component: The `ContractQuery` `Step`. This tells `Mxops` to query the view of a contract and optionally you can save the results for later use and/or print them.
 
-In our situation let's say that we forgot what is the ping amount we need to send to our contract. We could look at the deploy transaction and look at the supplied arguments but that is not convenient. Instead we will query the ping amount directly from the deployed contract and save this value for when we want to ping.
+In our situation let's say that we forgot what is the ping amount we need to send to our contract. We could look at the deploy transaction and look at the supplied arguments but that is not very convenient. Instead we will query the ping amount directly from the deployed contract and save this value for when we want to ping.
 
 Such `Step` would look like this:
 
@@ -91,14 +95,13 @@ Such `Step` would look like this:
   - type: ContractQuery
     contract: "egld-ping-pong"
     endpoint: getPingAmount
-    expected_results:
-      - save_key: PingAmount
-        result_type: int
+    results_save_key:
+      - PingAmount
 ```
 
-This tells `MxOps` to save (in the current `Scenario`) the value from the query result and to attach it to the contract "egld-ping-pong" under the key name "PingAmount".
+This tells `MxOps` to save (in the current active `Scenario`) the value from the query result and to attach it to the contract "egld-ping-pong" under the key name "PingAmount".
 
-We can reuse this value during the ping `Step`:
+We can then reuse this value directly during the ping `Step`:
 
 ```yaml
   - type: ContractCall
@@ -109,11 +112,11 @@ We can reuse this value during the ping `Step`:
     value: "%egld-ping-pong.PingAmount"
 ```
 
-This 'save&reuse' workflow allows you to make complex and dynamic `Scenes`: it can save you a ton of time in situations like complex and interdependent multi-deployment.
+This 'save&reuse' workflow allows you to make very complex and dynamic `Scenes`: it can save you a ton of time in situations like complex and interdependent multi-deployments.
 
 ## Transfer Check
 
-MxOps checks by default that a transaction is successful. In our case, we would also like to check that the eGLD transfer was correctly executed during the ping and pong transaction. This is done by specifying a `TransfersCheck` in the `ContractCall` `Step`:
+MxOps checks by default that a transaction is successful. In our case, we would also like to check that the eGLD transfer was correctly executed during the ping and pong transaction. This can done by specifying a `TransfersCheck` in the `ContractCall` `Step`:
 
 ```yaml
   - type: ContractCall
@@ -137,10 +140,10 @@ MxOps checks by default that a transaction is successful. In our case, we would 
 We take advantages of the variable format of MxOps to specify the value for the transfer. The above check tells MxOps that the transaction should contain only one transfer, and that it should be an eGLD transfer of `PingAmount` token from the user `owner` to the `egld-ping-pong` contract.
 
 ```{warning}
-By default if checks are not specified by the user, MxOps will by default run a `SuccessCheck` on each transaction. However if you are using the `checks` keyword, don't forget to add the `SuccessCheck` if you need it!
+By default if checks are not specified by the user, MxOps will run a `SuccessCheck` on each transaction. However if you are using the `checks` keyword, don't forget to add the `SuccessCheck` if you need it!
 ```
 
-But let's finish our `Scene` named `mxops_scenes/ping_pong.yaml` by adding the pong `Step`:
+But let's finish our ping `Scene` named `mxops_scenes/02_ping.yaml`:
 
 ```yaml
 allowed_networks:
@@ -155,9 +158,8 @@ steps:
   - type: ContractQuery
     contract: "egld-ping-pong"
     endpoint: getPingAmount
-    expected_results:
-      - save_key: PingAmount
-        result_type: int
+    results_save_keys:
+      - PingAmount
 
   - type: ContractCall
     sender: owner
@@ -165,12 +167,46 @@ steps:
     endpoint: ping
     gas_limit: 3000000
     value: "%egld-ping-pong.PingAmount"
+    checks:
+      - type: Success
+
+      - type: Transfers
+        condition: exact
+        expected_transfers:
+          - sender: "[owner]"
+            receiver: "%egld-ping-pong.address"
+            token_identifier: EGLD
+            amount: "%egld-ping-pong.PingAmount"
+
+```
+
+and our last `Scene` named `mxops_scenes/03_pong.yaml`:
+
+```yaml
+allowed_networks:
+    - devnet
+    - localnet
+
+allowed_scenario:
+    - mxops_tutorial_enhanced_first_scene
+
+steps:
 
   - type: ContractCall
     sender: owner
     contract: "egld-ping-pong"
     endpoint: pong
     gas_limit: 3000000
+    checks:
+      - type: Success
+
+      - type: Transfers
+        condition: exact
+        expected_transfers:
+          - sender: "%egld-ping-pong.address"
+            receiver: "[owner]"
+            token_identifier: EGLD
+            amount: "%egld-ping-pong.PingAmount"
 
 ```
 
@@ -189,15 +225,16 @@ mxops_tutorial
 │   ├── accounts
 │   │   ├── devnet.yaml
 │   │   └── local.yaml
-│   ├── deploy.yaml
-│   ├── ping-pong.yaml
+│   ├── 01_deploy.yaml
+│   ├── 02_ping.yaml
+│   ├── 03_pong.yaml
 └── wallets
     └── my_devnet_wallet.pem
 ```
 
 ## Execution
 
-To deploy the contract on the devnet:
+To deploy the contract on the devnet, you can enter the following commands:
 
 ```bash
 export PING_PONG_AMOUNT=1000000000000000000
@@ -207,8 +244,10 @@ mxops execute \
         -n devnet \
         -s mxops_tutorial_enhanced_first_scene \
         mxops_scenes/accounts/devnet.yaml \
-        mxops_scenes/deploy.yaml
+        mxops_scenes/01_deploy.yaml
 ```
+
+In the above command, we have provided the network, the scenario, a first `Scene` where we defined the account related to the devnet and then the `Scene` where the deployment of the contract is defined.
 
 This will give you an output like this:
 
@@ -217,20 +256,20 @@ MxOps  Copyright (C) 2023  Catenscia
 This program comes with ABSOLUTELY NO WARRANTY
 [2023-02-24 07:21:10,414 data INFO] Scenario mxops_tutorial_enhanced_first_scene created for network devnet [data:287 in create_scenario]
 [2023-02-24 07:21:10,414 scene INFO] Executing scene mxops_scenes/accounts/devnet.yaml [scene:69 in execute_scene]
-[2023-02-24 07:21:10,518 scene INFO] Executing scene mxops_scenes/deploy.yaml [scene:69 in execute_scene]
+[2023-02-24 07:21:10,518 scene INFO] Executing scene mxops_scenes/01_deploy.yaml [scene:69 in execute_scene]
 [2023-02-24 07:21:10,521 steps INFO] Deploying contract egld-ping-pong [steps:100 in execute]
 [2023-02-24 07:21:15,819 steps INFO] Deploy successful on erd1qqqqqqqqqqqqqpgqv2qu073e8vfv82ce2qt4dtcj4dqpga6rplcqvm6swg
 tx hash: https://devnet-explorer.multiversx.com/transactions/b0b7c059f44793c03c535f17563dcc349e25972a1ccded6ac812a8c2cd9056c9 [steps:120 in execute]
 ```
 
-To ping and pong the contract, we can use this:
+Once your contract is deployed, you can ping it anytime using this command:
 
 ```bash
 mxops execute \
         -n devnet \
         -s mxops_tutorial_enhanced_first_scene \
         mxops_scenes/accounts/devnet.yaml \
-        mxops_scenes/ping_pong.yaml
+        mxops_scenes/02_ping.yaml
 ```
 
 ```bash
@@ -238,23 +277,61 @@ MxOps  Copyright (C) 2023  Catenscia
 This program comes with ABSOLUTELY NO WARRANTY
 [2023-02-24 07:21:24,667 data INFO] Scenario mxops_tutorial_enhanced_first_scene loaded for network devnet [data:262 in load_scenario]
 [2023-02-24 07:21:24,667 scene INFO] Executing scene mxops_scenes/accounts/devnet.yaml [scene:69 in execute_scene]
-[2023-02-24 07:21:24,823 scene INFO] Executing scene mxops_scenes/ping_pong.yaml [scene:69 in execute_scene]
+[2023-02-24 07:21:24,823 scene INFO] Executing scene mxops_scenes/02_ping.yaml [scene:69 in execute_scene]
 [2023-02-24 07:21:24,826 steps INFO] Query on getPingAmount for egld-ping-pong [steps:211 in execute]
 [2023-02-24 07:21:25,029 steps INFO] Saving Query results as contract data [steps:223 in execute]
 [2023-02-24 07:21:25,029 steps INFO] Query successful [steps:231 in execute]
 [2023-02-24 07:21:25,030 steps INFO] Calling ping for egld-ping-pong [steps:173 in execute]
 [2023-02-24 07:21:35,308 steps INFO] Call successful: https://devnet-explorer.multiversx.com/transactions/bdbc4773fbe05aa8f86f2bbc2d09db26eb50dc1fe4276754acbe17ba106ee65c [steps:188 in execute]
+```
+
+And lastly, you can pong the contract:
+
+```bash
+mxops execute \
+        -n devnet \
+        -s mxops_tutorial_enhanced_first_scene \
+        mxops_scenes/accounts/devnet.yaml \
+        mxops_scenes/03_pong.yaml
+```
+
+```bash
+MxOps  Copyright (C) 2023  Catenscia
+This program comes with ABSOLUTELY NO WARRANTY
+[2023-02-24 07:21:24,667 data INFO] Scenario mxops_tutorial_enhanced_first_scene loaded for network devnet [data:262 in load_scenario]
+[2023-02-24 07:21:24,667 scene INFO] Executing scene mxops_scenes/accounts/devnet.yaml [scene:69 in execute_scene]
+[2023-02-24 07:21:24,823 scene INFO] Executing scene mxops_scenes/03_pong.yaml [scene:69 in execute_scene]
 [2023-02-24 07:21:35,308 steps INFO] Calling pong for egld-ping-pong [steps:173 in execute]
 [2023-02-24 07:21:40,576 steps INFO] Call successful: https://devnet-explorer.multiversx.com/transactions/95003df0306888d0fb0606f7e6121028b9ac389f9e38b7ee68783fc0e2919e33 [steps:188 in execute]
 ```
 
 You can notice the extra query `Step` in the logs compared to the first version of this tutorial.
 
-You can now ping and pong the contract again, without making a new deployment each time.
+If you wanted to execute all three `Scenes` in a single command call, we would either specify all of them, or just specify the folder of the `Scenes` and `MxOps` will execute them by alphabetical order.
+
+```bash
+mxops execute \
+        -n devnet \
+        -s mxops_tutorial_enhanced_first_scene \
+        mxops_scenes/accounts/devnet.yaml \
+        mxops_scenes
+```
+
+or
+
+```bash
+mxops execute \
+        -n devnet \
+        -s mxops_tutorial_enhanced_first_scene \
+        mxops_scenes/accounts/devnet.yaml \
+        mxops_scenes/01_deploy.yaml \
+        mxops_scenes/02_ping.yaml \
+        mxops_scenes/03_pong.yaml
+```
 
 ## Data
 
-Let's take a look at the data of the current `Scenario`:
+Let's take a look at the saved data of the current `Scenario`:
 
 ```bash
 mxops data get -n devnet -s mxops_tutorial_enhanced_first_scene
@@ -287,4 +364,4 @@ This program comes with ABSOLUTELY NO WARRANTY
 
 You can notice the "PingAmount" value has indeed been saved under the contract "egld-ping-pong".
 
-Ladies and Gentlemen, it is now time to wrap things up and go towards the 👉 {doc}`conclusion of this tutorial<conclusion>` 🏁
+Ladies and Gentlemen, congratulation for making it until here! It is now time to wrap things up and go towards the 👉 {doc}`conclusion of this tutorial<conclusion>` 🏁

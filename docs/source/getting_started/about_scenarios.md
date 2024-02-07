@@ -11,14 +11,14 @@ This section will give you a basic understanding of `Scenarios`, you can always 
 
 ## Definition
 
-`Scenarios` are virtual context in which data can be saved and reused. The first use case is during deployment: Once a contract is deployed, one need to save the address that has been assigned to the contract for later interactions.
+`Scenarios` are virtual context in which data can be saved and reused. The first use case is during deployment: Once a contract is deployed, one needs to save the address that has been assigned to the contract for later interactions.
 
-`Scenarios` save contract data using their `contract_id`. This means that the same `contract_id` can be use in different `Scenarios` but also in different networks (main, dev...).
+`Scenarios` save contract data by `contract_id`. This means that the same `contract_id` can be use in different `Scenarios` but also in different networks (main, dev...). However, if you try to assign twice the same `contract-id` within the same `Scenario`, `MxOps` will throw an error.
 This allows maximum reusability for the `Scenes` as you don't have to monitor which ids has already been taken in your others `Scenarios`.
 
 ## Persistence
 
-Unless you specifically decide to delete it, the data stored in a `Scenario` is persistent on your local computer. You can access from everywhere 💻
+Unless you specifically decide to delete it, the data stored in a `Scenario` is persistent on your local computer. You can access from it everywhere on your computer 💻.
 
 For example, we can see what data has been saved when we executed our first `Scene`. Try this command:
 
@@ -26,7 +26,7 @@ For example, we can see what data has been saved when we executed our first `Sce
 mxops data get -n devnet -s mxops_tutorial_first_scene
 ```
 
-This will give you the following output:
+This will give you the following output (you may have more or less data depending of your version of `MxOps`):
 
 ```bash
 MxOps  Copyright (C) 2023  Catenscia

@@ -6,6 +6,7 @@ arg
 backend
 blockchain
 blockchains
+abcdef
 ChangeLog
 config
 configparser
@@ -15,10 +16,16 @@ customizations
 DevOps
 env
 environ
+Etienne
+enum
+isize
 json
 https
+monotypes
+Monotypes
 os
 png
+pre
 PyPI
 pytest
 Readthedocs
@@ -31,5 +38,8 @@ README
 reusability
 SBTS
 sdk
+sdks
+td
+th
 VScode
 wasm

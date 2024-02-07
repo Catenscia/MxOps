@@ -9,9 +9,11 @@ ContractCallStep
 ContractQuery
 ContractQueryStep
 ContractUpgrade
+DayOfWeek
 dev
 Dev
 devnet
+EnumWithEverything
 EsdtMinter
 françois
 Freepik
@@ -29,6 +31,7 @@ msc
 MxOps
 mxops
 MyCustomException
+MyStruct
 PiggyBank
 PingAmount
 PoolPrice
@@ -38,3 +41,4 @@ runtime
 ScenarioData
 SuccessCheck
 TransfersCheck
+uint
