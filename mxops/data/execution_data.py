@@ -140,7 +140,7 @@ class SavedValuesData:
             next_key = parsed_value_key[0]
 
         # set the value
-        value_copy = deepcopy(value)  # in case the value is a complexe type
+        value_copy = deepcopy(value)  # in case the value is a complex type
         if isinstance(next_key, int):
             if isinstance(element, (tuple, list)):
                 try:

@@ -70,6 +70,7 @@ saved in the `Scenario` (specified at execution time) under the provided id to a
 type: ContractDeploy
 sender: bob
 wasm_path: "path/to/wasm"
+abi_path: "path/to/abi"  # optional but stongly recommended
 contract_id: my_first_sc
 gas_limit: 1584000
 arguments: # optional, if any args must be submitted
@@ -80,6 +81,8 @@ payable: false
 payable_by_sc: true
 ```
 
+We strongly recommended to provide an ABI with the contract as this will allow `MxOps` to do the data encoding and decoding during queries and calls for you, even if the data is some complex and custom `Struct`.
+
 ### Contract Upgrade Step
 
 This `Step` is used to upgrade a contract.
@@ -88,6 +91,7 @@ This `Step` is used to upgrade a contract.
 type: ContractUpgrade
 sender: bob
 wasm_path: "path/to/upgraded_wasm"
+abi_path: "path/to/abi"  # optional but stongly recommended
 contract: my_first_sc
 gas_limit: 1584000
 arguments: # optional, if any args must be submitted
@@ -98,10 +102,10 @@ payable: false
 payable_by_sc: true
 ```
 
-```{warning}
+```{note}
 Be mindful of the difference in the argument name between the deploy and the update steps.
 
-`contract_id` can only refer to a contract managed by MxOps whereas `contract` can be any contract.
+`contract_id` can only refer to a contract managed by MxOps whereas `contract` can be any contract. This means that you can upgrade a contract that has not been deployed by MxOps.
 ```
 
 ### Contract Call Step
@@ -129,6 +133,7 @@ checks: # optional, by default it will contain a transaction success check
 ```
 
 To get more information on the `checks` attribute, heads to the {doc}`checks` section.
+If you have provided an ABI with the contract, `MxOps` will be able to automatically encode the arguments for your endpoint call, even if they are complex structures. For more details on that, please head to the {doc}`serialization` section.
 
 ### Contract Query Step
 
@@ -140,15 +145,235 @@ type: ContractQuery
 contract: my_first_sc
 endpoint: getEsdtIdentifier
 arguments: []
-expected_results: # list of results excpected from the query output
-  - save_key: EsdtIdentifier
-    result_type: str
-print_results: false # if the query results should be printed in the console
+results_save_keys: # optional, key(s) under which save the results of the query
+  - EsdtIdentifier
+results_types:  # mandatory if results are to be saved and no ABI have been provided for this contract
+  - TokenIdentifier
+print_results: true # optional, if the query results should be printed in the console
 ```
 
-Currently allowed values for `result_type`: [`int`, `str`]
+If you have provided an ABI with the contract, `MxOps` will be able to automatically encode the arguments for your query, even if they are complex structures. For more details on that, please head to the {doc}`serialization` section.
+`MxOps` will also automatically decode the response of the query so that if you save the data, you can easily use it again by reference (see {doc}`values`).
 
-(loop_step_target)=
+#### About `results_save_keys`
+
+There are several accepted types for `results_save_keys` which will indicated how you want to save the data. You can provided either a master key or some sub-keys or both. The master keys will point to the entire query response whereas sub-keys points to individual result of the queries.
+You will find some examples below:
+
+
+
+##### Results Save Keys Example 1
+
+Query return type: `(BigUint, BigInt)`
+
+Decoded query response: `[[123456, -7891011]]`
+
+<table style="border: 1px solid black; border-collapse: collapse;">
+<tr>
+<th style="border: 1px solid black; background-color: #f2f2f2; padding: 8px;">results_save_keys</th>
+<th style="border: 1px solid black; background-color: #f2f2f2; padding: 8px;">Data saved within the Scenario</th>
+</tr>
+<tr>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+results_save_keys: master_key
+</pre>
+</td>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+{
+  "master_key": [[123456, -7891011]]
+}
+</pre>
+</td>
+</tr>
+<tr>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+results_save_keys:
+  master_key:
+    - sub_key_1
+</pre>
+</td>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+{
+  "master_key": {
+    "sub_key_1": [123456, -7891011]
+  }
+}
+</pre>
+</td>
+</tr>
+<tr>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+results_save_keys:
+  - sub_key_1
+</pre>
+</td>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+{
+  "sub_key_1": [123456, -7891011]
+}
+</pre>
+</td>
+</tr>
+</table>
+<p></p>
+
+
+
+##### Results Save Keys Example 2
+
+Query return type: `MultiValue2<u32, i8>`
+
+Decoded query response: `[12, -1]`
+
+<table style="border: 1px solid black; border-collapse: collapse;">
+<tr>
+<th style="border: 1px solid black; background-color: #f2f2f2; padding: 8px;">results_save_keys</th>
+<th style="border: 1px solid black; background-color: #f2f2f2; padding: 8px;">Data saved within the Scenario</th>
+</tr>
+<tr>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+results_save_keys: master_key
+</pre>
+</td>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+{
+  "master_key": [12, -1]
+}
+</pre>
+</td>
+</tr>
+<tr>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+results_save_keys:
+  master_key:
+    - sub_key_1
+    - sub_key_2
+</pre>
+</td>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+{
+  "master_key": {
+    "sub_key_1": 12,
+    "sub_key_2": -1
+  }
+}
+</pre>
+</td>
+</tr>
+<tr>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+results_save_keys:
+  - sub_key_1
+  - sub_key_2
+</pre>
+</td>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+{
+  "sub_key_1": 12,
+  "sub_key_2": -1
+}
+</pre>
+</td>
+</tr>
+</table>
+<p></p>
+
+
+
+##### Results Save Keys Example 3
+
+Query return type: `MultiValue2<u8, MyStruct<Self::Api>>`
+
+Decoded query response: `[234, {"attribute_1": "WEGLD-abcdef", "attribute_2": 123456}]`
+
+<table style="border: 1px solid black; border-collapse: collapse;">
+<tr>
+<th style="border: 1px solid black; background-color: #f2f2f2; padding: 8px;">results_save_keys</th>
+<th style="border: 1px solid black; background-color: #f2f2f2; padding: 8px;">Data saved within the Scenario</th>
+</tr>
+<tr>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+results_save_keys: master_key
+</pre>
+</td>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+{
+  "master_key": [
+   234,
+   {
+      "attribute_1": "WEGLD_abcdef",
+      "attribute_2": 123456
+   }
+  ]
+}
+</pre>
+</td>
+</tr>
+<tr>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+results_save_keys:
+  master_key:
+    - sub_key_1
+    - sub_key_2
+</pre>
+</td>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+{
+  "master_key": {
+    "sub_key_1": 234,
+    "sub_key_2": {
+      "attribute_1": "WEGLD_abcdef",
+      "attribute_2": 123456
+    }
+  }
+}
+</pre>
+</td>
+</tr>
+<tr>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+results_save_keys:
+  - sub_key_1
+  - sub_key_2
+</pre>
+</td>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+{
+  "sub_key_1": 234,
+  "sub_key_2": {
+    "attribute_1": "WEGLD_abcdef",
+    "attribute_2": 123456
+  }
+
+}
+</pre>
+</td>
+</tr>
+</table>
+<p></p>
+
+```{warning}
+If you provide sub-keys, the number of sub-keys must exactly match the number of elements returned by the query response.
+```
+
 
 ## Token Management Steps
 

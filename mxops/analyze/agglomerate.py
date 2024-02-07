@@ -25,7 +25,7 @@ def extrat_df_raw_row(raw_tx: Dict) -> Dict:
     :return: extracted data
     :rtype: Dict
     """
-    # For now only basic selection but complexe extraction will be done here
+    # For now only basic selection but complex extraction will be done here
     # in future version
     tx_data = {
         "txHash": raw_tx["txHash"],
