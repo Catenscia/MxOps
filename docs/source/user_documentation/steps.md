@@ -148,7 +148,7 @@ arguments: []
 results_save_keys: # optional, key(s) under which save the results of the query
   - EsdtIdentifier
 results_types:  # mandatory if results are to be saved and no ABI have been provided for this contract
-  - TokenIdentifier
+  - type: TokenIdentifier
 print_results: true # optional, if the query results should be printed in the console
 ```
 
