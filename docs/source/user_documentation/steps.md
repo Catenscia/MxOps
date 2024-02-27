@@ -593,6 +593,7 @@ You can find more information in the MultiversX documentation about [non fungibl
 
 ## Miscellaneous Steps
 
+(loop_step_target)=
 ### Loop Step
 
 This step allows to run a set of steps for a given number of times.
