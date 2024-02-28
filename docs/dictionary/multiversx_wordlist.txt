@@ -27,6 +27,7 @@ MultiValue
 MultiValueEncoded
 multiversx
 MultiversX
+MultiversXDevelopers
 mxpy
 mx
 NestedDecode

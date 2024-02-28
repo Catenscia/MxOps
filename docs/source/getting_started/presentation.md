@@ -169,12 +169,12 @@ steps:
 
 ## User Flow
 
-MxOps works with simple yaml files called `Scenes`. In these `Scenes` you will simply describe the different elements that will be used to interact with the blockchain.
-During execution, MxOps will save some data locally on your computer:
+MxOps works with simple yaml files called `Scenes` that look like the examples shown above. In these `Scenes` you will simply describe the different elements that will be used to interact with the blockchain.
+During execution, MxOps will save some data locally on your computer, for example:
 
-- deployment addresses for new contracts
-- token identifier for new tokens
-- query results when specified
+- deployment addresses for newly deployed contracts
+- token identifier for newly issued tokens
+- query results when asked by the user
 
 This data is accessible to MxOps and can be reused within `Scenes`.
 
@@ -183,7 +183,11 @@ Here is a little illustration of what is happening (click on it to zoom-in):
 ```{thumbnail} ../images/mxops_illustration.svg
 ```
 
-If you are a bit confused by this illustration, don't worry: the only thing you will have to do is to write `Scenes` and execute them. Next paragraph gives you a broad understanding of the constitution of a `Scene`.
+If you are a bit confused by this illustration, don't worry: the only thing you will have to do as a user is to write `Scenes` and execute them. Next paragraph gives you a broad understanding of the constitution of a `Scene`.
+
+```{note}
+The Visual Studio Code extension mxops-helper has been created to help users write their `Scenes` by providing templates. We recommend using it as it greatly simplify the process of creating `Scenes`.
+```
 
 ## Scenes
 
