@@ -600,7 +600,7 @@ This step allows to run a set of steps for a given number of times.
 A loop variable is created and can be used as an arguments for the steps inside the loop.
 
 ```yaml
-# This loop step retrieve the sft tokens with a nonce between 1 and 100.
+# This loop step retrieves the sft tokens that have a nonce between 1 and 100.
 # The loop variable is used to check and retrieve the amount of each nonce.
 type: Loop
 var_name: LOOP_VAR
@@ -613,9 +613,10 @@ steps:
     arguments:
       - TokenIdentifier4
       - $LOOP_VAR # nonce
-    expected_results:
-      - save_key: TokenIdentifier4Amount
-        result_type: int
+    results_types:
+      - type: BigUint
+    results_save_keys:
+      - TokenIdentifier4Amount
 
   - type: ContractCall
     sender: alice
