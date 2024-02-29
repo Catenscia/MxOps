@@ -27,7 +27,10 @@ from multiversx_sdk_core import (
 )
 from multiversx_sdk_core import transaction_builders as tx_builder
 from multiversx_sdk_core.serializer import arg_to_string
-from multiversx_sdk_core.transaction_factories import SmartContractTransactionsFactory
+from multiversx_sdk_core.transaction_factories import (
+    TransactionsFactoryConfig,
+    SmartContractTransactionsFactory,
+)
 from multiversx_sdk_network_providers import ProxyNetworkProvider
 from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
 from multiversx_sdk_network_providers.contract_query_response import (
@@ -252,8 +255,8 @@ class ContractDeployStep(TransactionStep):
         else:
             deploy_args = serializer.encode_endpoint_inputs("init", retrieved_arguments)
 
-        network_config = Config.get_config().get_network_config()
-        sc_factory = SmartContractTransactionsFactory(network_config, TokenComputer())
+        factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
+        sc_factory = SmartContractTransactionsFactory(factory_config, TokenComputer())
         bytecode = Path(self.wasm_path).read_bytes()
 
         return sc_factory.create_transaction_for_deploy(
@@ -343,8 +346,8 @@ class ContractUpgradeStep(TransactionStep):
                 "upgrade", retrieved_arguments
             )
 
-        network_config = Config.get_config().get_network_config()
-        sc_factory = SmartContractTransactionsFactory(network_config, TokenComputer())
+        factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
+        sc_factory = SmartContractTransactionsFactory(factory_config, TokenComputer())
         bytecode = Path(self.wasm_path).read_bytes()
 
         return sc_factory.create_transaction_for_upgrade(
@@ -435,8 +438,8 @@ class ContractCallStep(TransactionStep):
         ]
         value = utils.retrieve_value_from_any(self.value)
 
-        network_config = Config.get_config().get_network_config()
-        sc_factory = SmartContractTransactionsFactory(network_config, TokenComputer())
+        factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
+        sc_factory = SmartContractTransactionsFactory(factory_config, TokenComputer())
 
         return sc_factory.create_transaction_for_execute(
             sender=utils.get_address_instance(self.sender),
