@@ -18,12 +18,16 @@ from multiversx_sdk_cli.contracts import QueryResult
 from multiversx_sdk_cli.constants import DEFAULT_HRP
 from multiversx_sdk_core import (
     Address,
+    TokenComputer,
     TokenPayment,
+    Token,
+    TokenTransfer,
     ContractQueryBuilder,
-    CodeMetadata,
+    Transaction,
 )
 from multiversx_sdk_core import transaction_builders as tx_builder
 from multiversx_sdk_core.serializer import arg_to_string
+from multiversx_sdk_core.transaction_factories import SmartContractTransactionsFactory
 from multiversx_sdk_network_providers import ProxyNetworkProvider
 from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
 from multiversx_sdk_network_providers.contract_query_response import (
@@ -101,7 +105,31 @@ class TransactionStep(Step):
         :return: builder for the transaction to send
         :rtype: TransactionBuilder
         """
+        # TODO remove this
         raise NotImplementedError
+
+    def _build_unsigned_transaction(self) -> Transaction:
+        """
+        Interface for the method that will build transaction to send. This transaction
+        is meant to contain all the data specific to this Step.
+        The signature will be done at a later stage in the method sign_transaction
+
+        :return: transaction created by the Step
+        :rtype: Transaction
+        """
+        raise NotImplementedError
+
+    def sign_transaction(self, tx: Transaction):
+        """
+        Sign the transaction created by this step and update the account nonce
+
+        :param tx: tra
+        :type tx: Transaction
+        """
+        sender_account = AccountsManager.get_account(self.sender)
+        tx.nonce = sender_account.nonce
+        tx.signature = bytes.fromhex(sender_account.sign_transaction(tx))
+        sender_account.nonce += 1
 
     def _post_transaction_execution(self, on_chain_tx: TransactionOnNetwork | None):
         """
@@ -117,12 +145,8 @@ class TransactionStep(Step):
         Execute the workflow for a transaction Step: build, send, check
         and post execute
         """
-        sender_account = AccountsManager.get_account(self.sender)
-        builder = self._create_builder()
-        tx = builder.build()
-        tx.nonce = sender_account.nonce
-        tx.signature = bytes.fromhex(sender_account.sign_transaction(tx))
-        sender_account.nonce += 1
+        tx = self._build_unsigned_transaction()
+        self.sign_transaction(tx)
 
         if len(self.checks) > 0:
             on_chain_tx = send_and_wait_for_result(tx)
@@ -200,12 +224,12 @@ class ContractDeployStep(TransactionStep):
     payable_by_sc: bool = False
     arguments: List = field(default_factory=list)
 
-    def _create_builder(self) -> tx_builder.TransactionBuilder:
+    def _build_unsigned_transaction(self) -> Transaction:
         """
-        Create the builder for the contract deployment transaction
+        Build the transaction for a contract deployment
 
-        :return: builder of the transaction
-        :rtype: tx_builder.TransactionBuilder
+        :return: transaction built
+        :rtype: Transaction
         """
         LOGGER.info(f"Deploying contract {self.contract_id}")
         scenario_data = ScenarioData.get()
@@ -216,10 +240,6 @@ class ContractDeployStep(TransactionStep):
             raise errors.ContractIdAlreadyExists(self.contract_id)
         except errors.UnknownContract:
             pass
-
-        metadata = CodeMetadata(
-            self.upgradeable, self.readable, self.payable, self.payable_by_sc
-        )
 
         if self.abi_path is not None:
             serializer = AbiSerializer.from_abi(Path(self.abi_path))
@@ -232,15 +252,20 @@ class ContractDeployStep(TransactionStep):
         else:
             deploy_args = serializer.encode_endpoint_inputs("init", retrieved_arguments)
 
-        builder = tx_builder.ContractDeploymentBuilder(
-            config=token_management_builders.get_builder_config(),
-            owner=utils.get_address_instance(self.sender),
-            deploy_arguments=deploy_args,
-            code_metadata=metadata,
-            code=Path(self.wasm_path).read_bytes(),
+        network_config = Config.get_config().get_network_config()
+        sc_factory = SmartContractTransactionsFactory(network_config, TokenComputer())
+        bytecode = Path(self.wasm_path).read_bytes()
+
+        return sc_factory.create_transaction_for_deploy(
+            sender=utils.get_address_instance(self.sender),
+            bytecode=bytecode,
+            arguments=deploy_args,
             gas_limit=self.gas_limit,
+            is_upgradeable=self.upgradeable,
+            is_readable=self.readable,
+            is_payable=self.payable,
+            is_payable_by_sc=self.payable_by_sc,
         )
-        return builder
 
     def _post_transaction_execution(self, on_chain_tx: TransactionOnNetwork | None):
         """
@@ -296,18 +321,15 @@ class ContractUpgradeStep(TransactionStep):
     arguments: List = field(default_factory=lambda: [])
     abi_path: Optional[str] = None
 
-    def _create_builder(self) -> tx_builder.TransactionBuilder:
+    def _build_unsigned_transaction(self) -> Transaction:
         """
-        Create the builder for the contract upgrade transaction
+        Build the transaction for a contract upgrade
 
-        :return: builder of the transaction
-        :rtype: tx_builder.TransactionBuilder
+        :return: transaction built
+        :rtype: Transaction
         """
         LOGGER.info(f"Upgrading contract {self.contract}")
 
-        metadata = CodeMetadata(
-            self.upgradeable, self.readable, self.payable, self.payable_by_sc
-        )
         if self.abi_path is not None:
             serializer = AbiSerializer.from_abi(Path(self.abi_path))
         else:
@@ -321,16 +343,21 @@ class ContractUpgradeStep(TransactionStep):
                 "upgrade", retrieved_arguments
             )
 
-        builder = tx_builder.ContractUpgradeBuilder(
-            config=token_management_builders.get_builder_config(),
+        network_config = Config.get_config().get_network_config()
+        sc_factory = SmartContractTransactionsFactory(network_config, TokenComputer())
+        bytecode = Path(self.wasm_path).read_bytes()
+
+        return sc_factory.create_transaction_for_upgrade(
+            sender=utils.get_address_instance(self.sender),
             contract=utils.get_address_instance(self.contract),
-            owner=utils.get_address_instance(self.sender),
-            upgrade_arguments=upgrade_args,
-            code_metadata=metadata,
-            code=Path(self.wasm_path).read_bytes(),
+            bytecode=bytecode,
+            arguments=upgrade_args,
             gas_limit=self.gas_limit,
+            is_upgradeable=self.upgradeable,
+            is_readable=self.readable,
+            is_payable=self.payable,
+            is_payable_by_sc=self.payable_by_sc,
         )
-        return builder
 
     def _post_transaction_execution(self, on_chain_tx: TransactionOnNetwork | None):
         """
@@ -373,12 +400,12 @@ class ContractCallStep(TransactionStep):
     value: int | str = 0
     esdt_transfers: List[EsdtTransfer] = field(default_factory=lambda: [])
 
-    def _create_builder(self) -> tx_builder.TransactionBuilder:
+    def _build_unsigned_transaction(self) -> Transaction:
         """
-        Create the builder for the contract upgrade transaction
+        Build the transaction for a contract call
 
-        :return: builder of the transaction
-        :rtype: tx_builder.TransactionBuilder
+        :return: transaction built
+        :rtype: Transaction
         """
         LOGGER.info(f"Calling {self.endpoint} for {self.contract}")
         scenario_data = ScenarioData.get()
@@ -395,28 +422,31 @@ class ContractCallStep(TransactionStep):
             )
         else:
             call_args = utils.format_tx_arguments(retrieved_arguments)
+
         esdt_transfers = [
-            TokenPayment.meta_esdt_from_integer(
-                utils.retrieve_value_from_string(trf.token_identifier),
-                utils.retrieve_value_from_any(trf.nonce),
+            TokenTransfer(
+                Token(
+                    utils.retrieve_value_from_string(trf.token_identifier),
+                    utils.retrieve_value_from_any(trf.nonce),
+                ),
                 utils.retrieve_value_from_any(trf.amount),
-                0,
             )
             for trf in self.esdt_transfers
         ]
         value = utils.retrieve_value_from_any(self.value)
 
-        builder = tx_builder.ContractCallBuilder(
-            config=token_management_builders.get_builder_config(),
+        network_config = Config.get_config().get_network_config()
+        sc_factory = SmartContractTransactionsFactory(network_config, TokenComputer())
+
+        return sc_factory.create_transaction_for_execute(
+            sender=utils.get_address_instance(self.sender),
             contract=utils.get_address_instance(self.contract),
-            caller=utils.get_address_instance(self.sender),
-            function_name=self.endpoint,
-            value=value,
-            call_arguments=call_args,
-            esdt_transfers=esdt_transfers,
+            function=self.endpoint,
+            arguments=call_args,
             gas_limit=self.gas_limit,
+            native_transfer_amount=value,
+            token_transfers=esdt_transfers,
         )
-        return builder
 
     def __post_init__(self):
         """
