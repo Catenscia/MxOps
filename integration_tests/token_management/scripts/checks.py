@@ -12,8 +12,8 @@ EXPECTED_PROPERTIES = {
     "JeanToken": {
         "IsPaused": False,
         "CanUpgrade": True,
-        "CanMint": True,
-        "CanBurn": True,
+        "CanMint": False,
+        "CanBurn": False,
         "CanChangeOwner": False,
         "CanPause": False,
         "CanFreeze": False,
