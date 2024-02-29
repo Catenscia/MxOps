@@ -505,6 +505,14 @@ class ContractQueryStep(Step):
             self.results_save_keys, ResultsSaveKeys
         ):
             self.results_save_keys = ResultsSaveKeys.from_input(self.results_save_keys)
+        if self.results_types is not None:
+            if not isinstance(self.results_types, list):
+                raise errors.InvalidQueryResultsDefinition
+            for result_type in self.results_types:
+                if not isinstance(result_type, dict):
+                    raise errors.InvalidQueryResultsDefinition
+                if "type" not in result_type:
+                    raise errors.InvalidQueryResultsDefinition
 
     def _interpret_return_data(self, data: str) -> QueryResult:
         """
@@ -612,7 +620,6 @@ class ContractQueryStep(Step):
                 ]
                 if self.results_types is not None:
                     data_parts = self.query_response.get_return_data_parts()
-                    print(self.results_types, data_parts)
                     self.decoded_results = AbiSerializer().decode_io(
                         self.results_types, data_parts
                     )
@@ -945,7 +952,7 @@ class ManageTokenRolesStep(TransactionStep):
         target = utils.get_address_instance(self.target)
         LOGGER.info(
             f"Setting roles {self.roles} on the token {self.token_identifier}"
-            f" ({token_identifier}) for {self.target} ({target})"
+            f" ({token_identifier}) for {self.target} ({target.bech32()})"
         )
 
         builder = token_management_builders.ManageTokenRolesBuilder(
