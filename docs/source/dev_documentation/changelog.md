@@ -5,6 +5,7 @@
 ## Added
 
 - ABI support for smart-contract
+- Added new examples for queries
 
 ## 2.0.1 - 2023-10-25
 

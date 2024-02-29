@@ -58,6 +58,16 @@ steps:
         result_type: str
     print_results: true
 
+  - type: ContractQuery
+    contract: SEGLD-minter
+    endpoint: getTokenIdentifier
+    arguments: []
+    results_types:
+      - type: TokenIdentifier
+    results_save_keys:
+      - TokenIdentifier
+    print_results: true
+
   - type: ContractUpgrade
     sender: owner
     wasm_path: ../contract/src/esdt-minter/output/esdt-minter.wasm

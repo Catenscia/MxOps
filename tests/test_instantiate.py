@@ -59,6 +59,14 @@ def test_deploy_scene_instantiation(test_data_folder_path: Path):
             expected_results=[{"save_key": "TokenIdentifier", "result_type": "str"}],
             print_results=True,
         ),
+        ContractQueryStep(
+            endpoint="getTokenIdentifier",
+            contract="SEGLD-minter",
+            arguments=[],
+            results_save_keys=["TokenIdentifier"],
+            results_types=[{"type": "TokenIdentifier"}],
+            print_results=True,
+        ),
         ContractUpgradeStep(
             sender="owner",
             wasm_path="../contract/src/esdt-minter/output/esdt-minter.wasm",
