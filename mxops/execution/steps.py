@@ -18,12 +18,18 @@ from multiversx_sdk_cli.contracts import QueryResult
 from multiversx_sdk_cli.constants import DEFAULT_HRP
 from multiversx_sdk_core import (
     Address,
-    TokenPayment,
+    TokenComputer,
+    Token,
+    TokenTransfer,
     ContractQueryBuilder,
-    CodeMetadata,
+    Transaction,
 )
-from multiversx_sdk_core import transaction_builders as tx_builder
 from multiversx_sdk_core.serializer import arg_to_string
+from multiversx_sdk_core.transaction_factories import (
+    TransactionsFactoryConfig,
+    SmartContractTransactionsFactory,
+    TransferTransactionsFactory,
+)
 from multiversx_sdk_network_providers import ProxyNetworkProvider
 from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
 from multiversx_sdk_network_providers.contract_query_response import (
@@ -35,7 +41,10 @@ from mxops.config.config import Config
 from mxops.data.execution_data import InternalContractData, ScenarioData, TokenData
 from mxops.data.utils import json_dumps
 from mxops.enums import TokenTypeEnum
-from mxops.execution import token_management_builders, utils
+from mxops.execution import utils
+from mxops.execution.token_management_factory import (
+    MyTokenManagementTransactionsFactory,
+)
 from mxops.execution.account import AccountsManager
 from mxops.execution import token_management as tkm
 from mxops.execution.checks import Check, SuccessCheck, instanciate_checks
@@ -94,14 +103,28 @@ class TransactionStep(Step):
         if len(self.checks) > 0 and isinstance(self.checks[0], Dict):
             self.checks = instanciate_checks(self.checks)
 
-    def _create_builder(self) -> tx_builder.TransactionBuilder:
+    def _build_unsigned_transaction(self) -> Transaction:
         """
-        Interface for the method that will create the transaction builder
+        Interface for the method that will build transaction to send. This transaction
+        is meant to contain all the data specific to this Step.
+        The signature will be done at a later stage in the method sign_transaction
 
-        :return: builder for the transaction to send
-        :rtype: TransactionBuilder
+        :return: transaction created by the Step
+        :rtype: Transaction
         """
         raise NotImplementedError
+
+    def sign_transaction(self, tx: Transaction):
+        """
+        Sign the transaction created by this step and update the account nonce
+
+        :param tx: tra
+        :type tx: Transaction
+        """
+        sender_account = AccountsManager.get_account(self.sender)
+        tx.nonce = sender_account.nonce
+        tx.signature = bytes.fromhex(sender_account.sign_transaction(tx))
+        sender_account.nonce += 1
 
     def _post_transaction_execution(self, on_chain_tx: TransactionOnNetwork | None):
         """
@@ -117,12 +140,8 @@ class TransactionStep(Step):
         Execute the workflow for a transaction Step: build, send, check
         and post execute
         """
-        sender_account = AccountsManager.get_account(self.sender)
-        builder = self._create_builder()
-        tx = builder.build()
-        tx.nonce = sender_account.nonce
-        tx.signature = bytes.fromhex(sender_account.sign_transaction(tx))
-        sender_account.nonce += 1
+        tx = self._build_unsigned_transaction()
+        self.sign_transaction(tx)
 
         if len(self.checks) > 0:
             on_chain_tx = send_and_wait_for_result(tx)
@@ -200,12 +219,12 @@ class ContractDeployStep(TransactionStep):
     payable_by_sc: bool = False
     arguments: List = field(default_factory=list)
 
-    def _create_builder(self) -> tx_builder.TransactionBuilder:
+    def _build_unsigned_transaction(self) -> Transaction:
         """
-        Create the builder for the contract deployment transaction
+        Build the transaction for a contract deployment
 
-        :return: builder of the transaction
-        :rtype: tx_builder.TransactionBuilder
+        :return: transaction built
+        :rtype: Transaction
         """
         LOGGER.info(f"Deploying contract {self.contract_id}")
         scenario_data = ScenarioData.get()
@@ -216,10 +235,6 @@ class ContractDeployStep(TransactionStep):
             raise errors.ContractIdAlreadyExists(self.contract_id)
         except errors.UnknownContract:
             pass
-
-        metadata = CodeMetadata(
-            self.upgradeable, self.readable, self.payable, self.payable_by_sc
-        )
 
         if self.abi_path is not None:
             serializer = AbiSerializer.from_abi(Path(self.abi_path))
@@ -232,15 +247,20 @@ class ContractDeployStep(TransactionStep):
         else:
             deploy_args = serializer.encode_endpoint_inputs("init", retrieved_arguments)
 
-        builder = tx_builder.ContractDeploymentBuilder(
-            config=token_management_builders.get_builder_config(),
-            owner=utils.get_address_instance(self.sender),
-            deploy_arguments=deploy_args,
-            code_metadata=metadata,
-            code=Path(self.wasm_path).read_bytes(),
+        factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
+        sc_factory = SmartContractTransactionsFactory(factory_config, TokenComputer())
+        bytecode = Path(self.wasm_path).read_bytes()
+
+        return sc_factory.create_transaction_for_deploy(
+            sender=utils.get_address_instance(self.sender),
+            bytecode=bytecode,
+            arguments=deploy_args,
             gas_limit=self.gas_limit,
+            is_upgradeable=self.upgradeable,
+            is_readable=self.readable,
+            is_payable=self.payable,
+            is_payable_by_sc=self.payable_by_sc,
         )
-        return builder
 
     def _post_transaction_execution(self, on_chain_tx: TransactionOnNetwork | None):
         """
@@ -296,18 +316,15 @@ class ContractUpgradeStep(TransactionStep):
     arguments: List = field(default_factory=lambda: [])
     abi_path: Optional[str] = None
 
-    def _create_builder(self) -> tx_builder.TransactionBuilder:
+    def _build_unsigned_transaction(self) -> Transaction:
         """
-        Create the builder for the contract upgrade transaction
+        Build the transaction for a contract upgrade
 
-        :return: builder of the transaction
-        :rtype: tx_builder.TransactionBuilder
+        :return: transaction built
+        :rtype: Transaction
         """
         LOGGER.info(f"Upgrading contract {self.contract}")
 
-        metadata = CodeMetadata(
-            self.upgradeable, self.readable, self.payable, self.payable_by_sc
-        )
         if self.abi_path is not None:
             serializer = AbiSerializer.from_abi(Path(self.abi_path))
         else:
@@ -321,16 +338,21 @@ class ContractUpgradeStep(TransactionStep):
                 "upgrade", retrieved_arguments
             )
 
-        builder = tx_builder.ContractUpgradeBuilder(
-            config=token_management_builders.get_builder_config(),
+        factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
+        sc_factory = SmartContractTransactionsFactory(factory_config, TokenComputer())
+        bytecode = Path(self.wasm_path).read_bytes()
+
+        return sc_factory.create_transaction_for_upgrade(
+            sender=utils.get_address_instance(self.sender),
             contract=utils.get_address_instance(self.contract),
-            owner=utils.get_address_instance(self.sender),
-            upgrade_arguments=upgrade_args,
-            code_metadata=metadata,
-            code=Path(self.wasm_path).read_bytes(),
+            bytecode=bytecode,
+            arguments=upgrade_args,
             gas_limit=self.gas_limit,
+            is_upgradeable=self.upgradeable,
+            is_readable=self.readable,
+            is_payable=self.payable,
+            is_payable_by_sc=self.payable_by_sc,
         )
-        return builder
 
     def _post_transaction_execution(self, on_chain_tx: TransactionOnNetwork | None):
         """
@@ -373,12 +395,12 @@ class ContractCallStep(TransactionStep):
     value: int | str = 0
     esdt_transfers: List[EsdtTransfer] = field(default_factory=lambda: [])
 
-    def _create_builder(self) -> tx_builder.TransactionBuilder:
+    def _build_unsigned_transaction(self) -> Transaction:
         """
-        Create the builder for the contract upgrade transaction
+        Build the transaction for a contract call
 
-        :return: builder of the transaction
-        :rtype: tx_builder.TransactionBuilder
+        :return: transaction built
+        :rtype: Transaction
         """
         LOGGER.info(f"Calling {self.endpoint} for {self.contract}")
         scenario_data = ScenarioData.get()
@@ -395,28 +417,31 @@ class ContractCallStep(TransactionStep):
             )
         else:
             call_args = utils.format_tx_arguments(retrieved_arguments)
+
         esdt_transfers = [
-            TokenPayment.meta_esdt_from_integer(
-                utils.retrieve_value_from_string(trf.token_identifier),
-                utils.retrieve_value_from_any(trf.nonce),
+            TokenTransfer(
+                Token(
+                    utils.retrieve_value_from_string(trf.token_identifier),
+                    utils.retrieve_value_from_any(trf.nonce),
+                ),
                 utils.retrieve_value_from_any(trf.amount),
-                0,
             )
             for trf in self.esdt_transfers
         ]
         value = utils.retrieve_value_from_any(self.value)
 
-        builder = tx_builder.ContractCallBuilder(
-            config=token_management_builders.get_builder_config(),
+        factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
+        sc_factory = SmartContractTransactionsFactory(factory_config, TokenComputer())
+
+        return sc_factory.create_transaction_for_execute(
+            sender=utils.get_address_instance(self.sender),
             contract=utils.get_address_instance(self.contract),
-            caller=utils.get_address_instance(self.sender),
-            function_name=self.endpoint,
-            value=value,
-            call_arguments=call_args,
-            esdt_transfers=esdt_transfers,
+            function=self.endpoint,
+            arguments=call_args,
             gas_limit=self.gas_limit,
+            native_transfer_amount=value,
+            token_transfers=esdt_transfers,
         )
-        return builder
 
     def __post_init__(self):
         """
@@ -679,20 +704,28 @@ class FungibleIssueStep(TransactionStep):
     can_upgrade: bool = False
     can_add_special_roles: bool = False
 
-    def _create_builder(self) -> tx_builder.TransactionBuilder:
+    def _build_unsigned_transaction(self) -> Transaction:
         """
-        Create the builder for the fungible issue transaction
+        Build the transaction to issue a fungible token
 
-        :return: builder for the transaction
-        :rtype: tx_builder.TransactionBuilder
+        :return: transaction built
+        :rtype: Transaction
         """
+        sender = utils.get_address_instance(self.sender)
         LOGGER.info(
             f"Issuing fungible token named {self.token_name} "
-            f"for the account {self.sender}"
+            f"for the account {self.sender} ({sender.bech32()})"
         )
-        builder = token_management_builders.FungibleTokenIssueBuilder(
-            config=token_management_builders.get_builder_config(),
-            issuer=utils.get_address_instance(self.sender),
+        factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
+        tx_factory = MyTokenManagementTransactionsFactory(factory_config)
+        if self.can_mint or self.can_burn:
+            LOGGER.warning(
+                "the roles CanMint and CanBurn are deprecated on the blockchain, they "
+                "are now useless"
+            )
+
+        return tx_factory.create_transaction_for_issuing_fungible(
+            sender=sender,
             token_name=self.token_name,
             token_ticker=self.token_ticker,
             initial_supply=self.initial_supply,
@@ -700,13 +733,10 @@ class FungibleIssueStep(TransactionStep):
             can_freeze=self.can_freeze,
             can_wipe=self.can_wipe,
             can_pause=self.can_pause,
-            can_mint=self.can_mint,
-            can_burn=self.can_burn,
             can_change_owner=self.can_change_owner,
             can_upgrade=self.can_upgrade,
             can_add_special_roles=self.can_add_special_roles,
         )
-        return builder
 
     def _post_transaction_execution(self, on_chain_tx: TransactionOnNetwork | None):
         """
@@ -747,31 +777,32 @@ class NonFungibleIssueStep(TransactionStep):
     can_add_special_roles: bool = False
     can_transfer_nft_create_role: bool = False
 
-    def _create_builder(self) -> tx_builder.TransactionBuilder:
+    def _build_unsigned_transaction(self) -> Transaction:
         """
-        Create the builder for the non fungible issue transaction
+        Build the transaction to issue a non fungible token
 
-        :return: builder for the transaction
-        :rtype: tx_builder.TransactionBuilder
+        :return: transaction built
+        :rtype: Transaction
         """
+        sender = utils.get_address_instance(self.sender)
         LOGGER.info(
             f"Issuing non fungible token named {self.token_name} "
-            f"for the account {self.sender}"
+            f"for the account {self.sender} ({sender.bech32()})"
         )
-        builder = token_management_builders.NonFungibleTokenIssueBuilder(
-            config=token_management_builders.get_builder_config(),
-            issuer=utils.get_address_instance(self.sender),
+        factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
+        tx_factory = MyTokenManagementTransactionsFactory(factory_config)
+        return tx_factory.create_transaction_for_issuing_non_fungible(
+            sender=sender,
             token_name=self.token_name,
             token_ticker=self.token_ticker,
             can_freeze=self.can_freeze,
             can_wipe=self.can_wipe,
             can_pause=self.can_pause,
+            can_transfer_nft_create_role=self.can_transfer_nft_create_role,
             can_change_owner=self.can_change_owner,
             can_upgrade=self.can_upgrade,
             can_add_special_roles=self.can_add_special_roles,
-            can_transfer_nft_create_role=self.can_add_special_roles,
         )
-        return builder
 
     def _post_transaction_execution(self, on_chain_tx: TransactionOnNetwork | None):
         """
@@ -812,31 +843,32 @@ class SemiFungibleIssueStep(TransactionStep):
     can_add_special_roles: bool = False
     can_transfer_nft_create_role: bool = False
 
-    def _create_builder(self) -> tx_builder.TransactionBuilder:
+    def _build_unsigned_transaction(self) -> Transaction:
         """
-        Create the builder for the semi fungible issue transaction
+        Build the transaction to issue a semi fungible token
 
-        :return: builder for the transaction
-        :rtype: tx_builder.TransactionBuilder
+        :return: transaction built
+        :rtype: Transaction
         """
+        sender = utils.get_address_instance(self.sender)
         LOGGER.info(
             f"Issuing semi fungible token named {self.token_name} "
-            f"for the account {self.sender}"
+            f"for the account {self.sender} ({sender.bech32()})"
         )
-        builder = token_management_builders.SemiFungibleTokenIssueBuilder(
-            config=token_management_builders.get_builder_config(),
-            issuer=utils.get_address_instance(self.sender),
+        factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
+        tx_factory = MyTokenManagementTransactionsFactory(factory_config)
+        return tx_factory.create_transaction_for_issuing_semi_fungible(
+            sender=sender,
             token_name=self.token_name,
             token_ticker=self.token_ticker,
             can_freeze=self.can_freeze,
+            can_transfer_nft_create_role=self.can_transfer_nft_create_role,
             can_wipe=self.can_wipe,
             can_pause=self.can_pause,
             can_change_owner=self.can_change_owner,
             can_upgrade=self.can_upgrade,
             can_add_special_roles=self.can_add_special_roles,
-            can_transfer_nft_create_role=self.can_transfer_nft_create_role,
         )
-        return builder
 
     def _post_transaction_execution(self, on_chain_tx: TransactionOnNetwork | None):
         """
@@ -878,32 +910,33 @@ class MetaIssueStep(TransactionStep):
     can_add_special_roles: bool = False
     can_transfer_nft_create_role: bool = False
 
-    def _create_builder(self) -> tx_builder.TransactionBuilder:
+    def _build_unsigned_transaction(self) -> Transaction:
         """
-        Create the builder for the meta issue transaction
+        Build the transaction to issue a meta token
 
-        :return: builder for the transaction
-        :rtype: tx_builder.TransactionBuilder
+        :return: transaction built
+        :rtype: Transaction
         """
+        sender = utils.get_address_instance(self.sender)
         LOGGER.info(
             f"Issuing meta token named {self.token_name} "
-            f"for the account {self.sender}"
+            f"for the account {self.sender} ({sender.bech32()})"
         )
-        builder = token_management_builders.MetaFungibleTokenIssueBuilder(
-            config=token_management_builders.get_builder_config(),
-            issuer=utils.get_address_instance(self.sender),
+        factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
+        tx_factory = MyTokenManagementTransactionsFactory(factory_config)
+        return tx_factory.create_transaction_for_registering_meta_esdt(
+            sender=sender,
             token_name=self.token_name,
             token_ticker=self.token_ticker,
             num_decimals=self.num_decimals,
             can_freeze=self.can_freeze,
             can_wipe=self.can_wipe,
             can_pause=self.can_pause,
+            can_transfer_nft_create_role=self.can_transfer_nft_create_role,
             can_change_owner=self.can_change_owner,
             can_upgrade=self.can_upgrade,
             can_add_special_roles=self.can_add_special_roles,
-            can_transfer_nft_create_role=self.can_transfer_nft_create_role,
         )
-        return builder
 
     def _post_transaction_execution(self, on_chain_tx: TransactionOnNetwork | None):
         """
@@ -941,30 +974,6 @@ class ManageTokenRolesStep(TransactionStep):
     roles: List[str]
     ALLOWED_ROLES: ClassVar[Set] = set()
 
-    def _create_builder(self) -> tx_builder.TransactionBuilder:
-        """
-        Create the builder for the manage token roles transaction
-
-        :return: builder for the transaction
-        :rtype: tx_builder.TransactionBuilder
-        """
-        token_identifier = utils.retrieve_value_from_string(self.token_identifier)
-        target = utils.get_address_instance(self.target)
-        LOGGER.info(
-            f"Setting roles {self.roles} on the token {self.token_identifier}"
-            f" ({token_identifier}) for {self.target} ({target.bech32()})"
-        )
-
-        builder = token_management_builders.ManageTokenRolesBuilder(
-            config=token_management_builders.get_builder_config(),
-            sender=utils.get_address_instance(self.sender),
-            is_set=self.is_set,
-            token_identifier=token_identifier,
-            target=target,
-            roles=utils.retrieve_values_from_strings(self.roles),
-        )
-        return builder
-
     def __post_init__(self):
         super().__post_init__()
         for role in self.roles:
@@ -986,6 +995,42 @@ class ManageFungibleTokenRolesStep(ManageTokenRolesStep):
         "ESDTTransferRole",
     }
 
+    def _build_unsigned_transaction(self) -> Transaction:
+        """
+        Build the transaction to set roles on a fungible token
+
+        :return: transaction built
+        :rtype: Transaction
+        """
+        sender = utils.get_address_instance(self.sender)
+        token_identifier = utils.retrieve_value_from_string(self.token_identifier)
+        target = utils.get_address_instance(self.target)
+        LOGGER.info(
+            f"Setting roles {self.roles} on the token {self.token_identifier}"
+            f" ({token_identifier}) for {self.target} ({target.bech32()})"
+        )
+
+        factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
+        tx_factory = MyTokenManagementTransactionsFactory(factory_config)
+
+        if self.is_set:
+            return tx_factory.create_transaction_for_setting_special_role_on_fungible_token(  # noqa: E501
+                sender=sender,
+                user=target,
+                token_identifier=token_identifier,
+                add_role_local_mint="ESDTRoleLocalBurn" in self.roles,
+                add_role_local_burn="ESDTRoleLocalMint" in self.roles,
+                add_transfer_role="ESDTTransferRole" in self.roles,
+            )
+        return tx_factory.create_transaction_for_unsetting_special_role_on_fungible_token(  # noqa: E501
+            sender=sender,
+            user=target,
+            token_identifier=token_identifier,
+            remove_role_local_mint="ESDTRoleLocalBurn" in self.roles,
+            remove_role_local_burn="ESDTRoleLocalMint" in self.roles,
+            remove_transfer_role="ESDTTransferRole" in self.roles,
+        )
+
 
 @dataclass
 class ManageNonFungibleTokenRolesStep(ManageTokenRolesStep):
@@ -1001,6 +1046,48 @@ class ManageNonFungibleTokenRolesStep(ManageTokenRolesStep):
         "ESDTTransferRole",
     }
 
+    def _build_unsigned_transaction(self) -> Transaction:
+        """
+        Build the transaction to set roles on a non fungible token
+
+        :return: transaction built
+        :rtype: Transaction
+        """
+        sender = utils.get_address_instance(self.sender)
+        token_identifier = utils.retrieve_value_from_string(self.token_identifier)
+        target = utils.get_address_instance(self.target)
+        LOGGER.info(
+            f"Setting roles {self.roles} on the token {self.token_identifier}"
+            f" ({token_identifier}) for {self.target} ({target.bech32()})"
+        )
+
+        factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
+        tx_factory = MyTokenManagementTransactionsFactory(factory_config)
+
+        if self.is_set:
+            return tx_factory.create_transaction_for_setting_special_role_on_non_fungible_token(  # noqa: E501
+                sender=sender,
+                user=target,
+                token_identifier=token_identifier,
+                add_role_nft_create="ESDTRoleNFTCreate" in self.roles,
+                add_role_nft_burn="ESDTRoleNFTBurn" in self.roles,
+                add_role_nft_update_attributes="ESDTRoleNFTUpdateAttributes"
+                in self.roles,
+                add_role_nft_add_uri="ESDTRoleNFTAddURI" in self.roles,
+                add_role_esdt_transfer_role="ESDTTransferRole" in self.roles,
+            )
+        return tx_factory.create_transaction_for_unsetting_special_role_on_non_fungible_token(  # noqa: E501
+            sender=sender,
+            user=target,
+            token_identifier=token_identifier,
+            remove_role_nft_create="ESDTRoleNFTCreate" in self.roles,
+            remove_role_nft_burn="ESDTRoleNFTBurn" in self.roles,
+            remove_role_nft_update_attributes="ESDTRoleNFTUpdateAttributes"
+            in self.roles,
+            remove_role_nft_add_uri="ESDTRoleNFTAddURI" in self.roles,
+            remove_role_esdt_transfer_role="ESDTTransferRole" in self.roles,
+        )
+
 
 @dataclass
 class ManageSemiFungibleTokenRolesStep(ManageTokenRolesStep):
@@ -1014,6 +1101,44 @@ class ManageSemiFungibleTokenRolesStep(ManageTokenRolesStep):
         "ESDTRoleNFTAddQuantity",
         "ESDTTransferRole",
     }
+
+    def _build_unsigned_transaction(self) -> Transaction:
+        """
+        Build the transaction to set roles on a non fungible token
+
+        :return: transaction built
+        :rtype: Transaction
+        """
+        sender = utils.get_address_instance(self.sender)
+        token_identifier = utils.retrieve_value_from_string(self.token_identifier)
+        target = utils.get_address_instance(self.target)
+        LOGGER.info(
+            f"Setting roles {self.roles} on the token {self.token_identifier}"
+            f" ({token_identifier}) for {self.target} ({target.bech32()})"
+        )
+
+        factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
+        tx_factory = MyTokenManagementTransactionsFactory(factory_config)
+
+        if self.is_set:
+            return tx_factory.create_transaction_for_setting_special_role_on_semi_fungible_token(  # noqa: E501
+                sender=sender,
+                user=target,
+                token_identifier=token_identifier,
+                add_role_nft_create="ESDTRoleNFTCreate" in self.roles,
+                add_role_nft_burn="ESDTRoleNFTBurn" in self.roles,
+                add_role_nft_add_quantity="ESDTRoleNFTAddQuantity" in self.roles,
+                add_role_esdt_transfer_role="ESDTTransferRole" in self.roles,
+            )
+        return tx_factory.create_transaction_for_unsetting_special_role_on_semi_fungible_token(  # noqa: E501
+            sender=sender,
+            user=target,
+            token_identifier=token_identifier,
+            remove_role_nft_create="ESDTRoleNFTCreate" in self.roles,
+            remove_role_nft_burn="ESDTRoleNFTBurn" in self.roles,
+            remove_role_nft_add_quantity="ESDTRoleNFTAddQuantity" in self.roles,
+            remove_role_esdt_transfer_role="ESDTTransferRole" in self.roles,
+        )
 
 
 @dataclass
@@ -1033,26 +1158,25 @@ class FungibleMintStep(TransactionStep):
     token_identifier: str
     amount: Union[str, int]
 
-    def _create_builder(self) -> tx_builder.TransactionBuilder:
+    def _build_unsigned_transaction(self) -> Transaction:
         """
-        Create the builder for the fungible mint transaction
+        Build the transaction to mint a fungible token
 
-        :return: builder for the transaction
-        :rtype: tx_builder.TransactionBuilder
+        :return: transaction built
+        :rtype: Transaction
         """
+        sender = utils.get_address_instance(self.sender)
         token_identifier = utils.retrieve_value_from_string(self.token_identifier)
         amount = utils.retrieve_value_from_any(self.amount)
         LOGGER.info(
             f"Minting additional supply of {amount} ({self.amount}) for the token "
             f" {token_identifier} ({self.token_identifier})"
         )
-        builder = token_management_builders.FungibleMintBuilder(
-            config=token_management_builders.get_builder_config(),
-            sender=utils.get_address_instance(self.sender),
-            token_identifier=token_identifier,
-            amount_as_integer=amount,
+        factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
+        tx_factory = MyTokenManagementTransactionsFactory(factory_config)
+        return tx_factory.create_transaction_for_local_minting(
+            sender=sender, token_identifier=token_identifier, supply_to_mint=amount
         )
-        return builder
 
 
 @dataclass
@@ -1070,31 +1194,35 @@ class NonFungibleMintStep(TransactionStep):
     attributes: str = ""
     uris: List[str] = field(default_factory=lambda: [])
 
-    def _create_builder(self) -> tx_builder.TransactionBuilder:
+    def _build_unsigned_transaction(self) -> Transaction:
         """
-        Create the builder for the meta issue transaction
+        Build the transaction to mint a fungible token
 
-        :return: builder for the transaction
-        :rtype: tx_builder.TransactionBuilder
+        :return: transaction built
+        :rtype: Transaction
         """
+        sender = utils.get_address_instance(self.sender)
         token_identifier = utils.retrieve_value_from_string(self.token_identifier)
         amount = utils.retrieve_value_from_any(self.amount)
         LOGGER.info(
             f"Minting new nonce with a supply of {amount} ({self.amount}) for the token"
             f" {token_identifier} ({self.token_identifier})"
         )
-        builder = token_management_builders.NonFungibleMintBuilder(
-            config=token_management_builders.get_builder_config(),
-            sender=utils.get_address_instance(self.sender),
+
+        factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
+        tx_factory = MyTokenManagementTransactionsFactory(factory_config)
+        return tx_factory.create_transaction_for_creating_nft(
+            sender=sender,
             token_identifier=token_identifier,
-            amount_as_integer=amount,
+            initial_quantity=amount,
             name=utils.retrieve_value_from_string(self.name),
             royalties=utils.retrieve_value_from_any(self.royalties),
             hash=utils.retrieve_value_from_string(self.hash),
-            attributes=utils.retrieve_value_from_string(self.attributes),
+            attributes=bytes(
+                utils.retrieve_value_from_string(self.attributes), "utf-8"
+            ),
             uris=utils.retrieve_values_from_strings(self.uris),
         )
-        return builder
 
     def _post_transaction_execution(self, on_chain_tx: TransactionOnNetwork | None):
         """
@@ -1118,25 +1246,28 @@ class EgldTransferStep(TransactionStep):
     receiver: str
     amount: Union[str, int]
 
-    def _create_builder(self) -> tx_builder.TransactionBuilder:
+    def _build_unsigned_transaction(self) -> Transaction:
         """
-        Create the builder for the egld transfer transaction
+        Build the transaction for an egld transfer
 
-        :return: builder of the transaction
-        :rtype: tx_builder.TransactionBuilder
+        :return: transaction built
+        :rtype: Transaction
         """
         amount = int(utils.retrieve_value_from_any(self.amount))
-        payment = TokenPayment.egld_from_integer(amount)
+        sender = utils.get_address_instance(self.sender)
+        receiver = utils.get_address_instance(self.receiver)
 
-        builder = tx_builder.EGLDTransferBuilder(
-            config=token_management_builders.get_builder_config(),
-            sender=utils.get_address_instance(self.sender),
-            receiver=utils.get_address_instance(self.receiver),
-            payment=payment,
+        LOGGER.info(
+            f"Sending {amount} eGLD from {self.sender} ({sender.bech32()}) to "
+            f"{self.receiver} ({receiver.bech32()})"
         )
-
-        LOGGER.info(f"Sending {amount} eGLD from {self.sender} to {self.receiver}")
-        return builder
+        factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
+        tr_factory = TransferTransactionsFactory(factory_config, TokenComputer())
+        return tr_factory.create_transaction_for_native_token_transfer(
+            sender=sender,
+            receiver=receiver,
+            native_amount=amount,
+        )
 
 
 @dataclass
@@ -1149,28 +1280,31 @@ class FungibleTransferStep(TransactionStep):
     token_identifier: str
     amount: Union[str, int]
 
-    def _create_builder(self) -> tx_builder.TransactionBuilder:
+    def _build_unsigned_transaction(self) -> Transaction:
         """
-        Create the builder for the ESDT transfer transaction
+        Build the transaction for an ESDT transfer
 
-        :return: builder of the transaction
-        :rtype: tx_builder.TransactionBuilder
+        :return: transaction built
+        :rtype: Transaction
         """
         token_identifier = utils.retrieve_value_from_string(self.token_identifier)
         amount = int(utils.retrieve_value_from_any(self.amount))
-        payment = TokenPayment.fungible_from_integer(token_identifier, amount, 0)
+        sender = utils.get_address_instance(self.sender)
+        receiver = utils.get_address_instance(self.receiver)
 
-        builder = tx_builder.ESDTTransferBuilder(
-            config=token_management_builders.get_builder_config(),
-            sender=utils.get_address_instance(self.sender),
-            receiver=utils.get_address_instance(self.receiver),
-            payment=payment,
-        )
+        esdt_transfers = [TokenTransfer(Token(token_identifier, 0), amount)]
 
         LOGGER.info(
-            f"Sending {amount} {token_identifier} from {self.sender} to {self.receiver}"
+            f"Sending {amount} {token_identifier} from {self.sender} "
+            f"({sender.bech32()}) to {self.receiver} ({receiver.bech32()})"
         )
-        return builder
+        factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
+        tr_factory = TransferTransactionsFactory(factory_config, TokenComputer())
+        return tr_factory.create_transaction_for_esdt_token_transfer(
+            sender=sender,
+            receiver=receiver,
+            token_transfers=esdt_transfers,
+        )
 
 
 @dataclass
@@ -1184,32 +1318,33 @@ class NonFungibleTransferStep(TransactionStep):
     nonce: Union[str, int]
     amount: Union[str, int]
 
-    def _create_builder(self) -> tx_builder.TransactionBuilder:
+    def _build_unsigned_transaction(self) -> Transaction:
         """
-        Create the builder for the NFT transfer transaction
+        Build the transaction for a non fungible transfer
 
-        :return: builder of the transaction
-        :rtype: tx_builder.TransactionBuilder
+        :return: transaction built
+        :rtype: Transaction
         """
         token_identifier = utils.retrieve_value_from_string(self.token_identifier)
         nonce = int(utils.retrieve_value_from_any(self.nonce))
         amount = int(utils.retrieve_value_from_any(self.amount))
-        payment = TokenPayment.meta_esdt_from_integer(
-            token_identifier, nonce, amount, 0
-        )
+        sender = utils.get_address_instance(self.sender)
+        receiver = utils.get_address_instance(self.receiver)
 
-        builder = tx_builder.ESDTNFTTransferBuilder(
-            config=token_management_builders.get_builder_config(),
-            sender=utils.get_address_instance(self.sender),
-            destination=utils.get_address_instance(self.receiver),
-            payment=payment,
-        )
+        esdt_transfers = [TokenTransfer(Token(token_identifier, nonce), amount)]
 
         LOGGER.info(
-            f"Sending {amount} {token_identifier}-{arg_to_string(nonce)} "
-            f"from {self.sender} to {self.receiver}"
+            f"Sending {amount} {token_identifier}-{arg_to_string(nonce)} from "
+            f"{self.sender} ({sender.bech32()}) to {self.receiver} "
+            f"({receiver.bech32()})"
         )
-        return builder
+        factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
+        tr_factory = TransferTransactionsFactory(factory_config, TokenComputer())
+        return tr_factory.create_transaction_for_esdt_token_transfer(
+            sender=sender,
+            receiver=receiver,
+            token_transfers=esdt_transfers,
+        )
 
 
 @dataclass
@@ -1239,32 +1374,38 @@ class MultiTransfersStep(TransactionStep):
                 raise ValueError(f"Unexpected type: {type(trf)}")
         self.transfers = checked_transfers
 
-    def _create_builder(self) -> tx_builder.TransactionBuilder:
+    def _build_unsigned_transaction(self) -> Transaction:
         """
-        Create the builder for the multi transfer transaction
+        Build the transaction for multiple transfers
 
-        :return: builder of the transaction
-        :rtype: tx_builder.TransactionBuilder
+        :return: transaction built
+        :rtype: Transaction
         """
-        payments = [
-            TokenPayment.meta_esdt_from_integer(
-                utils.retrieve_value_from_string(transfer.token_identifier),
-                int(utils.retrieve_value_from_any(transfer.nonce)),
-                int(utils.retrieve_value_from_any(transfer.amount)),
-                0,
+        sender = utils.get_address_instance(self.sender)
+        receiver = utils.get_address_instance(self.receiver)
+        esdt_transfers = []
+        esdt_transfers_strs = []
+        for trf in self.transfers:
+            token_identifier = utils.retrieve_value_from_string(trf.token_identifier)
+            amount = int(utils.retrieve_value_from_any(trf.amount))
+            nonce = int(utils.retrieve_value_from_any(trf.nonce))
+
+            esdt_transfers.append(TokenTransfer(Token(token_identifier, nonce), amount))
+            esdt_transfers_strs.append(
+                f"{amount} {token_identifier}-{arg_to_string(nonce)}"
             )
-            for transfer in self.transfers
-        ]
 
-        builder = tx_builder.MultiESDTNFTTransferBuilder(
-            config=token_management_builders.get_builder_config(),
-            sender=utils.get_address_instance(self.sender),
-            destination=utils.get_address_instance(self.receiver),
-            payments=payments,
+        LOGGER.info(
+            f"Sending {', '.join(esdt_transfers_strs)} from {self.sender} "
+            f"({sender.bech32()}) to {self.receiver} ({receiver.bech32()})"
         )
-
-        LOGGER.info(f"Sending multiple payments from {self.sender} to {self.receiver}")
-        return builder
+        factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
+        tr_factory = TransferTransactionsFactory(factory_config, TokenComputer())
+        return tr_factory.create_transaction_for_esdt_token_transfer(
+            sender=sender,
+            receiver=receiver,
+            token_transfers=esdt_transfers,
+        )
 
 
 @dataclass
