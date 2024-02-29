@@ -1,5 +1,8 @@
 from pathlib import Path
 import pytest
+from unittest.mock import patch
+
+from multiversx_sdk_network_providers.network_config import NetworkConfig
 
 from mxops.config.config import Config
 from mxops.data.execution_data import (
@@ -14,6 +17,30 @@ from mxops.enums import NetworkEnum
 @pytest.fixture(scope="session", autouse=True)
 def network():
     Config.set_network(NetworkEnum.LOCAL)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def mock_network_config():
+    with patch(
+        "mxops.config.config.ProxyNetworkProvider.get_network_config"
+    ) as mock_method:
+        mock_method.return_value = NetworkConfig.from_http_response(
+            {
+                "chainId": "D",
+                "gasPerDataByte": 1500,
+                "topUpFactor": 0.5,
+                "startTime": 1694000000,
+                "roundDuration": 6000,
+                "roundsPerEpoch": 2400,
+                "topUpRewardsGradientPoint": 2000000000000000000000000,
+                "minGasLimit": 50000,
+                "minGasPrice": 1000000000,
+                "gasPriceModifier": 0.01,
+                "minTransactionVersion": 1,
+                "numShardsWithoutMeta": 3,
+            }
+        )
+        yield
 
 
 @pytest.fixture(scope="session", autouse=True)
