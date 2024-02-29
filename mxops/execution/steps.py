@@ -3,6 +3,7 @@ author: Etienne Wallet
 
 This module contains the classes used to execute scenes in a scenario
 """
+
 from __future__ import annotations
 import base64
 from dataclasses import dataclass, field
@@ -539,18 +540,8 @@ class ContractQueryStep(Step):
         if self.results_save_keys is None:
             return
 
-        # decode results if specified
-        if self.results_types is None:
-            if self.decoded_results is None:
-                raise ValueError(
-                    "No result were decoded due to lack of ABI but `results_types` was "
-                    "not specified either"
-                )
-        else:
-            data_parts = self.query_response.get_return_data_parts()
-            self.decoded_results = AbiSerializer().decode_io(
-                self.results_types, data_parts
-            )
+        if self.decoded_results is None:
+            raise ValueError("No decoded results to save")
 
         LOGGER.info("Saving query results")
         sub_keys = self.results_save_keys.sub_keys
@@ -619,7 +610,13 @@ class ContractQueryStep(Step):
                     self._interpret_return_data(data)
                     for data in self.query_response.return_data
                 ]
-                if serializer is not None:
+                if self.results_types is not None:
+                    data_parts = self.query_response.get_return_data_parts()
+                    print(self.results_types, data_parts)
+                    self.decoded_results = AbiSerializer().decode_io(
+                        self.results_types, data_parts
+                    )
+                elif serializer is not None:
                     self.decoded_results = serializer.decode_contract_query_response(
                         self.endpoint, self.query_response
                     )
