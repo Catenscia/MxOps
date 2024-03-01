@@ -394,8 +394,6 @@ num_decimals: 3
 can_freeze: false # optional, defaults to false
 can_wipe: false # optional, defaults to false
 can_pause: false # optional, defaults to false
-can_mint: false # optional, defaults to false
-can_burn: false # optional, defaults to false
 can_change_owner: false # optional, defaults to false
 can_upgrade: false # optional, defaults to false
 can_add_special_roles: false # optional, defaults to false
