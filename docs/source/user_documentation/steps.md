@@ -1,7 +1,7 @@
 # Steps
 
-In `MxOps`, any action to be executed is called a `Step`.
-In other words, a `Scene` contains a series of `Steps` that tells what `MxOps` should do.
+In MxOps, any action to be executed is called a `Step`.
+In other words, a `Scene` contains a series of `Steps` that tells what MxOps should do.
 
 Several type of `Steps` exists, to allow users to easily construct complex `Scenes`.
 If you feel something is missing, please make a suggestion in the [github](https://github.com/Catenscia/MxOps/discussions/categories/ideas)!
@@ -81,7 +81,7 @@ payable: false
 payable_by_sc: true
 ```
 
-We strongly recommended to provide an ABI with the contract as this will allow `MxOps` to do the data encoding and decoding during queries and calls for you, even if the data is some complex and custom `Struct`.
+We strongly recommended to provide an ABI with the contract as this will allow MxOps to do the data encoding and decoding during queries and calls for you, even if the data is some complex and custom `Struct`.
 
 ### Contract Upgrade Step
 
@@ -133,8 +133,9 @@ checks: # optional, by default it will contain a transaction success check
 ```
 
 To get more information on the `checks` attribute, heads to the {doc}`checks` section.
-If you have provided an ABI with the contract, `MxOps` will be able to automatically encode the arguments for your endpoint call, even if they are complex structures. For more details on that, please head to the {doc}`serialization` section.
+If you have provided an ABI with the contract, MxOps will be able to automatically encode the arguments for your endpoint call, even if they are complex structures. For more details on that, please head to the {doc}`serialization` section.
 
+(contract_query_target)=
 ### Contract Query Step
 
 This `Step` is used to fetch some data from a contract and save it locally for later use in the `Scenario` (specified at execution time).
@@ -152,8 +153,8 @@ results_types:  # mandatory if results are to be saved and no ABI have been prov
 print_results: true # optional, if the query results should be printed in the console
 ```
 
-If you have provided an ABI with the contract, `MxOps` will be able to automatically encode the arguments for your query, even if they are complex structures. For more details on that, please head to the {doc}`serialization` section.
-`MxOps` will also automatically decode the response of the query so that if you save the data, you can easily use it again by reference (see {doc}`values`).
+If you have provided an ABI with the contract, MxOps will be able to automatically encode the arguments for your query, even if they are complex structures. For more details on that, please head to the {doc}`serialization` section.
+MxOps will also automatically decode the response of the query so that if you save the data, you can easily use it again by reference (see {doc}`values`).
 
 #### About `results_save_keys`
 
@@ -374,7 +375,7 @@ results_save_keys:
 If you provide sub-keys, the number of sub-keys must exactly match the number of elements returned by the query response.
 ```
 
-
+(token_management_target)=
 ## Token Management Steps
 
 ### Fungible Token Steps
@@ -393,8 +394,6 @@ num_decimals: 3
 can_freeze: false # optional, defaults to false
 can_wipe: false # optional, defaults to false
 can_pause: false # optional, defaults to false
-can_mint: false # optional, defaults to false
-can_burn: false # optional, defaults to false
 can_change_owner: false # optional, defaults to false
 can_upgrade: false # optional, defaults to false
 can_add_special_roles: false # optional, defaults to false
@@ -403,7 +402,7 @@ can_add_special_roles: false # optional, defaults to false
 The results of the transaction will be saved. You can make a reference to this token in later `Steps` using its name, for example to retrieve the token identifier: `%MyToken.identifier`.
 
 ```{warning}
-To avoid data collision within `MxOps`, `token_name` should be unique within a `Scenario` and should not have a name identical to a `contract_id` in the same `Scenario`.
+To avoid data collision within MxOps, `token_name` should be unique within a `Scenario` and should not have a name identical to a `contract_id` in the same `Scenario`.
 ```
 
 #### Role Management Step
@@ -460,7 +459,7 @@ can_transfer_nft_create_role: false # optional, defaults to false
 The results of the transaction will be saved. You can make a reference to this token in later `Steps` using its name, for example to retrieve the token identifier: `%MyToken.identifier`.
 
 ```{warning}
-To avoid data collision within `MxOps`, `token_name` should be unique within a `Scenario` and should not have a name identical to a `contract_id` in the same `Scenario`.
+To avoid data collision within MxOps, `token_name` should be unique within a `Scenario` and should not have a name identical to a `contract_id` in the same `Scenario`.
 ```
 
 #### SFT Issuance Step
@@ -484,7 +483,7 @@ can_transfer_nft_create_role: false # optional, defaults to false
 The results of the transaction will be saved. You can make a reference to this token in later `Steps` using its name, for example to retrieve the token identifier: `%MyToken.identifier`.
 
 ```{warning}
-To avoid data collision within `MxOps`, `token_name` should be unique within a `Scenario` and should not have a name identical to a `contract_id` in the same `Scenario`.
+To avoid data collision within MxOps, `token_name` should be unique within a `Scenario` and should not have a name identical to a `contract_id` in the same `Scenario`.
 ```
 
 #### Meta Issuance Step
@@ -509,7 +508,7 @@ can_transfer_nft_create_role: false # optional, defaults to false
 The results of the transaction will be saved. You can make a reference to this token in later `Steps` using its name, for example to retrieve the token identifier: `%MyToken.identifier`.
 
 ```{warning}
-To avoid data collision within `MxOps`, `token_name` should be unique within a `Scenario` and should not have a name identical to a `contract_id` in the same `Scenario`.
+To avoid data collision within MxOps, `token_name` should be unique within a `Scenario` and should not have a name identical to a `contract_id` in the same `Scenario`.
 ```
 
 #### NFT Role Management Step
@@ -641,11 +640,11 @@ steps: [...]
 You will notice that some symbols are used in the arguments of the above `ContractCall`. These are here to dynamically fetch values from different sources.
 Heads up to the {doc}`values` section for more information.
 
-
+(python_step_target)=
 ### Python Step
 
-This step allows to execute a custom python function. You can execute whatever you want in the python function. This `Step` is here to give you maximum flexibility, making `MxOps` suitable for all the needs of you project. Here are some basic use case for the python `Step`:
-  - complex calculation (results can be saved as `MxOps` or environment values)
+This step allows to execute a custom python function. You can execute whatever you want in the python function. This `Step` is here to give you maximum flexibility, making MxOps suitable for all the needs of you project. Here are some basic use case for the python `Step`:
+  - complex calculation (results can be saved as MxOps or environment values)
   - complex query parsing
   - randomness generation
   - third party calls (databases, API ...)

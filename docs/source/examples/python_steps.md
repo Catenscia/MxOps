@@ -68,7 +68,7 @@ steps:
         nonce: 0
 ```
 
-During the python `Step`, `MxOps` will call a python function `compute_deposit_amount` that we can implement like this:
+During the python `Step`, MxOps will call a python function `compute_deposit_amount` that we can implement like this:
 
 ```{code-block} python
 :caption: my_module.py
@@ -90,7 +90,7 @@ def compute_deposit_amount(pool_price: int, base_amount: int) -> str:
     return str(quote_amount)
 ```
 
-This python function helps us to make a calculation that is not directly supported by `MxOps`. The result is saved under the environment variable `MXOPS_COMPUTE_DEPOSIT_AMOUNT_RESULT` and it can be used in later steps, as shown above.
+This python function helps us to make a calculation that is not directly supported by MxOps. The result is saved under the environment variable `MXOPS_COMPUTE_DEPOSIT_AMOUNT_RESULT` and it can be used in later steps, as shown above.
 
 If more than one value needs to be saved, the user can attached data directly to an existing contract:
 
@@ -217,7 +217,7 @@ def do_balanced_deposit(contract: str, base_amount: int) -> str:
 
 ```
 
-Both the previous and the current examples end up sending the same transaction: `MxOps` allows you to choose if you want to use native `Steps` or if you want to write everything yourself in python, which gives you more flexibility (at the cost of more work and responsibility).
+Both the previous and the current examples end up sending the same transaction: MxOps allows you to choose if you want to use native `Steps` or if you want to write everything yourself in python, which gives you more flexibility (at the cost of more work and responsibility).
 
 ## Third Party Interaction
 
@@ -227,7 +227,7 @@ You might want to interact with third parties for many reasons:
   - databases (e.g. list of addresses for an airdrop)
   - ...
 
-Using the python `Step`, you can easily integrate these third parties within the `MxOps` framework, as shown below.
+Using the python `Step`, you can easily integrate these third parties within the MxOps framework, as shown below.
 
 ```{code-block} yaml
 :caption: my_scene.yaml
@@ -273,7 +273,7 @@ def interact():
 
 ## Custom Check
 
-You may want to run custom checks after some crucial actions. To do so, implement them in python and run them any time you want using the python `Step`. Within your custom function, you can make queries, access the `MxOps` data, use the api or proxy network provider and much more.
+You may want to run custom checks after some crucial actions. To do so, implement them in python and run them any time you want using the python `Step`. Within your custom function, you can make queries, access the MxOps data, use the api or proxy network provider and much more.
 
 ```{code-block} yaml
 :caption: my_scene.yaml

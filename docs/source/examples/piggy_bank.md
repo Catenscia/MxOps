@@ -1,6 +1,6 @@
 # Piggy Bank
 
-This example uses the smart-contracts and `Scenes` from the `MxOps` integration test called [Piggy Bank](https://github.com/Catenscia/MxOps/tree/main/integration_tests/piggy_bank).
+This example uses the smart-contracts and `Scenes` from the MxOps integration test called [Piggy Bank](https://github.com/Catenscia/MxOps/tree/main/integration_tests/piggy_bank).
 
 Step by step, the example will show you how to:
 
@@ -287,7 +287,7 @@ We create a new scene to deploy and initialize the `piggy-bank` contract: `mxops
 
 When we deploy the `piggy-bank` contract, we need to supply two arguments: the token identifier of the token that will be accepted by the contract and the address of the token issuer.
 
-We could supply theses values by hand but that would be a huge waste of time and very prone to errors. Instead we can use the {doc}`../user_documentation/values` system of `MxOps`:
+We could supply theses values by hand but that would be a huge waste of time and very prone to errors. Instead we can use the {doc}`../user_documentation/values` system of MxOps:
 
 We can access the address of the `esdt-minter` contract we just deployed by using its id: `%abc-esdt-minter.address`.
 As we also save the token identifier, we can access it too: `%abc-esdt-minter.EsdtIdentifier`.

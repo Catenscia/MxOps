@@ -1,6 +1,6 @@
 # MxOps Presentation
 
-MxOps is a python package created to automate MultiversX transactions: be it smart contracts deployments, calls, queries or just simple transfers. Inspired from DevOps tools and built on top of [mxpy](https://github.com/multiversx/mx-sdk-py-cli), it aims to ease and make reproducible any set of these interactions with the blockchain.
+MxOps is a python package created to facilitate and automate MultiversX interactions: be it smart contracts deployments, calls, queries or just simple transfers. Inspired from DevOps tools and built on top of [mxpy](https://github.com/multiversx/mx-sdk-py-cli), it aims to ease and make reproducible any set of these interactions with the blockchain.
 
 MxOps aims to be useful in these situations:
 
@@ -10,11 +10,11 @@ MxOps aims to be useful in these situations:
 
 ## Quick Overview
 
-Here are some basic uses cases to illustrate how `MxOps` works and gives a very brief overview of what it looks like.
+Here are some basic uses cases to illustrate how MxOps works and give a very brief overview of what it looks like.
 
 ### Token Mint
 
-Here, `MxOps` is used to issue a fungible token, assign mint and burn roles to the issuer and then mint some token.
+Here, MxOps is used to issue a fungible token, assign mint and burn roles to the issuer and then mint some token.
 
 ```yaml
 allowed_networks:
@@ -55,7 +55,7 @@ steps:
 
 ### Query with ABI
 
-Here `MxOps` is used to fetch information from the live `Onedex` contract on the [mainnet](https://explorer.multiversx.com/accounts/erd1qqqqqqqqqqqqqpgqqz6vp9y50ep867vnr296mqf3dduh6guvmvlsu3sujc). We specifically query the state of the pool n°10. This example relies on the ABI definition of the smart-contract.
+MxOps is used below to fetch information from the [live Onedex contract](https://explorer.multiversx.com/accounts/erd1qqqqqqqqqqqqqpgqqz6vp9y50ep867vnr296mqf3dduh6guvmvlsu3sujc) on the mainnet. We specifically query the state of the pool n°10. This example relies on the ABI definition of the Onedex smart-contract.
 
 ```yaml
 allowed_networks:
@@ -139,7 +139,7 @@ Printed results:
 
 ### Contract Call with Payments
 
-Here, `Mxops` is used to call a contract while sending tokens. The example shows what it would look like to add some liquidity to a pool.
+Here, MxOps is used to call a contract while sending tokens. The example shows what it would look like to add some liquidity to a pool.
 
 ```yaml
 allowed_networks:
@@ -167,6 +167,9 @@ steps:
     gas_limit: 12000000
 ```
 
+These examples illustrate very simple interactions but MxOps offers you much more: dynamic values, data save, data environment, direct reusability across different networks (mainnet, devnet, localnet...), interactions with any external tools such as databases, APIs ...
+It is a tool that is fully permissive and allows you to create highly customized experiences for your projects. With these teasers in mind, we let you continue your discovery of MxOps 😉
+
 ## User Flow
 
 MxOps works with simple yaml files called `Scenes` that look like the examples shown above. In these `Scenes` you will simply describe the different elements that will be used to interact with the blockchain.
@@ -184,10 +187,6 @@ Here is a little illustration of what is happening (click on it to zoom-in):
 ```
 
 If you are a bit confused by this illustration, don't worry: the only thing you will have to do as a user is to write `Scenes` and execute them. Next paragraph gives you a broad understanding of the constitution of a `Scene`.
-
-```{note}
-The Visual Studio Code extension mxops-helper has been created to help users write their `Scenes` by providing templates. We recommend using it as it greatly simplify the process of creating `Scenes`.
-```
 
 ## Scenes
 
@@ -259,6 +258,6 @@ Here is the above `Scene`, but this time with the MxOps syntax:
 
   ```
 
-A lot of information is written here, but you don't have to worry about the details for now. Just remember that `Scenes` are the core of `MxOps` and that it tells the program what to do.
+A lot of information is written here, but you don't have to worry about the details for now. Just remember that `Scenes` are the core of MxOps and that it tells the program what to do.
 
 You will be guided through the steps of writing a `Scene` in the next sections. But before that, you need to 🚧 {doc}`install MxOps! <installation>` 🚧

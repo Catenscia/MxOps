@@ -1,10 +1,10 @@
 # Transaction Checks
 
 When executing a `Step` that send a blockchain transaction, you may want to assert that everything went as you desired.
-`MxOps` provides you a way to do so: `Checks` are additional information you can provide when
+MxOps provides you a way to do so: `Checks` are additional information you can provide when
 declaring a `Step`.
 
-If any of the `Checks` you specified is not successful, it will stop the execution of `MxOps`
+If any of the `Checks` you specified is not successful, it will stop the execution of MxOps
 and raise an error.
 
 At the moment, only two types of `Checks` exists: `SuccessCheck` and `TransfersCheck`. We plan
@@ -32,7 +32,7 @@ checks:
 ```
 
 In some cases, you may want to send many transactions quickly, without checking their results.
-If you declare no `Checks`, `MxOps` will send the transaction without waiting for the result,
+If you declare no `Checks`, MxOps will send the transaction without waiting for the result,
 gaining a significant time.
 
 ```yaml
@@ -92,7 +92,7 @@ checks:
 ```
 
 If we only want to check that we received back the EGLD, we can use the value `included` for the
-`condition` attribute. This tells `Mxops` to only look if the specified expected transfers are
+`condition` attribute. This tells MxOps to only look if the specified expected transfers are
 included in the on-chain transaction.
 
 ```yaml
