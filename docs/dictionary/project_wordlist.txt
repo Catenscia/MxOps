@@ -30,6 +30,7 @@ Maiar
 msc
 MxOps
 mxops
+mxopsHelper
 MyCustomException
 MyStruct
 PiggyBank

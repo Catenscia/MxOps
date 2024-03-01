@@ -6,9 +6,9 @@ In the section we will modify our initial `Scene` that was made to deploy and in
 
 The improvement here will take advantage of the fact that when launching MxOps, we can specify several `Scenes` to be executed sequentially or even entire folders with `Scenes`.
 
-We will define the accounts in separate files per network type. Let's start by creating folder `mxops_scenes` with a sub_folder `accounts`.
+We will define the accounts in separate files per network type. Let's start by creating a folder `mxops_scenes` with a sub_folder `accounts`.
 
-We will write the `Scene`  `mxops_scenes/accounts/devnet.yaml` with no step at all, just the accounts definition:
+We will write the `Scene`  `mxops_scenes/accounts/devnet.yaml` with no step at all, just the devnet accounts definition:
 
 ```yaml
 allowed_networks:
@@ -43,7 +43,7 @@ accounts:
 Two details to notice:
 
 - a regex has been used for the allowed `Scenarios`: we want to allow all `Scenarios` as we are just specifying the accounts.
-- the wallets my_devnet_wallet and bob have been defined with the same `account_name`: in later `Scenes`, we only have to refer to the `account_name` "owner" and it will work both the `devnet` and the ` localnet`.
+- the wallets my_devnet_wallet.pem and bob.pem have been defined with the same `account_name`: in later `Scenes`, we only have to refer to the `account_name` "owner" and it will work both the `devnet` and the ` localnet`.
 
 ## Deploy Scene
 

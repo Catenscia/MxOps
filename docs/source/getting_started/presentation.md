@@ -1,6 +1,6 @@
 # MxOps Presentation
 
-MxOps is a python package created to automate MultiversX transactions: be it smart contracts deployments, calls, queries or just simple transfers. Inspired from DevOps tools and built on top of [mxpy](https://github.com/multiversx/mx-sdk-py-cli), it aims to ease and make reproducible any set of these interactions with the blockchain.
+MxOps is a python package created to facilitate and automate MultiversX interactions: be it smart contracts deployments, calls, queries or just simple transfers. Inspired from DevOps tools and built on top of [mxpy](https://github.com/multiversx/mx-sdk-py-cli), it aims to ease and make reproducible any set of these interactions with the blockchain.
 
 MxOps aims to be useful in these situations:
 
@@ -10,7 +10,7 @@ MxOps aims to be useful in these situations:
 
 ## Quick Overview
 
-Here are some basic uses cases to illustrate how MxOps works and gives a very brief overview of what it looks like.
+Here are some basic uses cases to illustrate how MxOps works and give a very brief overview of what it looks like.
 
 ### Token Mint
 
@@ -55,7 +55,7 @@ steps:
 
 ### Query with ABI
 
-Here MxOps is used to fetch information from the live `Onedex` contract on the [mainnet](https://explorer.multiversx.com/accounts/erd1qqqqqqqqqqqqqpgqqz6vp9y50ep867vnr296mqf3dduh6guvmvlsu3sujc). We specifically query the state of the pool n°10. This example relies on the ABI definition of the smart-contract.
+MxOps is used below to fetch information from the [live Onedex contract](https://explorer.multiversx.com/accounts/erd1qqqqqqqqqqqqqpgqqz6vp9y50ep867vnr296mqf3dduh6guvmvlsu3sujc) on the mainnet. We specifically query the state of the pool n°10. This example relies on the ABI definition of the Onedex smart-contract.
 
 ```yaml
 allowed_networks:
@@ -187,10 +187,6 @@ Here is a little illustration of what is happening (click on it to zoom-in):
 ```
 
 If you are a bit confused by this illustration, don't worry: the only thing you will have to do as a user is to write `Scenes` and execute them. Next paragraph gives you a broad understanding of the constitution of a `Scene`.
-
-```{note}
-The Visual Studio Code extension mxops-helper has been created to help users write their `Scenes` by providing templates. We recommend using it as it greatly simplify the process of creating `Scenes`.
-```
 
 ## Scenes
 

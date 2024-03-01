@@ -33,8 +33,7 @@ If you want another branch or version, just replace "develop" by the branch or t
 
 ## Extension
 
-If you use VScode, we recommend you to use the extension [`mxopsHelper`](https://marketplace.visualstudio.com/items?itemName=Catenscia.mxops-helper) which will greatly help you using MxOps!
-When installing, take a look at the README of the extension for the features that will assist you.
+The Visual Studio Code extension [mxopsHelper](https://marketplace.visualstudio.com/items?itemName=Catenscia.mxops-helper) has been created to help users write their `Scenes` by providing templates. We recommend using it as it greatly simplify the process of creating `Scenes`.
 
 
 You can now heads up to the {doc}`next section <first_scene>` to learn how to write your first scene! 💪

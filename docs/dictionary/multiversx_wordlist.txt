@@ -3,6 +3,7 @@ bech
 BigUint
 BigInt
 devnet
+DEX
 egld
 eGLD
 EgldOrEsdtTokenIdentifier
@@ -32,6 +33,7 @@ mxpy
 mx
 NestedDecode
 NestedEncode
+Onedex
 PartialEq
 py
 NFT

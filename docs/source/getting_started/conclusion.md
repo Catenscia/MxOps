@@ -6,7 +6,15 @@ You have now enough knowledge about MxOps to start experimenting on your own �
 
 However, there is still much to be discovered! Some features and useful tricks have not been covered by this tutorial, so you have two options to learn about them: You can either inspect the "Examples" chapter which highlights some use-cases or you can read the complete user documentation in the chapter "User Documentation". Of course you can do both of them to be a complete expert 😉
 
-We hope to have shown how MxOps can help you build more safely and consistently. In any case, we will really appreciate any feedback you have on this tool or documentation, so don't hesitate to contact us on [Twitter](https://twitter.com/catenscia) or in the [discussion tab on github](https://github.com/Catenscia/MxOps/discussions/categories/feedback).
+Among other features, you can learn:
+
+- [how to provide complex data format for call and queries](serialization_target)
+- [how to save complex data from queries and how to reuse it](contract_query_target)
+- [how to communicate with any external tools during an MxOps execution](python_step_target)
+- [how to issue and manage tokens](token_management_target)
+- and much more!
+
+We hope to have shown how MxOps can help you build more easily, safely and consistently. In any case, we will really appreciate any feedback you have on this tool or documentation, so don't hesitate to contact us on [Twitter](https://twitter.com/catenscia) or in the [discussion tab on github](https://github.com/Catenscia/MxOps/discussions/categories/feedback).
 
 If you need help to setup MxOps for your project, feel free to contact [Etienne Wallet](https://twitter.com/Etienne_Wallet) which will be more than happy to help you out 🤗
 

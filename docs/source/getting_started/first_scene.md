@@ -44,10 +44,11 @@ sc-meta all build
 cd ../../
 ```
 
-Make sure that the last line of the output is this:
+Make sure that the last lines of the output are like this:
 
 ```bash
-INFO:projects.core:WASM file generated: [...]/output/ping-pong.wasm
+Packing ../output/ping-pong.mxsc.json ...
+Contract size: 3799 bytes.  # size maybe a bit different depending on the version
 ```
 
 The contract is now compiled and ready to be deployed! 📡
@@ -215,7 +216,7 @@ steps:
 The only thing left to do for us is now to tell MxOps to execute our scene. We will give it the network, a name for a `Scenario` and the path to our `Scene` file.
 
 ```{note}
-🙋 "Wait wait, You still did not explained what is a `Scenario`?!?" 
+🙋 "Wait wait, You still did not explain what is a `Scenario`?!?" 
 
 Yes this is true, but it will come it due time, don't worry 🫡
 ```

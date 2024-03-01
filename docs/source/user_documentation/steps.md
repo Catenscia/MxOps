@@ -135,6 +135,7 @@ checks: # optional, by default it will contain a transaction success check
 To get more information on the `checks` attribute, heads to the {doc}`checks` section.
 If you have provided an ABI with the contract, MxOps will be able to automatically encode the arguments for your endpoint call, even if they are complex structures. For more details on that, please head to the {doc}`serialization` section.
 
+(contract_query_target)=
 ### Contract Query Step
 
 This `Step` is used to fetch some data from a contract and save it locally for later use in the `Scenario` (specified at execution time).
@@ -374,7 +375,7 @@ results_save_keys:
 If you provide sub-keys, the number of sub-keys must exactly match the number of elements returned by the query response.
 ```
 
-
+(token_management_target)=
 ## Token Management Steps
 
 ### Fungible Token Steps
@@ -641,7 +642,7 @@ steps: [...]
 You will notice that some symbols are used in the arguments of the above `ContractCall`. These are here to dynamically fetch values from different sources.
 Heads up to the {doc}`values` section for more information.
 
-
+(python_step_target)=
 ### Python Step
 
 This step allows to execute a custom python function. You can execute whatever you want in the python function. This `Step` is here to give you maximum flexibility, making MxOps suitable for all the needs of you project. Here are some basic use case for the python `Step`:
