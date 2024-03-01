@@ -40,7 +40,7 @@ Let's retrieve from Github the source code of the ping-pong contract and compile
 ```bash
 git clone https://github.com/multiversx/mx-ping-pong-sc contract
 cd contract/ping-pong
-mxpy contract build
+sc-meta all build
 cd ../../
 ```
 
