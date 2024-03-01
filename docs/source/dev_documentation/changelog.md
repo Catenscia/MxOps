@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.1.0 - 2024-03-01
+
 ## Added
 
 - ABI support for smart-contract
