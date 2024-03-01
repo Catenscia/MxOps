@@ -1,0 +1,19 @@
+allowed_networks:
+    - mainnet
+
+allowed_scenario:
+    - .*
+
+external_contracts:
+  onedex-swap: 
+    address: erd1qqqqqqqqqqqqqpgqqz6vp9y50ep867vnr296mqf3dduh6guvmvlsu3sujc
+    abi_path: ./abis/onedex-sc.abi.json
+
+steps:
+
+  - type: ContractQuery
+    contract: onedex-swap
+    endpoint: viewPair
+    arguments:
+      - 10
+    print_results: true

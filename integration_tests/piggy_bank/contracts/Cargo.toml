@@ -7,9 +7,6 @@ publish = false
 [dev-dependencies]
 num-bigint = "0.4.2"
 
-[dependencies.multiversx-sc]
-version = "0.39.5"
-
 [dev-dependencies.esdt-minter]
 path = "esdt-minter"
 
@@ -17,4 +14,6 @@ path = "esdt-minter"
 path = "piggy-bank"
 
 [dev-dependencies.multiversx-sc-scenario]
-version = "0.39.5"
+version = "0.46.1"
+[dependencies.multiversx-sc]
+version = "0.46.1"

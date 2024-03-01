@@ -30,6 +30,7 @@ If you are new here, we recommend going first to the :doc:`getting_started/prese
    user_documentation/steps
    user_documentation/checks
    user_documentation/values
+   user_documentation/serialization
    user_documentation/execution
    user_documentation/config
    user_documentation/analyze
@@ -41,6 +42,7 @@ If you are new here, we recommend going first to the :doc:`getting_started/prese
    examples/presentation
    examples/piggy_bank
    examples/wrapping
+   examples/queries
    examples/python_steps
 
 .. toctree::

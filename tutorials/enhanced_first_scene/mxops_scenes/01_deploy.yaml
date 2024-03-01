@@ -10,6 +10,7 @@ steps:
   - type: ContractDeploy
     sender: owner
     wasm_path: "./contract/ping-pong/output/ping-pong.wasm"
+    abi_path: "./contract/ping-pong/output/ping-pong.abi.json"
     contract_id: "egld-ping-pong"
     gas_limit: 40000000
     arguments:

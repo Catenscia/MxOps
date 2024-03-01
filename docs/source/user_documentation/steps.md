@@ -1,7 +1,7 @@
 # Steps
 
-In `MxOps`, any action to be executed is called a `Step`.
-In other words, a `Scene` contains a series of `Steps` that tells what `MxOps` should do.
+In MxOps, any action to be executed is called a `Step`.
+In other words, a `Scene` contains a series of `Steps` that tells what MxOps should do.
 
 Several type of `Steps` exists, to allow users to easily construct complex `Scenes`.
 If you feel something is missing, please make a suggestion in the [github](https://github.com/Catenscia/MxOps/discussions/categories/ideas)!
@@ -70,6 +70,7 @@ saved in the `Scenario` (specified at execution time) under the provided id to a
 type: ContractDeploy
 sender: bob
 wasm_path: "path/to/wasm"
+abi_path: "path/to/abi"  # optional but stongly recommended
 contract_id: my_first_sc
 gas_limit: 1584000
 arguments: # optional, if any args must be submitted
@@ -80,6 +81,8 @@ payable: false
 payable_by_sc: true
 ```
 
+We strongly recommended to provide an ABI with the contract as this will allow MxOps to do the data encoding and decoding during queries and calls for you, even if the data is some complex and custom `Struct`.
+
 ### Contract Upgrade Step
 
 This `Step` is used to upgrade a contract.
@@ -88,6 +91,7 @@ This `Step` is used to upgrade a contract.
 type: ContractUpgrade
 sender: bob
 wasm_path: "path/to/upgraded_wasm"
+abi_path: "path/to/abi"  # optional but stongly recommended
 contract: my_first_sc
 gas_limit: 1584000
 arguments: # optional, if any args must be submitted
@@ -98,10 +102,10 @@ payable: false
 payable_by_sc: true
 ```
 
-```{warning}
+```{note}
 Be mindful of the difference in the argument name between the deploy and the update steps.
 
-`contract_id` can only refer to a contract managed by MxOps whereas `contract` can be any contract.
+`contract_id` can only refer to a contract managed by MxOps whereas `contract` can be any contract. This means that you can upgrade a contract that has not been deployed by MxOps.
 ```
 
 ### Contract Call Step
@@ -129,7 +133,9 @@ checks: # optional, by default it will contain a transaction success check
 ```
 
 To get more information on the `checks` attribute, heads to the {doc}`checks` section.
+If you have provided an ABI with the contract, MxOps will be able to automatically encode the arguments for your endpoint call, even if they are complex structures. For more details on that, please head to the {doc}`serialization` section.
 
+(contract_query_target)=
 ### Contract Query Step
 
 This `Step` is used to fetch some data from a contract and save it locally for later use in the `Scenario` (specified at execution time).
@@ -140,16 +146,236 @@ type: ContractQuery
 contract: my_first_sc
 endpoint: getEsdtIdentifier
 arguments: []
-expected_results: # list of results excpected from the query output
-  - save_key: EsdtIdentifier
-    result_type: str
-print_results: false # if the query results should be printed in the console
+results_save_keys: # optional, key(s) under which save the results of the query
+  - EsdtIdentifier
+results_types:  # mandatory if results are to be saved and no ABI have been provided for this contract
+  - type: TokenIdentifier
+print_results: true # optional, if the query results should be printed in the console
 ```
 
-Currently allowed values for `result_type`: [`int`, `str`]
+If you have provided an ABI with the contract, MxOps will be able to automatically encode the arguments for your query, even if they are complex structures. For more details on that, please head to the {doc}`serialization` section.
+MxOps will also automatically decode the response of the query so that if you save the data, you can easily use it again by reference (see {doc}`values`).
 
-(loop_step_target)=
+#### About `results_save_keys`
 
+There are several accepted types for `results_save_keys` which will indicated how you want to save the data. You can provided either a master key or some sub-keys or both. The master keys will point to the entire query response whereas sub-keys points to individual result of the queries.
+You will find some examples below:
+
+
+
+##### Results Save Keys Example 1
+
+Query return type: `(BigUint, BigInt)`
+
+Decoded query response: `[[123456, -7891011]]`
+
+<table style="border: 1px solid black; border-collapse: collapse;">
+<tr>
+<th style="border: 1px solid black; background-color: #f2f2f2; padding: 8px;">results_save_keys</th>
+<th style="border: 1px solid black; background-color: #f2f2f2; padding: 8px;">Data saved within the Scenario</th>
+</tr>
+<tr>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+results_save_keys: master_key
+</pre>
+</td>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+{
+  "master_key": [[123456, -7891011]]
+}
+</pre>
+</td>
+</tr>
+<tr>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+results_save_keys:
+  master_key:
+    - sub_key_1
+</pre>
+</td>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+{
+  "master_key": {
+    "sub_key_1": [123456, -7891011]
+  }
+}
+</pre>
+</td>
+</tr>
+<tr>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+results_save_keys:
+  - sub_key_1
+</pre>
+</td>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+{
+  "sub_key_1": [123456, -7891011]
+}
+</pre>
+</td>
+</tr>
+</table>
+<p></p>
+
+
+
+##### Results Save Keys Example 2
+
+Query return type: `MultiValue2<u32, i8>`
+
+Decoded query response: `[12, -1]`
+
+<table style="border: 1px solid black; border-collapse: collapse;">
+<tr>
+<th style="border: 1px solid black; background-color: #f2f2f2; padding: 8px;">results_save_keys</th>
+<th style="border: 1px solid black; background-color: #f2f2f2; padding: 8px;">Data saved within the Scenario</th>
+</tr>
+<tr>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+results_save_keys: master_key
+</pre>
+</td>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+{
+  "master_key": [12, -1]
+}
+</pre>
+</td>
+</tr>
+<tr>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+results_save_keys:
+  master_key:
+    - sub_key_1
+    - sub_key_2
+</pre>
+</td>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+{
+  "master_key": {
+    "sub_key_1": 12,
+    "sub_key_2": -1
+  }
+}
+</pre>
+</td>
+</tr>
+<tr>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+results_save_keys:
+  - sub_key_1
+  - sub_key_2
+</pre>
+</td>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+{
+  "sub_key_1": 12,
+  "sub_key_2": -1
+}
+</pre>
+</td>
+</tr>
+</table>
+<p></p>
+
+
+
+##### Results Save Keys Example 3
+
+Query return type: `MultiValue2<u8, MyStruct<Self::Api>>`
+
+Decoded query response: `[234, {"attribute_1": "WEGLD-abcdef", "attribute_2": 123456}]`
+
+<table style="border: 1px solid black; border-collapse: collapse;">
+<tr>
+<th style="border: 1px solid black; background-color: #f2f2f2; padding: 8px;">results_save_keys</th>
+<th style="border: 1px solid black; background-color: #f2f2f2; padding: 8px;">Data saved within the Scenario</th>
+</tr>
+<tr>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+results_save_keys: master_key
+</pre>
+</td>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+{
+  "master_key": [
+   234,
+   {
+      "attribute_1": "WEGLD_abcdef",
+      "attribute_2": 123456
+   }
+  ]
+}
+</pre>
+</td>
+</tr>
+<tr>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+results_save_keys:
+  master_key:
+    - sub_key_1
+    - sub_key_2
+</pre>
+</td>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+{
+  "master_key": {
+    "sub_key_1": 234,
+    "sub_key_2": {
+      "attribute_1": "WEGLD_abcdef",
+      "attribute_2": 123456
+    }
+  }
+}
+</pre>
+</td>
+</tr>
+<tr>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+results_save_keys:
+  - sub_key_1
+  - sub_key_2
+</pre>
+</td>
+<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
+<pre style="margin: 0;">
+{
+  "sub_key_1": 234,
+  "sub_key_2": {
+    "attribute_1": "WEGLD_abcdef",
+    "attribute_2": 123456
+  }
+
+}
+</pre>
+</td>
+</tr>
+</table>
+<p></p>
+
+```{warning}
+If you provide sub-keys, the number of sub-keys must exactly match the number of elements returned by the query response.
+```
+
+(token_management_target)=
 ## Token Management Steps
 
 ### Fungible Token Steps
@@ -168,8 +394,6 @@ num_decimals: 3
 can_freeze: false # optional, defaults to false
 can_wipe: false # optional, defaults to false
 can_pause: false # optional, defaults to false
-can_mint: false # optional, defaults to false
-can_burn: false # optional, defaults to false
 can_change_owner: false # optional, defaults to false
 can_upgrade: false # optional, defaults to false
 can_add_special_roles: false # optional, defaults to false
@@ -178,7 +402,7 @@ can_add_special_roles: false # optional, defaults to false
 The results of the transaction will be saved. You can make a reference to this token in later `Steps` using its name, for example to retrieve the token identifier: `%MyToken.identifier`.
 
 ```{warning}
-To avoid data collision within `MxOps`, `token_name` should be unique within a `Scenario` and should not have a name identical to a `contract_id` in the same `Scenario`.
+To avoid data collision within MxOps, `token_name` should be unique within a `Scenario` and should not have a name identical to a `contract_id` in the same `Scenario`.
 ```
 
 #### Role Management Step
@@ -235,7 +459,7 @@ can_transfer_nft_create_role: false # optional, defaults to false
 The results of the transaction will be saved. You can make a reference to this token in later `Steps` using its name, for example to retrieve the token identifier: `%MyToken.identifier`.
 
 ```{warning}
-To avoid data collision within `MxOps`, `token_name` should be unique within a `Scenario` and should not have a name identical to a `contract_id` in the same `Scenario`.
+To avoid data collision within MxOps, `token_name` should be unique within a `Scenario` and should not have a name identical to a `contract_id` in the same `Scenario`.
 ```
 
 #### SFT Issuance Step
@@ -259,7 +483,7 @@ can_transfer_nft_create_role: false # optional, defaults to false
 The results of the transaction will be saved. You can make a reference to this token in later `Steps` using its name, for example to retrieve the token identifier: `%MyToken.identifier`.
 
 ```{warning}
-To avoid data collision within `MxOps`, `token_name` should be unique within a `Scenario` and should not have a name identical to a `contract_id` in the same `Scenario`.
+To avoid data collision within MxOps, `token_name` should be unique within a `Scenario` and should not have a name identical to a `contract_id` in the same `Scenario`.
 ```
 
 #### Meta Issuance Step
@@ -284,7 +508,7 @@ can_transfer_nft_create_role: false # optional, defaults to false
 The results of the transaction will be saved. You can make a reference to this token in later `Steps` using its name, for example to retrieve the token identifier: `%MyToken.identifier`.
 
 ```{warning}
-To avoid data collision within `MxOps`, `token_name` should be unique within a `Scenario` and should not have a name identical to a `contract_id` in the same `Scenario`.
+To avoid data collision within MxOps, `token_name` should be unique within a `Scenario` and should not have a name identical to a `contract_id` in the same `Scenario`.
 ```
 
 #### NFT Role Management Step
@@ -368,13 +592,14 @@ You can find more information in the MultiversX documentation about [non fungibl
 
 ## Miscellaneous Steps
 
+(loop_step_target)=
 ### Loop Step
 
 This step allows to run a set of steps for a given number of times.
 A loop variable is created and can be used as an arguments for the steps inside the loop.
 
 ```yaml
-# This loop step retrieve the sft tokens with a nonce between 1 and 100.
+# This loop step retrieves the sft tokens that have a nonce between 1 and 100.
 # The loop variable is used to check and retrieve the amount of each nonce.
 type: Loop
 var_name: LOOP_VAR
@@ -387,9 +612,10 @@ steps:
     arguments:
       - TokenIdentifier4
       - $LOOP_VAR # nonce
-    expected_results:
-      - save_key: TokenIdentifier4Amount
-        result_type: int
+    results_types:
+      - type: BigUint
+    results_save_keys:
+      - TokenIdentifier4Amount
 
   - type: ContractCall
     sender: alice
@@ -414,11 +640,11 @@ steps: [...]
 You will notice that some symbols are used in the arguments of the above `ContractCall`. These are here to dynamically fetch values from different sources.
 Heads up to the {doc}`values` section for more information.
 
-
+(python_step_target)=
 ### Python Step
 
-This step allows to execute a custom python function. You can execute whatever you want in the python function. This `Step` is here to give you maximum flexibility, making `MxOps` suitable for all the needs of you project. Here are some basic use case for the python `Step`:
-  - complex calculation (results can be saved as `MxOps` or environment values)
+This step allows to execute a custom python function. You can execute whatever you want in the python function. This `Step` is here to give you maximum flexibility, making MxOps suitable for all the needs of you project. Here are some basic use case for the python `Step`:
+  - complex calculation (results can be saved as MxOps or environment values)
   - complex query parsing
   - randomness generation
   - third party calls (databases, API ...)

@@ -33,3 +33,10 @@ steps:
     sender: thomas
     token_identifier: "%ThomasMeta.identifier"
     amount: 100000000  # 100,000.000 TMT
+    name: "Beautiful Meta"
+    royalties: 750
+    hash: "00"
+    attributes: "metadata:ipfsCID/song.json;tags:song,beautiful,music"
+    uris:
+      - https://mypng.com/1
+      - https://ThomasMetajpg.com/1

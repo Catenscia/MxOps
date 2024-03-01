@@ -4,7 +4,7 @@
 
 ## Data
 
-First, `Mxops` needs to fetch the transactions of your contract. You can either give the bech32 address of the contract or the name and scenario of your contract if you deployed it using `MxOps`.
+First, MxOps needs to fetch the transactions of your contract. You can either give the bech32 address of the contract or the name and scenario of your contract if you deployed it using MxOps.
 
 ### Commands
 
@@ -28,7 +28,7 @@ Only users transactions are fetched. That is to say, only the transactions emitt
 
 The APIs provided publicly by the MultiversX team have limits rates, so if you have a lots of transactions to analyze, it can take a lot of time to fetch all of them.
 
-If you have your own API, you can dump the `MxOps` config by using `mxops config -d` and then modify the values `API` and `API_RATE_LIMIT`. This will automatically be taken into account in your next execution. (as long as you don't change of current working directory)
+If you have your own API, you can dump the MxOps config by using `mxops config -d` and then modify the values `API` and `API_RATE_LIMIT`. This will automatically be taken into account in your next execution. (as long as you don't change of current working directory)
 
 ## Plots
 

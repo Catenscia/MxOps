@@ -14,8 +14,6 @@ steps:
     num_decimals: 3
     can_upgrade: true
     can_add_special_roles: true
-    can_mint: true
-    can_burn: true
 
   - type: Python
     module_path: ./integration_tests/token_management/scripts/checks.py

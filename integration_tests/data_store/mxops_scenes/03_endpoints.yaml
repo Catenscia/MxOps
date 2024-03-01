@@ -1,0 +1,134 @@
+allowed_networks:
+    - devnet
+    - localnet
+
+allowed_scenario:
+  - "integration_test_data_store"
+
+steps:
+  - type: ContractCall
+    sender: emmanuel
+    contract: data-store  
+    endpoint: test_1
+    gas_limit: 60000000
+    arguments:
+      - 123987
+  
+  - type: ContractQuery
+    contract: data-store
+    endpoint: my_option_biguint
+    arguments: []
+    print_results: true
+    results_save_keys: 
+      - my_option_biguint
+
+  - type: Python
+    module_path: ./integration_tests/data_store/scripts/checks.py
+    function: check_storage
+    arguments:
+      - data-store
+      - '{"my_option_biguint": 123987}'
+  
+  - type: ContractQuery
+    contract: data-store
+    endpoint: my_token_identifier
+    arguments: []
+    print_results: true
+    results_save_keys: 
+      - my_token_identifier
+
+  - type: Python
+    module_path: ./integration_tests/data_store/scripts/checks.py
+    function: check_storage
+    arguments:
+      - data-store
+      - '{"my_token_identifier": ""}'
+
+  - type: ContractCall
+    sender: emmanuel
+    contract: data-store  
+    endpoint: test_2
+    gas_limit: 60000000
+    arguments:
+      - erd1qqqqqqqqqqqqqpgqf48ydzn8shr8mnmrvydq2fn9v2afzd3c4fvsk4wglm
+      - WEGLD-abcdef
+  
+  - type: ContractQuery
+    contract: data-store
+    endpoint: get_test_2_params
+    arguments: []
+    print_results: true
+    results_save_keys: 
+      - test_2_params
+
+  - type: Python
+    module_path: ./integration_tests/data_store/scripts/checks.py
+    function: check_storage
+    arguments:
+      - data-store
+      - '{"test_2_params": ["erd1qqqqqqqqqqqqqpgqf48ydzn8shr8mnmrvydq2fn9v2afzd3c4fvsk4wglm", "WEGLD-abcdef"]}'
+
+  - type: ContractCall
+    sender: emmanuel
+    contract: data-store  
+    endpoint: test_3
+    gas_limit: 60000000
+    arguments:
+      - -3
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+  
+  - type: ContractQuery
+    contract: data-store
+    endpoint: get_test_3_params
+    arguments: []
+    print_results: true
+    results_save_keys: test_3_params
+
+  - type: Python
+    module_path: ./integration_tests/data_store/scripts/checks.py
+    function: check_storage
+    arguments:
+      - data-store
+      - '{"test_3_params": [-3, 0, 1, 2, 3, 4, 5]}'
+    
+  - type: ContractCall
+    sender: emmanuel
+    contract: data-store  
+    endpoint: test_4
+    gas_limit: 60000000
+    arguments:
+      - [0, 1, 2, 3, 4, 5, 6]
+  
+  - type: ContractQuery
+    contract: data-store
+    endpoint: my_vec_biguint
+    arguments: []
+    print_results: true
+    results_save_keys: my_vec_biguint
+
+  - type: Python
+    module_path: ./integration_tests/data_store/scripts/checks.py
+    function: check_storage
+    arguments:
+      - data-store
+      - '{"my_vec_biguint": [0, 1, 2, 3, 4, 5, 6]}'
+  
+  - type: ContractQuery
+    contract: data-store
+    endpoint: get_test_4_params
+    arguments: []
+    print_results: true
+    results_save_keys: 
+    - test_4_params
+
+  - type: Python
+    module_path: ./integration_tests/data_store/scripts/checks.py
+    function: check_storage
+    arguments:
+      - data-store
+      - '{"test_4_params": [0, 1, 2, 3, 4, 5, 6]}'

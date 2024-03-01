@@ -56,12 +56,12 @@ we can access the different values like this:
 
 | value key             | value fetched |
 |-----------------------|---------------|
-| "key_1.key_2[0].data" | "value_1"    |
-| "key_1.key_2[1]"      | "value_2"    |
-| "key_1.key_3"         | "value_3"    |
-| "key_4"               | "value_4"    |
+| "key_1.key_2[0].data" | "value_1"     |
+| "key_1.key_2[1]"      | "value_2"     |
+| "key_1.key_3"         | "value_3"     |
+| "key_4"               | "value_4"     |
 
-Data saved within a `Scenario` are split into three categories: contract data, token data and everything else. A value attached to a contract or a token will always have its value key begins by the `contract_id` or the `token_name`. In addition, when you deploy a contract or a token, some values will already be available in the `Scenario data`.
+Data saved within a `Scenario` are split into three categories: contract data, token data and everything else. A value attached to a contract or a token will always have its value key begins by the `contract_id` or the `token_name`. In addition, when you deploy a contract or a token, some values will already be available in the `Scenario data`. Some examples of value key for data saved under a token or a contract:
 
 | Value Key                    | Description                                             |
 |------------------------------|---------------------------------------------------------|

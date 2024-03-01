@@ -3,12 +3,15 @@ author: Etienne Wallet
 
 This module contains utils functions related to path navigation
 """
+
 from configparser import ConfigParser
 import os
 from pathlib import Path
 from typing import Dict, List, Optional
 
 from importlib_resources import files
+from multiversx_sdk_network_providers import ProxyNetworkProvider
+from multiversx_sdk_network_providers.network_config import NetworkConfig
 
 from mxops.enums import NetworkEnum
 
@@ -37,6 +40,10 @@ class _Config:
             default_config = files("mxops.resources").joinpath("default_config.ini")
             self.__config.read_string(default_config.read_text())
 
+        self.__network_config = ProxyNetworkProvider(
+            self.get("PROXY")
+        ).get_network_config()
+
     def get_network(self) -> NetworkEnum:
         """
         Return the network of the config
@@ -45,6 +52,15 @@ class _Config:
         :rtype: NetworkEnum
         """
         return self.__network
+
+    def get_network_config(self) -> NetworkConfig:
+        """
+        Return the loaded network config
+
+        :return: network config
+        :rtype: NetworkConfig
+        """
+        return self.__network_config
 
     def get(self, option: str) -> str:
         """

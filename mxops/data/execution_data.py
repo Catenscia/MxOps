@@ -6,17 +6,19 @@ This module contains the functions to load, write and update scenario data
 from __future__ import annotations
 from copy import deepcopy
 from dataclasses import asdict, dataclass, field, is_dataclass
-import json
 import os
 from pathlib import Path
 import re
 import time
 from typing import Any, Dict, List, Optional
 
+from mxpyserializer.abi_serializer import AbiSerializer
+
 from mxops.config.config import Config
 from mxops.data.path import get_all_checkpoints_names, get_scenario_file_path
 from mxops import enums as mxops_enums
 from mxops import errors
+from mxops.data.utils import json_dump, json_load
 from mxops.utils.logger import get_logger
 
 
@@ -138,7 +140,7 @@ class SavedValuesData:
             next_key = parsed_value_key[0]
 
         # set the value
-        value_copy = deepcopy(value)  # in case the value is a complexe type
+        value_copy = deepcopy(value)  # in case the value is a complex type
         if isinstance(next_key, int):
             if isinstance(element, (tuple, list)):
                 try:
@@ -185,6 +187,7 @@ class ContractData(SavedValuesData):
 
     contract_id: str
     address: str
+    serializer: Optional[AbiSerializer]
 
     def set_value(self, value_key: str, value: Any):
         """
@@ -195,8 +198,8 @@ class ContractData(SavedValuesData):
         :param value: value to save
         :type value: Any
         """
-        if value_key == "address":
-            self.address = value
+        if value_key in ("address", "serializer"):
+            setattr(self, value_key, value)
         else:
             super().set_value(value_key, value)
 
@@ -208,9 +211,26 @@ class ContractData(SavedValuesData):
         :rtype: Dict
         """
         self_dict = asdict(self)
+        if self.serializer is None:
+            self_dict["serializer"] = None
+        else:
+            self_dict["serializer"] = self.serializer.to_dict()
         # add attribute to indicate internal/external
         self_dict["is_external"] = isinstance(self, ExternalContractData)
         return self_dict
+
+    def __eq__(self, other: Any) -> bool:
+        """
+        Define the equal operator
+
+        :param other: object to compare this instance with
+        :type other: Any
+        :return: if the instance is equal to the other object
+        :rtype: bool
+        """
+        if not isinstance(other, ContractData):
+            raise ValueError(f"Can not compare ContractData with {type(other)}")
+        return self.to_dict() == other.to_dict()
 
 
 @dataclass
@@ -238,6 +258,19 @@ class InternalContractData(ContractData):
         else:
             super().set_value(value_key, value)
 
+    def __eq__(self, other: Any) -> bool:
+        """
+        Define the equal operator
+
+        :param other: object to compare this instance with
+        :type other: Any
+        :return: if the instance is equal to the other object
+        :rtype: bool
+        """
+        if not isinstance(other, ContractData):
+            raise ValueError(f"Can not compare ContractData with {type(other)}")
+        return self.to_dict() == other.to_dict()
+
 
 @dataclass
 class ExternalContractData(ContractData):
@@ -245,6 +278,19 @@ class ExternalContractData(ContractData):
     Dataclass representing the data that can be locally saved for a contract
     not managed by MxOps
     """
+
+    def __eq__(self, other: Any) -> bool:
+        """
+        Define the equal operator
+
+        :param other: object to compare this instance with
+        :type other: Any
+        :return: if the instance is equal to the other object
+        :rtype: bool
+        """
+        if not isinstance(other, ContractData):
+            raise ValueError(f"Can not compare ContractData with {type(other)}")
+        return self.to_dict() == other.to_dict()
 
 
 @dataclass
@@ -446,8 +492,7 @@ class _ScenarioData(SavedValuesData):
         :type checkpoint: str
         """
         scenario_path = get_scenario_file_path(self.name, checkpoint)
-        with open(scenario_path.as_posix(), "w", encoding="utf-8") as file:
-            json.dump(self.to_dict(), file)
+        json_dump(scenario_path, self.to_dict())
 
     def to_dict(self) -> Dict:
         """
@@ -506,8 +551,7 @@ class _ScenarioData(SavedValuesData):
         :return: loaded scenario data
         :rtype: _ScenarioData
         """
-        with open(scenario_path.as_posix(), "r", encoding="utf-8") as file:
-            raw_content = json.load(file)
+        raw_content = json_load(scenario_path)
         return cls.from_dict(raw_content)
 
     @classmethod
@@ -527,6 +571,16 @@ class _ScenarioData(SavedValuesData):
                     is_external = contract_data.pop("is_external")
                 except KeyError:
                     is_external = False
+                try:
+                    serializer_kwargs = contract_data.pop("serializer")
+                except KeyError:
+                    serializer_kwargs = None
+                if isinstance(serializer_kwargs, dict):
+                    contract_data["serializer"] = AbiSerializer.from_dict(
+                        serializer_kwargs
+                    )
+                else:
+                    contract_data["serializer"] = None
                 if is_external:
                     contracts_data[contract_id] = ExternalContractData(**contract_data)
                 else:

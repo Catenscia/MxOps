@@ -2,8 +2,16 @@
 
 ## Dependencies
 
-`MxOps` relies on `mxpy`, the python sdk written by the MultiversX team.
-Follow their instructions to [install mxpy](https://docs.multiversx.com/sdk-and-tools/sdk-py/installing-mxpy/).
+MxOps heavily relies on `mxpy` and the python sdks written by the MultiversX team and requires a python version of at least 3.10.
+As the MultiversX team has a very high release rate, we strongly recommend to have a dedicated environment for MxOps to avoid any dependencies conflicts with your own projects.
+
+For example with [Anaconda](https://www.anaconda.com/download):
+
+```bash
+conda create -n mxops_env python=3.11 -y
+conda activate mxops_env
+pip install -U mxops
+```
 
 ## From PyPI
 
@@ -15,7 +23,7 @@ pip install -U mxops
 
 ## From Github
 
-If you want the latest developments of `MxOps`, you can install the package directly from the develop branch:
+If you want the latest developments of MxOps, you can install the package directly from the develop branch:
 
 ```bash
 pip install -U git+https://github.com/Catenscia/MxOps@develop
@@ -25,8 +33,7 @@ If you want another branch or version, just replace "develop" by the branch or t
 
 ## Extension
 
-If you use VScode, we recommend you to use the extension `mxopsHelper` which will greatly help you using `MxOps`!
-When installing, take a look at the README of the extension for the features that will assist you.
+The Visual Studio Code extension [mxopsHelper](https://marketplace.visualstudio.com/items?itemName=Catenscia.mxops-helper) has been created to help users write their `Scenes` by providing templates. We recommend using it as it greatly simplify the process of creating `Scenes`.
 
 
 You can now heads up to the {doc}`next section <first_scene>` to learn how to write your first scene! 💪

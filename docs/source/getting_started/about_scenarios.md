@@ -7,18 +7,28 @@ When you executed you first `Scene`, you may have asked yourself some questions 
 
 `Scenarios` are here to answer these needs and many more 😁
 
-This section will give you a basic understanding of `Scenarios`, you can always read later on the complete section on `Scenarios` in the user documentation chapter.
+This section will give you a basic understanding of `Scenarios`, you can always read later the complete chapter on `Scenarios` in the user documentation section.
 
 ## Definition
 
-`Scenarios` are virtual context in which data can be saved and reused. The first use case is during deployment: Once a contract is deployed, one need to save the address that has been assigned to the contract for later interactions.
+`Scenarios` are virtual context in which data can be saved and reused. The first use case is during deployment: Once a contract is deployed, MxOps needs to save the address that has been assigned to the contract for later interactions.
 
-`Scenarios` save contract data using their `contract_id`. This means that the same `contract_id` can be use in different `Scenarios` but also in different networks (main, dev...).
-This allows maximum reusability for the `Scenes` as you don't have to monitor which ids has already been taken in your others `Scenarios`.
+`Scenarios` are uniquely defined by a name and a network. This means that the same `contract_id` can be use in different `Scenarios` but also in different networks (mainnet, devnet...). This allows maximum reusability for the `Scenes` as you don't have to monitor which ids has already been taken in your others `Scenarios`.
+
+It mainly helps you in these situations:
+- you can deploy the same contract under different ids but under the same `Scenario` (ex: different pools for a DEX)
+- you can deploy the same contract under the same id but under different `Scenario` (ex: when executing several test scenarios)
+- you can deploy the same contract under the same id and under the same `Scenario` but on different networks (ex: testing a deployment plan on devnet and then applying it on the mainnet)
+
+```{warning}
+If you try to assign twice the same `contract-id` within the same `Scenario` and network, MxOps will throw an error.
+```
+
+`Scenarios` will allow you to easily switch between all these contexts at anytime, without any data loss.
 
 ## Persistence
 
-Unless you specifically decide to delete it, the data stored in a `Scenario` is persistent on your local computer. You can access from everywhere 💻
+Unless you specifically decide to delete it, the data stored in a `Scenario` is persistent on your local computer. You can access from it everywhere on your computer 💻.
 
 For example, we can see what data has been saved when we executed our first `Scene`. Try this command:
 
@@ -26,7 +36,7 @@ For example, we can see what data has been saved when we executed our first `Sce
 mxops data get -n devnet -s mxops_tutorial_first_scene
 ```
 
-This will give you the following output:
+This will give you the following output (you may have more or less data depending of your version of MxOps):
 
 ```bash
 MxOps  Copyright (C) 2023  Catenscia

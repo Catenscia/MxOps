@@ -3,6 +3,7 @@ author: Etienne Wallet
 
 Errors used in the MxOps package
 """
+
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List
@@ -269,6 +270,12 @@ class EmptyQueryResults(Exception):
     """
 
 
+class QueryFailed(Exception):
+    """
+    To be raised when a query failed
+    """
+
+
 #############################################################
 #
 #                   Check Errors
@@ -338,3 +345,9 @@ class InvalidStepDefinition(Exception):
 
     def __str__(self) -> str:
         return f"Step {self.step_name} received invalid parameters {self.parameters}"
+
+
+class InvalidQueryResultsDefinition(Exception):
+    """
+    to be raise when the results types of a query are not correctly defined
+    """

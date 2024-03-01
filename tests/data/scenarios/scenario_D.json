@@ -1,0 +1,35 @@
+{
+    "name": "___test_mxops_tutorial_first_scene",
+    "network": "devnet",
+    "creation_time": 1677134890,
+    "last_update_time": 1677134896,
+    "contracts_data": {
+        "egld-ping-pong": {
+            "contract_id": "egld-ping-pong",
+            "address": "erd1qqqqqqqqqqqqqpgq0048vv3uk6l6cdreezpallvduy4qnfv2plcq74464k",
+            "serializer": null,
+            "saved_values": {},
+            "wasm_hash": "5ce403a4f73701481cc15b2378cdc5bce3e35fa215815aa5eb9104d9f7ab2451",
+            "deploy_time": 1677134892,
+            "last_upgrade_time": 1677134892,
+            "is_external": false
+        },
+        "wrapper": {
+            "contract_id": "wrapper",
+            "address": "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t",
+            "serializer": null,
+            "saved_values": {},
+            "is_external": true
+        }
+    },
+    "tokens_data": {
+        "My Token": {
+            "name": "My Token",
+            "ticker": "MTK",
+            "identifier": "MTK-abcdef",
+            "saved_values": {},
+            "type": "fungible"
+        }
+    },
+    "saved_values": {}
+}

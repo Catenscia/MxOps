@@ -30,13 +30,16 @@ pub trait PiggyBank {
 
     // #################   views    #################
 
-    // #################   init    #################
+    // #################   init && upgrade    #################
     #[init]
     fn init(&self, piggy_token_identifier: TokenIdentifier, esdt_minter_address: ManagedAddress) {
         self.piggy_token_identifier()
             .set_if_empty(piggy_token_identifier);
         self.esdt_minter_address().set_if_empty(esdt_minter_address);
     }
+
+    #[upgrade]
+    fn upgrade(&self) {}
 
     // #################   endpoints    #################
 

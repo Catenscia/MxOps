@@ -26,21 +26,23 @@ steps:
   - type: ContractQuery
     contract: my_pool
     endpoint: GetBaseToken
-    expected_results:
-      - save_key: BaseToken # -> will be accessible with "%my_pool.BaseToken"
-        result_type: int
+    results_types:
+      - type: TokenIdentifier
+    results_save_keys: BaseToken # -> will be accessible with "%my_pool.BaseToken"
+
   - type: ContractQuery
     contract: my_pool
     endpoint: GetQuoteToken
-    expected_results:
-      - save_key: QuoteToken # -> will be accessible with "%my_pool.QuoteToken"
-        result_type: int
+    results_types:
+      - type: TokenIdentifier
+    results_save_keys: QuoteToken # -> will be accessible with "%my_pool.QuoteToken"
+  
   - type: ContractQuery
     contract: my_pool
     endpoint: GetPoolPrice
-    expected_results:
-      - save_key: PoolPrice # -> will be accessible with "%my_pool.PoolPrice"
-        result_type: int
+    results_types:
+      - type: BigUint
+    results_save_keys: PoolPrice # -> will be accessible with "%my_pool.PoolPrice"
 
   # execute the python function to compute the amount of quote token to deposit
   # given the price and the base amount
@@ -66,7 +68,7 @@ steps:
         nonce: 0
 ```
 
-During the python `Step`, `MxOps` will call a python function `compute_deposit_amount` that we can implement like this:
+During the python `Step`, MxOps will call a python function `compute_deposit_amount` that we can implement like this:
 
 ```{code-block} python
 :caption: my_module.py
@@ -84,11 +86,23 @@ def compute_deposit_amount(pool_price: int, base_amount: int) -> str:
     :return: quote amount equivalent the the provided base amount
     :rtype: str
     """
-    quote_amount = int(base_amount * pool_price / 10**12)
+    quote_amount = base_amount * pool_price // 10**12
     return str(quote_amount)
 ```
 
-This python function helps us to make a calculation that is not directly supported by `MxOps`. The result is saved under the environment variable `MXOPS_COMPUTE_DEPOSIT_AMOUNT_RESULT` and it can be used in later steps, as shown above.
+This python function helps us to make a calculation that is not directly supported by MxOps. The result is saved under the environment variable `MXOPS_COMPUTE_DEPOSIT_AMOUNT_RESULT` and it can be used in later steps, as shown above.
+
+If more than one value needs to be saved, the user can attached data directly to an existing contract:
+
+```{code-block} python
+
+scenario_data = ScenarioData.get()
+existing_contract_id = 'my-contract'
+scenario_data.set_contract_value(self.contract, "key_1", 7894) # -> accessible with "%my-contract.key_1"
+scenario_data.set_contract_value(self.contract, "key_2", "test-string") # -> accessible with "%my-contract.key_2"
+
+```
+
 
 ## Query, Calculation and Transaction
 
@@ -125,7 +139,6 @@ There is now only one `Step` in our `Scene`, as everything will be done in our p
 from typing import Tuple
 from mxops.execution.msc import EsdtTransfer
 from mxops.execution.steps import ContractCallStep, ContractQueryStep
-from mxops.execution.utils import parse_query_result
 
 
 def fetch_pool_data(contract: str) -> Tuple[int, str, str]:
@@ -141,15 +154,18 @@ def fetch_pool_data(contract: str) -> Tuple[int, str, str]:
     # construct the queries
     price_query = ContractQueryStep(
         contract=contract,
-        endpoint="GetPoolPrice"
+        endpoint="GetPoolPrice",
+        results_types=[{"type": "BigUint}]
     )
     base_token_query = ContractQueryStep(
         contract=contract,
-        endpoint="GetBaseToken"
+        endpoint="GetBaseToken",
+        results_types=[{"type": "TokenIdentifier}]
     )
     quote_token_query = ContractQueryStep(
         contract=contract,
-        endpoint="GetQuoteToken"
+        endpoint="GetQuoteToken",
+        results_types=[{"type": "TokenIdentifier}]
     )
 
     # execute them
@@ -158,9 +174,9 @@ def fetch_pool_data(contract: str) -> Tuple[int, str, str]:
     quote_token_query.execute()
     
     # extract the results (we expect to have exactly one result per query)
-    pool_price = parse_query_result(price_query.results[0], "int")
-    base_token = parse_query_result(base_token_query.results[0], "str")
-    quote_token = parse_query_result(quote_token_query.results[0], "str")
+    pool_price = price_query.decoded_results[0]
+    base_token = base_token_query.decoded_results[0]
+    quote_token = quote_token_query.decoded_results[0]
     return pool_price, base_token, quote_token
 
 
@@ -177,7 +193,7 @@ def do_balanced_deposit(contract: str, base_amount: int) -> str:
     pool_price, base_token, quote_token = fetch_pool_data(contract)
 
     # compute the quote amount
-    quote_amount = int(base_amount * pool_price / 10**12)
+    quote_amount = base_amount * pool_price // 10**12
     
     # create the contract call to deposit
     contract_call_step = ContractCallStep(
@@ -201,7 +217,7 @@ def do_balanced_deposit(contract: str, base_amount: int) -> str:
 
 ```
 
-Both the previous and the current examples end up sending the same transaction: `MxOps` allows you to choose if you want to use native `Steps` or if you want to write everything yourself in python, which gives you more flexibility (at the cost of more work and responsibility).
+Both the previous and the current examples end up sending the same transaction: MxOps allows you to choose if you want to use native `Steps` or if you want to write everything yourself in python, which gives you more flexibility (at the cost of more work and responsibility).
 
 ## Third Party Interaction
 
@@ -211,7 +227,7 @@ You might want to interact with third parties for many reasons:
   - databases (e.g. list of addresses for an airdrop)
   - ...
 
-Using the python `Step`, you can easily integrate these third parties within the `MxOps` framework, as shown below.
+Using the python `Step`, you can easily integrate these third parties within the MxOps framework, as shown below.
 
 ```{code-block} yaml
 :caption: my_scene.yaml
@@ -257,7 +273,7 @@ def interact():
 
 ## Custom Check
 
-You may want to run custom checks after some crucial actions. To do so, implement them in python and run them any time you want using the python `Step`. Within your custom function, you can make queries, access the `MxOps` data, use the api or proxy network provider and much more.
+You may want to run custom checks after some crucial actions. To do so, implement them in python and run them any time you want using the python `Step`. Within your custom function, you can make queries, access the MxOps data, use the api or proxy network provider and much more.
 
 ```{code-block} yaml
 :caption: my_scene.yaml

@@ -2,7 +2,19 @@
 
 ## Unreleased
 
+## 2.1.0 - 2024-03-01
+
+## Added
+
+- ABI support for smart-contract
+- Added new examples for queries
+
 ## 2.0.1 - 2023-10-25
+
+### Fixed
+
+- wrongly converted hex arguments
+- broken ledger sign
 
 ## 2.0.0 - 2023-10-20
 

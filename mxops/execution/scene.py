@@ -7,8 +7,9 @@ from dataclasses import dataclass, field
 import os
 from pathlib import Path
 import re
-from typing import Dict, List
+from typing import Dict, List, Union
 
+from mxpyserializer.abi_serializer import AbiSerializer
 import yaml
 
 from mxops.config.config import Config
@@ -33,7 +34,9 @@ class Scene:
     allowed_scenario: List[str]
     accounts: List[Dict] = field(default_factory=list)
     steps: List[Step] = field(default_factory=list)
-    external_contracts: Dict[str, str] = field(default_factory=dict)
+    external_contracts: Dict[str, Union[str, Dict[str, str]]] = field(
+        default_factory=dict
+    )
 
     def __post_init__(self):
         """
@@ -100,15 +103,25 @@ def execute_scene(scene_path: Path):
         AccountsManager.sync_account(account["account_name"])
 
     # load external contracts addresses
-    for contract_id, address in scene.external_contracts.items():
+    for contract_id, contract_data in scene.external_contracts.items():
+        if isinstance(contract_data, str):
+            contract_data = {"address": contract_data}
+        address = contract_data["address"]
         try:
-            # try to update the contract address while keeping data intact
+            serializer = AbiSerializer.from_abi(Path(contract_data["abi_path"]))
+        except KeyError:
+            serializer = None
+        try:
             scenario_data.set_contract_value(contract_id, "address", address)
+            scenario_data.contracts_data[contract_id].serializer = serializer
         except errors.UnknownContract:
             # otherwise create the contract data
             scenario_data.add_contract_data(
                 ExternalContractData(
-                    contract_id=contract_id, address=address, saved_values={}
+                    contract_id=contract_id,
+                    address=address,
+                    serializer=serializer,
+                    saved_values={},
                 )
             )
 

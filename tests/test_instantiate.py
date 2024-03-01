@@ -1,8 +1,11 @@
 from pathlib import Path
 import yaml
-from mxops.execution.checks import SuccessCheck
 
-from mxops.execution.scene import Scene
+from mxpyserializer.abi_serializer import AbiSerializer
+
+from mxops.data.execution_data import ScenarioData
+from mxops.execution.checks import SuccessCheck
+from mxops.execution.scene import Scene, execute_scene
 from mxops.execution.steps import (
     ContractCallStep,
     ContractDeployStep,
@@ -56,6 +59,14 @@ def test_deploy_scene_instantiation(test_data_folder_path: Path):
             expected_results=[{"save_key": "TokenIdentifier", "result_type": "str"}],
             print_results=True,
         ),
+        ContractQueryStep(
+            endpoint="getTokenIdentifier",
+            contract="SEGLD-minter",
+            arguments=[],
+            results_save_keys=["TokenIdentifier"],
+            results_types=[{"type": "TokenIdentifier"}],
+            print_results=True,
+        ),
         ContractUpgradeStep(
             sender="owner",
             wasm_path="../contract/src/esdt-minter/output/esdt-minter.wasm",
@@ -75,3 +86,16 @@ def test_deploy_scene_instantiation(test_data_folder_path: Path):
     ]
     assert scene.allowed_networks == ["localnet"]
     assert scene.allowed_scenario == [".*"]
+
+
+def test_abi_loading(test_data_folder_path: Path):
+    # Given
+    scene_path = test_data_folder_path / "empty_scene.yaml"
+    scenario_data = ScenarioData.get()
+
+    # When
+    execute_scene(scene_path)
+    serializer: AbiSerializer = scenario_data.get_contract_value("adder", "serializer")
+
+    # Then
+    assert list(serializer.endpoints.keys()) == ["getSum", "upgrade", "add", "init"]

@@ -1,6 +1,6 @@
 # Piggy Bank
 
-This example uses the smart-contracts and `Scenes` from the `MxOps` integration test called [Piggy Bank](https://github.com/Catenscia/MxOps/tree/main/integration_tests/piggy_bank).
+This example uses the smart-contracts and `Scenes` from the MxOps integration test called [Piggy Bank](https://github.com/Catenscia/MxOps/tree/main/integration_tests/piggy_bank).
 
 Step by step, the example will show you how to:
 
@@ -188,6 +188,7 @@ We will give the deployed contract the id "abc-esdt-minter". (ABC will be the na
 type: ContractDeploy
 sender: owner
 wasm_path: "./contracts/esdt-minter/output/esdt-minter.wasm"
+abi_path: "./contracts/esdt-minter/output/esdt-minter.abi.json"
 contract_id: "abc-esdt-minter"
 gas_limit: 50000000
 arguments:
@@ -218,7 +219,7 @@ arguments:
 
 ##### Token Identifier
 
-We want to retrieve the token identifier that has been assigned to the newly issued token. For that we can use a query to access the view on the ESDTmapper from the contract.
+We want to retrieve the token identifier that has been assigned to the newly issued token. For that we can execute a query to access the view on the ESDTmapper from the contract.
 We will save this identifier as a string under the name `EsdtIdentifier`.
 
 ```yaml
@@ -226,10 +227,9 @@ type: ContractQuery
 contract: "abc-esdt-minter"
 endpoint: getEsdtIdentifier
 arguments: []
-expected_results:
-    - save_key: EsdtIdentifier
-    result_type: str
 print_results: true
+results_save_keys:
+  - EsdtIdentifier
 ```
 
 ##### Results
@@ -249,6 +249,7 @@ steps:
   - type: ContractDeploy
     sender: owner
     wasm_path: "./contracts/esdt-minter/output/esdt-minter.wasm"
+    wasm_path: "./contracts/esdt-minter/output/esdt-minter.abi.json"
     contract_id: "abc-esdt-minter"
     gas_limit: 50000000
     arguments:
@@ -273,10 +274,9 @@ steps:
     contract: "abc-esdt-minter"
     endpoint: getEsdtIdentifier
     arguments: []
-    expected_results:
-      - save_key: EsdtIdentifier
-        result_type: str
     print_results: true
+    results_save_keys:
+      - EsdtIdentifier
 ```
 
 #### PiggyBank Initialization
@@ -287,7 +287,7 @@ We create a new scene to deploy and initialize the `piggy-bank` contract: `mxops
 
 When we deploy the `piggy-bank` contract, we need to supply two arguments: the token identifier of the token that will be accepted by the contract and the address of the token issuer.
 
-We could supply theses values by hand but that would be a huge waste of time and very prone to errors. Instead we can use the {doc}`../user_documentation/values` system of `MxOps`:
+We could supply theses values by hand but that would be a huge waste of time and very prone to errors. Instead we can use the {doc}`../user_documentation/values` system of MxOps:
 
 We can access the address of the `esdt-minter` contract we just deployed by using its id: `%abc-esdt-minter.address`.
 As we also save the token identifier, we can access it too: `%abc-esdt-minter.EsdtIdentifier`.
@@ -296,6 +296,7 @@ As we also save the token identifier, we can access it too: `%abc-esdt-minter.Es
 type: ContractDeploy
 sender: owner
 wasm_path: "./contracts/piggy-bank/output/piggy-bank.wasm"
+wasm_path: "./contracts/piggy-bank/output/piggy-bank.abi.json"
 contract_id: "abc-piggy-bank"
 gas_limit: 80000000
 arguments:
@@ -338,6 +339,7 @@ steps:
   - type: ContractDeploy
     sender: owner
     wasm_path: "./contracts/piggy-bank/output/piggy-bank.wasm"
+    wasm_path: "./contracts/piggy-bank/output/piggy-bank.abi.json"
     contract_id: "abc-piggy-bank"
     gas_limit: 80000000
     arguments:
