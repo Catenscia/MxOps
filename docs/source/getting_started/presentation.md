@@ -167,6 +167,9 @@ steps:
     gas_limit: 12000000
 ```
 
+These examples illustrate very simple interactions but MxOps offers you much more: dynamic values, data save, data environment, direct reusability across different networks (mainnet, devnet, localnet...), interactions with any external tools such as databases, APIs ...
+It is a tool that is fully permissive and allows you to create highly customized experiences for your projects. With these teasers in mind, we let you continue your discovery of MxOps 😉
+
 ## User Flow
 
 MxOps works with simple yaml files called `Scenes` that look like the examples shown above. In these `Scenes` you will simply describe the different elements that will be used to interact with the blockchain.
