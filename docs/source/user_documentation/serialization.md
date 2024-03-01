@@ -1,6 +1,6 @@
 # Serialization
 
-When interacting with the blockchain, a very important aspect to keep in mind is the data format, in particular when dealing with smart-contracts and when the data has a complex representation such as custom structures with nested elements. To make things easy for the user, `MxOps` will use ABI definitions to:
+When interacting with the blockchain, a very important aspect to keep in mind is the data format, in particular when dealing with smart-contracts and when the data has a complex representation such as custom structures with nested elements. To make things easy for the user, MxOps will use ABI definitions to:
 - automatically convert the data provided by the user into the format expected by the blockchain
 - automatically parse the data received from the blockchain into a human usable format
 
@@ -29,7 +29,7 @@ Example:
 
 ## Bytes
 
-`bytes` are trickier as yaml don't support directly the bytes type. If your intention is to provided vector, list of elements, string or anything that should be converted to bytes, then you can write them in the original format and `MxOps` will convert them for you.
+`bytes` are trickier as yaml don't support directly the bytes type. If your intention is to provided vector, list of elements, string or anything that should be converted to bytes, then you can write them in the original format and MxOps will convert them for you.
 
 However, if you really need to pass pure bytes data, then you must use the following syntax: `bytes:<b64_encoded_data>`. Where `b64_encoded_data` is your bytes data in the b64 format.
 

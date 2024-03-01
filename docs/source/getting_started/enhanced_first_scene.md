@@ -4,7 +4,7 @@ In the section we will modify our initial `Scene` that was made to deploy and in
 
 ## Account Scenes
 
-The improvement here will take advantage of the fact that when launching `MxOps`, we can specify several `Scenes` to be executed sequentially or even entire folders with `Scenes`.
+The improvement here will take advantage of the fact that when launching MxOps, we can specify several `Scenes` to be executed sequentially or even entire folders with `Scenes`.
 
 We will define the accounts in separate files per network type. Let's start by creating folder `mxops_scenes` with a sub_folder `accounts`.
 
@@ -23,7 +23,7 @@ accounts:
 ```
 
 ```{note}
-To avoid harmful mistakes, we recommend (not only for `MxOps` but in general) dedicating wallets to a single network: each wallet should interact with one and only one network. This makes it harder to mix-up networks and losing funds.
+To avoid harmful mistakes, we recommend (not only for MxOps but in general) dedicating wallets to a single network: each wallet should interact with one and only one network. This makes it harder to mix-up networks and losing funds.
 ```
 
 For example if you also wanted to execute this tutorial on a localnet, you could create the following `Scene` `mxops_scenes/accounts/local.yaml`:
@@ -81,11 +81,11 @@ Four important changes:
 - The devnet and the localnet have been allowed to execute this `Scene`
 - We changed the `Scenario` name to "mxops_tutorial_enhanced_first_scene"
 - Instead of writing the ping amount and the pong wait time directly in the scene, we will pull them from environment variables.
-- we added the argument `abi_file` for the `ContractDeploy` `Step`: this will allow `MxOps` to automatically parse the arguments sent to an endpoint and to automatically decode the results of a query. 
+- we added the argument `abi_file` for the `ContractDeploy` `Step`: this will allow MxOps to automatically parse the arguments sent to an endpoint and to automatically decode the results of a query. 
 
 ## PingAmount and Query
 
-We can now write the final `Scenes` of this tutorial and for this occasion let's introduce a new component: The `ContractQuery` `Step`. This tells `Mxops` to query the view of a contract and optionally you can save the results for later use and/or print them.
+We can now write the final `Scenes` of this tutorial and for this occasion let's introduce a new component: The `ContractQuery` `Step`. This tells MxOps to query the view of a contract and optionally you can save the results for later use and/or print them.
 
 In our situation let's say that we forgot what is the ping amount we need to send to our contract. We could look at the deploy transaction and look at the supplied arguments but that is not very convenient. Instead we will query the ping amount directly from the deployed contract and save this value for when we want to ping.
 
@@ -99,7 +99,7 @@ Such `Step` would look like this:
       - PingAmount
 ```
 
-This tells `MxOps` to save (in the current active `Scenario`) the value from the query result and to attach it to the contract "egld-ping-pong" under the key name "PingAmount".
+This tells MxOps to save (in the current active `Scenario`) the value from the query result and to attach it to the contract "egld-ping-pong" under the key name "PingAmount".
 
 We can then reuse this value directly during the ping `Step`:
 
@@ -307,7 +307,7 @@ This program comes with ABSOLUTELY NO WARRANTY
 
 You can notice the extra query `Step` in the logs compared to the first version of this tutorial.
 
-If you wanted to execute all three `Scenes` in a single command call, we would either specify all of them, or just specify the folder of the `Scenes` and `MxOps` will execute them by alphabetical order.
+If you wanted to execute all three `Scenes` in a single command call, we would either specify all of them, or just specify the folder of the `Scenes` and MxOps will execute them by alphabetical order.
 
 ```bash
 mxops execute \

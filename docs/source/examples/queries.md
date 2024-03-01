@@ -1,11 +1,11 @@
 # Queries
 
-`MxOps` is a great way to directly query data from smart-contracts. it offer a very simple way to retrieve the data, decode it and finally display or save the results.
+MxOps is a great way to directly query data from smart-contracts. it offer a very simple way to retrieve the data, decode it and finally display or save the results.
 
 (example_raw_query)=
 ## Raw
 
-If you don't have the ABI file of the contract you are trying to interact with and you have no idea of the return type of the query, `MxOps` will simply print the raw data in several formats.
+If you don't have the ABI file of the contract you are trying to interact with and you have no idea of the return type of the query, MxOps will simply print the raw data in several formats.
 
 ```yaml
 allowed_networks:
@@ -37,13 +37,13 @@ Printed results:
 Here, three results have been returned and each of them is display under three forms: base64, hex and number. Raw queries are useful when you are not sure what type of raw data is returned by a contract and you need to investigate the outputs under its raw form.
 
 ```{note}
-Raw queries results cannot be saved as queries results by `MxOps` as their types is unknown. Once you have deciphered the outputs types, we recommend creating an ABI file or specifying the expected results types. Both methods are described further down.
+Raw queries results cannot be saved as queries results by MxOps as their types is unknown. Once you have deciphered the outputs types, we recommend creating an ABI file or specifying the expected results types. Both methods are described further down.
 ```
 
 (example_query_with_abi)=
 ## With ABI
 
-If you have an ABI file at your disposal, we recommend specifying it to `MxOps`, as it is the simplest way of interacting with a contract. If you don't have it, you can always execute [raw queries](example_raw_query), infer the types and write yourself an ABI file.
+If you have an ABI file at your disposal, we recommend specifying it to MxOps, as it is the simplest way of interacting with a contract. If you don't have it, you can always execute [raw queries](example_raw_query), infer the types and write yourself an ABI file.
 
 ```{note}
 If you need help to decrypt your data, write the ABI or setup your `Scenes`, don't hesitate to [contact us](get_help)

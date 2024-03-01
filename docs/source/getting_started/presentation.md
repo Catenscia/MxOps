@@ -10,11 +10,11 @@ MxOps aims to be useful in these situations:
 
 ## Quick Overview
 
-Here are some basic uses cases to illustrate how `MxOps` works and gives a very brief overview of what it looks like.
+Here are some basic uses cases to illustrate how MxOps works and gives a very brief overview of what it looks like.
 
 ### Token Mint
 
-Here, `MxOps` is used to issue a fungible token, assign mint and burn roles to the issuer and then mint some token.
+Here, MxOps is used to issue a fungible token, assign mint and burn roles to the issuer and then mint some token.
 
 ```yaml
 allowed_networks:
@@ -55,7 +55,7 @@ steps:
 
 ### Query with ABI
 
-Here `MxOps` is used to fetch information from the live `Onedex` contract on the [mainnet](https://explorer.multiversx.com/accounts/erd1qqqqqqqqqqqqqpgqqz6vp9y50ep867vnr296mqf3dduh6guvmvlsu3sujc). We specifically query the state of the pool n°10. This example relies on the ABI definition of the smart-contract.
+Here MxOps is used to fetch information from the live `Onedex` contract on the [mainnet](https://explorer.multiversx.com/accounts/erd1qqqqqqqqqqqqqpgqqz6vp9y50ep867vnr296mqf3dduh6guvmvlsu3sujc). We specifically query the state of the pool n°10. This example relies on the ABI definition of the smart-contract.
 
 ```yaml
 allowed_networks:
@@ -139,7 +139,7 @@ Printed results:
 
 ### Contract Call with Payments
 
-Here, `Mxops` is used to call a contract while sending tokens. The example shows what it would look like to add some liquidity to a pool.
+Here, MxOps is used to call a contract while sending tokens. The example shows what it would look like to add some liquidity to a pool.
 
 ```yaml
 allowed_networks:
@@ -259,6 +259,6 @@ Here is the above `Scene`, but this time with the MxOps syntax:
 
   ```
 
-A lot of information is written here, but you don't have to worry about the details for now. Just remember that `Scenes` are the core of `MxOps` and that it tells the program what to do.
+A lot of information is written here, but you don't have to worry about the details for now. Just remember that `Scenes` are the core of MxOps and that it tells the program what to do.
 
 You will be guided through the steps of writing a `Scene` in the next sections. But before that, you need to 🚧 {doc}`install MxOps! <installation>` 🚧

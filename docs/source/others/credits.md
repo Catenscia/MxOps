@@ -2,7 +2,7 @@
 
 ## External Packages
 
-`Mxops` relies heavily several packages from the MultiversX team. Make sure to give them some stars
+MxOps relies heavily several packages from the MultiversX team. Make sure to give them some stars
 on their github!
 
 - [mx-sdk-py-cli](https://github.com/multiversx/mx-sdk-py-cli)

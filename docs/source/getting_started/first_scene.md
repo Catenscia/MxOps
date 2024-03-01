@@ -8,7 +8,7 @@ Here is the plan:
 - Ping some eGLD to the contract
 - Pong the eGLD back
 
-Nothing fancy there, but this will teach you the strings of `MxOps` and you will get familiar with this tool 😄
+Nothing fancy there, but this will teach you the strings of MxOps and you will get familiar with this tool 😄
 
 ## Folder
 
@@ -101,8 +101,8 @@ accounts:
 
 ### Steps
 
-We want to perform three actions: one deployment and two contract calls. In `MxOps`, any action is called a `Step`.
-In other words, a `Scene` contains a series of `Steps` that tells what `MxOps` should do.
+We want to perform three actions: one deployment and two contract calls. In MxOps, any action is called a `Step`.
+In other words, a `Scene` contains a series of `Steps` that tells what MxOps should do.
 
 #### Step 1: Deployment
 
@@ -212,7 +212,7 @@ steps:
 
 ### Execution
 
-The only thing left to do for us is now to tell `MxOps` to execute our scene. We will give it the network, a name for a `Scenario` and the path to our `Scene` file.
+The only thing left to do for us is now to tell MxOps to execute our scene. We will give it the network, a name for a `Scenario` and the path to our `Scene` file.
 
 ```{note}
 🙋 "Wait wait, You still did not explained what is a `Scenario`?!?" 
@@ -229,7 +229,7 @@ mxops execute \
         first_scene.yaml
 ```
 
-You should now see `MxOps` slowly executing the steps, one after the other. It will also give you the explorer links of the transactions so you can inspect the results in more details if you want to.
+You should now see MxOps slowly executing the steps, one after the other. It will also give you the explorer links of the transactions so you can inspect the results in more details if you want to.
 
 Once finished, the output of your console should look like this:
 
@@ -248,9 +248,9 @@ tx hash: https://devnet-explorer.multiversx.com/transactions/c0b3a84c2a2b0c38d44
 ```
 
 ```{note}
-By default, `MxOps` checks that each transaction is successful. In case an unexpected error is encountered, the execution will be stopped.
+By default, MxOps checks that each transaction is successful. In case an unexpected error is encountered, the execution will be stopped.
 ```
 
-Congratulation you wrote and executed your first `Scene` with `MxOps` 🎉🎉🎉
+Congratulation you wrote and executed your first `Scene` with MxOps 🎉🎉🎉
 
 Next, we will **finally** explain the mystery behind `Scenarios`! See you {doc}`there<about_scenarios>` 😀
