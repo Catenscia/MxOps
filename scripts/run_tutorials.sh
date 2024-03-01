@@ -29,6 +29,11 @@ bash scripts/execute_deploy_scene.sh
 bash scripts/execute_ping_scene.sh
 bash scripts/execute_pong_scene.sh
 
+# launch queries tutorial
+cd ../queries
+bash scripts/execute_onedex_with_abi.sh
+bash scripts/execute_xexchange_without_abi.sh
+
 # remove env
 conda deactivate
 conda env remove -n $ENV_NAME -y
