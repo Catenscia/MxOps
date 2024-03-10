@@ -28,6 +28,7 @@ https
 monotypes
 Monotypes
 os
+pipx
 png
 pre
 PyPI
