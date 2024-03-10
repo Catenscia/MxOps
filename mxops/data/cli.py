@@ -3,6 +3,7 @@ author: Etienne Wallet
 
 This module contains the cli for the data subpackage
 """
+
 from argparse import (
     _SubParsersAction,
     ArgumentError,
@@ -17,7 +18,11 @@ from importlib_resources import files
 
 from mxops.data import path
 from mxops.config.config import Config
-from mxops.data.execution_data import ScenarioData, delete_scenario_data
+from mxops.data.execution_data import (
+    ScenarioData,
+    clone_scenario_data,
+    delete_scenario_data,
+)
 from mxops.data.utils import json_dumps
 from mxops.enums import parse_network_enum
 from mxops.utils.logger import get_logger
@@ -144,7 +149,37 @@ def add_subparser(subparsers_action: _SubParsersAction):
         "-a",
         "--action",
         type=valid_checkpoint_action,
-        help="Name of the checkpoint of the scenario to create/load/delete",
+        help="Name of the checkpoint action to perform",
+    )
+
+    # add a clone command
+    clone_parser = data_subparsers_actions.add_parser("clone")
+    clone_parser.add_argument(
+        "-n",
+        "--network",
+        help="Name of the network to use",
+        type=parse_network_enum,
+        required=True,
+    )
+
+    clone_parser.add_argument(
+        "-s", "--source-scenario", help="Name of the source scenario"
+    )
+
+    clone_parser.add_argument(
+        "-d", "--destination-scenario", help="Name of the destination scenario"
+    )
+
+    clone_parser.add_argument(
+        "-c",
+        "--source-checkpoint",
+        required=False,
+        help="Name of the checkpoint of the source scenario",
+        default="",
+    )
+
+    clone_parser.add_argument(
+        "-y", "--yes", action="store_true", help="Skip confirmation step"
     )
 
 
@@ -217,5 +252,12 @@ def execute_cli(args: Namespace):  # pylint: disable=R0912
             LOGGER.info(f"Checkpoint {args.checkpoint} deleted")
         else:
             raise ArgumentError(None, f"Unkown checkpoint action: {args.action}")
+    elif sub_command == "clone":
+        clone_scenario_data(
+            args.source_scenario,
+            args.destination_scenario,
+            args.source_checkpoint,
+            not args.yes,
+        )
     else:
         raise ArgumentError(None, f"Unkown command: {args.command}")

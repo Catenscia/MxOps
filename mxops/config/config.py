@@ -40,9 +40,7 @@ class _Config:
             default_config = files("mxops.resources").joinpath("default_config.ini")
             self.__config.read_string(default_config.read_text())
 
-        self.__network_config = ProxyNetworkProvider(
-            self.get("PROXY")
-        ).get_network_config()
+        self.__network_config: Optional[NetworkConfig] = None
 
     def get_network(self) -> NetworkEnum:
         """
@@ -60,6 +58,10 @@ class _Config:
         :return: network config
         :rtype: NetworkConfig
         """
+        if self.__network_config is None:
+            self.__network_config = ProxyNetworkProvider(
+                self.get("PROXY")
+            ).get_network_config()
         return self.__network_config
 
     def get(self, option: str) -> str:

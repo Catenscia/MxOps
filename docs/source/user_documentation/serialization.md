@@ -65,14 +65,8 @@ Addresses are passed in their bech32 form.
   contract: my_contract
   endpoint: my_query_endpoint
   arguments:
-    - [0, 1, 2, 3]  # List<u8>
-    - - 0           # List<u8>
-      - 1
-      - 2
-      - 3
-    - [WEGLD-abcde, MEX-abcdef]  # Tuple<TokenIdentifier, TokenIdentifier>
-    - - WEGLD-abcde              # Tuple<TokenIdentifier, TokenIdentifier>
-      - MEX-abcdef
+    - [0, 1, 2, 3]                 # List<u8>
+    - [WEGLD-abcdef, MEX-abcdef]   # Tuple<TokenIdentifier, TokenIdentifier>
 ```
 
 ## Structs
