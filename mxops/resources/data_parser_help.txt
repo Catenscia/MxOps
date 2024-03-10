@@ -6,25 +6,35 @@ Available sub-commands:
 
     get         ->  Print recorded contract data for the current env
                     Required:
-                        -n, --network           name of the network to consider (mainnet, devnet, testnet, localnet)
+                        -n, --network               name of the network to consider (mainnet, devnet, testnet, localnet)
                     Options:
-                        -p, --path              display the root path for the user data
-                        -l, --list              print all the scenarios names
-                        -s, --scenario          print the data saved for a scenario
-                        -c, --checkpoint        name of the checkpoint to use for the scenario
+                        -p, --path                  display the root path for the user data
+                        -l, --list                  print all the scenarios names
+                        -s, --scenario              print the data saved for a scenario
+                        -c, --checkpoint            name of the checkpoint to use for the scenario
 
     delete      ->  Delete locally saved data for a specified network
                     Required:
-                        -n, --network           name of the network to consider (mainnet, devnet, testnet, localnet)
+                        -n, --network               name of the network to consider (mainnet, devnet, testnet, localnet)
                     Options:
-                        -s, --scenario          name of the scenario to delete
-                        -c, --checkpoint        name of the checkpoint to use for the scenario
-                        -a, --all               delete all scenarios for the specified network
-                        -y, --yes               skip confirmation step
+                        -s, --scenario              name of the scenario to delete
+                        -c, --checkpoint            name of the checkpoint to use for the scenario
+                        -a, --all                   delete all scenarios for the specified network
+                        -y, --yes                   skip confirmation step
 
     checkpoint  ->  Delete locally saved data for a specified network
                     Required:
-                        -n, --network           name of the network to consider (mainnet, devnet, testnet, localnet)
-                        -s, --scenario          name of the scenario to delete
-                        -c, --checkpoint        name of the checkpoint to use for the scenario
-                        -a, --action            one of ["create", "load", "delete"]
+                        -n, --network               name of the network to consider (mainnet, devnet, testnet, localnet)
+                        -s, --scenario              name of the scenario to delete
+                        -c, --checkpoint            name of the checkpoint to use for the scenario
+                        -a, --action                one of ["create", "load", "delete"]
+
+    clone       -> Copy the content of a scenario to another (complete overwrite)
+                    Required:
+                        -n, --network               name of the network to consider (mainnet, devnet, testnet, localnet)
+                        -s, --source-scenario       name of the scenario to delete
+                        -d, --destination-scenario  name of the scenario to delete
+                    Options:
+                        -c, --source-checkpoint     name of the checkpoint to use for the scenario
+                        -y, --yes                   skip confirmation step
+
