@@ -12,6 +12,7 @@ from mxops.data.execution_data import (
 )
 from mxops.data.path import initialize_data_folder
 from mxops.enums import NetworkEnum
+from mxops.execution.account import AccountsManager
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -70,3 +71,14 @@ def scenario_data():
 
     yield _scenario_data
     delete_scenario_data("pytest_scenario", ask_confirmation=False)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def accounts_manager():
+    accounts_manager = AccountsManager()
+    accounts_manager.load_account(
+        "test_user_A", pem_path="./tests/data/test_user_A.pem"
+    )
+    accounts_manager.load_account(
+        "test_user_B", pem_path="./tests/data/test_user_B.pem"
+    )
