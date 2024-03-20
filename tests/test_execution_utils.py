@@ -74,7 +74,7 @@ def test_scenario_saved_data(scenario_data: _ScenarioData):
 
 def test_value_from_config():
     # Given
-    expected_value = "local-testnet"
+    expected_value = "localnet"
     value_name = "CHAIN"
 
     # When
