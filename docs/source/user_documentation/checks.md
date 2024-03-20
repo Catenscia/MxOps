@@ -76,17 +76,17 @@ checks:
     condition: exact
     include_gas_refund: false # optional, false by default
     expected_transfers:
-      - sender: "[alice]"
-        receiver: "%super-swap-sc.address"
+      - sender: "alice"
+        receiver: "super-swap-sc"
         token_identifier: ALICE-123456
         amount: 58411548
-      - sender: "[alice]"
-        receiver: "%super-swap-sc.address"
+      - sender: "alice"
+        receiver: "super-swap-sc"
         token_identifier: XMEX-e45d41
         amount: 848491898
         nonce: 721 # can write 721 as integer or "0d21" for its hex representation
-      - sender: "%super-swap-sc.address"
-        receiver: "[alice]"
+      - sender: "super-swap-sc"
+        receiver: "alice"
         token_identifier: EGLD
         amount: 18541
 ```

@@ -131,8 +131,8 @@ MxOps checks by default that a transaction is successful. In our case, we would 
       - type: Transfers
         condition: exact
         expected_transfers:
-          - sender: "[owner]"
-            receiver: "%egld-ping-pong.address"
+          - sender: "owner"
+            receiver: "egld-ping-pong"
             token_identifier: EGLD
             amount: "%egld-ping-pong.PingAmount"
 ```
