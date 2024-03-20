@@ -4,7 +4,7 @@
     "shouldHaveRedis": true,
     "shouldHaveRabbitMQ": true,
     "shouldHaveApi": true,
+    "shouldHaveXExplorer": true,
     "numberOfShards": 2,
-    "mxOpsScenesPath": "./integration_tests/setup_scenes",
     "initialEGLDAddress": "erd1yy995sn9drrlj7qvzgpcyfgexl7kh9u33l3zqp5np20vw5p2jmwq7s4ark"
 }
