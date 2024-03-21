@@ -14,21 +14,83 @@ from mxops.execution.msc import ExpectedTransfer, OnChainTransfer
 def test_transfers_equality():
     # Given
     expected_transfers = [
-        ExpectedTransfer("A", "B", "tokenA", "15"),
-        ExpectedTransfer("A", "B", "tokenA", "18"),
-        ExpectedTransfer("C", "B", "tokenA", "15"),
-        ExpectedTransfer("A", "D", "tokenA", 15),
-        ExpectedTransfer("A", "D", "MyNFT", 1, nonce=3661),
-        ExpectedTransfer("A", "D", "MySFT", 15848, nonce=210),
+        ExpectedTransfer(
+            "[test_user_A]",
+            "my_test_contract",
+            "tokenA",
+            "15",
+        ),
+        ExpectedTransfer(
+            "erd1yy995sn9drrlj7qvzgpcyfgexl7kh9u33l3zqp5np20vw5p2jmwq7s4ark",
+            "%my_test_contract.address",
+            "tokenA",
+            "18",
+        ),
+        ExpectedTransfer(
+            "my_test_contract",
+            "test_user_A",
+            "tokenA",
+            "15",
+        ),
+        ExpectedTransfer(
+            "%my_test_contract.address",
+            "[test_user_B]",
+            "tokenA",
+            15,
+        ),
+        ExpectedTransfer(
+            "test_user_A",
+            "erd1czt3wrd9qfsgqyfrgk9p48ug38s7qnlzqvvaquqcaz07wlk0dwnspwn7x0",
+            "MyNFT",
+            1,
+            nonce=3661,
+        ),
+        ExpectedTransfer(
+            "erd1yy995sn9drrlj7qvzgpcyfgexl7kh9u33l3zqp5np20vw5p2jmwq7s4ark",
+            "erd1czt3wrd9qfsgqyfrgk9p48ug38s7qnlzqvvaquqcaz07wlk0dwnspwn7x0",
+            "MySFT",
+            15848,
+            nonce=210,
+        ),
     ]
 
     onchain_transfers = [
-        OnChainTransfer("A", "B", "tokenA", "15"),
-        OnChainTransfer("A", "B", "tokenA", "18"),
-        OnChainTransfer("C", "B", "tokenA", "15"),
-        OnChainTransfer("A", "D", "tokenA", "15"),
-        OnChainTransfer("A", "D", "MyNFT-0e4d", "1"),
-        OnChainTransfer("A", "D", "MySFT-d2", "15848"),
+        OnChainTransfer(
+            "erd1jzw34pun678ktsstunk0dm0z2uh7m0ld9trw507ksnzt0wxalwwsv3fpa2",
+            "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t",
+            "tokenA",
+            "15",
+        ),
+        OnChainTransfer(
+            "erd1yy995sn9drrlj7qvzgpcyfgexl7kh9u33l3zqp5np20vw5p2jmwq7s4ark",
+            "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t",
+            "tokenA",
+            "18",
+        ),
+        OnChainTransfer(
+            "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t",
+            "erd1jzw34pun678ktsstunk0dm0z2uh7m0ld9trw507ksnzt0wxalwwsv3fpa2",
+            "tokenA",
+            "15",
+        ),
+        OnChainTransfer(
+            "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t",
+            "erd1y3296u7m2v5653pddey3p7l5zacqmsgqc7vsu3w74p9jm2qp3tqqz950yl",
+            "tokenA",
+            "15",
+        ),
+        OnChainTransfer(
+            "erd1jzw34pun678ktsstunk0dm0z2uh7m0ld9trw507ksnzt0wxalwwsv3fpa2",
+            "erd1czt3wrd9qfsgqyfrgk9p48ug38s7qnlzqvvaquqcaz07wlk0dwnspwn7x0",
+            "MyNFT-0e4d",
+            "1",
+        ),
+        OnChainTransfer(
+            "erd1yy995sn9drrlj7qvzgpcyfgexl7kh9u33l3zqp5np20vw5p2jmwq7s4ark",
+            "erd1czt3wrd9qfsgqyfrgk9p48ug38s7qnlzqvvaquqcaz07wlk0dwnspwn7x0",
+            "MySFT-d2",
+            "15848",
+        ),
     ]
 
     # When
