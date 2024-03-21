@@ -135,7 +135,7 @@
         "function": "registerMetaESDT",
         "initiallyPaidFee": "837500000000000",
         "fee": "737500000000000",
-        "chainID": "local-testnet",
+        "chainID": "localnet",
         "version": 1,
         "options": 0
     }
