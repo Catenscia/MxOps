@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.2.0 - 2024-04-16
+
 ## Added
 
 - `Scenario` clone command
