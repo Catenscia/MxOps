@@ -3,6 +3,7 @@ author: Etienne Wallet
 
 This module contains the functions to load, write and update scenario data
 """
+
 from __future__ import annotations
 from copy import deepcopy
 from dataclasses import asdict, dataclass, field, is_dataclass
@@ -15,7 +16,10 @@ from typing import Any, Dict, List, Optional
 from mxpyserializer.abi_serializer import AbiSerializer
 
 from mxops.config.config import Config
-from mxops.data.path import get_all_checkpoints_names, get_scenario_file_path
+from mxops.data.path import (
+    get_all_checkpoints_names,
+    get_scenario_file_path,
+)
 from mxops import enums as mxops_enums
 from mxops import errors
 from mxops.data.utils import json_dump, json_load
@@ -439,8 +443,6 @@ class _ScenarioData(SavedValuesData):
         Search within tokens data, contracts data and scenario saved values,
         the value saved under the provided key
 
-        :param root_name: contract id or token name that hosts the value
-        :type root_name: str
         :param value_key: key under which the value is savedd
         :type value_key: str
         :return: value saved
@@ -640,7 +642,12 @@ class ScenarioData:  # pylint: disable=too-few-public-methods
         description = f"scenario {scenario_name}"
         if checkpoint_name != "":
             description += f" checkpoint {checkpoint_name}"
-        LOGGER.info(f"{checkpoint_name} loaded for network {network.value}")
+        if cls._instance.name != scenario_name:
+            raise RuntimeError(
+                f"Loaded scenario name {cls._instance.name} is different from"
+                f" the saved name {scenario_name}"
+            )
+        LOGGER.info(f"{description} loaded for network {network.value}")
 
     @classmethod
     def create_scenario(cls, scenario_name: str):
@@ -726,3 +733,48 @@ def delete_scenario_data(
             LOGGER.info(f"The data of the {description} has been deleted")
         except FileNotFoundError:
             LOGGER.warning(f"The {description} does not have any data recorded")
+
+
+def clone_scenario_data(
+    source_scenario_name: str,
+    destination_scenario_name: str,
+    source_checkpoint_name: str = "",
+    ask_confirmation: bool = True,
+):
+    """
+    Delete locally save data for a given scenario
+
+    :param source_scenario_name: name of the scenario to copy
+    :type source_scenario_name: str
+    :param destination_scenario_name: name of the scenario that will be a copy
+    :type destination_scenario_name: str
+    :param source_checkpoint_name: checkpoint's name of the source scenario.
+    :type source_checkpoint_name: str, defaults to empty string
+    :param ask_confirmation: if a deletion confirmation should be asked,
+                             defaults to True
+    :type ask_confirmation: bool
+    """
+    source_path = get_scenario_file_path(source_scenario_name, source_checkpoint_name)
+    ScenarioData.load_scenario(source_scenario_name, source_checkpoint_name)
+    scenario = ScenarioData.get()
+    scenario.name = destination_scenario_name
+    if ask_confirmation:
+        source_description = f"scenario {source_scenario_name}"
+        if source_checkpoint_name != "":
+            source_description += f" checkpoint {source_checkpoint_name}"
+        destination_description = f"scenario {destination_scenario_name}"
+        message = (
+            f"Confirm the copy of the {source_description} located at "
+            f"{source_path.as_posix()} to overwrite any data for "
+            f"{destination_description}. (y/n)"
+        )
+        if input(message).lower() not in ("y", "yes"):
+            print("User aborted copy")
+            return
+
+    delete_scenario_data(destination_scenario_name, "", False)
+    scenario.save()
+    LOGGER.info(
+        f"The data of the {source_description} has been copied to "
+        f"{destination_description}"
+    )

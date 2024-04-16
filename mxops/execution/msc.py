@@ -3,6 +3,7 @@ author: Etienne Wallet
 
 Various elements for the execution sub package
 """
+
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Optional, Union
@@ -87,17 +88,19 @@ class ExpectedTransfer:
         :return: instance dynamically evaluated
         :rtype: ExpectedTransfer
         """
-        evaluations = {}
-        attributes_to_extract = ["sender", "receiver", "token_identifier", "amount"]
-        for attribute_name in attributes_to_extract:
-            extracted_value = utils.retrieve_value_from_string(
-                str(getattr(self, attribute_name))
-            )
-            evaluations[attribute_name] = extracted_value
+        sender = utils.get_address_instance(self.sender).bech32()
+        receiver = utils.get_address_instance(self.receiver).bech32()
+        token_identifier = utils.retrieve_value_from_string(str(self.token_identifier))
+        amount = utils.retrieve_value_from_string(str(self.amount))
         hex_nonce = self.get_hex_nonce()
         if hex_nonce is not None:
-            evaluations["token_identifier"] += "-" + hex_nonce
-        return ExpectedTransfer(**evaluations)
+            token_identifier += "-" + hex_nonce
+        return ExpectedTransfer(
+            sender=sender,
+            receiver=receiver,
+            token_identifier=token_identifier,
+            amount=amount,
+        )
 
     def __eq__(self, other: Any) -> bool:
         evaluated_self = self.get_dynamic_evaluated()

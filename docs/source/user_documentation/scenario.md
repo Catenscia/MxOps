@@ -67,6 +67,18 @@ To delete all the data from a `Scenario`
 mxops data delete -n <network> -s <scenario>
 ```
 
+### Clone Scenario
+
+To clone the data of a `Scenario` to another:
+
+```bash
+mxops data clone -n <network> -s <source_scenario> -d <destination_scenario>
+```
+
+```{warning}
+All the data of the destination `Scenario`, including its checkpoints, will be deleted.
+```
+
 ### Checkpoints
 
 Sometimes you need to deploy numerous tokens and external contracts to setup your testing

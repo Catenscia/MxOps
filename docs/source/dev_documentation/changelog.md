@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+## 2.2.0 - 2024-04-16
+
+## Added
+
+- `Scenario` clone command
+- Allowed `TransfersCheck` to dynamically evaluate sender and receiver by name
+
+## Fixed
+
+- Updated the name 'local-testnet' to 'localnet'
+
 ## 2.1.0 - 2024-03-01
 
 ## Added
