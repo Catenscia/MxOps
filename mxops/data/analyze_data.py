@@ -3,6 +3,7 @@ author: Etienne Wallet
 
 This module contains the functions to load, write and update transaction data
 """
+
 from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict

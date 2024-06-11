@@ -3,6 +3,7 @@ author: Etienne Wallet
 
 This modules contains the class and functions to manage multiversX accounts
 """
+
 from typing import Optional
 
 from multiversx_sdk_cli.accounts import Account, LedgerAccount

@@ -3,6 +3,7 @@ author: Etienne Wallet
 
 This module contains utils various functions
 """
+
 import logging
 import os
 

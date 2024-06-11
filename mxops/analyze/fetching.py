@@ -3,6 +3,7 @@ author: Etienne Wallet
 
 This module handles the data fetching from the network
 """
+
 from datetime import datetime, timezone
 from tqdm import tqdm
 

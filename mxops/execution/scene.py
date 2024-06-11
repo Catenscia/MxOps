@@ -3,6 +3,7 @@ author: Etienne Wallet
 
 This module contains the functions to execute a scene in a scenario
 """
+
 from dataclasses import dataclass, field
 import os
 from pathlib import Path

@@ -3,6 +3,7 @@ author: Etienne Wallet
 
 This module contains the function to manage ESDT
 """
+
 from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
 
 from mxops import errors

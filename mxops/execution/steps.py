@@ -1022,13 +1022,15 @@ class ManageFungibleTokenRolesStep(ManageTokenRolesStep):
                 add_role_local_burn="ESDTRoleLocalMint" in self.roles,
                 add_transfer_role="ESDTTransferRole" in self.roles,
             )
-        return tx_factory.create_transaction_for_unsetting_special_role_on_fungible_token(  # noqa: E501
-            sender=sender,
-            user=target,
-            token_identifier=token_identifier,
-            remove_role_local_mint="ESDTRoleLocalBurn" in self.roles,
-            remove_role_local_burn="ESDTRoleLocalMint" in self.roles,
-            remove_transfer_role="ESDTTransferRole" in self.roles,
+        return (
+            tx_factory.create_transaction_for_unsetting_special_role_on_fungible_token(  # noqa: E501
+                sender=sender,
+                user=target,
+                token_identifier=token_identifier,
+                remove_role_local_mint="ESDTRoleLocalBurn" in self.roles,
+                remove_role_local_burn="ESDTRoleLocalMint" in self.roles,
+                remove_transfer_role="ESDTTransferRole" in self.roles,
+            )
         )
 
 

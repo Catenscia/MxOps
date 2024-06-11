@@ -3,6 +3,7 @@ author: Etienne Wallet
 
 This module contains the cli for the config subpackage
 """
+
 from argparse import _SubParsersAction, Namespace, RawDescriptionHelpFormatter
 from mxops.data.utils import json_dumps
 

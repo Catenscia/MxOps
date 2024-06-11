@@ -17,7 +17,6 @@ from multiversx_sdk_core.transaction_factories import TokenManagementTransaction
 
 
 class MyTokenManagementTransactionsFactory(TokenManagementTransactionsFactory):
-
     def create_transaction_for_setting_special_role_on_fungible_token(
         self,
         sender: IAddress,
