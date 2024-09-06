@@ -8,10 +8,10 @@ authors = ["Etienne Wallet"]
 path = ".."
 
 [dependencies.multiversx-sc]
-version = "0.46.1"
+version = "0.53.0"
 
-[dependencies.multiversx-sc-meta]
-version = "0.46.1"
+[dependencies.multiversx-sc-meta-lib]
+version = "0.53.0"
 
 [dependencies.multiversx-sc-wasm-adapter]
-version = "0.46.1"
+version = "0.53.0"
