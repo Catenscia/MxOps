@@ -1,6 +1,6 @@
 matrix:
 
-- name: Documentation
+- name: markdown documentation
   aspell:
     lang: en
     d: en_US
@@ -15,19 +15,14 @@ matrix:
       - docs/dictionary/custom_wordlist.txt
     output: build/dictionary/python.dic
   pipeline:
-    - pyspelling.filters.context:
-        context_visible_first: true
-        delimiters:
-        - open: '(?s)^(?P<open> *`{3,})yaml$'
-          close: '^(?P=open)$'
-        - open: '(?s)^(?P<open> *`{3,})bash$'
-          close: '^(?P=open)$'
-        - open: '(?P<open>:+)'
-          close: '(?P=open)'
-        - open: '(?P<open>`+)'
-          close: '(?P=open)'
     - pyspelling.filters.markdown:
         markdown_extensions:
           - markdown.extensions.extra
     - pyspelling.filters.html:
         comments: false
+        attributes:
+        - title
+        - alt
+        ignores:
+        - code
+        - pre
