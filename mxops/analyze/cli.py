@@ -3,6 +3,7 @@ author: Etienne Wallet
 
 This module contains the cli for the analyze subpackage
 """
+
 from argparse import (
     _SubParsersAction,
     ArgumentError,

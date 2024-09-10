@@ -3,6 +3,7 @@ author: Etienne Wallet
 
 This module contains utils various functions
 """
+
 from configparser import NoOptionError
 import hashlib
 from pathlib import Path

@@ -5,15 +5,12 @@
 ////////////////////////////////////////////////////
 
 // Init:                                 1
-// Endpoints:                            6
+// Upgrade:                              1
+// Endpoints:                            5
 // Async Callback (empty):               1
 // Total number of exported functions:   8
 
 #![no_std]
-
-// Configuration that works with rustc < 1.73.0.
-// TODO: Recommended rustc version: 1.73.0 or newer.
-#![feature(lang_items)]
 
 multiversx_sc_wasm_adapter::allocator!();
 multiversx_sc_wasm_adapter::panic_handler!();
@@ -22,10 +19,10 @@ multiversx_sc_wasm_adapter::endpoints! {
     piggy_bank
     (
         init => init
+        upgrade => upgrade
         getTokenIdentifier => piggy_token_identifier
         getEsdtMinnterAddress => esdt_minter_address
         getAddressAmount => address_amount
-        upgrade => upgrade
         deposit => deposit
         withdraw => withdraw
     )

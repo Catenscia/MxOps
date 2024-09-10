@@ -3,6 +3,7 @@ author: Etienne Wallet
 
 Entry point for the MxOps package.
 """
+
 from argparse import Namespace, RawDescriptionHelpFormatter
 import argparse
 from importlib import metadata

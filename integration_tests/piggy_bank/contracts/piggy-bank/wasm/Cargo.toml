@@ -21,11 +21,14 @@ debug = false
 panic = "abort"
 overflow-checks = false
 
+[profile.dev]
+panic = "abort"
+
 [dependencies.piggy-bank]
 path = ".."
 
 [dependencies.multiversx-sc-wasm-adapter]
-version = "0.46.1"
+version = "0.53.0"
 
 [workspace]
 members = ["."]

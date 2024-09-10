@@ -3,6 +3,7 @@ author: Etienne Wallet
 
 This module contains the classes used to check on-chain transactions
 """
+
 from dataclasses import dataclass
 import sys
 from typing import Dict, List, Literal

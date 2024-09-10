@@ -3,6 +3,7 @@ author: Etienne Wallet
 
 This module contains the functions to pass transactions to the proxy and to monitor them
 """
+
 import time
 from typing import List, Union
 
@@ -31,7 +32,7 @@ def send(tx: Union[CliTransaction, Transaction]) -> str:
 
 
 def send_and_wait_for_result(
-    tx: Union[CliTransaction, Transaction]
+    tx: Union[CliTransaction, Transaction],
 ) -> TransactionOnNetwork:
     """
     Transmit a transaction to a proxy constructed with the config.

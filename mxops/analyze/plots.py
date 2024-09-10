@@ -3,6 +3,7 @@ author: Etienne Wallet
 
 This module handlesthe plots to create and save
 """
+
 import sys
 import textwrap
 from typing import Dict, List

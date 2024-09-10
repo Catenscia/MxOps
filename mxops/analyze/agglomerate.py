@@ -3,6 +3,7 @@ author: Etienne Wallet
 
 This module format transactions data in a usable manner for the plots
 """
+
 from datetime import datetime, timezone
 from typing import Dict
 

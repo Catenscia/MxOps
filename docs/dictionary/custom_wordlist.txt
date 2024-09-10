@@ -37,6 +37,7 @@ Readthedocs
 yaml
 svg
 str
+upgradeable
 utils
 Flaticon
 README

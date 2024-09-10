@@ -3,6 +3,7 @@ author: Etienne Wallet
 
 This module contains some utils functions and classes
 """
+
 import json
 import base64
 from pathlib import Path

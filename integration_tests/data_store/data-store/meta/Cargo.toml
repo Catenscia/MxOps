@@ -3,8 +3,9 @@ name = "data-store-meta"
 version = "0.0.0"
 edition = "2021"
 publish = false
+
 [dependencies.data-store]
 path = ".."
 
-[dependencies.multiversx-sc-meta]
-version = "0.46.1"
+[dependencies.multiversx-sc-meta-lib]
+version = "0.53.0"

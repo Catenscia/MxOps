@@ -3,6 +3,7 @@ author: Etienne Wallet
 
 This module contains the cli for the execution subpackage
 """
+
 from argparse import _SubParsersAction, Namespace
 import os
 from pathlib import Path
