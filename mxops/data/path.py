@@ -6,6 +6,7 @@ This module (input/output) contains the functions to load and write contracts da
 
 import os
 from pathlib import Path
+import platform
 from typing import List
 
 from appdirs import AppDirs
@@ -48,6 +49,8 @@ def get_data_path() -> Path:
     :return: path of the folder to use for data saving
     :rtype: Path
     """
+    if platform.system() == "Linux":  # handle snap issues
+        os.environ["XDG_DATA_HOME"] = os.path.expanduser("~/.local/share")
     config = Config.get_config()
     data_path_config = config.get("DATA_PATH")
     if data_path_config not in ("None", ""):
