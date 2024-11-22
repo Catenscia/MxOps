@@ -5,6 +5,7 @@ tutorials/**/contract
 logs
 testnet/*
 temp/*
+.mxops
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
