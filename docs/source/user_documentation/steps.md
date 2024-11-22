@@ -611,7 +611,7 @@ steps:
     endpoint: getSftAmount
     arguments:
       - TokenIdentifier4
-      - $LOOP_VAR # nonce
+      - "%LOOP_VAR" # nonce
     results_types:
       - type: BigUint
     results_save_keys:
@@ -624,7 +624,7 @@ steps:
     gas_limit: 60000000
     arguments:
       - TokenIdentifier4
-      - $LOOP_VAR # nonce
+      - "%LOOP_VAR" # nonce
       - "%my_first_sc.TokenIdentifier4Amount." # result of the query
 ```
 
