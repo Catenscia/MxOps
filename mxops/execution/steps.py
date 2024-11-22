@@ -30,13 +30,13 @@ from multiversx_sdk_core.transaction_factories import (
     SmartContractTransactionsFactory,
     TransferTransactionsFactory,
 )
-from multiversx_sdk_network_providers import ProxyNetworkProvider
 from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
 from multiversx_sdk_network_providers.contract_query_response import (
     ContractQueryResponse,
 )
 from mxpyserializer.abi_serializer import AbiSerializer
 
+from mxops.common.providers import MyProxyNetworkProvider
 from mxops.config.config import Config
 from mxops.data.execution_data import InternalContractData, ScenarioData, TokenData
 from mxops.data.utils import json_dumps
@@ -603,7 +603,6 @@ class ContractQueryStep(Step):
         Execute a query and optionally save the result
         """
         LOGGER.info(f"Query on {self.endpoint} for {self.contract}")
-        config = Config.get_config()
         scenario_data = ScenarioData.get()
         retrieved_arguments = utils.retrieve_value_from_any(self.arguments)
         try:
@@ -624,7 +623,7 @@ class ContractQueryStep(Step):
             call_arguments=query_args,
         )
         query = builder.build()
-        proxy = ProxyNetworkProvider(config.get("PROXY"))
+        proxy = MyProxyNetworkProvider()
 
         query_failed = True
         n_attempts = 0

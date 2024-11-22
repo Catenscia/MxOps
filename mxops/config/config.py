@@ -69,6 +69,8 @@ class _Config:
         :rtype: NetworkConfig
         """
         if self.__network_config is None:
+            # cannot use MyProxyNetworkProvider
+            # due to circular dependencies
             self.__network_config = ProxyNetworkProvider(
                 self.get("PROXY")
             ).get_network_config()

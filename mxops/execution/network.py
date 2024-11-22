@@ -26,8 +26,7 @@ def send(tx: Union[CliTransaction, Transaction]) -> str:
     :return: hash of the transaction
     :rtype: str
     """
-    config = Config.get_config()
-    proxy = ProxyNetworkProvider(config.get("PROXY"))
+    proxy = MyProxyNetworkProvider()
     return proxy.send_transaction(tx)
 
 
@@ -44,7 +43,7 @@ def send_and_wait_for_result(
     :rtype: TransactionOnNetwork
     """
     config = Config.get_config()
-    proxy = ProxyNetworkProvider(config.get("PROXY"))
+    proxy = MyProxyNetworkProvider()
 
     timeout = int(config.get("TX_TIMEOUT"))
     refresh_period = int(config.get("TX_REFRESH_PERIOD"))
