@@ -1,13 +1,9 @@
 #!/bin/bash
 set -e
 
-if [ "$1" == "localnet" ]; then
-  echo "Executing integration test on the localnet"
-elif [ "$1" == "devnet" ]; then
-  echo "Executing integration test on the devnet"
-else
-  echo "Invalid netork argument"
-  exit 1
+if ! [[ " ${1} " =~ " localnet "|" devnet "|" chain-simulator " ]]; then
+    echo "integration tests not available on ${1}"
+    exit 0
 fi
 
 # Execute the integration tests

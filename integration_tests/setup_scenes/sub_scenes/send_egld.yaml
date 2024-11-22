@@ -1,6 +1,7 @@
 allowed_networks:
   - localnet
   - devnet
+  - chain-simulator
 
 allowed_scenario:
   - "integration_test.*"
@@ -10,4 +11,3 @@ steps:
     sender: emmanuel
     receiver: "%RECEIVER"
     amount: 1000000000000000000  # 1 eGLD
-    checks: []

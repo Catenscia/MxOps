@@ -1,6 +1,7 @@
 allowed_networks:
   - localnet
   - devnet
+  - chain-simulator
 
 allowed_scenario:
   - "integration_test.*"
