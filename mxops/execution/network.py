@@ -9,11 +9,12 @@ from typing import List, Union
 
 from multiversx_sdk_cli.transactions import Transaction as CliTransaction
 from multiversx_sdk_core import Address, Transaction
-from multiversx_sdk_network_providers import ProxyNetworkProvider
 from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
 
+from mxops.common.providers import MyProxyNetworkProvider
 from mxops.config.config import Config
 from mxops import errors
+from mxops.enums import NetworkEnum
 from mxops.execution.msc import OnChainTransfer
 
 
@@ -46,10 +47,12 @@ def send_and_wait_for_result(
     proxy = MyProxyNetworkProvider()
 
     timeout = int(config.get("TX_TIMEOUT"))
-    refresh_period = int(config.get("TX_REFRESH_PERIOD"))
+    refresh_period = float(config.get("TX_REFRESH_PERIOD"))
 
     tx_hash = proxy.send_transaction(tx)
     num_periods_to_wait = int(timeout / refresh_period)
+    if config.get_network() == NetworkEnum.CHAIN_SIMULATOR:
+        proxy.generate_blocks_until_tx_completion(tx_hash)
 
     for _ in range(0, num_periods_to_wait):
         time.sleep(refresh_period)
