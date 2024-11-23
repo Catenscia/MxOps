@@ -611,7 +611,7 @@ steps:
     endpoint: getSftAmount
     arguments:
       - TokenIdentifier4
-      - $LOOP_VAR # nonce
+      - "%LOOP_VAR" # nonce
     results_types:
       - type: BigUint
     results_save_keys:
@@ -624,7 +624,7 @@ steps:
     gas_limit: 60000000
     arguments:
       - TokenIdentifier4
-      - $LOOP_VAR # nonce
+      - "%LOOP_VAR" # nonce
       - "%my_first_sc.TokenIdentifier4Amount." # result of the query
 ```
 
@@ -698,5 +698,5 @@ steps:
         scene_path: assign_role.yaml
 ```
 
-Then, all of the `Steps` is the `Scene` `assign_role.yaml` should be written while using `$USER_FOR_ROLE` instead of the address of the wallet you want to assign the role to.
+Then, all of the `Steps` is the `Scene` `assign_role.yaml` should be written while using `%USER_FOR_ROLE` instead of the address of the wallet you want to assign the role to.
 This will apply all the `Steps` to françois, jacques and jean without having to copy/paste the `Steps` for each one of them.

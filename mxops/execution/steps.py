@@ -181,8 +181,9 @@ class LoopStep(Step):
             iterator = self.var_list
         else:
             raise ValueError("Loop iteration is not correctly defined")
+        scenario_data = ScenarioData.get()
         for var in iterator:
-            os.environ[self.var_name] = str(var)
+            scenario_data.set_value(self.var_name, var)
             for step in self.steps:
                 yield step
 

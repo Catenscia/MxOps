@@ -6,9 +6,9 @@
 
 // Init:                                 1
 // Upgrade:                              1
-// Endpoints:                           32
+// Endpoints:                           29
 // Async Callback (empty):               1
-// Total number of exported functions:  35
+// Total number of exported functions:  32
 
 #![no_std]
 
@@ -37,7 +37,6 @@ multiversx_sc_wasm_adapter::endpoints! {
         my_option_biguint => my_option_biguint
         my_vec_biguint => my_vec_biguint
         my_enum_with_everything => my_enum_with_everything
-        my_structs_with_args => my_structs_with_args
         view_optional_1 => view_optional_1
         get_init_params => get_init_params
         get_upgrade_params => get_upgrade_params
@@ -48,8 +47,6 @@ multiversx_sc_wasm_adapter::endpoints! {
         get_test_3_params => get_test_3_params
         test_4 => test_4
         get_test_4_params => get_test_4_params
-        test_5 => test_5
-        get_test_5_params => get_test_5_params
         view_test_1 => view_test_1
         view_test_2 => view_test_2
     )
