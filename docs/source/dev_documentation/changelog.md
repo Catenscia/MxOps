@@ -2,24 +2,33 @@
 
 ## Unreleased
 
+### Fixed
+
+- Inconsistent data path due the snap packages
+
+### Added
+
+- the data save path of `MxOps` is now configurable through the config var `DATA_PATH`
+
+
 ### Changed
 
 - 🚨 BREAKING CHANGE 🚨 loop variables from `LoopStep` are now saved and accessed with the symbol `%` instead of `$`
 
 ## 2.2.0 - 2024-04-16
 
-## Added
+### Added
 
 - `Scenario` clone command
 - Allowed `TransfersCheck` to dynamically evaluate sender and receiver by name
 
-## Fixed
+### Fixed
 
 - Updated the name 'local-testnet' to 'localnet'
 
 ## 2.1.0 - 2024-03-01
 
-## Added
+### Added
 
 - ABI support for smart-contract
 - Added new examples for queries

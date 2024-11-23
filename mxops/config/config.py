@@ -42,6 +42,16 @@ class _Config:
 
         self.__network_config: Optional[NetworkConfig] = None
 
+    def set_network(self, network: NetworkEnum):
+        """
+        Set the network enum
+
+        :param network: network enum to set
+        :type network: NetworkEnum
+        """
+        self.__network = network
+        self.__network_config = None
+
     def get_network(self) -> NetworkEnum:
         """
         Return the network of the config
@@ -123,6 +133,8 @@ class Config:
         :type network: NetworkEnum
         """
         cls.__network = network
+        if cls.__instance is not None:
+            cls.__instance.set_network(network)
 
     @staticmethod
     def find_config_path() -> Optional[Path]:

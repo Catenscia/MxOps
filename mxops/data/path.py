@@ -6,6 +6,7 @@ This module (input/output) contains the functions to load and write contracts da
 
 import os
 from pathlib import Path
+import platform
 from typing import List
 
 from appdirs import AppDirs
@@ -39,7 +40,8 @@ def get_scenario_full_name(scenario_name: str, checkpoint: str = "") -> str:
 def get_data_path() -> Path:
     """
     Return the folder path where to store the data created by this project.
-    The folder will be created if it does not exists.
+    Is defined in first instance by the value 'DATA_PATH' from the config
+    If this value is 'None' or '', a folder will be created in the App Dir
     It uses the library appdirs to follow the conventions
     across multi OS(MAc, Linux, Windows)
     https://pypi.org/project/appdirs/
@@ -47,9 +49,14 @@ def get_data_path() -> Path:
     :return: path of the folder to use for data saving
     :rtype: Path
     """
+    if platform.system() == "Linux":  # handle snap issues
+        os.environ["XDG_DATA_HOME"] = os.path.expanduser("~/.local/share")
+    config = Config.get_config()
+    data_path_config = config.get("DATA_PATH")
+    if data_path_config not in ("None", ""):
+        return Path(data_path_config)
     app_dirs = AppDirs("mxops", "Catenscia")
-    data_path = Path(app_dirs.user_data_dir)
-    return data_path
+    return Path(app_dirs.user_data_dir)
 
 
 def initialize_data_folder():
