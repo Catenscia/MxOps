@@ -88,7 +88,7 @@ Keep in mind that environment and configuration variables are always saved as st
 
 ### Loop variable
 
-For a `Loop Step`, the loop variable is supplied through the environment and so the `$` symbol should be used.
+For a `Loop Step`, the loop variable is supplied through the environment and so the `%` symbol should be used.
 
 See example in the [Loop Step section](loop_step_target).
 

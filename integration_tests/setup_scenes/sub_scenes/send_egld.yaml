@@ -8,6 +8,6 @@ allowed_scenario:
 steps:
   - type: EgldTransfer
     sender: emmanuel
-    receiver: $RECEIVER
+    receiver: "%RECEIVER"
     amount: 1000000000000000000  # 1 eGLD
     checks: []
