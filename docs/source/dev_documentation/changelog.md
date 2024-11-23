@@ -4,7 +4,7 @@
 
 ### Fixed
 
-- Unconsistend data path due the snap packages
+- Inconsistent data path due the snap packages
 
 ### Added
 
