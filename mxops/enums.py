@@ -17,6 +17,7 @@ class NetworkEnum(Enum):
     DEV = "devnet"
     TEST = "testnet"
     LOCAL = "localnet"
+    CHAIN_SIMULATOR = "chain-simulator"
 
 
 class TokenTypeEnum(Enum):

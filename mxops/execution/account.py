@@ -7,10 +7,9 @@ This modules contains the class and functions to manage multiversX accounts
 from typing import Optional
 
 from multiversx_sdk_cli.accounts import Account, LedgerAccount
-from multiversx_sdk_network_providers import ProxyNetworkProvider
 
 from mxops import errors
-from mxops.config.config import Config
+from mxops.common.providers import MyProxyNetworkProvider
 
 
 class AccountsManager:
@@ -75,8 +74,7 @@ class AccountsManager:
         :param account_name: name of the account to synchronise
         :type account_name: str
         """
-        config = Config.get_config()
-        proxy = ProxyNetworkProvider(config.get("PROXY"))
+        proxy = MyProxyNetworkProvider()
         try:
             cls._accounts[account_name].sync_nonce(proxy)
         except KeyError as err:

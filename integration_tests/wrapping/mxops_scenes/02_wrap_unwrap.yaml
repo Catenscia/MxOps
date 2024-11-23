@@ -2,6 +2,7 @@ allowed_networks:
   - localnet
   - testnet
   - devnet
+  - chain-simulator
 
 allowed_scenario:
   - "integration_test_wrapping"
