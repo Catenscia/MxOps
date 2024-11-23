@@ -12,15 +12,6 @@ pub const HEX_ADDRESS: [u8; 32] =
 /// erd1qqqqqqqqqqqqqpgqf48ydzn8shr8mnmrvydq2fn9v2afzd3c4fvsk4wglm
 
 #[derive(TopEncode, TopDecode, NestedEncode, NestedDecode, TypeAbi, PartialEq, Eq)]
-pub struct MyStruct<M: ManagedTypeApi> {
-    pub int: u16,
-    pub seq: ManagedVec<M, u8>,
-    pub another_byte: u8,
-    pub uint_32: u32,
-    pub uint_64: u64,
-}
-
-#[derive(TopEncode, TopDecode, NestedEncode, NestedDecode, TypeAbi, PartialEq, Eq)]
 pub struct Struct<M: ManagedTypeApi> {
     pub int: u16,
     pub seq: ManagedVec<M, u8>,
