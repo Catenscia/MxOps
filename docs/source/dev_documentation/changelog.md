@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+
+- 🚨 BREAKING CHANGE 🚨 loop variables from `LoopStep` are now saved and accessed with the symbol `%` instead of `$`
+
 ## 2.2.0 - 2024-04-16
 
 ## Added
