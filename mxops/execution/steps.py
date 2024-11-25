@@ -35,6 +35,7 @@ from multiversx_sdk_network_providers.contract_query_response import (
     ContractQueryResponse,
 )
 from mxpyserializer.abi_serializer import AbiSerializer
+import yaml
 
 from mxops.common.providers import MyProxyNetworkProvider
 from mxops.config.config import Config
@@ -683,6 +684,205 @@ class ContractQueryStep(Step):
                 print(self.results)
 
         LOGGER.info("Query successful")
+
+
+@dataclass
+class FuzzExecutionParameters:
+    """
+    Represents the parameters needed to excecute and check
+    a test from a fuzz testing session
+    """
+
+    sender: str
+    endpoint: str
+    value: int = field(default=0)
+    esdt_transfers: List[EsdtTransfer] = field(default_factory=list)
+    arguments: List[Any] = field(default_factory=list)
+    expected_outputs: Optional[List] = field(
+        default=None
+    )  # TODO Replace with checks (success, transfers and results)
+    description: str = field(default="")
+    gas_limit: Optional[int] = 0
+
+    @staticmethod
+    def from_dict(data: Dict) -> FuzzExecutionParameters:
+        """
+        Instantiate this class from the raw data formed as a dictionnary
+
+        :param data: data to parse
+        :type data: Dict
+        :return: intance of this class
+        :rtype: FuzzExecutionParameters
+        """
+        data_copy = data.copy()
+        checked_transfers = []
+        for trf in data.get("esdt_transfers", []):
+            if isinstance(trf, EsdtTransfer):
+                checked_transfers.append(trf)
+            elif isinstance(trf, Dict):
+                checked_transfers.append(EsdtTransfer(**trf))
+            else:
+                raise ValueError(f"Unexpected type: {type(trf)}")
+        data_copy["esdt_transfers"] = checked_transfers
+        return FuzzExecutionParameters(**data_copy)
+
+
+@dataclass
+class FileFuzzerStep(Step):
+    """
+    Represents fuzzing tests where the inputs and expected outputs from each test
+    are taken from a file
+    """
+
+    contract: str
+    file_path: Path
+
+    def __post_init__(self):
+        """
+        After the initialisation of an instance, if the esdt transfers are
+        found to be Dict,
+        will try to convert them to EsdtTransfers instances.
+        Usefull for easy loading from yaml files
+        """
+        self.file_path = Path(self.file_path)
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> Step:
+        """
+        Instantiate a Step instance from a dictionary
+
+        :return: step instance
+        :rtype: Step
+        """
+        return FileFuzzerStep(data["contract"], Path(data["file_path"]))
+
+    def load_executions_parameters(self) -> List[FuzzExecutionParameters]:
+        """
+        Load the executions parameters for the fuzz tests as described by the file
+
+        :return: executions parameters
+        :rtype: List[FuzzExecutionParameters]
+        """
+        file_extension = self.file_path.suffix
+        if file_extension in (".yaml", ".yml"):
+            return self.load_executions_parameters_from_yaml()
+        raise errors.WrongFuzzTestFile(
+            f"Extension {file_extension} is not supported for file "
+            f"{self.file_path.as_posix()}"
+        )
+
+    def load_executions_parameters_from_yaml(self) -> List[FuzzExecutionParameters]:
+        """
+        Load the executions parameters for the fuzz tests as described by the file,
+        which is assumed to be a yaml file
+
+        :return: executions parameters
+        :rtype: List[FuzzExecutionParameters]
+        """
+        parameters = []
+        with open(self.file_path.as_posix(), "r", encoding="utf-8") as file:
+            raw_file = yaml.safe_load(file)
+        try:
+            raw_parameters = raw_file["parameters"]
+        except KeyError as err:
+            raise errors.WrongFuzzTestFile(
+                "Fuzz Test file is missing the root key 'parameters'"
+            ) from err
+
+        for raw in raw_parameters:
+            try:
+                parameters.append(FuzzExecutionParameters.from_dict(raw))
+            except (KeyError, IndexError) as err:
+                raise errors.WrongFuzzTestFile(
+                    "Wrong inputs for fuzz execution parameters"
+                ) from err
+        return parameters
+
+    def execute(self):
+        """
+        Execute fuzz testing on the given contract using the parameters
+        from the provided file
+        """
+        scenario_data = ScenarioData.get()
+        try:
+            serializer = scenario_data.get_contract_value(self.contract, "serializer")
+        except errors.UnknownContract as err:
+            raise errors.WrongFuzzTestFile(
+                "ABI file must be provided for fuzz testing"
+            ) from err
+        LOGGER.info(f"Executing fuzz testing from file {self.file_path.as_posix()}")
+        exec_parameters = self.load_executions_parameters()
+        n_tests = len(exec_parameters)
+        LOGGER.info(f"Found {n_tests} tests")
+        for i, params in enumerate(exec_parameters):
+            LOGGER.info(
+                f"Executing fuzz test n°{i}/{n_tests} ({i/n_tests:.0%}): "
+                f"{params.description}"
+            )
+            self._execute_fuzz(serializer, params)
+
+    def _execute_fuzz(
+        self, serializer: AbiSerializer, execution_parameters: FuzzExecutionParameters
+    ):
+        """
+        Execute one instance of fuzz test
+
+        :param serializer: serializer of the contract
+        :type serializer: AbiSerializer
+        :param execution_parameters: parameters of the test to execute
+        :type execution_parameters: FuzzExecutionParameters
+        """
+        try:
+            endpoint = serializer.endpoints[execution_parameters.endpoint]
+        except KeyError as err:
+            raise errors.WrongFuzzTestFile(
+                f"Unknown endpoint {execution_parameters.endpoint}"
+            ) from err
+        if endpoint.mutability == "readonly":
+            self._execute_fuzz_query(execution_parameters)
+        else:
+            self._execute_fuzz_call(execution_parameters)
+
+    def _execute_fuzz_query(self, execution_parameters: FuzzExecutionParameters):
+        """
+        Execute one instance of fuzz test that is considered as a query execution
+
+        :param execution_parameters: parameters of the test to execute
+        :type execution_parameters: FuzzExecutionParameters
+        """
+        save_key = "fuzz_test_query_results"
+        query_step = ContractQueryStep(
+            self.contract,
+            execution_parameters.endpoint,
+            arguments=execution_parameters.arguments,
+            results_save_keys=save_key,
+        )
+        query_step.execute()
+        scenario_data = ScenarioData.get()
+        results = scenario_data.get_contract_value(self.contract, save_key)
+        if results != execution_parameters.expected_outputs:
+            raise errors.FuzzTestFailed(
+                f"Outputs are different from expected: found {results} but wanted "
+                f"{execution_parameters.expected_outputs}"
+            )
+
+    def _execute_fuzz_call(self, execution_parameters: FuzzExecutionParameters):
+        """
+        Execute one instance of fuzz test that is considered as a query execution
+
+        :param execution_parameters: parameters of the test to execute
+        :type execution_parameters: FuzzExecutionParameters
+        """
+        call_step = ContractCallStep(
+            contract=self.contract,
+            endpoint=execution_parameters.endpoint,
+            gas_limit=execution_parameters.gas_limit,
+            arguments=execution_parameters.arguments,
+            value=execution_parameters.value,
+            esdt_transfers=execution_parameters.esdt_transfers,
+            sender=execution_parameters.sender,
+        )
+        call_step.execute()
 
 
 @dataclass

@@ -300,6 +300,12 @@ class CheckFailed(Exception):
         )
 
 
+class FuzzTestFailed(Exception):
+    """
+    To be raised when a fuzz test fails
+    """
+
+
 #############################################################
 #
 #                   User Errors
@@ -350,4 +356,10 @@ class InvalidStepDefinition(Exception):
 class InvalidQueryResultsDefinition(Exception):
     """
     to be raise when the results types of a query are not correctly defined
+    """
+
+
+class WrongFuzzTestFile(Exception):
+    """
+    to be raised when the file given for fuzz testing in not correctly formatted
     """
