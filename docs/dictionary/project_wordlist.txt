@@ -16,8 +16,10 @@ Dev
 devnet
 EnumWithEverything
 EsdtMinter
+FileFuzzerStep
 françois
 Freepik
+Fuzzer
 GetBaseToken
 GetPoolPrice
 GetQuoteToken

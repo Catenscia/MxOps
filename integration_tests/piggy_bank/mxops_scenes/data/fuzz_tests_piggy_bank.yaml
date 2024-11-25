@@ -1,0 +1,33 @@
+parameters:
+
+  - endpoint: deposit 
+    sender: thomas
+    gas_limit: 8000000
+    description: "depositing esdt"
+    esdt_transfers:
+      - token_identifier: "%abc-esdt-minter.EsdtIdentifier"
+        amount: 1247741982740
+        nonce: 0
+
+  - endpoint: deposit 
+    sender: thomas
+    gas_limit: 8000000
+    description: "depositing esdt"
+    esdt_transfers:
+      - token_identifier: "%abc-esdt-minter.EsdtIdentifier"
+        amount: 213
+        nonce: 0
+
+  - endpoint: deposit 
+    sender: thomas
+    gas_limit: 8000000
+    description: "depositing esdt"
+    esdt_transfers:
+      - token_identifier: "%abc-esdt-minter.EsdtIdentifier"
+        amount: 41496879
+        nonce: 0
+
+  - endpoint: withdraw 
+    sender: thomas
+    gas_limit: 8000000
+    description: "withdrawing esdt"

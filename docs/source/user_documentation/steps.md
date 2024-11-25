@@ -375,6 +375,48 @@ results_save_keys:
 If you provide sub-keys, the number of sub-keys must exactly match the number of elements returned by the query response.
 ```
 
+(contract_query_target)=
+### File Fuzzer Step
+
+This `Step` is used to execute some fuzz testing. The parameters for the tests (queries or calls) are taken from a file.
+At the moment, only yaml format is supported.
+
+```yaml
+type: FileFuzzer
+contract: "my-contract-id"
+file_path: "./path/to/my_fuzzer_parameters.yaml"
+```
+
+#### Yaml File Format
+
+```yaml
+parameters:
+  - endpoint: my_endpoint  # query or call
+    sender: bob  # name or bech32 of the sender of the tx (optional for query)
+    gas_limit: 89984  # optional, only for calls
+    value: 0  # optional, if any EGLD is to be sent with the call
+    esdt_transfers:  # optional, if any esdt are to be sent with the call
+      - token_identifier: TOKEN-abcdef
+        amount: 120924
+        nonce: 0  # optional, default to 0
+    arguments:  # optional, argument to pass to the query/call as usual in MxOps
+      - 12145
+      - TOKEN-abcdef
+    expected_outputs:  # optional, excepted output of the query
+      - 12124115
+    description: "test description"
+
+  - endpoint: my_endpoint 
+    ....
+```
+
+#### Considerations
+
+At the moment, this step is a work in progress.
+
+- expected output works only for queries
+- esdt transfers happening within a transaction cannot be tested
+
 (token_management_target)=
 ## Token Management Steps
 
