@@ -1,0 +1,88 @@
+parameters:
+  - endpoint: addAirdropAmount 
+    sender: jean
+    gas_limit: 5000000
+    arguments:
+      - "[thomas]"
+      - 12471682
+    description: "adding airdrop"
+
+  - endpoint: getAirdropAmount 
+    sender: thomas
+    gas_limit: 5000000
+    arguments:
+      - "[thomas]"
+    expected_outputs:
+      - 12471682
+
+  - endpoint: claimAirdrop 
+    sender: thomas
+    gas_limit: 5000000
+    description: "claiming airdrop"
+
+  - endpoint: getAirdropAmount 
+    sender: thomas
+    gas_limit: 5000000
+    arguments:
+      - "[thomas]"
+    expected_outputs:
+      - 0
+
+  - endpoint: addAirdropAmount 
+    sender: jean
+    gas_limit: 5000000
+    arguments:
+      - "[thomas]"
+      - 1
+    description: "adding airdrop"
+
+  - endpoint: getAirdropAmount 
+    sender: thomas
+    gas_limit: 5000000
+    arguments:
+      - "[thomas]"
+    expected_outputs:
+      - 1
+
+  - endpoint: claimAirdrop 
+    sender: thomas
+    gas_limit: 5000000
+    description: "claiming airdrop"
+
+  - endpoint: getAirdropAmount 
+    sender: thomas
+    gas_limit: 5000000
+    arguments:
+      - "[thomas]"
+    expected_outputs:
+      - 0
+
+  - endpoint: addAirdropAmount 
+    sender: jean
+    gas_limit: 5000000
+    arguments:
+      - "[thomas]"
+      - 124789174012701294870129874129
+    description: "adding airdrop"
+
+  - endpoint: getAirdropAmount 
+    sender: thomas
+    gas_limit: 5000000
+    arguments:
+      - "[thomas]"
+    expected_outputs:
+      - 124789174012701294870129874129
+
+  - endpoint: claimAirdrop 
+    sender: thomas
+    gas_limit: 5000000
+    description: "claiming airdrop"
+
+  - endpoint: getAirdropAmount 
+    sender: thomas
+    gas_limit: 5000000
+    arguments:
+      - "[thomas]"
+    expected_outputs:
+      - 0
+    
