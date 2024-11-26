@@ -379,7 +379,7 @@ steps:
     endpoint: addAirdropAmount
     gas_limit: 5000000
     arguments:
-      - "[user]"
+      - "%user.address"
       - 100000
 
   - type: ContractCall
@@ -394,7 +394,7 @@ steps:
         condition: exact
         expected_transfers:
           - sender: "%abc-esdt-minter.address"
-            receiver: "[user]"
+            receiver: "%user.address"
             token_identifier: "%abc-esdt-minter.EsdtIdentifier"
             amount: 100000
 ```

@@ -94,4 +94,10 @@ See example in the [Loop Step section](loop_step_target).
 
 ### Account Address
 
-To reference as an argument the address of an account specified in the `accounts` field of a `Scene`, one must use the following syntax: `[account_name]`.
+To reference as an argument the address of an account specified in the `accounts` field of a `Scene`, one can use two syntax:
+
+- `[account_name]`: MxOps will look at the loaded account and take its address (so the account must be loaded)
+- `%account_name.address`: MxOps will look at the `Scenario` data and take the address of the last loaded account with the name `account_name`
+
+The second syntax allows you to reference an account that is not connected anymore (ex a Ledger that was only used to deploy and own a contract) but was loaded at some point during the `Scenario`'s life.
+

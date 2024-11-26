@@ -15,7 +15,7 @@ def test_transfers_equality():
     # Given
     expected_transfers = [
         ExpectedTransfer(
-            "[test_user_A]",
+            "%test_user_A.address",
             "my_test_contract",
             "tokenA",
             "15",
@@ -28,13 +28,13 @@ def test_transfers_equality():
         ),
         ExpectedTransfer(
             "my_test_contract",
-            "test_user_A",
+            "[test_user_A]",
             "tokenA",
             "15",
         ),
         ExpectedTransfer(
             "%my_test_contract.address",
-            "[test_user_B]",
+            "%test_user_B.address",
             "tokenA",
             15,
         ),
@@ -111,10 +111,13 @@ def test_transfers_equality():
 
 def test_data_load_equality():
     # Given
-    AccountsManager._accounts["owner"] = Account(
-        Address.from_bech32(
-            "erd1zzugxvypryhfym7qrnnkxvrlh8d9ylw2s0399q5tzp43g297plcq4p6d30"
-        )
+    AccountsManager.register_account(
+        "owner",
+        Account(
+            Address.from_bech32(
+                "erd1zzugxvypryhfym7qrnnkxvrlh8d9ylw2s0399q5tzp43g297plcq4p6d30"
+            )
+        ),
     )
     scenario = ScenarioData.get()
     contract_data = InternalContractData(
@@ -129,7 +132,7 @@ def test_data_load_equality():
     scenario.add_contract_data(contract_data)
 
     expected_transfer = ExpectedTransfer(
-        sender="[owner]",
+        sender="%owner.address",
         receiver="%egld-ping-pong.address",
         token_identifier="EGLD",
         amount="%egld-ping-pong.PingAmount",

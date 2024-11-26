@@ -31,12 +31,12 @@ steps:
         condition: exact
         include_gas_refund: false  # optional, false by default
         expected_transfers:
-          - sender: "[françois]"
+          - sender: "%françois.address"
             receiver: "%egld_wrapper_shard_1.address"
             token_identifier: EGLD
             amount: 10000
           - sender: "%egld_wrapper_shard_1.address"
-            receiver: "[françois]"
+            receiver: "%françois.address"
             token_identifier: "%egld_wrapper_shard_1.WrappedTokenIdentifier"
             amount: 10000
 
@@ -56,11 +56,11 @@ steps:
         condition: exact
         include_gas_refund: false  # optional, false by default
         expected_transfers:
-          - sender: "[françois]"
+          - sender: "%françois.address"
             receiver: "%egld_wrapper_shard_1.address"
             token_identifier: "%egld_wrapper_shard_1.WrappedTokenIdentifier"
             amount: 10000
           - sender: "%egld_wrapper_shard_1.address"
-            receiver: "[françois]"
+            receiver: "%françois.address"
             token_identifier: EGLD
             amount: 10000

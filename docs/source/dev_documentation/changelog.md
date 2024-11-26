@@ -11,6 +11,7 @@
 - the data save path of `MxOps` is now configurable through the config var `DATA_PATH`
 - chain-simulator network and adapted transaction schema (forward chain until transaction completion)
 - FileFuzzerStep
+- Account's addresses are now saved within the `Scenario` data at load time. They can be referenced to with "%account_id.address"
 
 
 ### Changed

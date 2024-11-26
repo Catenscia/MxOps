@@ -10,6 +10,7 @@ from multiversx_sdk_cli.accounts import Account, LedgerAccount
 
 from mxops import errors
 from mxops.common.providers import MyProxyNetworkProvider
+from mxops.data.execution_data import ScenarioData
 
 
 class AccountsManager:
@@ -21,7 +22,7 @@ class AccountsManager:
     _accounts = {}
 
     @classmethod
-    def load_account(
+    def load_register_account(
         cls,
         account_name: str,
         pem_path: Optional[str] = None,
@@ -29,7 +30,8 @@ class AccountsManager:
         ledger_address_index: Optional[int] = None,
     ):
         """
-        Load an account from a pem path or ledger indices
+        Load an account from a pem path or ledger indices and register it
+        into the accounts manager
 
         :param account_name: name that will be used to reference this account.
             Must be unique.
@@ -42,13 +44,28 @@ class AccountsManager:
         :type ledger_address_index: Optional[int], optional
         """
         if ledger_account_index is not None and ledger_address_index is not None:
-            cls._accounts[account_name] = LedgerAccount(
-                ledger_account_index, ledger_address_index
-            )
+            account = LedgerAccount(ledger_account_index, ledger_address_index)
         elif isinstance(pem_path, str):
-            cls._accounts[account_name] = Account(pem_file=pem_path)
+            account = Account(pem_file=pem_path)
         else:
             raise ValueError(f"{account_name} is not correctly configured")
+        cls.register_account(account_name, account)
+
+    @classmethod
+    def register_account(cls, account_name: str, account: Account):
+        """
+        Register an account in the accounts manager
+
+        :param account_name: name of the account for registration
+        :type account_name: str
+        :param account: account to register
+        :type account: Account
+        """
+        cls._accounts[account_name] = account
+        scenario_data = ScenarioData.get()
+        scenario_data.set_value(
+            f"{account_name}.address", cls._accounts[account_name].address.to_bech32()
+        )
 
     @classmethod
     def get_account(cls, account_name: str) -> Account:

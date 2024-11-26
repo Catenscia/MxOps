@@ -244,7 +244,7 @@ Here is the above `Scene`, but this time with the MxOps syntax:
       contract: my-contract
       endpoint: getStakedAmount
       arguments:
-          - "[owner]"
+          - "%owner.address"
       results_save_keys:
         - ownerStakedAmount
 

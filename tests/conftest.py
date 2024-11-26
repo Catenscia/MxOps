@@ -74,11 +74,11 @@ def scenario_data():
 
 
 @pytest.fixture(scope="session", autouse=True)
-def accounts_manager():
+def accounts_manager(scenario_data):  # scenario data must be initialized
     accounts_manager = AccountsManager()
-    accounts_manager.load_account(
+    accounts_manager.load_register_account(
         "test_user_A", pem_path="./tests/data/test_user_A.pem"
     )
-    accounts_manager.load_account(
+    accounts_manager.load_register_account(
         "test_user_B", pem_path="./tests/data/test_user_B.pem"
     )

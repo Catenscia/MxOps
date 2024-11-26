@@ -71,12 +71,12 @@ was successful, that the eGLD was sent to the contract and that we received wrap
       - type: Transfers
         condition: exact
         expected_transfers:
-          - sender: "[user]"
+          - sender: "%user.address"
             receiver: "%egld_wrapper_shard_1.address"
             token_identifier: EGLD
             amount: 10000
           - sender: "%egld_wrapper_shard_1.address"
-            receiver: "[user]"
+            receiver: "%user.address"
             token_identifier: "%egld_wrapper_shard_1.WrappedTokenIdentifier"
             amount: 10000
 ```
@@ -99,12 +99,12 @@ And lastly we can unwrap our WEGLD:
       - type: Transfers
         condition: exact
         expected_transfers:
-          - sender: "[user]"
+          - sender: "%user.address"
             receiver: "%egld_wrapper_shard_1.address"
             token_identifier: "%egld_wrapper_shard_1.WrappedTokenIdentifier"
             amount: 10000
           - sender: "%egld_wrapper_shard_1.address"
-            receiver: "[user]"
+            receiver: "%user.address"
             token_identifier: EGLD
             amount: 10000
 ```
@@ -143,12 +143,12 @@ steps:
       - type: Transfers
         condition: exact
         expected_transfers:
-          - sender: "[user]"
+          - sender: "%user.address"
             receiver: "%egld_wrapper_shard_1.address"
             token_identifier: EGLD
             amount: 10000
           - sender: "%egld_wrapper_shard_1.address"
-            receiver: "[user]"
+            receiver: "%user.address"
             token_identifier: "%egld_wrapper_shard_1.WrappedTokenIdentifier"
             amount: 10000
 
@@ -167,12 +167,12 @@ steps:
       - type: Transfers
         condition: exact
         expected_transfers:
-          - sender: "[user]"
+          - sender: "%user.address"
             receiver: "%egld_wrapper_shard_1.address"
             token_identifier: "%egld_wrapper_shard_1.WrappedTokenIdentifier"
             amount: 10000
           - sender: "%egld_wrapper_shard_1.address"
-            receiver: "[user]"
+            receiver: "%user.address"
             token_identifier: EGLD
             amount: 10000
 ```

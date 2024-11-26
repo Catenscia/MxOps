@@ -24,7 +24,7 @@ steps:
     sender: thomas
     is_set: true
     token_identifier: "%ThomasMeta.identifier"
-    target: "[thomas]"
+    target: "%thomas.address"
     roles:
       - ESDTRoleNFTCreate
       - ESDTRoleNFTBurn
