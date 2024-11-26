@@ -134,3 +134,18 @@ def test_retrieve_contract_address():
     # Assert
     assert isinstance(address, str)
     address == "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t"
+
+
+def test_retrieve_account_address_from_data():
+    """
+    Test that an account address can be retrieved
+    """
+    # Given
+    account_id = "test_user_A"
+
+    # When
+    address = utils.retrieve_value_from_string(f"%{account_id}.address")
+
+    # Assert
+    assert isinstance(address, str)
+    address == "erd1jzw34pun678ktsstunk0dm0z2uh7m0ld9trw507ksnzt0wxalwwsv3fpa2"

@@ -100,7 +100,7 @@ def execute_scene(scene_path: Path):
 
     # load accounts
     for account in scene.accounts:
-        AccountsManager.load_account(**account)
+        AccountsManager.load_register_account(**account)
         AccountsManager.sync_account(account["account_name"])
 
     # load external contracts addresses
