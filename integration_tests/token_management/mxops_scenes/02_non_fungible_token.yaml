@@ -28,7 +28,7 @@ steps:
     sender: marc
     is_set: true
     token_identifier: "%MarcNFT.identifier"
-    target: "[marc]"
+    target: "%marc.address"
     roles:
       - ESDTRoleNFTCreate
       - ESDTRoleNFTBurn
@@ -40,7 +40,7 @@ steps:
     sender: marc
     is_set: true
     token_identifier: "%MarcNFT.identifier"
-    target: "[marie]"
+    target: "%marie.address"
     roles:
       - ESDTTransferRole
   
