@@ -115,7 +115,7 @@ checks:
     condition: included
     expected_transfers:
       - sender: "%super-swap-sc.address"
-        receiver: "[alice]"
+        receiver: "%alice.address"
         token_identifier: EGLD
         amount: 18541
 ```

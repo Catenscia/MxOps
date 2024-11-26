@@ -173,7 +173,7 @@ steps:
       - type: Transfers
         condition: exact
         expected_transfers:
-          - sender: "[owner]"
+          - sender: "%owner.address"
             receiver: "%egld-ping-pong.address"
             token_identifier: EGLD
             amount: "%egld-ping-pong.PingAmount"
@@ -204,7 +204,7 @@ steps:
         condition: exact
         expected_transfers:
           - sender: "%egld-ping-pong.address"
-            receiver: "[owner]"
+            receiver: "%owner.address"
             token_identifier: EGLD
             amount: "%egld-ping-pong.PingAmount"
 
