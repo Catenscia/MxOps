@@ -742,3 +742,19 @@ steps:
 
 Then, all of the `Steps` is the `Scene` `assign_role.yaml` should be written while using `%USER_FOR_ROLE` instead of the address of the wallet you want to assign the role to.
 This will apply all the `Steps` to françois, jacques and jean without having to copy/paste the `Steps` for each one of them.
+
+(set_vars_step_target)=
+### Set Vars Step
+
+This `Step` allows you to directly set some variables within the Scenario data. This will be useful if you need to set some values for generic `Scenes` or if you need to backup some variables
+so that they are not overwritten.
+
+```yaml
+type: SetVars
+variables:
+  MyVar: 12312424
+  result-backup: "%previously-registered-value"
+  nested_values: ["$CONF_VAR", 12421, "%var", {"%account.address": "%saved-value"}]
+```
+
+The above example will saves three variables within the `Scenario` data: `MyVar`, `result-backup` and `nested_values`. Their values (or nested values) will be accessible with the `%` symbol (refer to the {doc}`values` section for more details of the value system of MxOps).
