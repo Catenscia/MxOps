@@ -1,6 +1,6 @@
 import os
 from mxops.data.execution_data import ScenarioData
-from mxops.execution.steps import PythonStep
+from mxops.execution.steps import PythonStep, SetVarsStep
 
 
 def test_python_step():
@@ -37,6 +37,48 @@ def test_python_step():
     assert os_value_2 == "4582"
 
 
-def test_query_step():
+def test_direct_set_vars_step():
     # Given
-    pass
+    scenario_data = ScenarioData.get()
+    variables = {
+        "int-var": 1,
+        "str-var": "hello",
+        "list-var": [1, 2, "a", [1, 3]],
+        "dict-var": {"a": 23, 23: ["a", 124]},
+    }
+    step = SetVarsStep(variables)
+
+    # When
+    step.execute()
+
+    # Then
+    saved_values = {key: scenario_data.get_value(key) for key in variables}
+    assert variables == saved_values
+
+
+def test_reference_set_vars_step():
+    # Given
+    scenario_data = ScenarioData.get()
+    scenario_data.set_value("reg-list", [1, 2, 3])
+    scenario_data.set_value("reg-name", "bob")
+    scenario_data.set_value("reg-value", 1)
+    variables = {
+        "int-var": "%reg-value",
+        "str-var": "%reg-name",
+        "list-var": [1, 2, "a", "%reg-list"],
+        "dict-var": {"%reg-name": 23, 23: ["%reg-name", "%reg-list"]},
+    }
+    step = SetVarsStep(variables)
+
+    # When
+    step.execute()
+
+    # Then
+    expected_result = {
+        "int-var": 1,
+        "str-var": "bob",
+        "list-var": [1, 2, "a", [1, 2, 3]],
+        "dict-var": {"bob": 23, 23: ["bob", [1, 2, 3]]},
+    }
+    saved_values = {key: scenario_data.get_value(key) for key in variables}
+    assert expected_result == saved_values
