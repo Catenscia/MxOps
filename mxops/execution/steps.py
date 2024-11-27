@@ -1704,3 +1704,25 @@ def instanciate_steps(raw_steps: List[Dict]) -> List[Step]:
             raise errors.InvalidStepDefinition(step_type, raw_step) from err
         steps_list.append(step)
     return steps_list
+
+
+@dataclass
+class SetVarsStep(Step):
+    """
+    Represents a steop to set variables within the Scenario
+    """
+
+    variables: Dict[str, Any]
+
+    def execute(self):
+        """
+        Parse the values to be assigned to the given variables
+        """
+        scenario_data = ScenarioData.get()
+
+        for key, raw_value in self.variables.items():
+            value = utils.retrieve_value_from_any(raw_value)
+            LOGGER.info(
+                f"Setting variable `{key}` with the value `{value}` ({raw_value})"
+            )
+            scenario_data.set_value(key, value)
