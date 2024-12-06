@@ -101,7 +101,7 @@ def execute_scene(scene_path: Path):
     # load accounts
     loaded_accounts_names = []
     for account in scene.accounts:
-        if "wallets_folder" in account:
+        if "folder_path" in account:
             loaded_accounts_names.extend(
                 AccountsManager.load_register_pem_from_folder(**account)
             )
