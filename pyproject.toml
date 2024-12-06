@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mxops"
-version = "3.0.0-dev6"
+version = "3.0.0-dev7"
 authors = [
   {name="Etienne Wallet"},
 ]
