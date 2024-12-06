@@ -375,7 +375,7 @@ results_save_keys:
 If you provide sub-keys, the number of sub-keys must exactly match the number of elements returned by the query response.
 ```
 
-(contract_query_target)=
+(file_fuzzer_target)=
 ### File Fuzzer Step
 
 This `Step` is used to execute some fuzz testing. The parameters for the tests (queries or calls) are taken from a file.
