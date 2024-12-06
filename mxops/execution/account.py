@@ -4,7 +4,9 @@ author: Etienne Wallet
 This modules contains the class and functions to manage multiversX accounts
 """
 
-from typing import Optional
+import os
+from pathlib import Path
+from typing import List, Optional
 
 from multiversx_sdk_cli.accounts import Account, LedgerAccount
 
@@ -20,6 +22,30 @@ class AccountsManager:
     """
 
     _accounts = {}
+
+    @classmethod
+    def load_register_pem_from_folder(cls, name: str, folder_path: str) -> List[str]:
+        """
+        Load all the pem account located in the given folder.
+        The name of the accounts is the file name and the list of loaded accounts
+        is save in the Scenario variable under the key provided (name)
+
+        :param name: key to save the names of the list of loaded accounts
+        :type name: str
+        :param folder_path: path to the folder where wallets are located
+        :type folder_path: str
+        :return: names of the loaded accounts
+        :rtype: List[str]
+        """
+        loaded_accounts_names = []
+        for file_name in os.listdir(folder_path):
+            file_path = Path(folder_path) / file_name
+            if file_path.suffix == ".pem":
+                cls.load_register_account(file_path.stem, file_path.as_posix())
+                loaded_accounts_names.append(file_path.stem)
+        scenario_data = ScenarioData.get()
+        scenario_data.set_value(name, sorted(loaded_accounts_names))
+        return loaded_accounts_names
 
     @classmethod
     def load_register_account(
@@ -86,7 +112,7 @@ class AccountsManager:
     def sync_account(cls, account_name: str):
         """
         Synchronise the nonce of an account by calling the
-        Elrond proxy.
+        MultiversX proxy.
 
         :param account_name: name of the account to synchronise
         :type account_name: str
@@ -96,3 +122,12 @@ class AccountsManager:
             cls._accounts[account_name].sync_nonce(proxy)
         except KeyError as err:
             raise RuntimeError(f"Unkown account {account_name}") from err
+
+    @classmethod
+    def sync_all_account(cls):
+        """
+        Synchronise the nonces of all the account by calling the
+        MultiversX proxy.
+        """
+        for account_name in cls._accounts:
+            cls.sync_account(account_name)
