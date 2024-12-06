@@ -41,6 +41,12 @@ class NewTokenIdentifierNotFound(Exception):
     """
 
 
+class MaxIterations(Exception):
+    """
+    To be raised when some operations has reached too many operations
+    """
+
+
 #############################################################
 #
 #                   Data Management Errors
@@ -363,3 +369,17 @@ class WrongFuzzTestFile(Exception):
     """
     to be raised when the file given for fuzz testing in not correctly formatted
     """
+
+
+class WalletAlreadyExist(Exception):
+    """
+    to be raised when a wallet was asked to be generated but a wallet already exists
+    at that location
+    """
+
+    def __init__(self, wallet_path: Path) -> None:
+        self.wallet_path = wallet_path
+        super().__init__()
+
+    def __str__(self) -> str:
+        return f"A wallet already exists at {self.wallet_path}"

@@ -55,6 +55,7 @@ from mxops.execution.utils import parse_query_result
 from mxops.utils.logger import get_logger
 from mxops.utils.msc import get_file_hash, get_tx_link
 from mxops import errors
+from mxops.utils.wallets import generate_pem_wallet
 
 LOGGER = get_logger("steps")
 
@@ -816,7 +817,7 @@ class FileFuzzerStep(Step):
         LOGGER.info(f"Found {n_tests} tests")
         for i, params in enumerate(exec_parameters):
             LOGGER.info(
-                f"Executing fuzz test n°{i}/{n_tests} ({i/n_tests:.0%}): "
+                f"Executing fuzz test n°{i+1}/{n_tests} ({i/n_tests:.0%}): "
                 f"{params.description}"
             )
             self._execute_fuzz(serializer, params)
@@ -1709,7 +1710,7 @@ def instanciate_steps(raw_steps: List[Dict]) -> List[Step]:
 @dataclass
 class SetVarsStep(Step):
     """
-    Represents a steop to set variables within the Scenario
+    Represents a step to set variables within the Scenario
     """
 
     variables: Dict[str, Any]
@@ -1726,3 +1727,41 @@ class SetVarsStep(Step):
                 f"Setting variable `{key}` with the value `{value}` ({raw_value})"
             )
             scenario_data.set_value(key, value)
+
+
+@dataclass
+class GenerateWalletsStep(Step):
+    """
+    Represents a step to generate some MultiversX wallets
+    For now, only pem wallets are supported
+    """
+
+    save_folder: Path
+    wallets: Union[int, List[str]]
+    shard: Optional[int] = field(default=None)
+
+    def __post_init__(self):
+        self.save_folder = Path(self.save_folder)
+
+    def execute(self):
+        """
+        Create the wanted wallets at the designated location
+
+        """
+        if isinstance(self.wallets, int):
+            n_wallets = self.wallets
+            names = [None] * n_wallets
+        elif isinstance(self.wallets, List):
+            n_wallets = len(self.wallets)
+            names = self.wallets
+        for i, name in enumerate(names):
+            pem_wallet, wallet_address = generate_pem_wallet(self.shard)
+            wallet_name = wallet_address.to_bech32() if name is None else name
+            wallet_path = self.save_folder / f"{wallet_name}.pem"
+            if os.path.isfile(wallet_path.as_posix()):
+                raise errors.WalletAlreadyExist(wallet_path)
+            pem_wallet.save(wallet_path)
+            LOGGER.info(
+                f"Wallet n°{i+1}/{n_wallets} generated with address "
+                f"{wallet_address.to_bech32()} at {wallet_path}"
+            )

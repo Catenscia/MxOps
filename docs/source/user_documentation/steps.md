@@ -375,7 +375,7 @@ results_save_keys:
 If you provide sub-keys, the number of sub-keys must exactly match the number of elements returned by the query response.
 ```
 
-(contract_query_target)=
+(file_fuzzer_target)=
 ### File Fuzzer Step
 
 This `Step` is used to execute some fuzz testing. The parameters for the tests (queries or calls) are taken from a file.
@@ -758,3 +758,24 @@ variables:
 ```
 
 The above example will saves three variables within the `Scenario` data: `MyVar`, `result-backup` and `nested_values`. Their values (or nested values) will be accessible with the `%` symbol (refer to the {doc}`values` section for more details of the value system of MxOps).
+
+(generate_wallets_target)=
+### Generate Wallets Step
+
+This `Step` allows you to generate new wallets. For now, only PEM wallets can be generated
+
+```yaml
+type: GenerateWallets
+save_folder: ./my/wallets  # folder where to save the generated wallets
+wallets: 10  # number of wallets to generate
+shard: 1  # optional, to force the shard of the generated wallets
+```
+
+If you prefer to names you wallets, you can provide a list of names instead.
+
+```yaml
+type: GenerateWallets
+save_folder: ./my/wallets  # folder where to save the generated wallets
+wallets: ["alice", "bob"]  # generate two wallets names alice and bob
+shard: 0  # optional, to force the shard of the generated wallets
+```
