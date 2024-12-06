@@ -82,3 +82,6 @@ def accounts_manager(scenario_data):  # scenario data must be initialized
     accounts_manager.load_register_account(
         "test_user_B", pem_path="./tests/data/test_user_B.pem"
     )
+    accounts_manager.load_register_pem_from_folder(
+        "wallets_folder", folder_path="./tests/data/wallets_folder"
+    )
