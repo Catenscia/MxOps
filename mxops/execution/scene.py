@@ -99,9 +99,17 @@ def execute_scene(scene_path: Path):
         )
 
     # load accounts
+    loaded_accounts_names = []
     for account in scene.accounts:
-        AccountsManager.load_register_account(**account)
-        AccountsManager.sync_account(account["account_name"])
+        if "folder_path" in account:
+            loaded_accounts_names.extend(
+                AccountsManager.load_register_pem_from_folder(**account)
+            )
+        else:
+            AccountsManager.load_register_account(**account)
+            loaded_accounts_names.append(account["account_name"])
+    for account_name in loaded_accounts_names:
+        AccountsManager.sync_account(account_name)
 
     # load external contracts addresses
     for contract_id, contract_data in scene.external_contracts.items():

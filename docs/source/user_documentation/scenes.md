@@ -36,9 +36,13 @@ allowed_scenario:
 accounts:
   - account_name: bob
     pem_path: path/to/bom_pem
+
   - account_name: alice
     ledger_account_index: 12
     ledger_address_index: 2
+
+  - name: user_wallets
+    folder_path: ./path/to/all/users_wallets  # all the pem wallet of the folder will be loaded using the file names as account names
 
 # External contracts that will be called for transactions or queries in future steps
 external_contracts:
