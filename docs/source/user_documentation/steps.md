@@ -779,3 +779,27 @@ save_folder: ./my/wallets  # folder where to save the generated wallets
 wallets: ["alice", "bob"]  # generate two wallets names alice and bob
 shard: 0  # optional, to force the shard of the generated wallets
 ```
+
+
+(r3d4_faucet_target)=
+### r3d4 Faucet Step
+
+This `Step` allows you use the devnet and testnet faucet [r3d4](https://r3d4.fr/faucet).
+This is a third party tool that is not managed by `Catenscia`, so the compatibility might break.
+
+Some things to keep in mind:
+- Respect the limits from r3d4 (1 claim per token per address per day)
+- There may be some delays before you receive the funds
+- Please don't abuse the faucet, it's a tool useful for a lot of people
+- If you have to much funds, send them back to the faucet so that they can be reused
+- The faucet only works for devnet and testnet
+
+
+```yaml
+type: R3D4Faucet
+targets:
+  - alice  # account name handeld by MxOps
+  - erd1y3296u7m2v5653pddey3p7l5zacqmsgqc7vsu3w74p9jm2qp3tqqz950yl  # or direct bech32
+```
+
+For each address, the maximum amount of EGLD (1 EGLD as of December 2024) will be requested.
