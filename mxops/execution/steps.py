@@ -106,7 +106,7 @@ class TransactionStep(Step):
         if len(self.checks) > 0 and isinstance(self.checks[0], Dict):
             self.checks = instanciate_checks(self.checks)
 
-    def _build_unsigned_transaction(self) -> Transaction:
+    def build_unsigned_transaction(self) -> Transaction:
         """
         Interface for the method that will build transaction to send. This transaction
         is meant to contain all the data specific to this Step.
@@ -143,7 +143,7 @@ class TransactionStep(Step):
         Execute the workflow for a transaction Step: build, send, check
         and post execute
         """
-        tx = self._build_unsigned_transaction()
+        tx = self.build_unsigned_transaction()
         self.sign_transaction(tx)
 
         if len(self.checks) > 0:
@@ -223,7 +223,7 @@ class ContractDeployStep(TransactionStep):
     payable_by_sc: bool = False
     arguments: List = field(default_factory=list)
 
-    def _build_unsigned_transaction(self) -> Transaction:
+    def build_unsigned_transaction(self) -> Transaction:
         """
         Build the transaction for a contract deployment
 
@@ -320,7 +320,7 @@ class ContractUpgradeStep(TransactionStep):
     arguments: List = field(default_factory=lambda: [])
     abi_path: Optional[str] = None
 
-    def _build_unsigned_transaction(self) -> Transaction:
+    def build_unsigned_transaction(self) -> Transaction:
         """
         Build the transaction for a contract upgrade
 
@@ -399,7 +399,7 @@ class ContractCallStep(TransactionStep):
     value: int | str = 0
     esdt_transfers: List[EsdtTransfer] = field(default_factory=lambda: [])
 
-    def _build_unsigned_transaction(self) -> Transaction:
+    def build_unsigned_transaction(self) -> Transaction:
         """
         Build the transaction for a contract call
 
@@ -906,7 +906,7 @@ class FungibleIssueStep(TransactionStep):
     can_upgrade: bool = False
     can_add_special_roles: bool = False
 
-    def _build_unsigned_transaction(self) -> Transaction:
+    def build_unsigned_transaction(self) -> Transaction:
         """
         Build the transaction to issue a fungible token
 
@@ -979,7 +979,7 @@ class NonFungibleIssueStep(TransactionStep):
     can_add_special_roles: bool = False
     can_transfer_nft_create_role: bool = False
 
-    def _build_unsigned_transaction(self) -> Transaction:
+    def build_unsigned_transaction(self) -> Transaction:
         """
         Build the transaction to issue a non fungible token
 
@@ -1045,7 +1045,7 @@ class SemiFungibleIssueStep(TransactionStep):
     can_add_special_roles: bool = False
     can_transfer_nft_create_role: bool = False
 
-    def _build_unsigned_transaction(self) -> Transaction:
+    def build_unsigned_transaction(self) -> Transaction:
         """
         Build the transaction to issue a semi fungible token
 
@@ -1112,7 +1112,7 @@ class MetaIssueStep(TransactionStep):
     can_add_special_roles: bool = False
     can_transfer_nft_create_role: bool = False
 
-    def _build_unsigned_transaction(self) -> Transaction:
+    def build_unsigned_transaction(self) -> Transaction:
         """
         Build the transaction to issue a meta token
 
@@ -1197,7 +1197,7 @@ class ManageFungibleTokenRolesStep(ManageTokenRolesStep):
         "ESDTTransferRole",
     }
 
-    def _build_unsigned_transaction(self) -> Transaction:
+    def build_unsigned_transaction(self) -> Transaction:
         """
         Build the transaction to set roles on a fungible token
 
@@ -1250,7 +1250,7 @@ class ManageNonFungibleTokenRolesStep(ManageTokenRolesStep):
         "ESDTTransferRole",
     }
 
-    def _build_unsigned_transaction(self) -> Transaction:
+    def build_unsigned_transaction(self) -> Transaction:
         """
         Build the transaction to set roles on a non fungible token
 
@@ -1306,7 +1306,7 @@ class ManageSemiFungibleTokenRolesStep(ManageTokenRolesStep):
         "ESDTTransferRole",
     }
 
-    def _build_unsigned_transaction(self) -> Transaction:
+    def build_unsigned_transaction(self) -> Transaction:
         """
         Build the transaction to set roles on a non fungible token
 
@@ -1362,7 +1362,7 @@ class FungibleMintStep(TransactionStep):
     token_identifier: str
     amount: Union[str, int]
 
-    def _build_unsigned_transaction(self) -> Transaction:
+    def build_unsigned_transaction(self) -> Transaction:
         """
         Build the transaction to mint a fungible token
 
@@ -1398,7 +1398,7 @@ class NonFungibleMintStep(TransactionStep):
     attributes: str = ""
     uris: List[str] = field(default_factory=lambda: [])
 
-    def _build_unsigned_transaction(self) -> Transaction:
+    def build_unsigned_transaction(self) -> Transaction:
         """
         Build the transaction to mint a fungible token
 
@@ -1450,7 +1450,7 @@ class EgldTransferStep(TransactionStep):
     receiver: str
     amount: Union[str, int]
 
-    def _build_unsigned_transaction(self) -> Transaction:
+    def build_unsigned_transaction(self) -> Transaction:
         """
         Build the transaction for an egld transfer
 
@@ -1484,7 +1484,7 @@ class FungibleTransferStep(TransactionStep):
     token_identifier: str
     amount: Union[str, int]
 
-    def _build_unsigned_transaction(self) -> Transaction:
+    def build_unsigned_transaction(self) -> Transaction:
         """
         Build the transaction for an ESDT transfer
 
@@ -1522,7 +1522,7 @@ class NonFungibleTransferStep(TransactionStep):
     nonce: Union[str, int]
     amount: Union[str, int]
 
-    def _build_unsigned_transaction(self) -> Transaction:
+    def build_unsigned_transaction(self) -> Transaction:
         """
         Build the transaction for a non fungible transfer
 
@@ -1578,7 +1578,7 @@ class MultiTransfersStep(TransactionStep):
                 raise ValueError(f"Unexpected type: {type(trf)}")
         self.transfers = checked_transfers
 
-    def _build_unsigned_transaction(self) -> Transaction:
+    def build_unsigned_transaction(self) -> Transaction:
         """
         Build the transaction for multiple transfers
 
@@ -1849,3 +1849,41 @@ class R3D4FaucetStep(Step):
         if "error" in return_data:
             raise errors.FaucetFailed(return_data["error"])
         LOGGER.info(f"Response from faucet: {return_data['success']}")
+
+
+@dataclass
+class ChainSimulatorFaucetStep(Step):
+    """
+    Represents a step to request some EGLD from the chain-simulator faucet
+    (aka initial wallets of the chain simulator)
+    """
+
+    targets: List[str]
+    amount: int
+    ALLOWED_NETWORKS: ClassVar[Set] = (NetworkEnum.CHAIN_SIMULATOR,)
+
+    def execute(self):
+        """
+        Seach for the r3d4 token id of EGLD in the current network and
+        ask for EGLD from the faucet
+        """
+        scenario_data = ScenarioData.get()
+        if scenario_data.network not in self.ALLOWED_NETWORKS:
+            raise errors.WrongNetworkForStep(
+                scenario_data.network, self.ALLOWED_NETWORKS
+            )
+        proxy = MyProxyNetworkProvider()
+        initial_wallet_data = proxy.get_initial_wallets()
+        sender = initial_wallet_data["balanceWallets"]["0"]["address"]["bech32"]
+        sender_nonce = proxy.get_account(Address.from_bech32(sender)).nonce
+        for target in self.targets:
+            egld_step = EgldTransferStep(
+                sender=sender, receiver=target, amount=self.amount
+            )
+            tx = egld_step.build_unsigned_transaction()
+            tx.signature = b"aa"
+            tx.nonce = sender_nonce
+            on_chain_tx = send_and_wait_for_result(tx)
+            SuccessCheck().raise_on_failure(on_chain_tx)
+            LOGGER.info(f"Transaction successful: {get_tx_link(on_chain_tx.hash)}")
+            sender_nonce += 1
