@@ -803,3 +803,17 @@ targets:
 ```
 
 For each address, the maximum amount of EGLD (1 EGLD as of December 2024) will be requested.
+
+
+(chain_simulator_faucet_target)=
+### Chain Simulator Faucet Step
+
+This `Step` allows you to request EGLD on the chain-simulator.
+
+```yaml
+type: ChainSimulatorFaucet
+amount: 1000000000000000000  # 1.0 EGLD
+targets:
+  - alice  # account name handeld by MxOps
+  - erd1y3296u7m2v5653pddey3p7l5zacqmsgqc7vsu3w74p9jm2qp3tqqz950yl  # or direct bech32
+```
