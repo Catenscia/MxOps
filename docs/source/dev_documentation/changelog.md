@@ -14,6 +14,7 @@
 - Account's addresses are now saved within the `Scenario` data at load time. They can be referenced to with "%account_id.address"
 - `SetVarsStep`
 - `GenerateWalletsStep`
+- `R3D4FaucetStep`
 
 
 ### Changed
