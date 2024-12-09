@@ -15,6 +15,7 @@
 - `SetVarsStep`
 - `GenerateWalletsStep`
 - `R3D4FaucetStep`
+- `ChainSimulatorFaucetStep`
 
 
 ### Changed
