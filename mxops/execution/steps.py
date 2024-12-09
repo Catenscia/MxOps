@@ -35,13 +35,14 @@ from multiversx_sdk_network_providers.contract_query_response import (
     ContractQueryResponse,
 )
 from mxpyserializer.abi_serializer import AbiSerializer
+import requests
 import yaml
 
 from mxops.common.providers import MyProxyNetworkProvider
 from mxops.config.config import Config
 from mxops.data.execution_data import InternalContractData, ScenarioData, TokenData
 from mxops.data.utils import json_dumps
-from mxops.enums import TokenTypeEnum
+from mxops.enums import NetworkEnum, TokenTypeEnum
 from mxops.execution import utils
 from mxops.execution.token_management_factory import (
     MyTokenManagementTransactionsFactory,
@@ -1765,3 +1766,86 @@ class GenerateWalletsStep(Step):
                 f"Wallet n°{i+1}/{n_wallets} generated with address "
                 f"{wallet_address.to_bech32()} at {wallet_path}"
             )
+
+
+@dataclass
+class R3D4FaucetStep(Step):
+    """
+    Represents a step to request some EGLD from the r3d4 faucet
+    """
+
+    targets: List[str]
+    ALLOWED_NETWORKS: ClassVar[Set] = (NetworkEnum.DEV, NetworkEnum.TEST)
+
+    def get_egld_details(self) -> Dict:
+        """
+        Request r3d4 for the details regarding the EGLD token faucet
+
+        :return: token id, max amount and available
+        :rtype: Tuple[int, int]
+        """
+        config = Config.get_config()
+        url = f"{config.get('R3D4_API')}/faucet/tokens"
+        response = requests.get(url, timeout=5)
+        response.raise_for_status()
+        data = response.json()
+        chain = config.get("CHAIN")
+        for token_data in data:
+            if token_data["network"] != chain:
+                continue
+            if token_data["identifier"] in ("xEGLD", "dEGLD", "EGLD", "tEGLD"):
+                return token_data
+        raise errors.TokenNotFound("Could not found EGLD in the faucet")
+
+    def execute(self):
+        """
+        Seach for the r3d4 token id of EGLD in the current network and
+        ask for EGLD from the faucet
+        """
+        scenario_data = ScenarioData.get()
+        if scenario_data.network not in self.ALLOWED_NETWORKS:
+            raise errors.WrongNetworkForStep(
+                scenario_data.network, self.ALLOWED_NETWORKS
+            )
+        egld_details = self.get_egld_details()
+        request_amount = float(egld_details["max"])
+        for target in self.targets:
+            address = utils.get_address_instance(target)
+            LOGGER.info(
+                f"Requesting {request_amount} {egld_details['identifier']}"
+                " from r3d4 faucet"
+            )
+            self.request_faucet(
+                address.to_bech32(), egld_details["id"], str(request_amount)
+            )
+
+    def request_faucet(self, bech32: str, token_id: str, amount: str):
+        """
+        Request the faucet for a token amount for an address
+
+        :param bech32: address where to receive the tokens
+        :type bech32: str
+        :param token_id: r3d4 token id to recieve
+        :type token_id: int
+        :param amount: amount of token to recieve, with decimal
+        :type amount: str
+        """
+        config = Config.get_config()
+        url = f"{config.get('R3D4_API')}/faucet/list"
+        headers = {
+            "accept": "application/json",
+        }
+        data = {
+            "formdata": {
+                "network": config.get("CHAIN"),
+                "token": token_id,
+                "address": bech32,
+                "amount": amount,
+            }
+        }
+        response = requests.post(url, json=data, headers=headers, timeout=5)
+        response.raise_for_status()
+        return_data = response.json()
+        if "error" in return_data:
+            raise errors.FaucetFailed(return_data["error"])
+        LOGGER.info(f"Response from faucet: {return_data['success']}")

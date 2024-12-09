@@ -10,6 +10,7 @@ from typing import Any, Dict, List
 
 from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
 
+from mxops.enums import NetworkEnum
 from mxops.utils.msc import get_tx_link
 
 
@@ -32,6 +33,18 @@ class ParsingError(Exception):
     ) -> None:
         message = f"Could not parse {raw_object} as {parsing_target}"
         super().__init__(message)
+
+
+class TokenNotFound(Exception):
+    """
+    To be raised when an expected token was not found
+    """
+
+
+class FaucetFailed(Exception):
+    """
+    To be raised when a faucet did not succeed
+    """
 
 
 class NewTokenIdentifierNotFound(Exception):
@@ -383,3 +396,22 @@ class WalletAlreadyExist(Exception):
 
     def __str__(self) -> str:
         return f"A wallet already exists at {self.wallet_path}"
+
+
+class WrongNetworkForStep(Exception):
+    """
+    to be raised when a step was asked to be executed in an innapropriate network
+    """
+
+    def __init__(
+        self, current_network: NetworkEnum, allowed_networks: List[NetworkEnum]
+    ):
+        self.current_network = current_network
+        self.allowed_networks = allowed_networks
+        super().__init__()
+
+    def __str__(self) -> str:
+        return (
+            f"Step can only be executed in the newtorks {self.allowed_networks},"
+            f" while current network is {self.current_network}"
+        )
