@@ -7,15 +7,5 @@ allowed_scenario:
 steps:
   - type: ChainSimulatorFaucet
     amount: 100000000000000000000  # 100 EGLD
-    targets:
-      - emmanuel
-      - françois
-      - jacques
-      - jean
-      - marc
-      - marie
-      - marthe
-      - paul
-      - pierre
-      - thomas
+    targets: "%user_wallets"
     
