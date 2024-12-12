@@ -1,12 +1,14 @@
 set -e
 
-if ! [[ " ${1} " =~ " localnet "|" devnet "|" chain-simulator " ]]; then
-    echo "integration setup not available on ${1}"
-    exit 0
+if [ "$1" == "chain-simulator" ]; then
+    scene="integration_tests/setup_scenes/02a_chain_simulator_faucet.yaml"
+else
+    scene="integration_tests/setup_scenes/02b_r3d4_faucet.yaml"
 fi
 
 python -m mxops \
             execute \
             -n $1 \
             -s integration_test \
-            integration_tests/setup_scenes
+            integration_tests/setup_scenes/01_accounts.yaml \
+            $scene \
