@@ -692,7 +692,11 @@ This step allows to execute a custom python function. You can execute whatever y
   - third party calls (databases, API ...)
 
 For the function, the user can provide raw arguments or can use the MxOps values format.
-If the python function return a string, it will be saved as an environment variable under the name `MXOPS_<UPPER_FUNC_NAME>_RESULT`.
+The python function result can be saved as a scenario variable if the user desires it.
+
+```{warning}
+The results returned by the python function should always parsable by json, otherwise the data save will fail and the execution will stop.
+```
 
 ```yaml
 type: Python
@@ -704,13 +708,15 @@ arguments:  # optional
 keyword_arguments:  # optional
   key_1: value_1
   key_2: "$VALUE"  # using os env var
+print_result: True  # optional
+result_save_key: "my_result"  # optional, key under which save the function result, here it will be accessible as "%my_result"
 ```
 
 The above `Step` will execute the function `my_function`, located at `./folder/my_module.py` that would look like this:
 ```python
 def my_function(arg_1, arg2, key_1, key_2):
     # execute anything here
-    return result  # optionally return a string result
+    return result
 ```
 
 You can find examples of python `Steps` in this {doc}`section<../examples/python_steps>`.
