@@ -1,4 +1,3 @@
-import os
 from mxops.data.execution_data import ScenarioData
 from mxops.execution.steps import PythonStep, SetVarsStep
 
@@ -9,7 +8,11 @@ def test_python_step():
     module_path = "./tests/data/custom_user_module.py"
     function = "set_contract_value"
     step_1 = PythonStep(
-        module_path, function, ["my_test_contract", "my_test_key", "my_test_value"]
+        module_path,
+        function,
+        ["my_test_contract", "my_test_key", "my_test_value"],
+        print_result=True,
+        result_save_key="result_1",
     )
 
     step_2 = PythonStep(
@@ -20,21 +23,23 @@ def test_python_step():
             "value_key": "my_test_key",
             "value": 4582,
         },
+        print_result=True,
+        result_save_key="result_2",
     )
 
     # When
     step_1.execute()
     value_1 = scenario_data.get_contract_value("my_test_contract", "my_test_key")
-    os_value_1 = os.environ[f"MXOPS_{function.upper()}_RESULT"]
+    scenario_value_1 = scenario_data.get_value("result_1")
     step_2.execute()
     value_2 = scenario_data.get_contract_value("my_test_contract", "my_test_key")
-    os_value_2 = os.environ[f"MXOPS_{function.upper()}_RESULT"]
+    scenario_value_2 = scenario_data.get_value("result_2")
 
     # Then
     assert value_1 == "my_test_value"
-    assert os_value_1 == "my_test_value"
+    assert scenario_value_1 == "my_test_value"
     assert value_2 == 4582
-    assert os_value_2 == "4582"
+    assert scenario_value_2 == 4582
 
 
 def test_direct_set_vars_step():

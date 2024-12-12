@@ -52,6 +52,7 @@ steps:
     keyword_arguments:  # optional
       pool_price: "%my_pool.PoolPrice"
       base_amount: 1000000000000000000  # 1 assuming 18 decimals
+    result_save_key: computed_quote_amount # -> will be accessible with "%computed_quote_amount"
 
   # deposit into the pool
   - type: ContractCall
@@ -64,7 +65,7 @@ steps:
         amount: 1000000000000000000
         nonce: 0
       - token_identifier: "%my_pool.QuoteToken"
-        amount: "$MXOPS_COMPUTE_DEPOSIT_AMOUNT_RESULT" # -> direct access to the function result
+        amount: "%computed_quote_amount"
         nonce: 0
 ```
 
@@ -84,22 +85,21 @@ def compute_deposit_amount(pool_price: int, base_amount: int) -> str:
     :param base_amount: amount of base token to convert
     :type base_amount: int
     :return: quote amount equivalent the the provided base amount
-    :rtype: str
+    :rtype: int
     """
     quote_amount = base_amount * pool_price // 10**12
-    return str(quote_amount)
+    return quote_amount
 ```
 
-This python function helps us to make a calculation that is not directly supported by MxOps. The result is saved under the environment variable `MXOPS_COMPUTE_DEPOSIT_AMOUNT_RESULT` and it can be used in later steps, as shown above.
+This python function helps us to make a calculation that is not directly supported by MxOps. The result is saved under the Scenario variable `computed_quote_amount`, as we specified in the `Step` definition, and it can be used in later steps, as shown above.
 
-If more than one value needs to be saved, the user can attached data directly to an existing contract:
+The user can also directly save values from the function within a Scenario:
 
 ```{code-block} python
 
 scenario_data = ScenarioData.get()
-existing_contract_id = 'my-contract'
-scenario_data.set_contract_value(self.contract, "key_1", 7894) # -> accessible with "%my-contract.key_1"
-scenario_data.set_contract_value(self.contract, "key_2", "test-string") # -> accessible with "%my-contract.key_2"
+scenario_data.set_value("key_1", 7894) # -> accessible with "%key_1"
+scenario_data.set_value("key_2", "test-string") # -> accessible with "%key_2"
 
 ```
 

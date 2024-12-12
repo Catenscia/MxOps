@@ -1,0 +1,21 @@
+allowed_networks:
+  - localnet
+  - testnet
+  - devnet
+
+allowed_scenario:
+  - "integration_test.*"
+
+steps:
+  - type: R3D4Faucet
+    targets:
+      - emmanuel
+      - françois
+      - jacques
+      - jean
+      - marc
+      - marie
+      - marthe
+      - paul
+      - pierre
+      - thomas

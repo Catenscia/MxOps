@@ -1,7 +1,8 @@
 allowed_networks:
-  - devnet
-  - localnet
-  - chain-simulator
+    - localnet
+    - testnet
+    - devnet
+    - chain-simulator
 
 allowed_scenario:
   - "integration_test_token_management.*"

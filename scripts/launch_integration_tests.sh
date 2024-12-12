@@ -1,11 +1,6 @@
 #!/bin/bash
 set -e
 
-if ! [[ " ${1} " =~ " localnet "|" devnet "|" chain-simulator " ]]; then
-    echo "integration tests not available on ${1}"
-    exit 0
-fi
-
 # Execute the integration tests
 echo "Starting integration tests scenes"
 
