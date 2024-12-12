@@ -1773,7 +1773,7 @@ class R3D4FaucetStep(Step):
     Represents a step to request some EGLD from the r3d4 faucet
     """
 
-    targets: List[str]
+    targets: Union[List[str], str]
     ALLOWED_NETWORKS: ClassVar[Set] = (NetworkEnum.DEV, NetworkEnum.TEST)
 
     def get_egld_details(self) -> Dict:
@@ -1808,7 +1808,8 @@ class R3D4FaucetStep(Step):
             )
         egld_details = self.get_egld_details()
         request_amount = float(egld_details["max"])
-        for target in self.targets:
+        targets = utils.retrieve_value_from_any(self.targets)
+        for target in targets:
             address = utils.get_address_instance(target)
             LOGGER.info(
                 f"Requesting {request_amount} {egld_details['identifier']}"
@@ -1857,7 +1858,7 @@ class ChainSimulatorFaucetStep(Step):
     (aka initial wallets of the chain simulator)
     """
 
-    targets: List[str]
+    targets: Union[List[str], str]
     amount: int
     ALLOWED_NETWORKS: ClassVar[Set] = (NetworkEnum.CHAIN_SIMULATOR,)
 
@@ -1875,7 +1876,8 @@ class ChainSimulatorFaucetStep(Step):
         initial_wallet_data = proxy.get_initial_wallets()
         sender = initial_wallet_data["balanceWallets"]["0"]["address"]["bech32"]
         sender_nonce = proxy.get_account(Address.from_bech32(sender)).nonce
-        for target in self.targets:
+        targets = utils.retrieve_value_from_any(self.targets)
+        for target in targets:
             egld_step = EgldTransferStep(
                 sender=sender, receiver=target, amount=self.amount
             )
