@@ -16,6 +16,8 @@
 - `GenerateWalletsStep`
 - `R3D4FaucetStep`
 - `ChainSimulatorFaucetStep`
+- `LoopStep` can now directly use a list from the Scenario data
+- `ChainSimulatorFaucetStep` and `R3D4FaucetStep` can now directly use a list from the Scenario data as targets
 
 
 ### Changed
