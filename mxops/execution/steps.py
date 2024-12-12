@@ -1622,6 +1622,8 @@ class PythonStep(Step):
     function: str
     arguments: list = field(default_factory=list)
     keyword_arguments: dict = field(default_factory=dict)
+    print_result: bool = True
+    result_save_key: Optional[str] = None
 
     def execute(self):
         """
@@ -1646,17 +1648,14 @@ class PythonStep(Step):
         )
         result = user_function(*retrieved_arguments, **retrieved_keyword_arguments)
 
-        if result:
-            if isinstance(result, str):
-                var_name = f"MXOPS_{self.function.upper()}_RESULT"
-                os.environ[var_name] = result
-            else:
-                LOGGER.warning(
-                    f"The result of the function {self.function} is not a "
-                    "string and has not been saved"
+        if self.result_save_key is not None:
+            if self.print_result:
+                LOGGER.info(
+                    f"Function result: {result}, saved at {self.result_save_key}"
                 )
 
-        LOGGER.info(f"Function result: {result}")
+            scenario_data = ScenarioData.get()
+            scenario_data.set_value(self.result_save_key, result)
 
 
 @dataclass
