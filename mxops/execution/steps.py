@@ -169,7 +169,7 @@ class LoopStep(Step):
     var_name: str
     var_start: int = None
     var_end: int = None
-    var_list: List[int] = None
+    var_list: Union[List, str] = None
 
     def generate_steps(self) -> Iterator[Step]:
         """
@@ -181,7 +181,7 @@ class LoopStep(Step):
         if self.var_start is not None and self.var_end is not None:
             iterator = range(self.var_start, self.var_end)
         elif self.var_list is not None:
-            iterator = self.var_list
+            iterator = utils.retrieve_value_from_any(self.var_list)
         else:
             raise ValueError("Loop iteration is not correctly defined")
         scenario_data = ScenarioData.get()
