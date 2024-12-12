@@ -1,11 +1,6 @@
 #!/bin/bash
 set -e
 
-if ! [[ " ${1} " =~ " localnet "|" devnet "|" chain-simulator " ]]; then
-    echo "Token management tests not available on ${1}"
-    exit 0
-fi
-
 python -m mxops \
             execute \
             -n $1 \

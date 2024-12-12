@@ -1,5 +1,6 @@
 allowed_networks:
   - localnet
+  - testnet
   - devnet
   - chain-simulator
 
