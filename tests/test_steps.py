@@ -1,5 +1,7 @@
+from typing import Any
+from mxops import errors
 from mxops.data.execution_data import ScenarioData
-from mxops.execution.steps import PythonStep, SetVarsStep
+from mxops.execution.steps import LoopStep, PythonStep, SetVarsStep
 
 
 def test_python_step():
@@ -87,3 +89,33 @@ def test_reference_set_vars_step():
     }
     saved_values = {key: scenario_data.get_value(key) for key in variables}
     assert expected_result == saved_values
+
+
+def register_value_in_list(value: Any):
+    scenario_data = ScenarioData.get()
+    try:
+        register_list = scenario_data.get_value("register_list")
+    except errors.WrongDataKeyPath:
+        register_list = []
+    register_list.append(value)
+    scenario_data.set_value("register_list", register_list)
+
+
+def test_loop_step_from_scenario_data_list():
+    # Given
+    scenario_data = ScenarioData.get()
+    scenario_data.set_value("var_list", [1, 2, 4])
+    loop_step = LoopStep(
+        steps=[
+            PythonStep("./tests/test_steps.py", "register_value_in_list", ["%loop_var"])
+        ],
+        var_name="loop_var",
+        var_list="%var_list",
+    )
+
+    # When
+    for step in loop_step.generate_steps():
+        step.execute()
+
+    # Then
+    assert scenario_data.get_value("register_list") == [1, 2, 4]

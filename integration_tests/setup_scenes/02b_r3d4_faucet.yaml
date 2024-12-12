@@ -8,14 +8,4 @@ allowed_scenario:
 
 steps:
   - type: R3D4Faucet
-    targets:
-      - emmanuel
-      - françois
-      - jacques
-      - jean
-      - marc
-      - marie
-      - marthe
-      - paul
-      - pierre
-      - thomas
+    targets: "%user_wallets"
