@@ -44,7 +44,6 @@ def generate_pem_wallet(shard: Optional[int] = None) -> Tuple[UserPEM, Address]:
         public_key = secret_key.generate_public_key()
         address = Address(public_key.buffer, "erd")
         address_shard = get_shard_of_pubkey(address.pubkey)
-        print("found shard", address_shard)
         if shard is None or address_shard == shard:
             return UserPEM(label=address.bech32(), secret_key=secret_key), address
         k_iter += 1

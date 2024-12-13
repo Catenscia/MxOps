@@ -285,6 +285,9 @@ class ContractDeployStep(TransactionStep):
 
         if not isinstance(contract_address, Address):
             raise errors.ParsingError(on_chain_tx, "contract deployment address")
+        LOGGER.info(
+            f"The address of the deployed contract is {contract_address.to_bech32()}"
+        )
 
         if self.abi_path is not None:
             serializer = AbiSerializer.from_abi(Path(self.abi_path))
@@ -293,7 +296,7 @@ class ContractDeployStep(TransactionStep):
 
         contract_data = InternalContractData(
             contract_id=self.contract_id,
-            address=contract_address.bech32(),
+            address=contract_address.to_bech32(),
             saved_values={},
             wasm_hash=get_file_hash(Path(self.wasm_path)),
             deploy_time=on_chain_tx.timestamp,
@@ -1813,7 +1816,7 @@ class R3D4FaucetStep(Step):
             address = utils.get_address_instance(target)
             LOGGER.info(
                 f"Requesting {request_amount} {egld_details['identifier']}"
-                " from r3d4 faucet"
+                f" from r3d4 faucet for {target} ({address.to_bech32()})"
             )
             self.request_faucet(
                 address.to_bech32(), egld_details["id"], str(request_amount)
