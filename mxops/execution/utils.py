@@ -112,29 +112,10 @@ def retrieve_value_from_scenario_data(arg: str) -> str:
     return convert_arg(retrieved_value, desired_type)
 
 
-def retrieve_address_from_account(arg: str) -> Address:
-    """
-    Retrieve an address from the accounts manager.
-    the argument must formated like this: [user]
-
-    :param arg: name of the variable formated as above
-    :type arg: str
-    :return: address from the scenario
-    :rtype: Address
-    """
-    try:
-        arg = arg[1:-1]
-    except Exception as err:
-        raise errors.WrongScenarioDataReference from err
-
-    account = AccountsManager.get_account(arg)
-    return account.address
-
-
 def retrieve_value_from_string(arg: str) -> Any:
     """
-    Check if a string argument is intended to be an env var, a config var or a data var.
-    If Nonce of the previous apply, return the string unchanged
+    Check if a string argument contains an env var, a config var or a data var.
+    If None of the previous apply, return the string unchanged
 
     :param arg: argument to check
     :type arg: str
@@ -143,8 +124,6 @@ def retrieve_value_from_string(arg: str) -> Any:
     """
     if arg.startswith("0x"):
         return bytes.fromhex(arg[2:])
-    if arg.startswith("["):
-        return retrieve_address_from_account(arg).bech32()
     if arg.startswith("$"):
         return retrieve_value_from_env(arg)
     if arg.startswith("&"):
