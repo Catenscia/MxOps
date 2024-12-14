@@ -1,12 +1,9 @@
 import os
 
-from multiversx_sdk_cli.accounts import Account
 from multiversx_sdk_cli.contracts import SmartContract
-from multiversx_sdk_core import Address
 
 from mxops.data.execution_data import _ScenarioData
 from mxops.execution import utils
-from mxops.execution.account import AccountsManager
 
 
 def test_no_type():
@@ -87,19 +84,14 @@ def test_value_from_config():
 
 def test_address_from_account():
     # Given
-    address = Address.from_bech32(
-        "erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th"
-    )
-    account_name = "alice"
-    account = Account(address)
-    AccountsManager._accounts[account_name] = account
-
     # When
-    arg = f"[{account_name}]"
-    retrieved_value = utils.retrieve_address_from_account(arg)
+    retrieved_value = utils.get_address_instance("test_user_A")
 
     # Then
-    assert retrieved_value == address
+    assert (
+        retrieved_value.to_bech32()
+        == "erd1jzw34pun678ktsstunk0dm0z2uh7m0ld9trw507ksnzt0wxalwwsv3fpa2"
+    )
 
 
 def test_get_contract_instance():
