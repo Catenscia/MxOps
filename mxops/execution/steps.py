@@ -124,7 +124,8 @@ class TransactionStep(Step):
         :param tx: tra
         :type tx: Transaction
         """
-        sender_account = AccountsManager.get_account(self.sender)
+        sender = utils.retrieve_value_from_string(self.sender)
+        sender_account = AccountsManager.get_account(sender)
         tx.nonce = sender_account.nonce
         tx.signature = bytes.fromhex(sender_account.sign_transaction(tx))
         sender_account.nonce += 1
@@ -167,9 +168,9 @@ class LoopStep(Step):
 
     steps: List[Step]
     var_name: str
-    var_start: int = None
-    var_end: int = None
-    var_list: Union[List, str] = None
+    var_start: Optional[Any] = None
+    var_end: Optional[Any] = None
+    var_list: Optional[Any] = None
 
     def generate_steps(self) -> Iterator[Step]:
         """
@@ -178,15 +179,19 @@ class LoopStep(Step):
         :yield: steps to be executed
         :rtype: Iterator[Step]
         """
-        if self.var_start is not None and self.var_end is not None:
-            iterator = range(self.var_start, self.var_end)
-        elif self.var_list is not None:
-            iterator = utils.retrieve_value_from_any(self.var_list)
+        var_name = utils.retrieve_value_from_any(self.var_name)
+        var_start = utils.retrieve_value_from_any(self.var_start)
+        var_end = utils.retrieve_value_from_any(self.var_end)
+        var_list = utils.retrieve_value_from_any(self.var_list)
+        if var_start is not None and var_end is not None:
+            iterator = range(var_start, var_end)
+        elif var_list is not None:
+            iterator = utils.retrieve_value_from_any(var_list)
         else:
             raise ValueError("Loop iteration is not correctly defined")
         scenario_data = ScenarioData.get()
         for var in iterator:
-            scenario_data.set_value(self.var_name, var)
+            scenario_data.set_value(var_name, var)
             for step in self.steps:
                 yield step
 
@@ -234,9 +239,10 @@ class ContractDeployStep(TransactionStep):
         scenario_data = ScenarioData.get()
 
         # check that the id of the contract is free
+        contract_id = utils.retrieve_value_from_any(self.contract_id)
         try:
-            scenario_data.get_contract_value(self.contract_id, "address")
-            raise errors.ContractIdAlreadyExists(self.contract_id)
+            scenario_data.get_contract_value(contract_id, "address")
+            raise errors.ContractIdAlreadyExists(contract_id)
         except errors.UnknownContract:
             pass
 
@@ -294,8 +300,9 @@ class ContractDeployStep(TransactionStep):
         else:
             serializer = None
 
+        contract_id = utils.retrieve_value_from_any(self.contract_id)
         contract_data = InternalContractData(
-            contract_id=self.contract_id,
+            contract_id=contract_id,
             address=contract_address.to_bech32(),
             saved_values={},
             wasm_hash=get_file_hash(Path(self.wasm_path)),
@@ -312,7 +319,7 @@ class ContractUpgradeStep(TransactionStep):
     Represents a smart contract upgrade
     """
 
-    sender: Dict
+    sender: str
     contract: str
     wasm_path: str
     gas_limit: int
@@ -376,15 +383,14 @@ class ContractUpgradeStep(TransactionStep):
         else:
             serializer = None
 
+        contract = utils.retrieve_value_from_any(self.contract)
         scenario_data = ScenarioData.get()
         try:
             scenario_data.set_contract_value(
-                self.contract, "last_upgrade_time", on_chain_tx.timestamp
+                contract, "last_upgrade_time", on_chain_tx.timestamp
             )
             if serializer is not None:
-                scenario_data.set_contract_value(
-                    self.contract, "serializer", serializer
-                )
+                scenario_data.set_contract_value(contract, "serializer", serializer)
         except errors.UnknownContract:  # any contract can be upgraded
             pass
 
@@ -409,12 +415,13 @@ class ContractCallStep(TransactionStep):
         :return: transaction built
         :rtype: Transaction
         """
-        LOGGER.info(f"Calling {self.endpoint} for {self.contract}")
+        contract = utils.retrieve_value_from_any(self.contract)
+        LOGGER.info(f"Calling {self.endpoint} for {contract} ")
         scenario_data = ScenarioData.get()
 
         retrieved_arguments = utils.retrieve_value_from_any(self.arguments)
         try:
-            serializer = scenario_data.get_contract_value(self.contract, "serializer")
+            serializer = scenario_data.get_contract_value(contract, "serializer")
         except errors.UnknownContract:
             serializer = None
 
@@ -442,7 +449,7 @@ class ContractCallStep(TransactionStep):
 
         return sc_factory.create_transaction_for_execute(
             sender=utils.get_address_instance(self.sender),
-            contract=utils.get_address_instance(self.contract),
+            contract=utils.get_address_instance(contract),
             function=self.endpoint,
             arguments=call_args,
             gas_limit=self.gas_limit,
@@ -599,33 +606,36 @@ class ContractQueryStep(Step):
             to_save = {self.results_save_keys.master_key: self.decoded_results}
 
         self.saved_results = {}
+        contract = utils.retrieve_value_from_any(self.contract)
         for save_key, value in to_save.items():
             if save_key is not None:
-                scenario_data.set_contract_value(self.contract, save_key, value)
+                scenario_data.set_contract_value(contract, save_key, value)
                 self.saved_results[save_key] = value
 
     def execute(self):
         """
         Execute a query and optionally save the result
         """
-        LOGGER.info(f"Query on {self.endpoint} for {self.contract}")
+        endpoint = utils.retrieve_value_from_any(self.endpoint)
+        contract = utils.retrieve_value_from_any(self.contract)
+        LOGGER.info(f"Query on {endpoint} for {contract}")
         scenario_data = ScenarioData.get()
         retrieved_arguments = utils.retrieve_value_from_any(self.arguments)
         try:
-            serializer = scenario_data.get_contract_value(self.contract, "serializer")
+            serializer = scenario_data.get_contract_value(contract, "serializer")
         except errors.UnknownContract:
             serializer = None
 
         if isinstance(serializer, AbiSerializer):
             query_args = serializer.encode_endpoint_inputs(
-                self.endpoint, retrieved_arguments
+                endpoint, retrieved_arguments
             )
         else:
             query_args = utils.format_tx_arguments(retrieved_arguments)
 
         builder = ContractQueryBuilder(
-            contract=utils.get_address_instance(self.contract),
-            function=self.endpoint,
+            contract=utils.get_address_instance(contract),
+            function=endpoint,
             call_arguments=query_args,
         )
         query = builder.build()
@@ -656,7 +666,7 @@ class ContractQueryStep(Step):
                     )
                 elif serializer is not None:
                     self.decoded_results = serializer.decode_contract_query_response(
-                        self.endpoint, self.query_response
+                        endpoint, self.query_response
                     )
 
         if query_failed:
@@ -675,7 +685,7 @@ class ContractQueryStep(Step):
                     result, expected_result["result_type"]
                 )
                 scenario_data.set_contract_value(
-                    self.contract, expected_result["save_key"], parsed_result
+                    contract, expected_result["save_key"], parsed_result
                 )
         else:
             self.save_results()
@@ -808,9 +818,10 @@ class FileFuzzerStep(Step):
         Execute fuzz testing on the given contract using the parameters
         from the provided file
         """
+        contract = utils.retrieve_value_from_any(self.contract)
         scenario_data = ScenarioData.get()
         try:
-            serializer = scenario_data.get_contract_value(self.contract, "serializer")
+            serializer = scenario_data.get_contract_value(contract, "serializer")
         except errors.UnknownContract as err:
             raise errors.WrongFuzzTestFile(
                 "ABI file must be provided for fuzz testing"
@@ -855,16 +866,17 @@ class FileFuzzerStep(Step):
         :param execution_parameters: parameters of the test to execute
         :type execution_parameters: FuzzExecutionParameters
         """
+        contract = utils.retrieve_value_from_any(self.contract)
         save_key = "fuzz_test_query_results"
         query_step = ContractQueryStep(
-            self.contract,
+            contract,
             execution_parameters.endpoint,
             arguments=execution_parameters.arguments,
             results_save_keys=save_key,
         )
         query_step.execute()
         scenario_data = ScenarioData.get()
-        results = scenario_data.get_contract_value(self.contract, save_key)
+        results = scenario_data.get_contract_value(contract, save_key)
         if results != execution_parameters.expected_outputs:
             raise errors.FuzzTestFailed(
                 f"Outputs are different from expected: found {results} but wanted "
@@ -878,8 +890,9 @@ class FileFuzzerStep(Step):
         :param execution_parameters: parameters of the test to execute
         :type execution_parameters: FuzzExecutionParameters
         """
+        contract = utils.retrieve_value_from_any(self.contract)
         call_step = ContractCallStep(
-            contract=self.contract,
+            contract=contract,
             endpoint=execution_parameters.endpoint,
             gas_limit=execution_parameters.gas_limit,
             arguments=execution_parameters.arguments,
@@ -917,8 +930,11 @@ class FungibleIssueStep(TransactionStep):
         :rtype: Transaction
         """
         sender = utils.get_address_instance(self.sender)
+        token_name = utils.retrieve_value_from_any(self.token_name)
+        token_ticker = utils.retrieve_value_from_any(self.token_ticker)
+        initial_supply = utils.retrieve_value_from_any(self.initial_supply)
         LOGGER.info(
-            f"Issuing fungible token named {self.token_name} "
+            f"Issuing fungible token named {token_name} "
             f"for the account {self.sender} ({sender.bech32()})"
         )
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
@@ -931,9 +947,9 @@ class FungibleIssueStep(TransactionStep):
 
         return tx_factory.create_transaction_for_issuing_fungible(
             sender=sender,
-            token_name=self.token_name,
-            token_ticker=self.token_ticker,
-            initial_supply=self.initial_supply,
+            token_name=token_name,
+            token_ticker=token_ticker,
+            initial_supply=initial_supply,
             num_decimals=self.num_decimals,
             can_freeze=self.can_freeze,
             can_wipe=self.can_wipe,
@@ -955,10 +971,12 @@ class FungibleIssueStep(TransactionStep):
         scenario_data = ScenarioData.get()
         token_identifier = tkm.extract_new_token_identifier(on_chain_tx)
         LOGGER.info(f"Newly issued token got the identifier {token_identifier}")
+        token_name = utils.retrieve_value_from_any(self.token_name)
+        token_ticker = utils.retrieve_value_from_any(self.token_ticker)
         scenario_data.add_token_data(
             TokenData(
-                name=self.token_name,
-                ticker=self.token_ticker,
+                name=token_name,
+                ticker=token_ticker,
                 identifier=token_identifier,
                 saved_values={},
                 type=TokenTypeEnum.FUNGIBLE,
@@ -990,16 +1008,18 @@ class NonFungibleIssueStep(TransactionStep):
         :rtype: Transaction
         """
         sender = utils.get_address_instance(self.sender)
+        token_name = utils.retrieve_value_from_any(self.token_name)
+        token_ticker = utils.retrieve_value_from_any(self.token_ticker)
         LOGGER.info(
-            f"Issuing non fungible token named {self.token_name} "
+            f"Issuing non fungible token named {token_name} "
             f"for the account {self.sender} ({sender.bech32()})"
         )
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
         tx_factory = MyTokenManagementTransactionsFactory(factory_config)
         return tx_factory.create_transaction_for_issuing_non_fungible(
             sender=sender,
-            token_name=self.token_name,
-            token_ticker=self.token_ticker,
+            token_name=token_name,
+            token_ticker=token_ticker,
             can_freeze=self.can_freeze,
             can_wipe=self.can_wipe,
             can_pause=self.can_pause,
@@ -1021,10 +1041,12 @@ class NonFungibleIssueStep(TransactionStep):
         scenario_data = ScenarioData.get()
         token_identifier = tkm.extract_new_token_identifier(on_chain_tx)
         LOGGER.info(f"Newly issued token got the identifier {token_identifier}")
+        token_name = utils.retrieve_value_from_any(self.token_name)
+        token_ticker = utils.retrieve_value_from_any(self.token_ticker)
         scenario_data.add_token_data(
             TokenData(
-                name=self.token_name,
-                ticker=self.token_ticker,
+                name=token_name,
+                ticker=token_ticker,
                 identifier=token_identifier,
                 saved_values={},
                 type=TokenTypeEnum.NON_FUNGIBLE,
@@ -1056,16 +1078,18 @@ class SemiFungibleIssueStep(TransactionStep):
         :rtype: Transaction
         """
         sender = utils.get_address_instance(self.sender)
+        token_name = utils.retrieve_value_from_any(self.token_name)
+        token_ticker = utils.retrieve_value_from_any(self.token_ticker)
         LOGGER.info(
-            f"Issuing semi fungible token named {self.token_name} "
+            f"Issuing semi fungible token named {token_name} "
             f"for the account {self.sender} ({sender.bech32()})"
         )
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
         tx_factory = MyTokenManagementTransactionsFactory(factory_config)
         return tx_factory.create_transaction_for_issuing_semi_fungible(
             sender=sender,
-            token_name=self.token_name,
-            token_ticker=self.token_ticker,
+            token_name=token_name,
+            token_ticker=token_ticker,
             can_freeze=self.can_freeze,
             can_transfer_nft_create_role=self.can_transfer_nft_create_role,
             can_wipe=self.can_wipe,
@@ -1087,10 +1111,12 @@ class SemiFungibleIssueStep(TransactionStep):
         scenario_data = ScenarioData.get()
         token_identifier = tkm.extract_new_token_identifier(on_chain_tx)
         LOGGER.info(f"Newly issued token got the identifier {token_identifier}")
+        token_name = utils.retrieve_value_from_any(self.token_name)
+        token_ticker = utils.retrieve_value_from_any(self.token_ticker)
         scenario_data.add_token_data(
             TokenData(
-                name=self.token_name,
-                ticker=self.token_ticker,
+                name=token_name,
+                ticker=token_ticker,
                 identifier=token_identifier,
                 saved_values={},
                 type=TokenTypeEnum.SEMI_FUNGIBLE,
@@ -1123,16 +1149,18 @@ class MetaIssueStep(TransactionStep):
         :rtype: Transaction
         """
         sender = utils.get_address_instance(self.sender)
+        token_name = utils.retrieve_value_from_any(self.token_name)
+        token_ticker = utils.retrieve_value_from_any(self.token_ticker)
         LOGGER.info(
-            f"Issuing meta token named {self.token_name} "
+            f"Issuing meta token named {token_name} "
             f"for the account {self.sender} ({sender.bech32()})"
         )
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
         tx_factory = MyTokenManagementTransactionsFactory(factory_config)
         return tx_factory.create_transaction_for_registering_meta_esdt(
             sender=sender,
-            token_name=self.token_name,
-            token_ticker=self.token_ticker,
+            token_name=token_name,
+            token_ticker=token_ticker,
             num_decimals=self.num_decimals,
             can_freeze=self.can_freeze,
             can_wipe=self.can_wipe,
@@ -1155,10 +1183,12 @@ class MetaIssueStep(TransactionStep):
         scenario_data = ScenarioData.get()
         token_identifier = tkm.extract_new_token_identifier(on_chain_tx)
         LOGGER.info(f"Newly issued token got the identifier {token_identifier}")
+        token_name = utils.retrieve_value_from_any(self.token_name)
+        token_ticker = utils.retrieve_value_from_any(self.token_ticker)
         scenario_data.add_token_data(
             TokenData(
-                name=self.token_name,
-                ticker=self.token_ticker,
+                name=token_name,
+                ticker=token_ticker,
                 identifier=token_identifier,
                 saved_values={},
                 type=TokenTypeEnum.META,
@@ -1642,7 +1672,8 @@ class PythonStep(Step):
         spec = spec_from_file_location(module_name, module_path.as_posix())
         user_module = module_from_spec(spec)
         spec.loader.exec_module(user_module)
-        user_function = getattr(user_module, self.function)
+        function = utils.retrieve_value_from_string(self.function)
+        user_function = getattr(user_module, function)
 
         # transform args and kwargs and execute
         retrieved_arguments = utils.retrieve_value_from_any(self.arguments)
@@ -1724,10 +1755,12 @@ class SetVarsStep(Step):
         """
         scenario_data = ScenarioData.get()
 
-        for key, raw_value in self.variables.items():
+        for raw_key, raw_value in self.variables.items():
+            key = utils.retrieve_value_from_string(raw_key)
             value = utils.retrieve_value_from_any(raw_value)
             LOGGER.info(
-                f"Setting variable `{key}` with the value `{value}` ({raw_value})"
+                f"Setting variable `{key}` ({raw_key}) with the value "
+                f"`{value}` ({raw_value})"
             )
             scenario_data.set_value(key, value)
 
@@ -1759,7 +1792,10 @@ class GenerateWalletsStep(Step):
             names = self.wallets
         for i, name in enumerate(names):
             pem_wallet, wallet_address = generate_pem_wallet(self.shard)
-            wallet_name = wallet_address.to_bech32() if name is None else name
+            if name is None:
+                wallet_name = wallet_address.to_bech32()
+            else:
+                wallet_name = utils.retrieve_value_from_string(name)
             wallet_path = self.save_folder / f"{wallet_name}.pem"
             if os.path.isfile(wallet_path.as_posix()):
                 raise errors.WalletAlreadyExist(wallet_path)
