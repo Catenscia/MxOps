@@ -378,6 +378,12 @@ class InvalidQueryResultsDefinition(Exception):
     """
 
 
+class InvalidDataFormat(Exception):
+    """
+    to be raise when the data format is invalid
+    """
+
+
 class WrongFuzzTestFile(Exception):
     """
     to be raised when the file given for fuzz testing in not correctly formatted

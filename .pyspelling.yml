@@ -26,3 +26,4 @@ matrix:
         ignores:
         - code
         - pre
+        - div#ValuesExamplesTable
