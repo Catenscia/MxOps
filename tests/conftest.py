@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 import pytest
 from unittest.mock import patch
@@ -8,10 +9,11 @@ from mxops.config.config import Config
 from mxops.data.execution_data import (
     InternalContractData,
     ScenarioData,
+    TokenData,
     delete_scenario_data,
 )
 from mxops.data.path import initialize_data_folder
-from mxops.enums import NetworkEnum
+from mxops.enums import NetworkEnum, TokenTypeEnum
 from mxops.execution.account import AccountsManager
 
 
@@ -56,8 +58,8 @@ def scenario_data():
     contract_id = "my_test_contract"
     address = "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t"
     wasm_hash = "5ce403a4f73701481cc15b2378cdc5bce3e35fa215815aa5eb9104d9f7ab2451"
-    _scenario_data = ScenarioData.get()
-    _scenario_data.add_contract_data(
+    scenario_data = ScenarioData.get()
+    scenario_data.add_contract_data(
         InternalContractData(
             contract_id=contract_id,
             address=address,
@@ -65,11 +67,22 @@ def scenario_data():
             wasm_hash=wasm_hash,
             deploy_time=1,
             last_upgrade_time=1,
-            saved_values=dict(),
+            saved_values={"query_result_1": [0, 1, {2: "abc"}]},
         )
     )
+    scenario_data.add_token_data(
+        token_data=TokenData("bob_token", "BOBT", "BOBT-123456", TokenTypeEnum.FUNGIBLE)
+    )
+    scenario_data.set_value("user", "alice")
+    scenario_data.set_value("suffix", "token")
+    scenario_data.set_value("my_list", ["item1", "item2", "item3", {"item4-key1": "e"}])
+    scenario_data.set_value(
+        "my_dict", {"key1": "1", "key2": 2, "key3": ["x", "y", "z"]}
+    )
 
-    yield _scenario_data
+    os.environ["OWNER_NAME"] = "bob"
+
+    yield scenario_data
     delete_scenario_data("pytest_scenario", ask_confirmation=False)
 
 

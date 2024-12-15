@@ -1,33 +1,11 @@
 import os
+from typing import Any
 
 from multiversx_sdk_cli.contracts import SmartContract
+import pytest
 
 from mxops.data.execution_data import _ScenarioData
 from mxops.execution import utils
-
-
-def test_no_type():
-    # Given
-    arg = "MyTokenIdentifier"
-
-    # When
-    retrieved_arg, specified_type = utils.retrieve_specified_type(arg)
-
-    # Then
-    assert retrieved_arg == arg
-    assert specified_type is None
-
-
-def test_int_type():
-    # Given
-    arg = "MyTokenAmount:int"
-
-    # When
-    retrieved_arg, specified_type = utils.retrieve_specified_type(arg)
-
-    # Then
-    assert retrieved_arg == "MyTokenAmount"
-    assert specified_type == "int"
 
 
 def test_env_value():
@@ -37,7 +15,7 @@ def test_env_value():
     os.environ[var_name] = str(var_value)
 
     # When
-    retrieved_value = utils.retrieve_value_from_env(f"${var_name}:int")
+    retrieved_value = utils.retrieve_value_from_string(f"${var_name}:int")
 
     # Then
     assert retrieved_value == var_value
@@ -50,7 +28,7 @@ def test_scenario_attribute_data():
 
     # When
     arg = f"%{contract_id}.address"
-    retrieved_value = utils.retrieve_value_from_scenario_data(arg)
+    retrieved_value = utils.retrieve_value_from_string(arg)
 
     # Then
     assert retrieved_value == address
@@ -63,7 +41,7 @@ def test_scenario_saved_data(scenario_data: _ScenarioData):
 
     # When
     arg = f"%{contract_id}.my_key:int"
-    retrieved_value = utils.retrieve_value_from_scenario_data(arg)
+    retrieved_value = utils.retrieve_value_from_string(arg)
 
     # Then
     assert retrieved_value == 7458
@@ -76,7 +54,7 @@ def test_value_from_config():
 
     # When
     arg = f"&{value_name}"
-    retrieved_value = utils.retrieve_value_from_config(arg)
+    retrieved_value = utils.retrieve_value_from_string(arg)
 
     # Then
     assert retrieved_value == expected_value
@@ -141,3 +119,49 @@ def test_retrieve_account_address_from_data():
     # Assert
     assert isinstance(address, str)
     address == "erd1jzw34pun678ktsstunk0dm0z2uh7m0ld9trw507ksnzt0wxalwwsv3fpa2"
+
+
+@pytest.mark.parametrize(
+    "arg, expected_result",
+    [
+        ("%user", "alice"),
+        (
+            "%{%{user}.address}",
+            "erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3",
+        ),
+        (
+            "%%{user}.address",
+            "erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3",
+        ),
+        ("$OWNER_NAME", "bob"),
+        ("${OWNER_NAME}", "bob"),
+        (
+            "%{${OWNER_NAME}.address}",
+            "erd1ddhla0htp9eknfjn628ut55qafcpxa9evxmps2aflq8ldgqq08esc3x3f8",
+        ),
+        (
+            ["%%{user}.address", "%{${OWNER_NAME}.address}"],
+            [
+                "erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3",
+                "erd1ddhla0htp9eknfjn628ut55qafcpxa9evxmps2aflq8ldgqq08esc3x3f8",
+            ],
+        ),
+        ("%my_list", ["item1", "item2", "item3", {"item4-key1": "e"}]),
+        ("%my_list[0]", "item1"),
+        ("%{my_list[0]}b", "item1b"),
+        ("%{my_list[0]}%{my_list[1]}%{my_list[3].item4-key1}", "item1item2e"),
+        ("%my_dict", {"key1": "1", "key2": 2, "key3": ["x", "y", "z"]}),
+        ("%my_dict.key1", "1"),
+        ("%my_dict.key1:int", 1),
+        ("%my_dict.key2", 2),
+        ("%{my_dict.key2}_", "2_"),
+        ("%{${OWNER_NAME}_%{suffix}.identifier}", "BOBT-123456"),
+    ],
+)
+def test_string_retrieval(arg: Any, expected_result: Any):
+    # Given
+    # When
+    retrieved_value = utils.retrieve_value_from_any(arg)
+
+    # Then
+    assert retrieved_value == expected_result

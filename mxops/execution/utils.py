@@ -5,7 +5,8 @@ This module contains some utilities functions for the execution sub package
 """
 
 import os
-from typing import Any, List, Optional, Tuple
+import re
+from typing import Any, List, Optional
 
 from multiversx_sdk_cli.contracts import QueryResult, SmartContract
 from multiversx_sdk_core.address import Address
@@ -15,24 +16,6 @@ from mxops.config.config import Config
 from mxops.data.execution_data import ScenarioData
 from mxops import errors
 from mxops.execution.account import AccountsManager
-
-
-def retrieve_specified_type(arg: str) -> Tuple[str, Optional[str]]:
-    """
-    Retrieve the type specified with the argument.
-    Example:
-        $MY_VAR:int
-        &MY_VAR:str
-        %KEY_1.KEY_2[0].MY_VAR:int
-
-    :param arg: string arg passed
-    :type arg: str
-    :return: inner arg and name of the desired type if it exists
-    :rtype: Tuple[str, Optional[str]]
-    """
-    if ":" in arg:
-        return arg.split(":")
-    return arg, None
 
 
 def convert_arg(arg: Any, desired_type: Optional[str]) -> Any:
@@ -54,68 +37,17 @@ def convert_arg(arg: Any, desired_type: Optional[str]) -> Any:
     return arg
 
 
-def retrieve_value_from_env(arg: str) -> str:
-    """
-    Retrieve the value of an argument from the environment variables
-
-    :param arg: name of the variable prefixed with the $ sign
-    :type arg: str
-    :return: value saved in the environment
-    :rtype: str
-    """
-    if not arg.startswith("$"):
-        raise ValueError(f"the argument as no $ sign: {arg}")
-    inner_arg, desired_type = retrieve_specified_type(arg)
-    try:
-        retrieved_value = os.environ[inner_arg[1:]]
-    except KeyError as err:
-        raise errors.UnkownVariable(inner_arg[1:]) from err
-    return convert_arg(retrieved_value, desired_type)
-
-
-def retrieve_value_from_config(arg: str) -> str:
-    """
-    Retrieve the value of an argument from the config
-
-    :param arg: name of the variable prefixed with the & sign
-    :type arg: str
-    :return: value saved in the config
-    :rtype: str
-    """
-    if not arg.startswith("&"):
-        raise ValueError(f"the argument has no & sign: {arg}")
-    inner_arg, desired_type = retrieve_specified_type(arg[1:])
-    config = Config.get_config()
-    retrieved_value = config.get(inner_arg.upper())
-    return convert_arg(retrieved_value, desired_type)
-
-
-def retrieve_value_from_scenario_data(arg: str) -> str:
-    """
-    Retrieve the value of an argument from scenario data.
-    the argument must start with '%' and can chain key and index values:
-        - "%contract_id.address"
-        - "my_random_values.times[5]"
-        - "key_1.key_2[20].data"
-
-    :param arg: name of the variable formated as above
-    :type arg: str
-    :return: value saved in the config
-    :rtype: str
-    """
-    if not arg.startswith("%"):
-        raise ValueError(f"the argument has no % sign: {arg}")
-    inner_arg, desired_type = retrieve_specified_type(arg[1:])
-
-    scenario_data = ScenarioData.get()
-    retrieved_value = scenario_data.get_value(inner_arg)
-    return convert_arg(retrieved_value, desired_type)
-
-
 def retrieve_value_from_string(arg: str) -> Any:
     """
     Check if a string argument contains an env var, a config var or a data var.
     If None of the previous apply, return the string unchanged
+    Examples of formated strings:
+
+    $MY_VAR:int
+    &my-var:str
+    %KEY_1.KEY_2[0].MY_VAR
+    %{composed}_var
+    %{%{parametric}_${VAR}}
 
     :param arg: argument to check
     :type arg: str
@@ -124,13 +56,26 @@ def retrieve_value_from_string(arg: str) -> Any:
     """
     if arg.startswith("0x"):
         return bytes.fromhex(arg[2:])
-    if arg.startswith("$"):
-        return retrieve_value_from_env(arg)
-    if arg.startswith("&"):
-        return retrieve_value_from_config(arg)
-    if arg.startswith("%"):
-        return retrieve_value_from_scenario_data(arg)
-    return arg
+    pattern = r"(.*)([$&%])\{?([a-zA-Z0-9_\-\.\]\[]+):?([a-zA-Z]*)\}?(.*)"
+    result = re.match(pattern, arg)
+    if result is None:
+        return arg
+    pre_arg, symbol, inner_arg, desired_type, post_arg = result.groups()
+    if symbol == "%":
+        scenario_data = ScenarioData.get()
+        retrieved_value = scenario_data.get_value(inner_arg)
+    elif symbol == "&":
+        config = Config.get_config()
+        retrieved_value = config.get(inner_arg.upper())
+    elif symbol == "$":
+        retrieved_value = os.environ[inner_arg]
+    else:
+        raise errors.InvalidDataFormat(f"Unknow symbol {symbol}")
+    retrieved_value = convert_arg(retrieved_value, desired_type)
+
+    if pre_arg != "" or post_arg != "":
+        retrieved_value = f"{pre_arg}{retrieved_value}{post_arg}"
+    return retrieve_value_from_any(retrieved_value)
 
 
 def retrieve_values_from_strings(args: List[str]) -> List[Any]:
