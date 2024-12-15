@@ -10,6 +10,8 @@ abcdef
 catenscia
 Catenscia
 ChangeLog
+composability
+composable
 config
 configparser
 cli

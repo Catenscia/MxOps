@@ -12,6 +12,7 @@ elrond
 Enum
 Enums
 Eq
+erd
 esdt
 ESDT
 ESDTmapper
