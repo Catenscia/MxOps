@@ -34,6 +34,7 @@ from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
 from multiversx_sdk_network_providers.contract_query_response import (
     ContractQueryResponse,
 )
+from multiversx_sdk_network_providers.constants import METACHAIN_ID
 from mxpyserializer.abi_serializer import AbiSerializer
 import requests
 import yaml
@@ -1927,3 +1928,38 @@ class ChainSimulatorFaucetStep(Step):
             SuccessCheck().raise_on_failure(on_chain_tx)
             LOGGER.info(f"Transaction successful: {get_tx_link(on_chain_tx.hash)}")
             sender_nonce += 1
+
+
+@dataclass
+class WaitStep(Step):
+    """
+    Represent a step to wait until a condition is fulfilled
+    """
+
+    for_seconds: Optional[Any] = field(default=None)
+    for_blocks: Optional[Any] = field(default=None)
+    shard: Optional[Any] = field(default=METACHAIN_ID)
+
+    def execute(self):
+        """
+        Wait until the specified condition is met
+        """
+        for_seconds = utils.retrieve_value_from_any(self.for_seconds)
+        for_blocks = utils.retrieve_value_from_any(self.for_blocks)
+        if for_seconds is not None:
+            LOGGER.info(f"Waiting for {for_seconds} seconds")
+            time.sleep(for_seconds)
+            return
+        elif for_blocks is not None:
+            network = Config.get_config().get_network()
+            shard = utils.retrieve_value_from_any(self.shard)
+            LOGGER.info(f"Waiting for {for_blocks} blocks on shard {shard}")
+            if network == NetworkEnum.CHAIN_SIMULATOR:
+                MyProxyNetworkProvider().generate_blocks(for_blocks)
+            else:
+                utils.wait_for_n_blocks(shard, for_blocks)
+        else:
+            raise ValueError(
+                "Either for_seconds or for_blocks must have a value different"
+                " from None"
+            )
