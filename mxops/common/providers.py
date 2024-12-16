@@ -33,6 +33,10 @@ class MyProxyNetworkProvider(ProxyNetworkProvider):
         url = f"simulator/generate-blocks-until-transaction-processed/{tx_hash}"
         return self.do_post_generic(url, None)
 
+    def generate_blocks(self, n_blocks: int) -> GenericResponse:
+        url = f"simulator/generate-blocks/{n_blocks}"
+        return self.do_post_generic(url, None)
+
     def get_address_storage_by_key(self, address: Address, key: str) -> str:
         url = f"address/{address.bech32()}/key/{key}"
         return self.do_get_generic(url).get("value")

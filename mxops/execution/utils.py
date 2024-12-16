@@ -6,12 +6,14 @@ This module contains some utilities functions for the execution sub package
 
 import os
 import re
+import time
 from typing import Any, List, Optional
 
 from multiversx_sdk_cli.contracts import QueryResult, SmartContract
 from multiversx_sdk_core.address import Address
 from multiversx_sdk_core.errors import ErrBadAddress
 
+from mxops.common.providers import MyProxyNetworkProvider
 from mxops.config.config import Config
 from mxops.data.execution_data import ScenarioData
 from mxops import errors
@@ -230,3 +232,26 @@ def parse_query_result(result: QueryResult, expected_return: str) -> Any:
     if expected_return == "str":
         return bytes.fromhex(result.hex).decode()
     raise ValueError(f"Unkown expected return: {expected_return}")
+
+
+def wait_for_n_blocks(shard: int, n_blocks: int, cooldown: float = 0.2) -> int:
+    """
+    Wait until a block is published with a timestamp higher than the provided time
+
+    :param shard: shard to monitor for block production
+    :type shard: int
+    :param n_blocks: number of block productions to wait for
+    :type n_blocks: int
+    :param cooldown: sleep time between status requests, defaults to 0.2
+    :type cooldown: float, optional
+    :return: last published block
+    :rtype: int
+    """
+    proxy_provider = MyProxyNetworkProvider()
+    shard = retrieve_value_from_any(shard)
+    current_block = proxy_provider.get_network_status(shard).nonce
+    target_block = current_block + n_blocks
+    while current_block < target_block:
+        time.sleep(cooldown)
+        current_block = proxy_provider.get_network_status(shard).nonce
+    return current_block

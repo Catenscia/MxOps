@@ -823,3 +823,28 @@ targets:
   - alice  # account name handeld by MxOps
   - erd1y3296u7m2v5653pddey3p7l5zacqmsgqc7vsu3w74p9jm2qp3tqqz950yl  # or direct bech32
 ```
+
+
+(wait_target)=
+### Wait Step
+
+This `Step` allows you to wait for either a certain amount of time or for a certain amount of block production.
+
+To wait for 10.5 seconds:
+
+```yaml
+type: Wait
+for_seconds: 10.5
+```
+
+To wait for 2 block generations on shard 0:
+
+```yaml
+type: Wait
+for_blocks: 2
+shard: 0  # optional, default is metachain
+```
+
+```{note}
+Waiting for blocks on the chain-simulator network will trigger a call to the chain-simulator to generate the required number of blocks
+```
