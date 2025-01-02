@@ -6,6 +6,9 @@
 Welcome to MxOps |version| !
 =========================================
 
+.. image:: ./images/mxops_full_logo.png
+   :alt: MxOps Logo
+
 You are in the MxOps documentation. Use the left-side panel or the menu below to navigate where you want to go.
 If you are new here, we recommend going first to the :doc:`getting_started/presentation` section.
 

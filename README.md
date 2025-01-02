@@ -1,5 +1,7 @@
 # MxOps
 
+![MxOps full logo](./docs/source/images/mxops_full_logo.png)
+
 MxOps is a python package created to automate MultiversX transactions: be it smart contracts deployments, calls, queries or just simple transfers. Inspired from DevOps tools and built on top of [mxpy](https://github.com/multiversx/mx-sdk-py-cli), it aims to ease and make reproducible any set of these interactions with the blockchain.
 
 MxOps aims to be useful in these situations:
@@ -7,6 +9,16 @@ MxOps aims to be useful in these situations:
 - deployment automation
 - on-chain integration tests
 - contract interaction automation
+
+## Sponsors
+
+MxOps is an open-source tool dedicated to enhancing the MultiversX ecosystem, and its development and maintenance rely on the generous support of our sponsors.
+
+We extend our heartfelt thanks to **[Astrarizon](https://www.astrarizon.com)**, the first sponsor of MxOps! ([announcement on X](https://x.com/Astrarizon/status/1861791446099263552))
+
+![MxOps full logo](./docs/source/images/astrarizon_logo.png)
+
+If MxOps has been beneficial in your projects or professional endeavors, we invite you to join our community of sponsors. Your support will ensure the continued maintenance and future development of MxOps, helping to keep this tool at the forefront of the MultiversX ecosystem. Interested? Reach out to us at [contact@catenscia.com](mailto:contact@catenscia.com).
 
 
 ## Quick Overview
