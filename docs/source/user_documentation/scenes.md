@@ -5,15 +5,15 @@ At execution time, the user will designate the `Scenario` in which the actions w
 
 ## Scene Format
 
-`Scenes` are written in yaml format. Each file will contain the following elements:
+`Scenes` are written in yaml format. Each file can contain the following elements:
 
-- `allowed_network*`: a list of the network onto which the `Scene` is allowed to be run. Allowed values are: [`localnet`, `testnet`, `devnet`, `mainnet`].
-- `allowed_scenario*`: a list of the scenario into which the `Scene` is allowed to be run. Regex can be used here.
+- `allowed_network`: a list of the networks onto which the `Scene` is allowed to be run. Allowed values are: [`mainnet`, `devnet`, `testnet`, `localnet`, `chain-simulator`]. By default all networks except the mainnet are allowed.
+- `allowed_scenario`: a list of the scenario into which the `Scene` is allowed to be run. Regex can be used here. By default all scenario are allowed.
 - `accounts`: a list of the accounts details. This can be defined only once per execution (so in only one file in the case where several files were submitted). Each account will be designated by its `account_name` in the `Steps`.
 - `external_contracts`: a dictionary of external contract addresses. The keys will be used as contract ids by MxOps. This can be defined only once per scenario.
 - `steps`: a list the `Steps` to execute sequentially.
 
- \* *mandatory values*
+All of the above elements are optional, you can use only the one you need.
 
 ## Scene Example
 

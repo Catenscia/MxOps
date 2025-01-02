@@ -1,11 +1,10 @@
 from pathlib import Path
-import yaml
 
 from mxpyserializer.abi_serializer import AbiSerializer
 
 from mxops.data.execution_data import ScenarioData
 from mxops.execution.checks import SuccessCheck
-from mxops.execution.scene import Scene, execute_scene
+from mxops.execution.scene import execute_scene, load_scene
 from mxops.execution.steps import (
     ContractCallStep,
     ContractDeployStep,
@@ -16,11 +15,10 @@ from mxops.execution.steps import (
 
 def test_deploy_scene_instantiation(test_data_folder_path: Path):
     # Given
-    with open(test_data_folder_path / "deploy_scene.yaml", encoding="utf-8") as file:
-        deploy_yaml_content = yaml.safe_load(file)
+    scene_path = test_data_folder_path / "scenes" / "deploy_scene.yaml"
 
     # When
-    scene = Scene(**deploy_yaml_content)
+    scene = load_scene(scene_path)
     loaded_steps = scene.steps
 
     # Then
@@ -90,7 +88,7 @@ def test_deploy_scene_instantiation(test_data_folder_path: Path):
 
 def test_abi_loading(test_data_folder_path: Path):
     # Given
-    scene_path = test_data_folder_path / "empty_scene.yaml"
+    scene_path = test_data_folder_path / "scenes" / "empty_scene.yaml"
     scenario_data = ScenarioData.get()
 
     # When
@@ -99,3 +97,23 @@ def test_abi_loading(test_data_folder_path: Path):
 
     # Then
     assert list(serializer.endpoints.keys()) == ["getSum", "upgrade", "add", "init"]
+
+
+def test_default_loading(test_data_folder_path: Path):
+    # Given
+    scene_path = test_data_folder_path / "scenes" / "default_scene.yaml"
+
+    # When
+    scene = load_scene(scene_path)
+
+    # Then
+    assert len(scene.steps) == 0
+    assert len(scene.accounts) == 0
+    assert len(scene.external_contracts) == 0
+    assert scene.allowed_networks == [
+        "devnet",
+        "testnet",
+        "localnet",
+        "chain-simulator",
+    ]
+    assert scene.allowed_scenario == [".*"]

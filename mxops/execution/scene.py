@@ -24,6 +24,26 @@ from mxops.utils.logger import get_logger
 LOGGER = get_logger("scene")
 
 
+def get_default_allowed_networks() -> List[str]:
+    """
+    Return the network that are allowed by default on a scene
+
+    :return: names of the allowed networks
+    :rtype: List[str]
+    """
+    return ["devnet", "testnet", "localnet", "chain-simulator"]
+
+
+def get_default_allowed_scenarios() -> List[str]:
+    """
+    Return the scenarios that are allowed by default on a scene
+
+    :return: regex of the allowed scenarios
+    :rtype: List[str]
+    """
+    return [".*"]
+
+
 @dataclass
 class Scene:
     """
@@ -31,8 +51,8 @@ class Scene:
     within a scenario.
     """
 
-    allowed_networks: List[str]
-    allowed_scenario: List[str]
+    allowed_networks: List[str] = field(default_factory=get_default_allowed_networks)
+    allowed_scenario: List[str] = field(default_factory=get_default_allowed_scenarios)
     accounts: List[Dict] = field(default_factory=list)
     steps: List[Step] = field(default_factory=list)
     external_contracts: Dict[str, Union[str, Dict[str, str]]] = field(
@@ -60,6 +80,9 @@ def load_scene(path: Path) -> Scene:
     """
     with open(path.as_posix(), "r", encoding="utf-8") as file:
         raw_scene = yaml.safe_load(file)
+
+    if raw_scene is None:
+        raw_scene = {}
 
     return Scene(**raw_scene)
 

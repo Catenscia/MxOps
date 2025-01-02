@@ -26,6 +26,7 @@
 - 🚨 BREAKING CHANGE 🚨 loop variables from `LoopStep` are now saved and accessed with the symbol `%` instead of `$`
 - 🚨 BREAKING CHANGE 🚨 function result are now saved and accessed with the symbol `%` instead of `$`, and the save key is provided by the user
 - 🚨 BREAKING CHANGE 🚨 account's addresses can no longer be accessed with "[<account_id>]"
+- `Scenes` have now default values for allowed scenarios and allowed networks
 
 ## 2.2.0 - 2024-04-16
 
