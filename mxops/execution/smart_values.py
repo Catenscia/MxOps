@@ -250,7 +250,7 @@ class SmartInt(SmartValue):
 
     def get_evaluated_value(self) -> int:
         """
-        Return the evaluated value and enforce a type if necessary
+        Return the evaluated value
 
         :return: evaluated value
         :rtype: int
@@ -276,9 +276,16 @@ class SmartBool(SmartValue):
         """
         return bool(value)
 
-    def get_evaluated_value(self) -> int:
+    def get_evaluated_value(self) -> bool:
         """
-        Return the evaluated value and enforce a type if necessary
+        Return the evaluated value
+
+        :return: evaluated value
+        :rtype: int
+        """
+        return super().get_evaluated_value()
+
+
 @dataclass
 class SmartStr(SmartValue):
     """
