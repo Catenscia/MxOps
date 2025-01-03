@@ -1,0 +1,210 @@
+"""
+author: Etienne Wallet
+
+This module contains the classes and functions to describe smart values, which are values
+evaluated at run time
+"""
+
+from dataclasses import dataclass, field
+import os
+import re
+from typing import Any, List, Optional
+
+from mxops import errors
+from mxops.config.config import Config
+from mxops.data.execution_data import ScenarioData
+
+
+def convert_arg(arg: Any, desired_type: Optional[str]) -> Any:
+    """
+    Convert an argument to a desired type.
+    Supported type are str and int
+
+    :param arg: argument to convert
+    :type arg: Any
+    :param desired_type: type to convert the argument to
+    :type desired_type: Optional[str]
+    :return: converted argument if a specified type was provided
+    :rtype: Any
+    """
+    if desired_type == "str":
+        return str(arg)
+    if desired_type == "int":
+        return int(arg)
+    return arg
+
+
+def retrieve_value_from_string(arg: str) -> Any:
+    """
+    Check if a string argument contains an env var, a config var or a data var.
+    If None of the previous apply, return the string unchanged
+    Examples of formated strings:
+
+    $MY_VAR:int
+    &my-var:str
+    %KEY_1.KEY_2[0].MY_VAR
+    %{composed}_var
+    %{%{parametric}_${VAR}}
+
+    :param arg: argument to check
+    :type arg: str
+    :return: untouched argument or retrieved value
+    :rtype: Any
+    """
+    if arg.startswith("0x"):
+        return bytes.fromhex(arg[2:])
+    pattern = r"(.*)([$&%])\{?([a-zA-Z0-9_\-\.\]\[]+):?([a-zA-Z]*)\}?(.*)"
+    result = re.match(pattern, arg)
+    if result is None:
+        return arg
+    pre_arg, symbol, inner_arg, desired_type, post_arg = result.groups()
+    if symbol == "%":
+        scenario_data = ScenarioData.get()
+        retrieved_value = scenario_data.get_value(inner_arg)
+    elif symbol == "&":
+        config = Config.get_config()
+        retrieved_value = config.get(inner_arg.upper())
+    elif symbol == "$":
+        retrieved_value = os.environ[inner_arg]
+    else:
+        raise errors.InvalidDataFormat(f"Unknow symbol {symbol}")
+    retrieved_value = convert_arg(retrieved_value, desired_type)
+
+    if pre_arg != "" or post_arg != "":
+        retrieved_value = f"{pre_arg}{retrieved_value}{post_arg}"
+    return retrieved_value
+
+
+def retrieve_value_from_any(arg: Any) -> Any:
+    """
+    Dynamically evaluate the provided argument depending on its type.
+    Otherwise it will be returned itself
+
+    :param arg: argument to evaluate
+    :type arg: Any
+    :return: evaluated argument
+    :rtype: Any
+    """
+    if isinstance(arg, str):
+        return retrieve_value_from_string(arg)
+    if isinstance(arg, list):
+        return [retrieve_value_from_any(e) for e in arg]
+    if isinstance(arg, dict):
+        return {
+            retrieve_value_from_any(k): retrieve_value_from_any(v)
+            for k, v in arg.items()
+        }
+    return arg
+
+
+@dataclass
+class SmartValue:
+    """
+    Represent a smart value that can have any type
+    """
+
+    raw_value: Any
+    evaluated_values: Optional[List] = field(init=False, default=None)
+
+    @property
+    def is_evaluated(self) -> bool:
+        """
+        If the smart value has been evaluated
+
+        :return: true if evaluated
+        :rtype: bool
+        """
+        return self.evaluated_values is not None
+
+    def require_evaluated(self):
+        """
+        Raise an error if the value has not been evaluated
+        """
+        if not self.is_evaluated:
+            raise errors.SmartValueNotEvaluated
+
+    def get_evaluation_string(self):
+        """
+        construct the string the show the different values that the raw_value
+        has beed evaluated to.
+        Ex "USDT-123456 (%{%{Bob-token}.identifier} -> %usdt.identifier)"
+        """
+        self.require_evaluated()
+        evaluated_value = self.get_evaluated_value()
+        evaluation_str = str(evaluated_value)
+        values_str = [str(v) for v in [self.raw_value, *self.evaluated_values]]
+        values_str = [s for s in values_str if s != evaluation_str]
+        if len(values_str) > 0:
+            values_str = " -> ".join(s for s in values_str)
+            evaluation_str += f" ({values_str})"
+        return evaluation_str
+
+    def evaluate(self):
+        """
+        Evaluate the raw value and save the intermediary values until the
+        final value is reached
+        """
+        k = 0
+        self.evaluated_values = []
+        last_value = None
+        result = self.raw_value
+        while result != last_value:
+            last_value = result
+            result = retrieve_value_from_any(last_value)
+            self.evaluated_values.append(result)
+            k += 1
+            if k > 1000:
+                raise errors.MaxIterationError(
+                    f"Unable to evaluated raw value {self.raw_value}"
+                )
+        self.evaluated_values[-1] = self.type_enforce_value(self.evaluated_values[-1])
+
+    @staticmethod
+    def type_enforce_value(value: Any) -> Any:
+        """
+        Convert a value to the expected evaluated type
+
+        :param value: value to convert
+        :type value: Any
+        :return: converted value
+        :rtype: Any
+        """
+        return value
+
+    def get_evaluated_value(self) -> Any:
+        """
+        Return the evaluated value
+
+        :return: evaluated value
+        :rtype: Any
+        """
+        self.require_evaluated()
+        return self.evaluated_values[-1]
+
+
+@dataclass
+class SmartInt(SmartValue):
+    """
+    Represent a smart value that should result in an int
+    """
+
+    @staticmethod
+    def type_enforce_value(value: Any) -> int:
+        """
+        Convert a value to the expected evaluated type
+
+        :param value: value to convert
+        :type value: Any
+        :return: converted value
+        :rtype: int
+        """
+        return int(value)
+
+    def get_evaluated_value(self) -> int:
+        """
+        Return the evaluated value and enforce a type if necessary
+
+        :return: evaluated value
+        :rtype: int
+        """
+        return super().get_evaluated_value()
