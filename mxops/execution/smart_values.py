@@ -201,7 +201,10 @@ class SmartValue:
                     f"Unable to evaluated raw value {self.raw_value}"
                 )
         enforced_type_value = self.type_enforce_value(last_value)
-        if enforced_type_value != last_value:
+        if (
+            type(enforced_type_value) != type(last_value)
+            or enforced_type_value != last_value
+        ):
             self.evaluated_values.append(enforced_type_value)
 
     @staticmethod
