@@ -1,8 +1,8 @@
 """
 author: Etienne Wallet
 
-This module contains the classes and functions to describe smart values, which are values
-evaluated at run time
+This module contains the classes and functions to describe smart values,
+which are values evaluated at run time
 """
 
 from dataclasses import dataclass, field
@@ -10,9 +10,13 @@ import os
 import re
 from typing import Any, List, Optional
 
+from multiversx_sdk_core import Address
+from multiversx_sdk_core.errors import ErrBadAddress
+
 from mxops import errors
 from mxops.config.config import Config
 from mxops.data.execution_data import ScenarioData
+from mxops.execution.account import AccountsManager
 
 
 def convert_arg(arg: Any, desired_type: Optional[str]) -> Any:
@@ -95,6 +99,39 @@ def retrieve_value_from_any(arg: Any) -> Any:
             for k, v in arg.items()
         }
     return arg
+
+
+def get_address_instance(address_str: str) -> Address:
+    """
+    From a string return an Address instance.
+    The input will be parsed to dynamically evaluate values from the environment,
+    the config, saved data or from the defined contracts or accounts.
+
+    :param address_str: raw address or address entity designation
+    :type address_str: str
+    :return: address instance corresponding to the input
+    :rtype: Address
+    """
+    # try to see if the string is a valid address
+    try:
+        return Address.from_bech32(address_str)
+    except ErrBadAddress:
+        pass
+
+    # else try to see if it is a valid contract id
+    try:
+        evaluated_address_str = retrieve_value_from_string(f"%{address_str}.address")
+        return Address.from_bech32(evaluated_address_str)
+    except (ErrBadAddress, errors.WrongDataKeyPath):
+        pass
+
+    # finally try to see if it designates a defined account
+    try:
+        account = AccountsManager.get_account(evaluated_address_str)
+        return account.address
+    except errors.UnknownAccount:
+        pass
+    raise errors.ParsingError(address_str, "address_str address")
 
 
 @dataclass
@@ -209,6 +246,34 @@ class SmartInt(SmartValue):
         return int(value)
 
     def get_evaluated_value(self) -> int:
+        """
+        Return the evaluated value and enforce a type if necessary
+
+        :return: evaluated value
+        :rtype: int
+        """
+        return super().get_evaluated_value()
+
+
+@dataclass
+class SmartBech32(SmartValue):
+    """
+    Represent a smart value that should result in a bech32
+    """
+
+    @staticmethod
+    def type_enforce_value(value: Any) -> str:
+        """
+        Convert a value to the expected evaluated type
+
+        :param value: value to convert
+        :type value: Any
+        :return: converted value
+        :rtype: str
+        """
+        return get_address_instance(value).to_bech32()
+
+    def get_evaluated_value(self) -> str:
         """
         Return the evaluated value and enforce a type if necessary
 

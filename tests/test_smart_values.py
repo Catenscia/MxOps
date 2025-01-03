@@ -2,7 +2,7 @@ from typing import Any
 import pytest
 from mxops import errors
 from mxops.data.execution_data import ScenarioData
-from mxops.execution.smart_values import SmartInt, SmartValue
+from mxops.execution.smart_values import SmartBech32, SmartInt, SmartValue
 
 
 @pytest.mark.parametrize(
@@ -17,7 +17,10 @@ from mxops.execution.smart_values import SmartInt, SmartValue
         (
             "%{${OWNER_NAME}_%{suffix}.identifier}",
             "BOBT-123456",
-            "BOBT-123456 (%{${OWNER_NAME}_%{suffix}.identifier} -> %{${OWNER_NAME}_token.identifier} -> %{bob_token.identifier})",
+            (
+                "BOBT-123456 (%{${OWNER_NAME}_%{suffix}.identifier} -> "
+                "%{${OWNER_NAME}_token.identifier} -> %{bob_token.identifier})"
+            ),
         ),
     ],
 )
@@ -98,6 +101,45 @@ def test_infinite_evaluation():
 def test_smart_int(raw_value: Any, expected_result: Any, expected_str: str):
     # Given
     smart_value = SmartInt(raw_value)
+
+    # When
+    smart_value.evaluate()
+
+    # Then
+    assert smart_value.is_evaluated
+    assert smart_value.get_evaluated_value() == expected_result
+    assert smart_value.get_evaluation_string() == expected_str
+
+
+@pytest.mark.parametrize(
+    "raw_value, expected_result, expected_str",
+    [
+        (
+            "my_test_contract",
+            "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t",
+            (
+                "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t "
+                "(my_test_contract)"
+            ),
+        ),
+        (
+            "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t",
+            "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t",
+            "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t",
+        ),
+        (
+            "%user",
+            "erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3",
+            (
+                "erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3 "
+                "(%user -> alice)"
+            ),
+        ),
+    ],
+)
+def test_smart_bech32(raw_value: Any, expected_result: Any, expected_str: str):
+    # Given
+    smart_value = SmartBech32(raw_value)
 
     # When
     smart_value.evaluate()
