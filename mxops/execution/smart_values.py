@@ -132,10 +132,16 @@ class SmartValue:
         self.require_evaluated()
         evaluated_value = self.get_evaluated_value()
         evaluation_str = str(evaluated_value)
-        values_str = [str(v) for v in [self.raw_value, *self.evaluated_values]]
-        values_str = [s for s in values_str if s != evaluation_str]
-        if len(values_str) > 0:
-            values_str = " -> ".join(s for s in values_str)
+        middle_values_str = []
+        previous_str = None
+        for mid_val in [self.raw_value, *self.evaluated_values]:
+            mid_val_str = str(mid_val)
+            if mid_val_str in (evaluation_str, previous_str):
+                continue
+            previous_str = mid_val_str
+            middle_values_str.append(mid_val_str)
+        if len(middle_values_str) > 0:
+            values_str = " -> ".join(s for s in middle_values_str)
             evaluation_str += f" ({values_str})"
         return evaluation_str
 
@@ -157,7 +163,9 @@ class SmartValue:
                 raise errors.MaxIterationError(
                     f"Unable to evaluated raw value {self.raw_value}"
                 )
-        self.evaluated_values[-1] = self.type_enforce_value(self.evaluated_values[-1])
+        enforced_type_value = self.type_enforce_value(last_value)
+        if enforced_type_value != last_value:
+            self.evaluated_values.append(enforced_type_value)
 
     @staticmethod
     def type_enforce_value(value: Any) -> Any:
