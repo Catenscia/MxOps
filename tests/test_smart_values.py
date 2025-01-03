@@ -2,7 +2,13 @@ from typing import Any
 import pytest
 from mxops import errors
 from mxops.data.execution_data import ScenarioData
-from mxops.execution.smart_values import SmartBech32, SmartBool, SmartInt, SmartValue
+from mxops.execution.smart_values import (
+    SmartBech32,
+    SmartBool,
+    SmartInt,
+    SmartStr,
+    SmartValue,
+)
 
 
 @pytest.mark.parametrize(
@@ -141,6 +147,39 @@ def test_smart_bool(raw_value: Any, expected_result: Any, expected_str: str):
     # Then
     assert smart_value.is_evaluated
     assert smart_value.get_evaluated_value() is expected_result
+    assert smart_value.get_evaluation_string() == expected_str
+
+
+@pytest.mark.parametrize(
+    "raw_value, expected_result, expected_str",
+    [
+        (
+            True,
+            "True",
+            "True",
+        ),
+        (
+            1,
+            "1",
+            "1",
+        ),
+        (
+            "%user",
+            "alice",
+            "alice (%user)",
+        ),
+    ],
+)
+def test_smart_str(raw_value: Any, expected_result: Any, expected_str: str):
+    # Given
+    smart_value = SmartStr(raw_value)
+
+    # When
+    smart_value.evaluate()
+
+    # Then
+    assert smart_value.is_evaluated
+    assert smart_value.get_evaluated_value() == expected_result
     assert smart_value.get_evaluation_string() == expected_str
 
 

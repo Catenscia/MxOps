@@ -279,6 +279,27 @@ class SmartBool(SmartValue):
     def get_evaluated_value(self) -> int:
         """
         Return the evaluated value and enforce a type if necessary
+@dataclass
+class SmartStr(SmartValue):
+    """
+    Represent a smart value that should result in a string
+    """
+
+    @staticmethod
+    def type_enforce_value(value: Any) -> str:
+        """
+        Convert a value to the expected evaluated type
+
+        :param value: value to convert
+        :type value: Any
+        :return: converted value
+        :rtype: bool
+        """
+        return str(value)
+
+    def get_evaluated_value(self) -> str:
+        """
+        Return the evaluated value
 
         :return: evaluated value
         :rtype: int
