@@ -59,7 +59,7 @@ def add_subparser(subparsers_action: _SubParsersAction):
         "--network",
         help="Name of the network to use",
         type=parse_network_enum,
-        required=True,
+        default="chain-simulator",
     )
 
     get_parser.add_argument(
