@@ -16,12 +16,14 @@ from typing import Literal
 
 from importlib_resources import files
 
-from mxops.data import path
+from mxops.data.path_versions import v1_0_0 as data_path
 from mxops.config.config import Config
 from mxops.data.execution_data import (
     ScenarioData,
     clone_scenario_data,
+    create_scenario_data_checkpoint,
     delete_scenario_data,
+    load_scenario_data_checkpoint,
 )
 from mxops.data.utils import json_dumps
 from mxops.enums import parse_network_enum
@@ -171,14 +173,6 @@ def add_subparser(subparsers_action: _SubParsersAction):
     )
 
     clone_parser.add_argument(
-        "-c",
-        "--source-checkpoint",
-        required=False,
-        help="Name of the checkpoint of the source scenario",
-        default="",
-    )
-
-    clone_parser.add_argument(
         "-y", "--yes", action="store_true", help="Skip confirmation step"
     )
 
@@ -206,7 +200,6 @@ def execute_cli(args: Namespace):  # pylint: disable=R0912
     """
     if args.command != "data":
         raise ValueError(f"Command data was expected, found {args.command}")
-    path.initialize_data_folder()
     Config.set_network(args.network)
 
     sub_command = args.data_command
@@ -216,18 +209,18 @@ def execute_cli(args: Namespace):  # pylint: disable=R0912
             ScenarioData.load_scenario(args.scenario, args.checkpoint)
             print(json_dumps(ScenarioData.get().to_dict()))
         elif args.list:
-            scenarios_names = path.get_all_scenarios_names()
+            scenarios_names = data_path.get_all_scenarios_names()
             data = {"names": sorted(scenarios_names)}
             print(json_dumps(data))
         elif args.path:
-            print(f"Root data path: {path.get_data_path()}")
+            print(f"Root data path: {data_path.get_mxops_data_path()}")
         else:
             raise ArgumentError(None, "This set of options is not valid")
     elif sub_command == "delete":
         if args.scenario:
             delete_scenario_data(args.scenario, args.checkpoint, not args.yes)
         elif args.all:
-            scenarios_names = path.get_all_scenarios_names()
+            scenarios_names = data_path.get_all_scenarios_names()
             message = "Confirm deletion of all scenario. (y/n)"
             if not args.yes and input(message).lower() not in ("y", "yes"):
                 print("User aborted deletion")
@@ -238,25 +231,17 @@ def execute_cli(args: Namespace):  # pylint: disable=R0912
             raise ArgumentError(None, "This set of options is not valid")
     elif sub_command == "checkpoint":
         if args.action == "create":
-            ScenarioData.load_scenario(args.scenario)
-            scenario = ScenarioData.get()
-            scenario.save(args.checkpoint)
-            LOGGER.info(f"Checkpoint {args.checkpoint} created")
+            create_scenario_data_checkpoint(args.scenario, args.checkpoint)
         elif args.action == "load":
-            ScenarioData.load_scenario(args.scenario, args.checkpoint)
-            scenario = ScenarioData.get()
-            scenario.save()
-            LOGGER.info(f"Checkpoint {args.checkpoint} loaded")
+            load_scenario_data_checkpoint(args.scenario, args.checkpoint)
         elif args.action == "delete":
             delete_scenario_data(args.scenario, args.checkpoint)
-            LOGGER.info(f"Checkpoint {args.checkpoint} deleted")
         else:
             raise ArgumentError(None, f"Unkown checkpoint action: {args.action}")
     elif sub_command == "clone":
         clone_scenario_data(
             args.source_scenario,
             args.destination_scenario,
-            args.source_checkpoint,
             not args.yes,
         )
     else:

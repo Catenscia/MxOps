@@ -89,7 +89,17 @@ class UnloadedScenario(Exception):
 
 class UnknownContract(Exception):
     """
-    To be raised when a specified contract is not found is a scenario
+    To be raised when a specified contract is not found in a scenario
+    """
+
+    def __init__(self, scenario_name: str, contract_id: str) -> None:
+        message = f"Contract {contract_id} is unkown in " f"scenario {scenario_name}"
+        super().__init__(message)
+
+
+class UnknownAbiContract(Exception):
+    """
+    To be raised when the abi of a specified contract is not found in a scenario
     """
 
     def __init__(self, scenario_name: str, contract_id: str) -> None:
@@ -119,7 +129,7 @@ class ContractIdAlreadyExists(Exception):
 
 class UnknownToken(Exception):
     """
-    To be raised when a specified token is not found is a scenario
+    To be raised when a specified token is not found in a scenario
     """
 
     def __init__(self, scenario_name: str, token_name: str) -> None:
@@ -139,7 +149,7 @@ class TokenNameAlreadyExists(Exception):
 
 class UnknownRootName(Exception):
     """
-    To be raised when a specified root name is not found is a scenario
+    To be raised when a specified root name is not found in a scenario
     """
 
     def __init__(self, scenario_name: str, root_name: str) -> None:

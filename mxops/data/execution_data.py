@@ -2,24 +2,22 @@
 author: Etienne Wallet
 
 This module contains the functions to load, write and update scenario data
+
 """
 
 from __future__ import annotations
 from copy import deepcopy
 from dataclasses import asdict, dataclass, field, is_dataclass
+import json
 import os
 from pathlib import Path
 import re
+import shutil
 import time
 from typing import Any, Dict, List, Optional
 
-from mxpyserializer.abi_serializer import AbiSerializer
-
 from mxops.config.config import Config
-from mxops.data.path import (
-    get_all_checkpoints_names,
-    get_scenario_file_path,
-)
+from mxops.data.path_versions import v1_0_0 as data_path
 from mxops import enums as mxops_enums
 from mxops import errors
 from mxops.data.utils import json_dump, json_load
@@ -191,7 +189,6 @@ class ContractData(SavedValuesData):
 
     contract_id: str
     address: str
-    serializer: Optional[AbiSerializer]
 
     def set_value(self, value_key: str, value: Any):
         """
@@ -202,7 +199,7 @@ class ContractData(SavedValuesData):
         :param value: value to save
         :type value: Any
         """
-        if value_key in ("address", "serializer"):
+        if value_key == "address":
             setattr(self, value_key, value)
         else:
             super().set_value(value_key, value)
@@ -215,10 +212,6 @@ class ContractData(SavedValuesData):
         :rtype: Dict
         """
         self_dict = asdict(self)
-        if self.serializer is None:
-            self_dict["serializer"] = None
-        else:
-            self_dict["serializer"] = self.serializer.to_dict()
         # add attribute to indicate internal/external
         self_dict["is_external"] = isinstance(self, ExternalContractData)
         return self_dict
@@ -345,6 +338,7 @@ class _ScenarioData(SavedValuesData):
     last_update_time: int
     contracts_data: Dict[str, ContractData] = field(default_factory=dict)
     tokens_data: Dict[str, TokenData] = field(default_factory=dict)
+    _abi_cache: Dict[str, Dict] = field(default_factory=dict, init=False)
 
     def get_contract_value(self, contract_id: str, value_key: str) -> Any:
         """
@@ -362,6 +356,49 @@ class _ScenarioData(SavedValuesData):
         except KeyError as err:
             raise errors.UnknownContract(self.name, contract_id) from err
         return contract.get_value(value_key)
+
+    def get_contract_abi(self, contract_id: str, use_cache: bool = True) -> Dict:
+        """
+        Return the dictionary of a contract abi given its id.
+        Look first if it exists in the cache, else try to search for
+        it in the Scenario locally saved data
+
+        :param contract_id: unique id of the contract to get the abi of
+        :type contract_id: str
+        :param use_cache: if the abi cache should be used, default to True
+        :type use_cache: bool
+        :return: abi of the contract as a json
+        :rtype: Dict
+        """
+        if use_cache:
+            try:
+                return self._abi_cache[contract_id]
+            except KeyError:
+                pass
+        file_path = data_path.get_contract_abi_file_path(self.name, contract_id)
+        try:
+            content = file_path.read_text()
+        except FileNotFoundError as err:
+            raise errors.UnknownAbiContract(self.name, contract_id) from err
+        contract_abi = json.loads(content)
+        self._abi_cache[contract_id] = contract_abi
+        return contract_abi
+
+    def set_contract_abi_from_source(self, contract_id: str, abi_path: Path):
+        """
+        Return the dictionary of a contract abi given its id.
+        Look first if it exists in the cache, else try to search for
+        it in the Scenario locally saved data
+
+        :param contract_id: unique id of the contract to get the abi of
+        :type contract_id: str
+        :return: abi of the contract as a json
+        :rtype: Dict
+        """
+        file_path = data_path.get_contract_abi_file_path(self.name, contract_id)
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(abi_path, file_path)
+        _ = self.get_contract_abi(contract_id, use_cache=False)  # update cache
 
     def set_contract_value(self, contract_id: str, value_key: str, value: Any):
         """
@@ -485,16 +522,14 @@ class _ScenarioData(SavedValuesData):
                 pass
         return super().set_value(value_key, value)
 
-    def save(self, checkpoint: str = ""):
+    def save(self):
         """
-        Save this scenario data where it belongs.
-        Overwrite any existing file. Will save a checkpoint if provided
-
-        :param checkpoint: contract id or token name that hosts the value
-        :type checkpoint: str
+        Save this scenario as the current data
+        Overwrite any existing data
         """
-        scenario_path = get_scenario_file_path(self.name, checkpoint)
-        json_dump(scenario_path, self.to_dict())
+        data_file_path = data_path.get_scenario_current_data_path(self.name)
+        data_file_path.parent.mkdir(parents=True, exist_ok=True)
+        json_dump(data_file_path, self.to_dict())
 
     def to_dict(self) -> Dict:
         """
@@ -504,6 +539,9 @@ class _ScenarioData(SavedValuesData):
         :rtype: Dict
         """
         self_dict = {**self.__dict__}
+        for key in list(self_dict.keys()):
+            if key.startswith("_"):
+                self_dict.pop(key)
         for key, value in self_dict.items():
             if isinstance(value, dict):
                 self_dict[key] = {}
@@ -540,8 +578,13 @@ class _ScenarioData(SavedValuesData):
         :return: loaded scenario data
         :rtype: _ScenarioData
         """
-        scenario_path = get_scenario_file_path(scenario_name, checkpoint_name)
-        return cls.load_from_path(scenario_path)
+        if checkpoint_name != "":
+            data_file_path = data_path.get_scenario_checkpoint_data_path(
+                scenario_name, checkpoint_name
+            )
+        else:
+            data_file_path = data_path.get_scenario_current_data_path(scenario_name)
+        return cls.load_from_path(data_file_path)
 
     @classmethod
     def load_from_path(cls, scenario_path: Path) -> _ScenarioData:
@@ -573,16 +616,6 @@ class _ScenarioData(SavedValuesData):
                     is_external = contract_data.pop("is_external")
                 except KeyError:
                     is_external = False
-                try:
-                    serializer_kwargs = contract_data.pop("serializer")
-                except KeyError:
-                    serializer_kwargs = None
-                if isinstance(serializer_kwargs, dict):
-                    contract_data["serializer"] = AbiSerializer.from_dict(
-                        serializer_kwargs
-                    )
-                else:
-                    contract_data["serializer"] = None
                 if is_external:
                     contracts_data[contract_id] = ExternalContractData(**contract_data)
                 else:
@@ -639,15 +672,11 @@ class ScenarioData:  # pylint: disable=too-few-public-methods
             raise errors.UnknownScenario(scenario_name) from err
         config = Config.get_config()
         network = config.get_network()
-        description = f"scenario {scenario_name}"
-        if checkpoint_name != "":
-            description += f" checkpoint {checkpoint_name}"
         if cls._instance.name != scenario_name:
-            raise RuntimeError(
-                f"Loaded scenario name {cls._instance.name} is different from"
-                f" the saved name {scenario_name}"
-            )
-        LOGGER.info(f"{description} loaded for network {network.value}")
+            # inconsistency may happen due to cloning of scenario
+            # the source of truth is the folder name
+            cls._instance.name = scenario_name
+        LOGGER.info(f"scenario {scenario_name} loaded for network {network.value}")
 
     @classmethod
     def create_scenario(cls, scenario_name: str):
@@ -657,13 +686,14 @@ class ScenarioData:  # pylint: disable=too-few-public-methods
         :param scenario_name: name of the scenario to create
         :type scenario_name: str
         """
-        if check_scenario_file(scenario_name):
+        if data_path.does_scenario_exist(scenario_name):
             message = (
                 "A scenario already exists under the name "
                 f"{scenario_name}. Do you want to override it? (y/n)"
             )
-            if input(message).lower not in ("y", "yes"):
+            if input(message).lower() not in ("y", "yes"):
                 raise errors.ScenarioNameAlreadyExists(scenario_name)
+            delete_scenario_data(scenario_name, ask_confirmation=False)
 
         config = Config.get_config()
         network = config.get_network()
@@ -676,24 +706,11 @@ class ScenarioData:  # pylint: disable=too-few-public-methods
         )
 
 
-def check_scenario_file(scenario_name: str) -> bool:
-    """
-    Check if a file exists for a given scenario name
-
-    :param scenario_name: name of the scenario to check
-    :type scenario_name: str
-    :return: if a file exists
-    :rtype: bool
-    """
-    file_path = get_scenario_file_path(scenario_name)
-    return Path(file_path).exists()
-
-
 def delete_scenario_data(
     scenario_name: str, checkpoint_name: str = "", ask_confirmation: bool = True
 ):
     """
-    Delete locally save data for a given scenario
+    Delete locally saved data for a given scenario
 
     :param scenario_name: name of the scenario to delete
     :type scenario_name: str
@@ -704,77 +721,137 @@ def delete_scenario_data(
                              defaults to True
     :type ask_confirmation: bool
     """
-    checkpoints_names = get_all_checkpoints_names(scenario_name)
-    if checkpoint_name != "":
-        if checkpoint_name not in checkpoints_names:
-            raise ValueError(
-                f"Scenario {scenario_name} does not contains a checkpoint named "
-                f"{checkpoint_name}.\nList of existing checkpoints: {checkpoints_names}"
-            )
-        checkpoints_names = [checkpoint_name]
-    else:
-        checkpoints_names = [""] + checkpoints_names
-
-    for ckp in checkpoints_names:
-        description = f"scenario {scenario_name}"
-        if ckp != "":
-            description += f" checkpoint {ckp}"
-        scenario_path = get_scenario_file_path(scenario_name, ckp)
+    network = Config.get_config().get_network()
+    if checkpoint_name == "":
+        root_scenario_path = data_path.get_root_scenario_data_path(scenario_name)
+        LOGGER.info(f"Deletion of the scenario {scenario_name} on {network.value}")
         if ask_confirmation:
             message = (
-                f"Confirm the deletion of the {description} "
-                f"located at {scenario_path.as_posix()}. (y/n)"
+                "Confirm the deletion of the data related to the scenario "
+                f"{scenario_name} on {network.value}. This includes"
+                "all the checkpoints previously saved for this scenario: (y/n)? "
             )
             if input(message).lower() not in ("y", "yes"):
-                print("User aborted deletion")
-                continue
+                LOGGER.info("User aborted deletion")
+                return
         try:
-            os.remove(scenario_path.as_posix())
-            LOGGER.info(f"The data of the {description} has been deleted")
+            shutil.rmtree(root_scenario_path)
+            LOGGER.info("Scenario deleted")
         except FileNotFoundError:
-            LOGGER.warning(f"The {description} does not have any data recorded")
+            LOGGER.warning(f"Scenario {scenario_name} on {network.value} do not exist")
+    else:
+        checkpoint_folder_path = data_path.get_scenario_checkpoint_path(
+            scenario_name, checkpoint_name
+        )
+        LOGGER.info(
+            f"Deletion of the checkpoint {checkpoint_name} for the scenario "
+            f"{scenario_name} on {network.value}"
+        )
+        if ask_confirmation:
+            message = (
+                "Confirm the deletion of the data related to the checkpoint "
+                f"{checkpoint_name} of the scenario {scenario_name} on {network.value}"
+            )
+            if input(message).lower() not in ("y", "yes"):
+                LOGGER.info("User aborted deletion")
+                return
+        try:
+            shutil.rmtree(checkpoint_folder_path)
+            LOGGER.info("Checkpoint deleted")
+        except FileNotFoundError:
+            LOGGER.warning(
+                f"Checkpoint {checkpoint_name} for scenario {scenario_name} "
+                f"on {network.value} do not exist"
+            )
+
+
+def create_scenario_data_checkpoint(scenario_name: str, checkpoint_name: str):
+    """
+    Create a checkpoint of the current data of a scenario
+
+    :param scenario_name: name of the scenario to save
+    :type scenario_name: str
+    :param checkpoint_name: name of the checkpoint to create
+    :type checkpoint_name: str
+    """
+    source_path = data_path.get_scenario_current_path(scenario_name)
+    destination_path = data_path.get_scenario_checkpoint_path(
+        scenario_name, checkpoint_name
+    )
+    network = Config.get_config().get_network()
+    LOGGER.info(
+        f"Creating checkpoint {checkpoint_name} for scenario {scenario_name} on "
+        f"network {network.value}"
+    )
+
+    if os.path.exists(destination_path):
+        shutil.rmtree(destination_path)
+    destination_path.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(source_path, destination_path)
+    LOGGER.info("Checkpoint created")
+
+
+def load_scenario_data_checkpoint(scenario_name: str, checkpoint_name: str):
+    """
+    Load a previously saved checkpoint as the current data of a scenario
+
+    :param scenario_name: name of the scenario
+    :type scenario_name: str
+    :param checkpoint_name: name of the checkpoint to load
+    :type checkpoint_name: str
+    """
+    source_path = data_path.get_scenario_checkpoint_path(scenario_name, checkpoint_name)
+    destination_path = data_path.get_scenario_current_path(scenario_name)
+    network = Config.get_config().get_network()
+    LOGGER.info(
+        f"Loading checkpoint {checkpoint_name} for scenario {scenario_name} on "
+        f"network {network.value}"
+    )
+
+    if os.path.exists(destination_path):
+        shutil.rmtree(destination_path)
+    destination_path.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(source_path, destination_path)
+    LOGGER.info("Checkpoint loaded")
 
 
 def clone_scenario_data(
     source_scenario_name: str,
     destination_scenario_name: str,
-    source_checkpoint_name: str = "",
     ask_confirmation: bool = True,
 ):
     """
-    Delete locally save data for a given scenario
+    Clone locally save data for a given scenario to another one
 
     :param source_scenario_name: name of the scenario to copy
     :type source_scenario_name: str
     :param destination_scenario_name: name of the scenario that will be a copy
     :type destination_scenario_name: str
-    :param source_checkpoint_name: checkpoint's name of the source scenario.
-    :type source_checkpoint_name: str, defaults to empty string
-    :param ask_confirmation: if a deletion confirmation should be asked,
+    :param ask_confirmation: if a clone confirmation should be asked,
                              defaults to True
     :type ask_confirmation: bool
     """
-    source_path = get_scenario_file_path(source_scenario_name, source_checkpoint_name)
-    ScenarioData.load_scenario(source_scenario_name, source_checkpoint_name)
-    scenario = ScenarioData.get()
-    scenario.name = destination_scenario_name
+    source_path = data_path.get_root_scenario_data_path(source_scenario_name)
+    destination_path = data_path.get_root_scenario_data_path(destination_scenario_name)
+    network = Config.get_config().get_network()
+    LOGGER.info(
+        f"Cloning scenario {source_scenario_name} into "
+        f"scenario {destination_scenario_name}"
+    )
     if ask_confirmation:
-        source_description = f"scenario {source_scenario_name}"
-        if source_checkpoint_name != "":
-            source_description += f" checkpoint {source_checkpoint_name}"
-        destination_description = f"scenario {destination_scenario_name}"
         message = (
-            f"Confirm the copy of the {source_description} located at "
-            f"{source_path.as_posix()} to overwrite any data for "
-            f"{destination_description}. (y/n)"
+            f"Confirm the copy of the {network.value} scenario {source_scenario_name} "
+            f"to overwrite any data for scenario {destination_scenario_name}. (y/n)"
         )
         if input(message).lower() not in ("y", "yes"):
-            print("User aborted copy")
+            LOGGER.info("User aborted copy")
             return
 
-    delete_scenario_data(destination_scenario_name, "", False)
-    scenario.save()
+    if os.path.exists(destination_path):
+        shutil.rmtree(destination_path)
+    destination_path.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(source_path, destination_path)
     LOGGER.info(
-        f"The data of the {source_description} has been copied to "
-        f"{destination_description}"
+        f"The data of the scenario {source_scenario_name} has been cloned to "
+        f"scenario {destination_scenario_name}"
     )

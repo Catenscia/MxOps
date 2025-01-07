@@ -249,6 +249,7 @@ class ContractDeployStep(TransactionStep):
 
         if self.abi_path is not None:
             serializer = AbiSerializer.from_abi(Path(self.abi_path))
+            scenario_data.set_contract_abi_from_source(contract_id, self.abi_path)
         else:
             serializer = None
 
@@ -296,11 +297,6 @@ class ContractDeployStep(TransactionStep):
             f"The address of the deployed contract is {contract_address.to_bech32()}"
         )
 
-        if self.abi_path is not None:
-            serializer = AbiSerializer.from_abi(Path(self.abi_path))
-        else:
-            serializer = None
-
         contract_id = utils.retrieve_value_from_any(self.contract_id)
         contract_data = InternalContractData(
             contract_id=contract_id,
@@ -309,7 +305,6 @@ class ContractDeployStep(TransactionStep):
             wasm_hash=get_file_hash(Path(self.wasm_path)),
             deploy_time=on_chain_tx.timestamp,
             last_upgrade_time=on_chain_tx.timestamp,
-            serializer=serializer,
         )
         scenario_data.add_contract_data(contract_data)
 
@@ -339,9 +334,15 @@ class ContractUpgradeStep(TransactionStep):
         :rtype: Transaction
         """
         LOGGER.info(f"Upgrading contract {self.contract}")
+        scenario_data = ScenarioData.get()
 
+        contract_designation = utils.retrieve_value_from_string(self.contract)
+        contract_address = utils.get_address_instance(contract_designation)
         if self.abi_path is not None:
             serializer = AbiSerializer.from_abi(Path(self.abi_path))
+            scenario_data.set_contract_abi_from_source(
+                contract_designation, self.abi_path
+            )
         else:
             serializer = None
 
@@ -359,7 +360,7 @@ class ContractUpgradeStep(TransactionStep):
 
         return sc_factory.create_transaction_for_upgrade(
             sender=utils.get_address_instance(self.sender),
-            contract=utils.get_address_instance(self.contract),
+            contract=contract_address,
             bytecode=bytecode,
             arguments=upgrade_args,
             gas_limit=self.gas_limit,
@@ -378,20 +379,14 @@ class ContractUpgradeStep(TransactionStep):
         """
         if not isinstance(on_chain_tx, TransactionOnNetwork):
             raise ValueError("On chain transaction is None")
-
-        if self.abi_path is not None:
-            serializer = AbiSerializer.from_abi(Path(self.abi_path))
-        else:
-            serializer = None
-
         contract = utils.retrieve_value_from_any(self.contract)
         scenario_data = ScenarioData.get()
+        scenario_data.set_contract_abi_from_source(contract, Path(self.abi_path))
+
         try:
             scenario_data.set_contract_value(
                 contract, "last_upgrade_time", on_chain_tx.timestamp
             )
-            if serializer is not None:
-                scenario_data.set_contract_value(contract, "serializer", serializer)
         except errors.UnknownContract:  # any contract can be upgraded
             pass
 
@@ -422,8 +417,9 @@ class ContractCallStep(TransactionStep):
 
         retrieved_arguments = utils.retrieve_value_from_any(self.arguments)
         try:
-            serializer = scenario_data.get_contract_value(contract, "serializer")
-        except errors.UnknownContract:
+            contract_abi = scenario_data.get_contract_abi(contract)
+            serializer = AbiSerializer.from_abi_dict(contract_abi)
+        except errors.UnknownAbiContract:
             serializer = None
 
         if isinstance(serializer, AbiSerializer):
@@ -623,8 +619,9 @@ class ContractQueryStep(Step):
         scenario_data = ScenarioData.get()
         retrieved_arguments = utils.retrieve_value_from_any(self.arguments)
         try:
-            serializer = scenario_data.get_contract_value(contract, "serializer")
-        except errors.UnknownContract:
+            contract_abi = scenario_data.get_contract_abi(contract)
+            serializer = AbiSerializer.from_abi_dict(contract_abi)
+        except errors.UnknownAbiContract:
             serializer = None
 
         if isinstance(serializer, AbiSerializer):
@@ -822,8 +819,9 @@ class FileFuzzerStep(Step):
         contract = utils.retrieve_value_from_any(self.contract)
         scenario_data = ScenarioData.get()
         try:
-            serializer = scenario_data.get_contract_value(contract, "serializer")
-        except errors.UnknownContract as err:
+            contract_abi = scenario_data.get_contract_abi(contract)
+            serializer = AbiSerializer.from_abi_dict(contract_abi)
+        except errors.UnknownAbiContract as err:
             raise errors.WrongFuzzTestFile(
                 "ABI file must be provided for fuzz testing"
             ) from err
