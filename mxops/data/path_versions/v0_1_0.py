@@ -1,7 +1,14 @@
 """
 author: Etienne Wallet
 
-This module (input/output) contains the functions to load and write contracts data
+This module contains the classes and the functions used to manage
+the data for the data model version 1.0.0
+
+General structure
+mxops
+└── <network>
+        └── <scenario_name><sep><checkpoint_name>.json
+
 """
 
 import os
@@ -13,28 +20,10 @@ from appdirs import AppDirs
 
 from mxops.config.config import Config
 from mxops.enums import NetworkEnum
-from mxops.utils.logger import get_logger
 
-
-LOGGER = get_logger("data-IO")
+VERSION = "v0.1.0"
+VERSION_AS_PATH = "v0_1_0"
 CHECKPOINT_SEP = "___CHECKPOINT___"
-
-
-def get_scenario_full_name(scenario_name: str, checkpoint: str = "") -> str:
-    """
-    Construct the full name of a scenario with contains the name of the scenario
-    and potentially the checkpoint separator and the checkpoint
-
-    :param scenario_name: name of the scenario
-    :type scenario_name: str
-    :param checkpoint: name of the checkpoint, defaults to ""
-    :type checkpoint: str, optional
-    :return: full name of the scenario
-    :rtype: str
-    """
-    if checkpoint == "":
-        return scenario_name
-    return f"{scenario_name}{CHECKPOINT_SEP}{checkpoint}"
 
 
 def get_data_path() -> Path:
@@ -57,6 +46,23 @@ def get_data_path() -> Path:
         return Path(data_path_config)
     app_dirs = AppDirs("mxops", "Catenscia")
     return Path(app_dirs.user_data_dir)
+
+
+def get_scenario_full_name(scenario_name: str, checkpoint: str = "") -> str:
+    """
+    Construct the full name of a scenario with contains the name of the scenario
+    and potentially the checkpoint separator and the checkpoint
+
+    :param scenario_name: name of the scenario
+    :type scenario_name: str
+    :param checkpoint: name of the checkpoint, defaults to ""
+    :type checkpoint: str, optional
+    :return: full name of the scenario
+    :rtype: str
+    """
+    if checkpoint == "":
+        return scenario_name
+    return f"{scenario_name}{CHECKPOINT_SEP}{checkpoint}"
 
 
 def initialize_data_folder():
@@ -156,6 +162,3 @@ def get_tx_file_path(contract_bech32_address: str) -> Path:
         / "transactions"
         / f"{contract_bech32_address}_txs.json"
     )
-
-
-LOGGER.debug(f"MxOps app directory is located at {get_data_path()}")
