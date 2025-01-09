@@ -61,8 +61,8 @@ from mxops.execution.smart_values import (
                 "-> ={int(1) * 7.0 / 2})"
             ),
         ),
-        ("={42 \% 5}", 2, "2 (={42 % 5})"),
-        ("={dict(a\=156)}", {"a": 156}, "{'a': 156} (={dict(a=156)})"),
+        (r"={42 \% 5}", 2, "2 (={42 % 5})"),
+        (r"={dict(a\=156)}", {"a": 156}, "{'a': 156} (={dict(a=156)})"),
     ],
 )
 def test_smart_value(raw_value: Any, expected_result: Any, expected_str: str):

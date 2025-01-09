@@ -24,7 +24,7 @@ from mxops.execution.account import AccountsManager
 def replace_escaped_characters(s: str) -> str:
     """
     Replace the escape character on symbols used by MxOps
-    ex: "45 \% 5" -> "42 % 5"
+    ex: "45 \\% 5" -> r"42 % 5"
 
     :param s: string to modify
     :type s: str
