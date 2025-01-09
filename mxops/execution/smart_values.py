@@ -135,7 +135,7 @@ def retrieve_value_from_string(arg: str) -> Any:
     if arg.startswith("0x"):
         return bytes.fromhex(arg[2:])
     arg = force_bracket(arg)
-    matches = list(re.finditer("[$&%=]\{", arg))
+    matches = list(re.finditer("[$&%=]\\{", arg))
     if len(matches) == 0:
         return arg
     match = matches[-1]  # start with the last one for correct resolution order
