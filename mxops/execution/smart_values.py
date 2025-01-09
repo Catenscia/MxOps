@@ -13,7 +13,8 @@ from typing import Any, List, Optional
 
 from multiversx_sdk import Address, Token, TokenTransfer
 from multiversx_sdk.core.errors import BadAddressError
-from simpleeval import simple_eval
+import numpy as np
+from simpleeval import EvalWithCompoundTypes
 
 from mxops import errors
 from mxops.config.config import Config
@@ -48,9 +49,16 @@ def evaluate_formula(formula_str: str) -> Any:
     :rtype: Any
     """
     formula_str = replace_escaped_characters(formula_str)
-    return simple_eval(
-        formula_str, functions={"int": int, "str": str, "float": float, "dict": dict}
-    )
+    return EvalWithCompoundTypes(
+        functions={
+            "int": int,
+            "str": str,
+            "float": float,
+            "rand": np.random.rand,
+            "randint": np.random.randint,
+            "choice": np.random.choice,
+        }
+    ).eval(formula_str)
 
 
 def retrieve_value_from_string(arg: str) -> Any:

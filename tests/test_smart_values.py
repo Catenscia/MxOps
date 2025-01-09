@@ -337,11 +337,6 @@ def test_smart_token_transfer(
 ):
     # Given
     smart_value = SmartTokenTransfer(raw_value)
-    # When
-    smart_value.evaluate()
-
-    # Then
-    assert smart_value.is_evaluated
     evaluated_transfer = smart_value.get_evaluated_value()
     assert evaluated_transfer.token.identifier == expected_result.token.identifier
     assert evaluated_transfer.token.nonce == expected_result.token.nonce
@@ -370,6 +365,7 @@ def test_smart_token_transfers(
 ):
     # Given
     smart_value = SmartTokenTransfers(raw_value)
+
     # When
     smart_value.evaluate()
 
@@ -383,3 +379,40 @@ def test_smart_token_transfers(
         assert ev_tr.amount == exp_tr.amount
 
     # assert smart_value.get_evaluation_string() == expected_str # TODO: wait for str
+
+
+def test_randint():
+    # Given
+    smart_value = SmartValue("=randint(2, 12)")
+
+    # When
+    smart_value.evaluate()
+
+    # Then
+    assert isinstance(smart_value.get_evaluated_value(), int)
+    assert 2 <= smart_value.get_evaluated_value() < 12
+
+
+def test_rand():
+    # Given
+    smart_value = SmartValue("=rand()")
+
+    # When
+    smart_value.evaluate()
+
+    # Then
+    assert smart_value.is_evaluated
+    assert isinstance(smart_value.get_evaluated_value(), float)
+    assert 0 <= smart_value.get_evaluated_value() <= 1
+
+
+def test_randchoice():
+    # Given
+    smart_value = SmartValue("=choice([1, 2, 3, 4])")
+
+    # When
+    smart_value.evaluate()
+
+    # Then
+    assert smart_value.is_evaluated
+    assert smart_value.get_evaluated_value() in [1, 2, 3, 4]
