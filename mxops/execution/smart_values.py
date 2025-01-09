@@ -20,33 +20,15 @@ from mxops.data.execution_data import ScenarioData
 from mxops.execution.account import AccountsManager
 
 
-def convert_arg(arg: Any, desired_type: Optional[str]) -> Any:
-    """
-    Convert an argument to a desired type.
-    Supported type are str and int
-
-    :param arg: argument to convert
-    :type arg: Any
-    :param desired_type: type to convert the argument to
-    :type desired_type: Optional[str]
-    :return: converted argument if a specified type was provided
-    :rtype: Any
-    """
-    if desired_type == "str":
-        return str(arg)
-    if desired_type == "int":
-        return int(arg)
-    return arg
-
-
 def retrieve_value_from_string(arg: str) -> Any:
     """
-    Check if a string argument contains an env var, a config var or a data var.
+    Check if a string argument contains an env var, a config var or a data var,
+    or a formula.
     If None of the previous apply, return the string unchanged
     Examples of formated strings:
 
-    $MY_VAR:int
-    &my-var:str
+    $MY_VAR
+    &my-var
     %KEY_1.KEY_2[0].MY_VAR
     %{composed}_var
     %{%{parametric}_${VAR}}
