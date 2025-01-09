@@ -57,6 +57,31 @@ def get_mxops_data_path() -> Path:
     return data_path / version_name_to_version_path_name(VERSION)
 
 
+def is_current_saved_version() -> bool:
+    """
+    Check if the current data version saved is the v1.0.0
+
+    :return: version number
+    :rtype: str
+    """
+    file_path = get_mxops_data_path().parent / "VERSION"
+    if not file_path.exists():
+        return False
+    saved_version = file_path.read_text()
+    return saved_version == VERSION
+
+
+def register_as_current() -> bool:
+    """
+    Check if the current data version saved is the v1.0.0
+
+    :return: version number
+    :rtype: str
+    """
+    file_path = get_mxops_data_path().parent / "VERSION"
+    file_path.write_text(VERSION)
+
+
 def get_root_scenario_data_path(scenario_name: str) -> Path:
     """
     Return the root path for a scenario data, where all data
@@ -156,6 +181,25 @@ def get_scenario_checkpoint_data_path(scenario_name: str, checkpoint_name: str) 
     :rtype: Path
     """
     return get_scenario_checkpoint_path(scenario_name, checkpoint_name) / "data.json"
+
+
+def get_checkpoint_contract_abi_file_path(
+    scenario_name: str, checkpoint_name: str, contract_id: str
+) -> Path:
+    """
+    Return the file path for a contract abi in the checkpoint data of a scenario
+
+    :param scenario_name: name of the scenario
+    :type scenario_name: str
+    :param scenario_name: name of the checkpoint
+    :type scenario_name: str
+    :param contract_id: unique id of the contract
+    :type contract_id: str
+    :return: folder path
+    :rtype: Path
+    """
+    folder_path = get_scenario_checkpoint_path(scenario_name, checkpoint_name) / "abis"
+    return folder_path / f"{contract_id}.abi.json"
 
 
 def get_scenario_logs_folder(scenario_name: str) -> Path:

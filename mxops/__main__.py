@@ -12,6 +12,7 @@ from importlib_resources import files
 
 from mxops.config import cli as config_cli
 from mxops.data import cli as data_cli
+from mxops.data.migrations.run import check_migrate_data
 from mxops.execution import cli as execution_cli
 
 
@@ -43,6 +44,7 @@ def main():
     intendend functions.
     """
     args = parse_args()
+    check_migrate_data()
 
     print(
         "MxOps  Copyright (C) 2023  Catenscia",

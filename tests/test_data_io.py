@@ -12,6 +12,7 @@ from mxops.data.execution_data import (
     TokenData,
     parse_value_key,
 )
+from mxops.data.migrations.v0_1_0__to__v1_0_0 import convert_scenario
 from mxops.enums import NetworkEnum, TokenTypeEnum
 
 
@@ -230,3 +231,26 @@ def test_io_unicity():
 
     # Then
     assert scenario_dict == raw_data
+
+
+def test_migration_v0_1_0_to_v1_0_0():
+    """
+    Test that a scenario file is correctly transformed from version v0.1.0
+    to v1.0.0
+    """
+    # Given
+    initial_scenario = json.loads(Path("tests/data/migrations/v0_1_0.json").read_text())
+
+    # When
+    result_scenario, abis = convert_scenario(initial_scenario)
+
+    # Then
+    expected_scenario = json.loads(
+        Path("tests/data/migrations/v1_0_0.json").read_text()
+    )
+    assert expected_scenario == result_scenario
+    assert len(abis) == 1
+    expected_abi = json.loads(
+        Path("tests/data/migrations/reconstructed.abi.json").read_text()
+    )
+    assert abis["data-store"] == expected_abi

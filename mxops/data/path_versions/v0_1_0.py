@@ -47,6 +47,18 @@ def get_data_path() -> Path:
     return Path(app_dirs.user_data_dir)
 
 
+def is_current_saved_version() -> bool:
+    """
+    Check if the current data version saved is the v0.1.0
+    This is the only version without a version file
+
+    :return: version number
+    :rtype: str
+    """
+    file_path = get_data_path() / "VERSION"
+    return file_path.parent.exists() and not file_path.exists()
+
+
 def get_scenario_full_name(scenario_name: str, checkpoint: str = "") -> str:
     """
     Construct the full name of a scenario with contains the name of the scenario
