@@ -13,11 +13,44 @@ from typing import Any, List, Optional
 
 from multiversx_sdk import Address, Token, TokenTransfer
 from multiversx_sdk.core.errors import BadAddressError
+from simpleeval import simple_eval
 
 from mxops import errors
 from mxops.config.config import Config
 from mxops.data.execution_data import ScenarioData
 from mxops.execution.account import AccountsManager
+
+
+def replace_escaped_characters(s: str) -> str:
+    """
+    Replace the escape character on symbols used by MxOps
+    ex: "45 \% 5" -> "42 % 5"
+
+    :param s: string to modify
+    :type s: str
+    :return: modified string
+    :rtype: s
+    """
+    escaped_characters = ["%", "&", "$", "=", "{", "}"]
+    for char in escaped_characters:
+        s = re.sub(rf"\\{char}", char, s)
+    return s
+
+
+def evaluate_formula(formula_str: str) -> Any:
+    """
+    evaluate the formula provided as a string by the user.
+    Remove first the escape characters on MxOps symbols
+
+    :param formula_str: formula to evaluate
+    :type formula_str: str
+    :return: result of the formula
+    :rtype: Any
+    """
+    formula_str = replace_escaped_characters(formula_str)
+    return simple_eval(
+        formula_str, functions={"int": int, "str": str, "float": float, "dict": dict}
+    )
 
 
 def retrieve_value_from_string(arg: str) -> Any:
@@ -32,6 +65,7 @@ def retrieve_value_from_string(arg: str) -> Any:
     %KEY_1.KEY_2[0].MY_VAR
     %{composed}_var
     %{%{parametric}_${VAR}}
+    ={1 + 2 + 3}
 
     :param arg: argument to check
     :type arg: str
@@ -43,11 +77,18 @@ def retrieve_value_from_string(arg: str) -> Any:
         return base64.b64decode(base64_encoded)
     if arg.startswith("0x"):
         return bytes.fromhex(arg[2:])
-    pattern = r"(.*)([$&%])\{?([a-zA-Z0-9_\-\.\]\[]+):?([a-zA-Z]*)\}?(.*)"
+    pattern = r"([^\\\n]*)([$&%=])(\{?)((?:\\[%$&=\\\{\}]|[^%$&=\\\{\}\n])+)(\}?)(.*)"
     result = re.match(pattern, arg)
     if result is None:
         return arg
-    pre_arg, symbol, inner_arg, desired_type, post_arg = result.groups()
+    (
+        pre_arg,
+        symbol,
+        opening_bracket,
+        inner_arg,
+        closing_bracket,
+        post_arg,
+    ) = result.groups()
     if symbol == "%":
         scenario_data = ScenarioData.get()
         retrieved_value = scenario_data.get_value(inner_arg)
@@ -56,9 +97,18 @@ def retrieve_value_from_string(arg: str) -> Any:
         retrieved_value = config.get(inner_arg.upper())
     elif symbol == "$":
         retrieved_value = os.environ[inner_arg]
+    elif symbol == "=":
+        retrieved_value = evaluate_formula(inner_arg)
     else:
         raise errors.InvalidDataFormat(f"Unknow symbol {symbol}")
-    retrieved_value = convert_arg(retrieved_value, desired_type)
+
+    # take into account single bracket mismatch
+    if opening_bracket != "" and closing_bracket == "":
+        pre_arg += "{"
+    elif closing_bracket != "" and opening_bracket == "":
+        post_arg = "}" + post_arg
+
+    # reconstruct the string if needed
 
     if pre_arg != "" or post_arg != "":
         retrieved_value = f"{pre_arg}{retrieved_value}{post_arg}"
@@ -158,7 +208,7 @@ class SmartValue:
         middle_values_str = []
         previous_str = None
         for mid_val in [self.raw_value, *self.evaluated_values]:
-            mid_val_str = str(mid_val)
+            mid_val_str = replace_escaped_characters(str(mid_val))
             if mid_val_str in (evaluation_str, previous_str):
                 continue
             previous_str = mid_val_str

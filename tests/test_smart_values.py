@@ -30,8 +30,8 @@ from mxops.execution.smart_values import (
             "%{${OWNER_NAME}_%{suffix}.identifier}",
             "BOBT-123456",
             (
-                "BOBT-123456 (%{${OWNER_NAME}_%{suffix}.identifier} -> "
-                "%{${OWNER_NAME}_token.identifier} -> %{bob_token.identifier})"
+                "BOBT-123456 (%{${OWNER_NAME}_%{suffix}.identifier} "
+                "-> %{${OWNER_NAME}_token.identifier} -> %{bob_token.identifier})"
             ),
         ),
         (
@@ -39,6 +39,30 @@ from mxops.execution.smart_values import (
             b"\x01\x02\x04\x08",
             "b'\\x01\\x02\\x04\\x08' (bytes:AQIECA==)",
         ),
+        ("=123456", 123456, "123456 (=123456)"),
+        ("={123456}", 123456, "123456 (={123456})"),
+        ("={'123456'}", "123456", "123456 (={'123456'})"),
+        ("={(1+2+3) * 10}", 60, "60 (={(1+2+3) * 10})"),
+        (
+            "={int(%{my_dict.key1}) // %{my_dict.key2}}",
+            0,
+            (
+                "0 (={int(%{my_dict.key1}) // %{my_dict.key2}} "
+                "-> ={int(%{my_dict.key1}) // 2} "
+                "-> ={int(1) // 2})"
+            ),
+        ),
+        (
+            "={int(%{my_dict.key1}) * 7.0 / %{my_dict.key2}}",
+            3.5,
+            (
+                "3.5 (={int(%{my_dict.key1}) * 7.0 / %{my_dict.key2}} "
+                "-> ={int(%{my_dict.key1}) * 7.0 / 2} "
+                "-> ={int(1) * 7.0 / 2})"
+            ),
+        ),
+        ("={42 \% 5}", 2, "2 (={42 % 5})"),
+        ("={dict(a\=156)}", {"a": 156}, "{'a': 156} (={dict(a=156)})"),
     ],
 )
 def test_smart_value(raw_value: Any, expected_result: Any, expected_str: str):
