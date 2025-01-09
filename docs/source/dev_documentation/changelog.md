@@ -28,6 +28,7 @@
 - 🚨 BREAKING CHANGE 🚨 account's addresses can no longer be accessed with "[<account_id>]"
 - `Scenes` have now default values for allowed scenarios and allowed networks
 - 🚨 BREAKING CHANGE 🚨 removed analyze feature from MxOps
+- 🚨 BREAKING CHANGE 🚨 rework the data save structure and introduce versioned data structure
 
 ## 2.2.0 - 2024-04-16
 
