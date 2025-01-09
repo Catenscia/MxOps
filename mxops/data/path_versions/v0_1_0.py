@@ -22,7 +22,6 @@ from mxops.config.config import Config
 from mxops.enums import NetworkEnum
 
 VERSION = "v0.1.0"
-VERSION_AS_PATH = "v0_1_0"
 CHECKPOINT_SEP = "___CHECKPOINT___"
 
 

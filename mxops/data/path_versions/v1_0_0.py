@@ -28,9 +28,9 @@ import platform
 from appdirs import AppDirs
 
 from mxops.config.config import Config
+from mxops.data.path_versions.msc import version_name_to_version_path_name
 
 VERSION = "v1.0.0"
-VERSION_AS_PATH = "v1_0_0"
 
 
 def get_mxops_data_path() -> Path:
@@ -54,7 +54,7 @@ def get_mxops_data_path() -> Path:
     else:
         app_dirs = AppDirs("mxops", "Catenscia")
         data_path = Path(app_dirs.user_data_dir)
-    return data_path / VERSION_AS_PATH
+    return data_path / version_name_to_version_path_name(VERSION)
 
 
 def get_root_scenario_data_path(scenario_name: str) -> Path:
