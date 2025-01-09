@@ -61,6 +61,55 @@ def evaluate_formula(formula_str: str) -> Any:
     ).eval(formula_str)
 
 
+def force_bracket(s: str) -> str:
+    """
+    Add brackets if the string is using a single
+    direct MxOps symbols
+
+    :param s: string to modify
+    :type s: str
+    :return: modified string
+    :rtype: str
+    """
+    pattern = r"^([$&%=])([^\{].*)$"
+    result = re.match(pattern, s)
+    if result is not None:
+        symbol, left_over = result.groups()
+        s = f"{symbol}{{{left_over}}}"
+    return s
+
+
+def get_closing_char_position(string: str, closing_char: str) -> int:
+    """
+    Find the closing character matching the first character of the string
+    characters can be escaped with backslashes
+
+    :param string: string
+    :type string: str
+    :param closing_char: closing character ex: "}"
+    :type closing_char: str
+    :return: position of the closing character
+    :rtype: int
+    """
+    opening_char = string[0]
+    opening_counter = 0
+    i = 0
+    string_len = len(string)
+    while i < string_len:
+        c = string[i]
+        if i > 0 and string[i - 1] == "\\":
+            i += 1
+            continue
+        if c == opening_char:
+            opening_counter += 1
+        elif c == closing_char:
+            opening_counter -= 1
+        if opening_counter == 0:
+            return i
+        i += 1
+    raise errors.ClosingCharNotFound(string, closing_char)
+
+
 def retrieve_value_from_string(arg: str) -> Any:
     """
     Check if a string argument contains an env var, a config var or a data var,
@@ -85,18 +134,17 @@ def retrieve_value_from_string(arg: str) -> Any:
         return base64.b64decode(base64_encoded)
     if arg.startswith("0x"):
         return bytes.fromhex(arg[2:])
-    pattern = r"([^\\\n]*)([$&%=])(\{?)((?:\\[%$&=\\\{\}]|[^%$&=\\\{\}\n])+)(\}?)(.*)"
-    result = re.match(pattern, arg)
-    if result is None:
+    arg = force_bracket(arg)
+    matches = list(re.finditer("[$&%=]\{", arg))
+    if len(matches) == 0:
         return arg
-    (
-        pre_arg,
-        symbol,
-        opening_bracket,
-        inner_arg,
-        closing_bracket,
-        post_arg,
-    ) = result.groups()
+    match = matches[-1]  # start with the last one for correct resolution order
+    match_start = match.start()
+    match_end = match.end()
+    symbol = arg[match_start]
+    closing_pos = match_end - 1 + get_closing_char_position(arg[match_end - 1 :], "}")
+    inner_arg = arg[match_end:closing_pos]
+
     if symbol == "%":
         scenario_data = ScenarioData.get()
         retrieved_value = scenario_data.get_value(inner_arg)
@@ -110,16 +158,9 @@ def retrieve_value_from_string(arg: str) -> Any:
     else:
         raise errors.InvalidDataFormat(f"Unknow symbol {symbol}")
 
-    # take into account single bracket mismatch
-    if opening_bracket != "" and closing_bracket == "":
-        pre_arg += "{"
-    elif closing_bracket != "" and opening_bracket == "":
-        post_arg = "}" + post_arg
-
     # reconstruct the string if needed
-
-    if pre_arg != "" or post_arg != "":
-        retrieved_value = f"{pre_arg}{retrieved_value}{post_arg}"
+    if match_start > 0 or closing_pos < len(arg) - 1:
+        retrieved_value = f"{arg[:match_start]}{retrieved_value}{arg[closing_pos + 1:]}"
     return retrieved_value
 
 

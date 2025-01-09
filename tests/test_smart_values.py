@@ -63,6 +63,7 @@ from mxops.execution.smart_values import (
         ),
         (r"={42 \% 5}", 2, "2 (={42 % 5})"),
         (r"={dict(a\=156)}", {"a": 156}, "{'a': 156} (={dict(a=156)})"),
+        (r"={\{'a': 156\}}", {"a": 156}, "{'a': 156} (={{'a': 156}})"),
     ],
 )
 def test_smart_value(raw_value: Any, expected_result: Any, expected_str: str):
@@ -86,7 +87,7 @@ def test_deeply_nested_smart_value():
         ["%my_list", ["%my_dict", "%my_test_contract.query_result_1"]],
     )
     scenario_data.set_value("list_name", "deep_nested_list")
-    smart_value = SmartValue("%%list_name")
+    smart_value = SmartValue("%{%{list_name}}")
 
     # When
     smart_value.evaluate()
@@ -102,7 +103,7 @@ def test_deeply_nested_smart_value():
         "['item1', 'item2', 'item3', {'item4-key1': 'e'}], "
         "[{'key1': '1', 'key2': 2, 'key3': ['x', 'y', 'z']}, "
         "[0, 1, {2: 'abc'}]]] "
-        "(%%list_name -> %deep_nested_list -> "
+        "(%{%{list_name}} -> %{deep_nested_list} -> "
         "['%my_list', ['%my_dict', '%my_test_contract.query_result_1']])"
     )
 
@@ -416,3 +417,16 @@ def test_randchoice():
     # Then
     assert smart_value.is_evaluated
     assert smart_value.get_evaluated_value() in [1, 2, 3, 4]
+
+
+def test_randchoice_nested():
+    # Given
+    scenario_data = ScenarioData.get()
+    smart_value = SmartValue("={choice(%{my_list})}")
+
+    # When
+    smart_value.evaluate()
+
+    # Then
+    assert smart_value.is_evaluated
+    assert smart_value.get_evaluated_value() in scenario_data.get_value("my_list")
