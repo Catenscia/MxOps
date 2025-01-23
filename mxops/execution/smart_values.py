@@ -10,8 +10,8 @@ import os
 import re
 from typing import Any, List, Optional
 
-from multiversx_sdk_core import Address
-from multiversx_sdk_core.errors import ErrBadAddress
+from multiversx_sdk import Address
+from multiversx_sdk.core.errors import BadAddressError
 
 from mxops import errors
 from mxops.config.config import Config
@@ -115,14 +115,14 @@ def get_address_instance(address_str: str) -> Address:
     # try to see if the string is a valid address
     try:
         return Address.from_bech32(address_str)
-    except ErrBadAddress:
+    except BadAddressError:
         pass
 
     # else try to see if it is a valid contract id
     try:
         evaluated_address_str = retrieve_value_from_string(f"%{address_str}.address")
         return Address.from_bech32(evaluated_address_str)
-    except (ErrBadAddress, errors.WrongDataKeyPath):
+    except (BadAddressError, errors.WrongDataKeyPath):
         pass
 
     # finally try to see if it designates a defined account
