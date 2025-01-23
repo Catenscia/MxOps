@@ -1,5 +1,8 @@
 from typing import Any
+
+from multiversx_sdk import Address
 import pytest
+
 from mxops import errors
 from mxops.data.execution_data import ScenarioData
 from mxops.execution.smart_values import (
