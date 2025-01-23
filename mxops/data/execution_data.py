@@ -713,19 +713,22 @@ class ScenarioData:  # pylint: disable=too-few-public-methods
         LOGGER.info(f"scenario {scenario_name} loaded for network {network.value}")
 
     @classmethod
-    def create_scenario(cls, scenario_name: str):
+    def create_scenario(cls, scenario_name: str, overwrite: bool = False):
         """
         Create a scenario data while checking for a pre existing instance.
 
         :param scenario_name: name of the scenario to create
         :type scenario_name: str
+        :param overwrite: if existing scenario should be overwritten
+                        defaults to False
+        :type overwrite: bool
         """
         if data_path.does_scenario_exist(scenario_name):
             message = (
                 "A scenario already exists under the name "
                 f"{scenario_name}. Do you want to override it? (y/n)"
             )
-            if input(message).lower() not in ("y", "yes"):
+            if not overwrite and input(message).lower() not in ("y", "yes"):
                 raise errors.ScenarioNameAlreadyExists(scenario_name)
             delete_scenario_data(scenario_name, ask_confirmation=False)
 
