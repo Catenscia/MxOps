@@ -37,6 +37,7 @@ mxops
 mxopsHelper
 MyCustomException
 MyStruct
+MxPySerializer
 PiggyBank
 PingAmount
 PoolPrice

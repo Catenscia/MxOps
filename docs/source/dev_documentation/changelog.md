@@ -29,6 +29,12 @@
 - `Scenes` have now default values for allowed scenarios and allowed networks
 - 🚨 BREAKING CHANGE 🚨 removed analyze feature from MxOps
 - 🚨 BREAKING CHANGE 🚨 rework the data save structure and introduce versioned data structure
+- 🚨 BREAKING CHANGE 🚨 upgrade to the new multiversx-sdk-py 1.0.0 and removal of MxPySerializer
+- 🚨 BREAKING CHANGE 🚨 OptionalValue are mandatory now (user must input "null")
+- 🚨 BREAKING CHANGE 🚨 OptionalValue are mandatory now (user must input "null")
+- 🚨 BREAKING CHANGE 🚨 Enums format has changed to use the one from the multiversx-sdk-py
+- 🚨 BREAKING CHANGE 🚨 MultiValueEncoded format has changed to use the one from the multiversx-sdk-py
+
 
 ## 2.2.0 - 2024-04-16
 
