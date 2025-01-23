@@ -1,6 +1,6 @@
 from argparse import _SubParsersAction, ArgumentParser, Namespace
 from pathlib import Path
-import subprocess
+import subprocess  # nosec
 import sys
 
 import requests
@@ -63,7 +63,7 @@ def fetch_and_save_docker_compose():
     source_path = Config.get_config().get("CHAIN_SIMULATOR_FULL_DOCKER_COMPOSE_PATH")
     if source_path.startswith("http"):
         LOGGER.info(f"Download the docker compose file from {source_path}")
-        response = requests.get(source_path)
+        response = requests.get(source_path, timeout=5)
         response.raise_for_status()
         source_content = response.text
     else:
@@ -79,7 +79,7 @@ def start_chain_simulator():
     """
     LOGGER.info("Starting the chain simulator")
     file_path = get_docker_compose_path()
-    process = subprocess.Popen(
+    process = subprocess.Popen(  # nosec
         ["docker", "compose", "-f", file_path.as_posix(), "up", "-d"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -94,7 +94,8 @@ def start_chain_simulator():
 
     if process.returncode != 0:
         print(
-            f"Error: chain simulator process ended with return code {process.returncode}"
+            "Error: chain simulator process ended with return code "
+            f"{process.returncode}"
         )
     else:
         LOGGER.info("chain simulator successfully started")
@@ -106,7 +107,7 @@ def stop_chain_simulator():
     """
     LOGGER.info("Stopping the chain simulator")
     file_path = get_docker_compose_path()
-    process = subprocess.Popen(
+    process = subprocess.Popen(  # nosec
         ["docker", "compose", "-f", file_path.as_posix(), "down"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -121,7 +122,8 @@ def stop_chain_simulator():
 
     if process.returncode != 0:
         print(
-            f"Error: chain simulator process ended with return code {process.returncode}"
+            "Error: chain simulator process ended with return code"
+            f"{process.returncode}"
         )
     else:
         LOGGER.info("chain simulator successfully stopped")
