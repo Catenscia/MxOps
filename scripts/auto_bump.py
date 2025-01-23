@@ -4,12 +4,12 @@ author: Etienne Wallet
 This module implement an automatic layer on top of bump2version. It deduce the type of
 version change needed using commits messages.
 """
+
 from argparse import ArgumentParser, Namespace
 import configparser
 from enum import Enum
 import re
 import sys
-from typing import Dict
 import subprocess
 import logging
 
@@ -25,7 +25,7 @@ class ChangeType(Enum):
     BUILD = "build"
 
 
-def parse_version(version_str: str) -> Dict[ChangeType, str]:
+def parse_version(version_str: str) -> dict[ChangeType, str]:
     """
     Parse the version string according the the parse expression from the bumversion
     config file.
@@ -33,7 +33,7 @@ def parse_version(version_str: str) -> Dict[ChangeType, str]:
     :param version_str: version as a string
     :type version_str: str
     :return: dictionnary with version parts names and their values
-    :rtype: Dict[ChangeType, str]
+    :rtype: dict[ChangeType, str]
     """
     config_file = "setup.cfg"
     config = configparser.ConfigParser()
@@ -63,7 +63,7 @@ def get_commit_change_type(commits_messages: str) -> ChangeType:
 
 
 def get_change_to_apply(
-    version_parts: Dict[ChangeType, str], commit_change_type: ChangeType
+    version_parts: dict[ChangeType, str], commit_change_type: ChangeType
 ) -> ChangeType:
     """
     Figure out what version change needs to be applied depending on the type of commit
@@ -78,7 +78,7 @@ def get_change_to_apply(
     - 0.1.0 -(minor_change)-> 0.2.0-dev0 -(major_change)-> 1.0.0-dev0
 
     :param version_parts: dictionnary with version parts names and their values
-    :type version_parts: Dict[ChangeType, str]
+    :type version_parts: dict[ChangeType, str]
     :param commit_change_type: type of change induced by the commits
     :type commit_change_type: ChangeType
     :return: change to apply to the version
