@@ -5,6 +5,7 @@ This module contains the classes and functions to describe smart values,
 which are values evaluated at run time
 """
 
+import base64
 from dataclasses import dataclass, field
 import os
 import re
@@ -55,6 +56,9 @@ def retrieve_value_from_string(arg: str) -> Any:
     :return: untouched argument or retrieved value
     :rtype: Any
     """
+    if arg.startswith("bytes:"):
+        base64_encoded = arg[6:]
+        return base64.b64decode(base64_encoded)
     if arg.startswith("0x"):
         return bytes.fromhex(arg[2:])
     pattern = r"(.*)([$&%])\{?([a-zA-Z0-9_\-\.\]\[]+):?([a-zA-Z]*)\}?(.*)"

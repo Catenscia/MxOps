@@ -29,6 +29,11 @@ from mxops.execution.smart_values import (
                 "%{${OWNER_NAME}_token.identifier} -> %{bob_token.identifier})"
             ),
         ),
+        (
+            "bytes:AQIECA==",
+            b"\x01\x02\x04\x08",
+            "b'\\x01\\x02\\x04\\x08' (bytes:AQIECA==)",
+        ),
     ],
 )
 def test_smart_value(raw_value: Any, expected_result: Any, expected_str: str):
