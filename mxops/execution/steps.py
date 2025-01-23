@@ -5,55 +5,45 @@ This module contains the classes used to execute scenes in a scenario
 """
 
 from __future__ import annotations
-import base64
 from dataclasses import dataclass, field
 from importlib.util import spec_from_file_location, module_from_spec
 import os
 from pathlib import Path
 import sys
 import time
-from typing import Any, ClassVar, Dict, Iterator, List, Optional, Set, Union
+from typing import Any, ClassVar, Iterator
 
-from multiversx_sdk_cli.contracts import QueryResult
-from multiversx_sdk_cli.constants import DEFAULT_HRP
-from multiversx_sdk_core import (
+from multiversx_sdk import (
     Address,
-    TokenComputer,
-    Token,
-    TokenTransfer,
-    ContractQueryBuilder,
-    Transaction,
-)
-from multiversx_sdk_core.serializer import arg_to_string
-from multiversx_sdk_core.transaction_factories import (
-    TransactionsFactoryConfig,
     SmartContractTransactionsFactory,
+    SmartContractTransactionsOutcomeParser,
+    SmartContractController,
+    Token,
+    TokenManagementTransactionsFactory,
+    TokenTransfer,
+    Transaction,
+    TransactionOnNetwork,
+    TransactionsFactoryConfig,
     TransferTransactionsFactory,
+    TokenManagementTransactionsOutcomeParser,
 )
-from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
-from multiversx_sdk_network_providers.contract_query_response import (
-    ContractQueryResponse,
-)
-from multiversx_sdk_network_providers.constants import METACHAIN_ID
-from mxpyserializer.abi_serializer import AbiSerializer
+from multiversx_sdk.abi import Abi, Serializer, U64Value
+from multiversx_sdk.core.constants import METACHAIN_ID
+from multiversx_sdk.core.errors import BadAddressError
 import requests
 import yaml
 
 from mxops.common.providers import MyProxyNetworkProvider
 from mxops.config.config import Config
 from mxops.data.execution_data import InternalContractData, ScenarioData, TokenData
-from mxops.data.utils import json_dumps
+from mxops.data.utils import convert_mx_data_to_vanilla, json_dumps
 from mxops.enums import NetworkEnum, TokenTypeEnum
 from mxops.execution import utils
-from mxops.execution.token_management_factory import (
-    MyTokenManagementTransactionsFactory,
-)
+
 from mxops.execution.account import AccountsManager
-from mxops.execution import token_management as tkm
 from mxops.execution.checks import Check, SuccessCheck, instanciate_checks
 from mxops.execution.msc import EsdtTransfer
 from mxops.execution.network import send, send_and_wait_for_result
-from mxops.execution.utils import parse_query_result
 from mxops.utils.logger import get_logger
 from mxops.utils.msc import get_file_hash, get_tx_link
 from mxops import errors
@@ -79,10 +69,12 @@ class Step:
         raise NotImplementedError
 
     @classmethod
-    def from_dict(cls, data: Dict) -> Step:
+    def from_dict(cls, data: dict) -> Step:
         """
         Instantiate a Step instance from a dictionary
 
+        :param data: data used as kwargs to instantiate the Step
+        :type data: dict
         :return: step instance
         :rtype: Step
         """
@@ -92,19 +84,19 @@ class Step:
 @dataclass(kw_only=True)
 class TransactionStep(Step):
     """
-    Represents a step that produce and send a transaction
+    Represents a step that produces and send a transaction
     """
 
     sender: str
-    checks: List[Check] = field(default_factory=lambda: [SuccessCheck()])
+    checks: list[Check] = field(default_factory=lambda: [SuccessCheck()])
 
     def __post_init__(self):
         """
         After the initialisation of an instance, if the checks are
-        found to be Dict, will try to convert them to Checks instances.
+        found to be dict, will try to convert them to Checks instances.
         Usefull for easy loading from yaml files
         """
-        if len(self.checks) > 0 and isinstance(self.checks[0], Dict):
+        if len(self.checks) > 0 and isinstance(self.checks[0], dict):
             self.checks = instanciate_checks(self.checks)
 
     def build_unsigned_transaction(self) -> Transaction:
@@ -118,7 +110,7 @@ class TransactionStep(Step):
         """
         raise NotImplementedError
 
-    def sign_transaction(self, tx: Transaction):
+    def set_nonce_and_sign_transaction(self, tx: Transaction):
         """
         Sign the transaction created by this step and update the account nonce
 
@@ -127,9 +119,8 @@ class TransactionStep(Step):
         """
         sender = utils.retrieve_value_from_string(self.sender)
         sender_account = AccountsManager.get_account(sender)
-        tx.nonce = sender_account.nonce
-        tx.signature = bytes.fromhex(sender_account.sign_transaction(tx))
-        sender_account.nonce += 1
+        tx.nonce = sender_account.get_nonce_then_increment()
+        tx.signature = sender_account.sign_transaction(tx)
 
     def _post_transaction_execution(self, on_chain_tx: TransactionOnNetwork | None):
         """
@@ -139,6 +130,7 @@ class TransactionStep(Step):
         :param on_chain_tx: on chain transaction that was sent by the Step
         :type on_chain_tx: TransactionOnNetwork | None
         """
+        # by default, do nothing
 
     def execute(self):
         """
@@ -146,13 +138,15 @@ class TransactionStep(Step):
         and post execute
         """
         tx = self.build_unsigned_transaction()
-        self.sign_transaction(tx)
+        self.set_nonce_and_sign_transaction(tx)
 
         if len(self.checks) > 0:
             on_chain_tx = send_and_wait_for_result(tx)
             for check in self.checks:
                 check.raise_on_failure(on_chain_tx)
-            LOGGER.info(f"Transaction successful: {get_tx_link(on_chain_tx.hash)}")
+            LOGGER.info(
+                f"Transaction successful: {get_tx_link(on_chain_tx.hash.hex())}"
+            )
         else:
             on_chain_tx = None
             send(tx)
@@ -167,11 +161,11 @@ class LoopStep(Step):
     Represents a set of steps to execute several time
     """
 
-    steps: List[Step]
+    steps: list[Step]
     var_name: str
-    var_start: Optional[Any] = None
-    var_end: Optional[Any] = None
-    var_list: Optional[Any] = None
+    var_start: Any = None
+    var_end: Any = None
+    var_list: Any = None
 
     def generate_steps(self) -> Iterator[Step]:
         """
@@ -206,10 +200,10 @@ class LoopStep(Step):
     def __post_init__(self):
         """
         After the initialisation of an instance, if the inner steps are
-        found to be Dict, will try to convert them to Steps instances.
+        found to be dict, will try to convert them to Steps instances.
         Usefull for easy loading from yaml files
         """
-        if len(self.steps) > 0 and isinstance(self.steps[0], Dict):
+        if len(self.steps) > 0 and isinstance(self.steps[0], dict):
             self.steps = instanciate_steps(self.steps)
 
 
@@ -222,12 +216,12 @@ class ContractDeployStep(TransactionStep):
     wasm_path: str
     contract_id: str
     gas_limit: int
-    abi_path: Optional[str] = None
+    abi_path: str | None = None
     upgradeable: bool = True
     readable: bool = True
     payable: bool = False
     payable_by_sc: bool = False
-    arguments: List = field(default_factory=list)
+    arguments: list[Any] = field(default_factory=list)
 
     def build_unsigned_transaction(self) -> Transaction:
         """
@@ -248,25 +242,20 @@ class ContractDeployStep(TransactionStep):
             pass
 
         if self.abi_path is not None:
-            serializer = AbiSerializer.from_abi(Path(self.abi_path))
-            scenario_data.set_contract_abi_from_source(contract_id, self.abi_path)
+            abi = Abi.load(Path(self.abi_path))
         else:
-            serializer = None
-
-        retrieved_arguments = utils.retrieve_value_from_any(self.arguments)
-        if serializer is None:
-            deploy_args = utils.format_tx_arguments(retrieved_arguments)
-        else:
-            deploy_args = serializer.encode_endpoint_inputs("init", retrieved_arguments)
+            abi = None
 
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
-        sc_factory = SmartContractTransactionsFactory(factory_config, TokenComputer())
+        sc_factory = SmartContractTransactionsFactory(factory_config, abi=abi)
         bytecode = Path(self.wasm_path).read_bytes()
+
+        retrieved_arguments = utils.retrieve_value_from_any(self.arguments)
 
         return sc_factory.create_transaction_for_deploy(
             sender=utils.get_address_instance(self.sender),
             bytecode=bytecode,
-            arguments=deploy_args,
+            arguments=retrieved_arguments,
             gas_limit=self.gas_limit,
             is_upgradeable=self.upgradeable,
             is_readable=self.readable,
@@ -283,21 +272,29 @@ class ContractDeployStep(TransactionStep):
         """
         if not isinstance(on_chain_tx, TransactionOnNetwork):
             raise ValueError("On chain transaction is None")
-
         scenario_data = ScenarioData.get()
-        contract_address = None
-        for event in on_chain_tx.logs.events:
-            if event.identifier == "SCDeploy":
-                hex_address = event.topics[0].hex()
-                contract_address = Address.from_hex(hex_address, hrp=DEFAULT_HRP)
 
-        if not isinstance(contract_address, Address):
-            raise errors.ParsingError(on_chain_tx, "contract deployment address")
+        # save the abi
+        contract_id = utils.retrieve_value_from_any(self.contract_id)
+        scenario_data.set_contract_abi_from_source(contract_id, self.abi_path)
+
+        # get the new deployed address
+        parser = SmartContractTransactionsOutcomeParser()
+        parsed_outcome = parser.parse_deploy(on_chain_tx)
+        try:
+            parsed_contract = parsed_outcome.contracts[0]
+            contract_address = parsed_contract.address
+        except (IndexError, BadAddressError) as err:
+            raise errors.ParsingError(
+                parsed_outcome, "contract deployment address"
+            ) from err
+
         LOGGER.info(
-            f"The address of the deployed contract is {contract_address.to_bech32()}"
+            f"The address of the deployed contract {contract_id} is "
+            f"{contract_address.to_bech32()}"
         )
 
-        contract_id = utils.retrieve_value_from_any(self.contract_id)
+        # register the new contract
         contract_data = InternalContractData(
             contract_id=contract_id,
             address=contract_address.to_bech32(),
@@ -323,8 +320,8 @@ class ContractUpgradeStep(TransactionStep):
     readable: bool = True
     payable: bool = False
     payable_by_sc: bool = False
-    arguments: List = field(default_factory=lambda: [])
-    abi_path: Optional[str] = None
+    arguments: list = field(default_factory=lambda: [])
+    abi_path: str | None = None
 
     def build_unsigned_transaction(self) -> Transaction:
         """
@@ -334,35 +331,25 @@ class ContractUpgradeStep(TransactionStep):
         :rtype: Transaction
         """
         LOGGER.info(f"Upgrading contract {self.contract}")
-        scenario_data = ScenarioData.get()
 
         contract_designation = utils.retrieve_value_from_string(self.contract)
         contract_address = utils.get_address_instance(contract_designation)
         if self.abi_path is not None:
-            serializer = AbiSerializer.from_abi(Path(self.abi_path))
-            scenario_data.set_contract_abi_from_source(
-                contract_designation, self.abi_path
-            )
+            abi = Abi.load(self.abi_path)
         else:
-            serializer = None
+            abi = None
 
         retrieved_arguments = utils.retrieve_value_from_any(self.arguments)
-        if serializer is None:
-            upgrade_args = utils.format_tx_arguments(retrieved_arguments)
-        else:
-            upgrade_args = serializer.encode_endpoint_inputs(
-                "upgrade", retrieved_arguments
-            )
 
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
-        sc_factory = SmartContractTransactionsFactory(factory_config, TokenComputer())
+        sc_factory = SmartContractTransactionsFactory(factory_config, abi=abi)
         bytecode = Path(self.wasm_path).read_bytes()
 
         return sc_factory.create_transaction_for_upgrade(
             sender=utils.get_address_instance(self.sender),
             contract=contract_address,
             bytecode=bytecode,
-            arguments=upgrade_args,
+            arguments=retrieved_arguments,
             gas_limit=self.gas_limit,
             is_upgradeable=self.upgradeable,
             is_readable=self.readable,
@@ -400,9 +387,9 @@ class ContractCallStep(TransactionStep):
     contract: str
     endpoint: str
     gas_limit: int
-    arguments: List = field(default_factory=lambda: [])
+    arguments: list = field(default_factory=list)
     value: int | str = 0
-    esdt_transfers: List[EsdtTransfer] = field(default_factory=lambda: [])
+    esdt_transfers: list[EsdtTransfer] = field(default_factory=list)
 
     def build_unsigned_transaction(self) -> Transaction:
         """
@@ -418,16 +405,8 @@ class ContractCallStep(TransactionStep):
         retrieved_arguments = utils.retrieve_value_from_any(self.arguments)
         try:
             contract_abi = scenario_data.get_contract_abi(contract)
-            serializer = AbiSerializer.from_abi_dict(contract_abi)
         except errors.UnknownAbiContract:
-            serializer = None
-
-        if isinstance(serializer, AbiSerializer):
-            call_args = serializer.encode_endpoint_inputs(
-                self.endpoint, retrieved_arguments
-            )
-        else:
-            call_args = utils.format_tx_arguments(retrieved_arguments)
+            contract_abi = None
 
         esdt_transfers = [
             TokenTransfer(
@@ -442,13 +421,13 @@ class ContractCallStep(TransactionStep):
         value = utils.retrieve_value_from_any(self.value)
 
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
-        sc_factory = SmartContractTransactionsFactory(factory_config, TokenComputer())
+        sc_factory = SmartContractTransactionsFactory(factory_config, abi=contract_abi)
 
         return sc_factory.create_transaction_for_execute(
             sender=utils.get_address_instance(self.sender),
             contract=utils.get_address_instance(contract),
             function=self.endpoint,
-            arguments=call_args,
+            arguments=retrieved_arguments,
             gas_limit=self.gas_limit,
             native_transfer_amount=value,
             token_transfers=esdt_transfers,
@@ -457,7 +436,7 @@ class ContractCallStep(TransactionStep):
     def __post_init__(self):
         """
         After the initialisation of an instance, if the esdt transfers are
-        found to be Dict,
+        found to be dict,
         will try to convert them to EsdtTransfers instances.
         Usefull for easy loading from yaml files
         """
@@ -466,7 +445,7 @@ class ContractCallStep(TransactionStep):
         for trf in self.esdt_transfers:
             if isinstance(trf, EsdtTransfer):
                 checked_transfers.append(trf)
-            elif isinstance(trf, Dict):
+            elif isinstance(trf, dict):
                 checked_transfers.append(EsdtTransfer(**trf))
             else:
                 raise ValueError(f"Unexpected type: {type(trf)}")
@@ -475,29 +454,29 @@ class ContractCallStep(TransactionStep):
 
 @dataclass
 class ResultsSaveKeys:
-    master_key: Optional[str]
-    sub_keys: Optional[List[Optional[str]]]
+    master_key: str | None
+    sub_keys: list[str | None] | None
 
     @staticmethod
-    def from_input(data: Any) -> Optional[ResultsSaveKeys]:
+    def from_input(data: Any) -> ResultsSaveKeys | None:
         """
         Parse the user input as an instance of this class
 
         :param data: input data for a yaml Scene file
         :type data: Any
         :return: results save keys if defined
-        :rtype: Optional[ResultsSaveKeys]
+        :rtype: ResultsSaveKeys | None
         """
         if data is None:
             return None
         if isinstance(data, str):
             return ResultsSaveKeys(data, None)
-        if isinstance(data, List):
+        if isinstance(data, list):
             for save_key in data:
                 if not isinstance(save_key, str) and save_key is not None:
                     raise TypeError(f"Save keys must be a str or None, got {save_key}")
             return ResultsSaveKeys(None, data)
-        if isinstance(data, Dict):
+        if isinstance(data, dict):
             if len(data) != 1:
                 raise ValueError(
                     "When providing a dict, only one root key should be provided"
@@ -520,20 +499,16 @@ class ContractQueryStep(Step):
 
     contract: str
     endpoint: str
-    arguments: List = field(default_factory=lambda: [])
-    expected_results: List[Dict[str, str]] = field(default_factory=lambda: [])
+    arguments: list[Any] = field(default_factory=list)
     print_results: bool = False
-    results: List[QueryResult] | None = field(init=False, default=None)
-    query_response: ContractQueryResponse | None = field(init=False, default=None)
-    decoded_results: List[Any] | None = field(init=False, default=None)
-    saved_results: List[Any] | None = field(init=False, default=None)
-    results_save_keys: Optional[ResultsSaveKeys] = field(default=None)
-    results_types: Union[None, List[Dict]] = field(default=None)
+    results_save_keys: ResultsSaveKeys | None = field(default=None)
+    returned_data_parts: list[Any] | None = field(init=False, default=None)
+    saved_results: dict = field(init=False, default_factory=dict)
 
     def __post_init__(self):
         """
         After the initialisation of an instance, if the esdt transfers are
-        found to be Dict,
+        found to be dict,
         will try to convert them to EsdtTransfers instances.
         Usefull for easy loading from yaml files
         """
@@ -541,39 +516,6 @@ class ContractQueryStep(Step):
             self.results_save_keys, ResultsSaveKeys
         ):
             self.results_save_keys = ResultsSaveKeys.from_input(self.results_save_keys)
-        if self.results_types is not None:
-            if not isinstance(self.results_types, list):
-                raise errors.InvalidQueryResultsDefinition
-            for result_type in self.results_types:
-                if not isinstance(result_type, dict):
-                    raise errors.InvalidQueryResultsDefinition
-                if "type" not in result_type:
-                    raise errors.InvalidQueryResultsDefinition
-
-    def _interpret_return_data(self, data: str) -> QueryResult:
-        """
-        Function to interpret the returned data from a query when there is no Serializer
-        available
-
-        :param data: data from the query response
-        :type data: str
-        :return: Result of the query
-        :rtype: QueryResult
-        """
-        if not data:
-            return QueryResult("", "", None)
-
-        try:
-            as_bytes = base64.b64decode(data)
-            as_hex = as_bytes.hex()
-            try:
-                as_int = int(str(int(as_hex or "0", 16)))
-            except (ValueError, TypeError):
-                as_int = None
-            result = QueryResult(data, as_hex, as_int)
-            return result
-        except Exception as err:
-            raise errors.ParsingError(data, "QueryResult") from err
 
     def save_results(self):
         """
@@ -584,23 +526,23 @@ class ContractQueryStep(Step):
         if self.results_save_keys is None:
             return
 
-        if self.decoded_results is None:
-            raise ValueError("No decoded results to save")
+        if self.returned_data_parts is None:
+            raise ValueError("No data to save")
 
         LOGGER.info("Saving query results")
         sub_keys = self.results_save_keys.sub_keys
         if sub_keys is not None:
-            if len(sub_keys) != len(self.decoded_results):
+            if len(sub_keys) != len(self.returned_data_parts):
                 raise ValueError(
-                    f"Number of results ({len(self.decoded_results)} -> "
-                    f"{self.decoded_results}) and save keys "
+                    f"Number of data parts ({len(self.returned_data_parts)} -> "
+                    f"{self.returned_data_parts}) and save keys "
                     f"({len(sub_keys)} -> {sub_keys}) doesn't match"
                 )
-            to_save = dict(zip(sub_keys, self.decoded_results))
+            to_save = dict(zip(sub_keys, self.returned_data_parts))
             if self.results_save_keys.master_key is not None:
                 to_save = {self.results_save_keys.master_key: to_save}
         else:
-            to_save = {self.results_save_keys.master_key: self.decoded_results}
+            to_save = {self.results_save_keys.master_key: self.returned_data_parts}
 
         self.saved_results = {}
         contract = utils.retrieve_value_from_any(self.contract)
@@ -620,81 +562,26 @@ class ContractQueryStep(Step):
         retrieved_arguments = utils.retrieve_value_from_any(self.arguments)
         try:
             contract_abi = scenario_data.get_contract_abi(contract)
-            serializer = AbiSerializer.from_abi_dict(contract_abi)
         except errors.UnknownAbiContract:
-            serializer = None
+            contract_abi = None
 
-        if isinstance(serializer, AbiSerializer):
-            query_args = serializer.encode_endpoint_inputs(
-                endpoint, retrieved_arguments
-            )
-        else:
-            query_args = utils.format_tx_arguments(retrieved_arguments)
-
-        builder = ContractQueryBuilder(
+        sc_controller = SmartContractController(
+            Config.get_config().get("CHAIN"), MyProxyNetworkProvider(), abi=contract_abi
+        )
+        returned_data_parts = sc_controller.query(
             contract=utils.get_address_instance(contract),
             function=endpoint,
-            call_arguments=query_args,
+            arguments=retrieved_arguments,
         )
-        query = builder.build()
-        proxy = MyProxyNetworkProvider()
+        self.returned_data_parts = convert_mx_data_to_vanilla(returned_data_parts)
 
-        query_failed = True
-        n_attempts = 0
-        max_attempts = int(Config.get_config().get("MAX_QUERY_ATTEMPTS"))
-        while query_failed and n_attempts < max_attempts:
-            n_attempts += 1
-            self.query_response = proxy.query_contract(query)
-            query_failed = self.query_response.return_code != "ok"
-            if query_failed:
-                time.sleep(3)
-                LOGGER.warning(
-                    f"Query failed: {self.query_response.return_message}. Attempt "
-                    f"{n_attempts}/{max_attempts}"
-                )
-            else:
-                self.results = [
-                    self._interpret_return_data(data)
-                    for data in self.query_response.return_data
-                ]
-                if self.results_types is not None:
-                    data_parts = self.query_response.get_return_data_parts()
-                    self.decoded_results = AbiSerializer().decode_io(
-                        self.results_types, data_parts
-                    )
-                elif serializer is not None:
-                    self.decoded_results = serializer.decode_contract_query_response(
-                        endpoint, self.query_response
-                    )
-
-        if query_failed:
-            self.results = None
-            raise errors.QueryFailed
-
-        if len(self.expected_results) > 0:
-            LOGGER.warning(
-                "expected_results is deprecated, please use results_save_key and "
-                "results_types instead. https://mxops.readthedocs.io/en/stable/user_doc"
-                "umentation/steps.html#contract-query-step"
-            )
-            LOGGER.info("Saving Query results as contract data")
-            for result, expected_result in zip(self.results, self.expected_results):
-                parsed_result = parse_query_result(
-                    result, expected_result["result_type"]
-                )
-                scenario_data.set_contract_value(
-                    contract, expected_result["save_key"], parsed_result
-                )
-        else:
-            self.save_results()
+        self.save_results()
 
         if self.print_results:
             if self.saved_results is not None:
                 print(json_dumps(self.saved_results))
-            elif self.decoded_results is not None:
-                print(json_dumps(self.decoded_results))
-            else:
-                print(self.results)
+            elif self.returned_data_parts is not None:
+                print(json_dumps(self.returned_data_parts))
 
         LOGGER.info("Query successful")
 
@@ -709,21 +596,21 @@ class FuzzExecutionParameters:
     sender: str
     endpoint: str
     value: int = field(default=0)
-    esdt_transfers: List[EsdtTransfer] = field(default_factory=list)
-    arguments: List[Any] = field(default_factory=list)
-    expected_outputs: Optional[List] = field(
+    esdt_transfers: list[EsdtTransfer] = field(default_factory=list)
+    arguments: list[Any] = field(default_factory=list)
+    expected_outputs: list | None = field(
         default=None
     )  # TODO Replace with checks (success, transfers and results)
     description: str = field(default="")
-    gas_limit: Optional[int] = 0
+    gas_limit: int | None = 0
 
     @staticmethod
-    def from_dict(data: Dict) -> FuzzExecutionParameters:
+    def from_dict(data: dict) -> FuzzExecutionParameters:
         """
         Instantiate this class from the raw data formed as a dictionnary
 
         :param data: data to parse
-        :type data: Dict
+        :type data: dict
         :return: intance of this class
         :rtype: FuzzExecutionParameters
         """
@@ -732,7 +619,7 @@ class FuzzExecutionParameters:
         for trf in data.get("esdt_transfers", []):
             if isinstance(trf, EsdtTransfer):
                 checked_transfers.append(trf)
-            elif isinstance(trf, Dict):
+            elif isinstance(trf, dict):
                 checked_transfers.append(EsdtTransfer(**trf))
             else:
                 raise ValueError(f"Unexpected type: {type(trf)}")
@@ -753,14 +640,14 @@ class FileFuzzerStep(Step):
     def __post_init__(self):
         """
         After the initialisation of an instance, if the esdt transfers are
-        found to be Dict,
+        found to be dict,
         will try to convert them to EsdtTransfers instances.
         Usefull for easy loading from yaml files
         """
         self.file_path = Path(self.file_path)
 
     @classmethod
-    def from_dict(cls, data: Dict) -> Step:
+    def from_dict(cls, data: dict) -> Step:
         """
         Instantiate a Step instance from a dictionary
 
@@ -769,12 +656,12 @@ class FileFuzzerStep(Step):
         """
         return FileFuzzerStep(data["contract"], Path(data["file_path"]))
 
-    def load_executions_parameters(self) -> List[FuzzExecutionParameters]:
+    def load_executions_parameters(self) -> list[FuzzExecutionParameters]:
         """
         Load the executions parameters for the fuzz tests as described by the file
 
         :return: executions parameters
-        :rtype: List[FuzzExecutionParameters]
+        :rtype: list[FuzzExecutionParameters]
         """
         file_extension = self.file_path.suffix
         if file_extension in (".yaml", ".yml"):
@@ -784,13 +671,13 @@ class FileFuzzerStep(Step):
             f"{self.file_path.as_posix()}"
         )
 
-    def load_executions_parameters_from_yaml(self) -> List[FuzzExecutionParameters]:
+    def load_executions_parameters_from_yaml(self) -> list[FuzzExecutionParameters]:
         """
         Load the executions parameters for the fuzz tests as described by the file,
         which is assumed to be a yaml file
 
         :return: executions parameters
-        :rtype: List[FuzzExecutionParameters]
+        :rtype: list[FuzzExecutionParameters]
         """
         parameters = []
         with open(self.file_path.as_posix(), "r", encoding="utf-8") as file:
@@ -819,8 +706,7 @@ class FileFuzzerStep(Step):
         contract = utils.retrieve_value_from_any(self.contract)
         scenario_data = ScenarioData.get()
         try:
-            contract_abi = scenario_data.get_contract_abi(contract)
-            serializer = AbiSerializer.from_abi_dict(contract_abi)
+            contract_abi = scenario_data.get_contract_raw_abi(contract)
         except errors.UnknownAbiContract as err:
             raise errors.WrongFuzzTestFile(
                 "ABI file must be provided for fuzz testing"
@@ -834,26 +720,30 @@ class FileFuzzerStep(Step):
                 f"Executing fuzz test n°{i+1}/{n_tests} ({i/n_tests:.0%}): "
                 f"{params.description}"
             )
-            self._execute_fuzz(serializer, params)
+            self._execute_fuzz(contract_abi, params)
 
     def _execute_fuzz(
-        self, serializer: AbiSerializer, execution_parameters: FuzzExecutionParameters
+        self, contract_abi: dict, execution_parameters: FuzzExecutionParameters
     ):
         """
         Execute one instance of fuzz test
 
-        :param serializer: serializer of the contract
-        :type serializer: AbiSerializer
+        :param contract_abi: raw abi for the contract, as a json
+        :type contract_abi: dict
         :param execution_parameters: parameters of the test to execute
         :type execution_parameters: FuzzExecutionParameters
         """
-        try:
-            endpoint = serializer.endpoints[execution_parameters.endpoint]
-        except KeyError as err:
+        endpoint = None
+        for e in contract_abi["endpoints"]:
+            if e["name"] == execution_parameters.endpoint:
+                endpoint = e
+                break
+        if endpoint is None:
             raise errors.WrongFuzzTestFile(
-                f"Unknown endpoint {execution_parameters.endpoint}"
-            ) from err
-        if endpoint.mutability == "readonly":
+                f"Endpoint {execution_parameters.endpoint} not found in the contract "
+                f"abi {contract_abi['name']}"
+            )
+        if endpoint.get("mutability", "mutable") == "readonly":
             self._execute_fuzz_query(execution_parameters)
         else:
             self._execute_fuzz_call(execution_parameters)
@@ -915,8 +805,6 @@ class FungibleIssueStep(TransactionStep):
     can_freeze: bool = False
     can_wipe: bool = False
     can_pause: bool = False
-    can_mint: bool = False
-    can_burn: bool = False
     can_change_owner: bool = False
     can_upgrade: bool = False
     can_add_special_roles: bool = False
@@ -937,12 +825,7 @@ class FungibleIssueStep(TransactionStep):
             f"for the account {self.sender} ({sender.bech32()})"
         )
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
-        tx_factory = MyTokenManagementTransactionsFactory(factory_config)
-        if self.can_mint or self.can_burn:
-            LOGGER.warning(
-                "the roles CanMint and CanBurn are deprecated on the blockchain, they "
-                "are now useless"
-            )
+        tx_factory = TokenManagementTransactionsFactory(factory_config)
 
         return tx_factory.create_transaction_for_issuing_fungible(
             sender=sender,
@@ -967,8 +850,11 @@ class FungibleIssueStep(TransactionStep):
         """
         if not isinstance(on_chain_tx, TransactionOnNetwork):
             raise ValueError("On chain transaction is None")
+        parsed_outcome = (
+            TokenManagementTransactionsOutcomeParser().parse_issue_fungible(on_chain_tx)
+        )
+        token_identifier = parsed_outcome[0].token_identifier
         scenario_data = ScenarioData.get()
-        token_identifier = tkm.extract_new_token_identifier(on_chain_tx)
         LOGGER.info(f"Newly issued token got the identifier {token_identifier}")
         token_name = utils.retrieve_value_from_any(self.token_name)
         token_ticker = utils.retrieve_value_from_any(self.token_ticker)
@@ -1014,7 +900,7 @@ class NonFungibleIssueStep(TransactionStep):
             f"for the account {self.sender} ({sender.bech32()})"
         )
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
-        tx_factory = MyTokenManagementTransactionsFactory(factory_config)
+        tx_factory = TokenManagementTransactionsFactory(factory_config)
         return tx_factory.create_transaction_for_issuing_non_fungible(
             sender=sender,
             token_name=token_name,
@@ -1037,8 +923,13 @@ class NonFungibleIssueStep(TransactionStep):
         """
         if not isinstance(on_chain_tx, TransactionOnNetwork):
             raise ValueError("On chain transaction is None")
+        parsed_outcome = (
+            TokenManagementTransactionsOutcomeParser().parse_issue_non_fungible(
+                on_chain_tx
+            )
+        )
+        token_identifier = parsed_outcome[0].token_identifier
         scenario_data = ScenarioData.get()
-        token_identifier = tkm.extract_new_token_identifier(on_chain_tx)
         LOGGER.info(f"Newly issued token got the identifier {token_identifier}")
         token_name = utils.retrieve_value_from_any(self.token_name)
         token_ticker = utils.retrieve_value_from_any(self.token_ticker)
@@ -1084,7 +975,7 @@ class SemiFungibleIssueStep(TransactionStep):
             f"for the account {self.sender} ({sender.bech32()})"
         )
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
-        tx_factory = MyTokenManagementTransactionsFactory(factory_config)
+        tx_factory = TokenManagementTransactionsFactory(factory_config)
         return tx_factory.create_transaction_for_issuing_semi_fungible(
             sender=sender,
             token_name=token_name,
@@ -1107,8 +998,13 @@ class SemiFungibleIssueStep(TransactionStep):
         """
         if not isinstance(on_chain_tx, TransactionOnNetwork):
             raise ValueError("On chain transaction is None")
+        parsed_outcome = (
+            TokenManagementTransactionsOutcomeParser().parse_issue_semi_fungible(
+                on_chain_tx
+            )
+        )
+        token_identifier = parsed_outcome[0].token_identifier
         scenario_data = ScenarioData.get()
-        token_identifier = tkm.extract_new_token_identifier(on_chain_tx)
         LOGGER.info(f"Newly issued token got the identifier {token_identifier}")
         token_name = utils.retrieve_value_from_any(self.token_name)
         token_ticker = utils.retrieve_value_from_any(self.token_ticker)
@@ -1155,7 +1051,7 @@ class MetaIssueStep(TransactionStep):
             f"for the account {self.sender} ({sender.bech32()})"
         )
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
-        tx_factory = MyTokenManagementTransactionsFactory(factory_config)
+        tx_factory = TokenManagementTransactionsFactory(factory_config)
         return tx_factory.create_transaction_for_registering_meta_esdt(
             sender=sender,
             token_name=token_name,
@@ -1179,8 +1075,13 @@ class MetaIssueStep(TransactionStep):
         """
         if not isinstance(on_chain_tx, TransactionOnNetwork):
             raise ValueError("On chain transaction is None")
+        parsed_outcome = (
+            TokenManagementTransactionsOutcomeParser().parse_register_meta_esdt(
+                on_chain_tx
+            )
+        )
+        token_identifier = parsed_outcome[0].token_identifier
         scenario_data = ScenarioData.get()
-        token_identifier = tkm.extract_new_token_identifier(on_chain_tx)
         LOGGER.info(f"Newly issued token got the identifier {token_identifier}")
         token_name = utils.retrieve_value_from_any(self.token_name)
         token_ticker = utils.retrieve_value_from_any(self.token_ticker)
@@ -1205,8 +1106,8 @@ class ManageTokenRolesStep(TransactionStep):
     is_set: bool
     token_identifier: str
     target: str
-    roles: List[str]
-    ALLOWED_ROLES: ClassVar[Set] = set()
+    roles: list[str]
+    ALLOWED_ROLES: ClassVar[set] = set()
 
     def __post_init__(self):
         super().__post_init__()
@@ -1216,6 +1117,25 @@ class ManageTokenRolesStep(TransactionStep):
                     f"role {role} is not in allowed roles {self.ALLOWED_ROLES}"
                 )
 
+    def construct_role_kwargs(self, include_missing: bool = False) -> dict[str, bool]:
+        """
+        construct the role kwargs needed by the factory to construct
+        the tx depending on which role to set or unset
+
+        :param include_missing: also return missing roles as False
+        :type include_missing: bool
+        :return: kwargs to pass to the tx factory
+        :rtype: dict[str, bool]
+        """
+        prefix = "add_role_" if self.is_set else "remove_role_"
+        roles = {prefix + r: True for r in self.roles}
+        if include_missing:
+            for role in self.ALLOWED_ROLES:
+                role_action = prefix + role
+                if role_action not in roles:
+                    roles[role_action] = False
+        return roles
+
 
 @dataclass
 class ManageFungibleTokenRolesStep(ManageTokenRolesStep):
@@ -1223,10 +1143,10 @@ class ManageFungibleTokenRolesStep(ManageTokenRolesStep):
     This step is used to set or unset roles for an adress on a fungible token
     """
 
-    ALLOWED_ROLES: ClassVar[Set] = {
-        "ESDTRoleLocalBurn",
-        "ESDTRoleLocalMint",
-        "ESDTTransferRole",
+    ALLOWED_ROLES: ClassVar[set] = {
+        "local_mint",
+        "local_burn",
+        "esdt_transfer_role",
     }
 
     def build_unsigned_transaction(self) -> Transaction:
@@ -1245,25 +1165,23 @@ class ManageFungibleTokenRolesStep(ManageTokenRolesStep):
         )
 
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
-        tx_factory = MyTokenManagementTransactionsFactory(factory_config)
+        tx_factory = TokenManagementTransactionsFactory(factory_config)
+
+        role_kwargs = self.construct_role_kwargs(include_missing=True)
 
         if self.is_set:
             return tx_factory.create_transaction_for_setting_special_role_on_fungible_token(  # noqa: E501
                 sender=sender,
                 user=target,
                 token_identifier=token_identifier,
-                add_role_local_mint="ESDTRoleLocalBurn" in self.roles,
-                add_role_local_burn="ESDTRoleLocalMint" in self.roles,
-                add_transfer_role="ESDTTransferRole" in self.roles,
+                **role_kwargs,
             )
         return (
             tx_factory.create_transaction_for_unsetting_special_role_on_fungible_token(  # noqa: E501
                 sender=sender,
                 user=target,
                 token_identifier=token_identifier,
-                remove_role_local_mint="ESDTRoleLocalBurn" in self.roles,
-                remove_role_local_burn="ESDTRoleLocalMint" in self.roles,
-                remove_transfer_role="ESDTTransferRole" in self.roles,
+                **role_kwargs,
             )
         )
 
@@ -1274,12 +1192,17 @@ class ManageNonFungibleTokenRolesStep(ManageTokenRolesStep):
     This step is used to set or unset roles for an adress on a non fungible token
     """
 
-    ALLOWED_ROLES: ClassVar[Set] = {
-        "ESDTRoleNFTCreate",
-        "ESDTRoleNFTBurn",
-        "ESDTRoleNFTUpdateAttributes",
-        "ESDTRoleNFTAddURI",
-        "ESDTTransferRole",
+    ALLOWED_ROLES: ClassVar[set] = {
+        "nft_create",
+        "nft_burn",
+        "nft_update_attributes",
+        "nft_add_uri",
+        "esdt_transfer_role",
+        "nft_update",
+        "esdt_modify_royalties",
+        "esdt_set_new_uri",
+        "esdt_modify_creator",
+        "nft_recreate",
     }
 
     def build_unsigned_transaction(self) -> Transaction:
@@ -1298,30 +1221,18 @@ class ManageNonFungibleTokenRolesStep(ManageTokenRolesStep):
         )
 
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
-        tx_factory = MyTokenManagementTransactionsFactory(factory_config)
+        tx_factory = TokenManagementTransactionsFactory(factory_config)
 
+        role_kwargs = self.construct_role_kwargs()
         if self.is_set:
             return tx_factory.create_transaction_for_setting_special_role_on_non_fungible_token(  # noqa: E501
                 sender=sender,
                 user=target,
                 token_identifier=token_identifier,
-                add_role_nft_create="ESDTRoleNFTCreate" in self.roles,
-                add_role_nft_burn="ESDTRoleNFTBurn" in self.roles,
-                add_role_nft_update_attributes="ESDTRoleNFTUpdateAttributes"
-                in self.roles,
-                add_role_nft_add_uri="ESDTRoleNFTAddURI" in self.roles,
-                add_role_esdt_transfer_role="ESDTTransferRole" in self.roles,
+                **role_kwargs,
             )
         return tx_factory.create_transaction_for_unsetting_special_role_on_non_fungible_token(  # noqa: E501
-            sender=sender,
-            user=target,
-            token_identifier=token_identifier,
-            remove_role_nft_create="ESDTRoleNFTCreate" in self.roles,
-            remove_role_nft_burn="ESDTRoleNFTBurn" in self.roles,
-            remove_role_nft_update_attributes="ESDTRoleNFTUpdateAttributes"
-            in self.roles,
-            remove_role_nft_add_uri="ESDTRoleNFTAddURI" in self.roles,
-            remove_role_esdt_transfer_role="ESDTTransferRole" in self.roles,
+            sender=sender, user=target, token_identifier=token_identifier, **role_kwargs
         )
 
 
@@ -1331,11 +1242,16 @@ class ManageSemiFungibleTokenRolesStep(ManageTokenRolesStep):
     This step is used to set or unset roles for an adress on a semi fungible token
     """
 
-    ALLOWED_ROLES: ClassVar[Set] = {
-        "ESDTRoleNFTCreate",
-        "ESDTRoleNFTBurn",
-        "ESDTRoleNFTAddQuantity",
-        "ESDTTransferRole",
+    ALLOWED_ROLES: ClassVar[set] = {
+        "nft_create",
+        "nft_burn",
+        "nft_add_quantity",
+        "esdt_transfer_role",
+        "nft_update",
+        "esdt_modify_royalties",
+        "esdt_set_new_uri",
+        "esdt_modify_creator",
+        "nft_recreate",
     }
 
     def build_unsigned_transaction(self) -> Transaction:
@@ -1354,26 +1270,18 @@ class ManageSemiFungibleTokenRolesStep(ManageTokenRolesStep):
         )
 
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
-        tx_factory = MyTokenManagementTransactionsFactory(factory_config)
+        tx_factory = TokenManagementTransactionsFactory(factory_config)
 
+        role_kwargs = self.construct_role_kwargs()
         if self.is_set:
             return tx_factory.create_transaction_for_setting_special_role_on_semi_fungible_token(  # noqa: E501
                 sender=sender,
                 user=target,
                 token_identifier=token_identifier,
-                add_role_nft_create="ESDTRoleNFTCreate" in self.roles,
-                add_role_nft_burn="ESDTRoleNFTBurn" in self.roles,
-                add_role_nft_add_quantity="ESDTRoleNFTAddQuantity" in self.roles,
-                add_role_esdt_transfer_role="ESDTTransferRole" in self.roles,
+                **role_kwargs,
             )
         return tx_factory.create_transaction_for_unsetting_special_role_on_semi_fungible_token(  # noqa: E501
-            sender=sender,
-            user=target,
-            token_identifier=token_identifier,
-            remove_role_nft_create="ESDTRoleNFTCreate" in self.roles,
-            remove_role_nft_burn="ESDTRoleNFTBurn" in self.roles,
-            remove_role_nft_add_quantity="ESDTRoleNFTAddQuantity" in self.roles,
-            remove_role_esdt_transfer_role="ESDTTransferRole" in self.roles,
+            sender=sender, user=target, token_identifier=token_identifier, **role_kwargs
         )
 
 
@@ -1392,7 +1300,7 @@ class FungibleMintStep(TransactionStep):
     """
 
     token_identifier: str
-    amount: Union[str, int]
+    amount: str | int
 
     def build_unsigned_transaction(self) -> Transaction:
         """
@@ -1409,7 +1317,7 @@ class FungibleMintStep(TransactionStep):
             f" {token_identifier} ({self.token_identifier})"
         )
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
-        tx_factory = MyTokenManagementTransactionsFactory(factory_config)
+        tx_factory = TokenManagementTransactionsFactory(factory_config)
         return tx_factory.create_transaction_for_local_minting(
             sender=sender, token_identifier=token_identifier, supply_to_mint=amount
         )
@@ -1423,12 +1331,12 @@ class NonFungibleMintStep(TransactionStep):
     """
 
     token_identifier: str
-    amount: Union[str, int]
+    amount: str | int
     name: str = ""
-    royalties: Union[str, int] = 0
+    royalties: str | int = 0
     hash: str = ""
     attributes: str = ""
-    uris: List[str] = field(default_factory=lambda: [])
+    uris: list[str] = field(default_factory=lambda: [])
 
     def build_unsigned_transaction(self) -> Transaction:
         """
@@ -1446,7 +1354,7 @@ class NonFungibleMintStep(TransactionStep):
         )
 
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
-        tx_factory = MyTokenManagementTransactionsFactory(factory_config)
+        tx_factory = TokenManagementTransactionsFactory(factory_config)
         return tx_factory.create_transaction_for_creating_nft(
             sender=sender,
             token_identifier=token_identifier,
@@ -1469,7 +1377,10 @@ class NonFungibleMintStep(TransactionStep):
         """
         if not isinstance(on_chain_tx, TransactionOnNetwork):
             return
-        new_nonce = tkm.extract_new_nonce(on_chain_tx)
+        parsed_outcome = TokenManagementTransactionsOutcomeParser().parse_nft_create(
+            on_chain_tx
+        )
+        new_nonce = parsed_outcome[0].nonce
         LOGGER.info(f"Newly issued nonce is {new_nonce}")
 
 
@@ -1480,7 +1391,7 @@ class EgldTransferStep(TransactionStep):
     """
 
     receiver: str
-    amount: Union[str, int]
+    amount: str | int
 
     def build_unsigned_transaction(self) -> Transaction:
         """
@@ -1498,7 +1409,7 @@ class EgldTransferStep(TransactionStep):
             f"{self.receiver} ({receiver.bech32()})"
         )
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
-        tr_factory = TransferTransactionsFactory(factory_config, TokenComputer())
+        tr_factory = TransferTransactionsFactory(factory_config)
         return tr_factory.create_transaction_for_native_token_transfer(
             sender=sender,
             receiver=receiver,
@@ -1514,7 +1425,7 @@ class FungibleTransferStep(TransactionStep):
 
     receiver: str
     token_identifier: str
-    amount: Union[str, int]
+    amount: str | int
 
     def build_unsigned_transaction(self) -> Transaction:
         """
@@ -1535,7 +1446,7 @@ class FungibleTransferStep(TransactionStep):
             f"({sender.bech32()}) to {self.receiver} ({receiver.bech32()})"
         )
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
-        tr_factory = TransferTransactionsFactory(factory_config, TokenComputer())
+        tr_factory = TransferTransactionsFactory(factory_config)
         return tr_factory.create_transaction_for_esdt_token_transfer(
             sender=sender,
             receiver=receiver,
@@ -1551,8 +1462,8 @@ class NonFungibleTransferStep(TransactionStep):
 
     receiver: str
     token_identifier: str
-    nonce: Union[str, int]
-    amount: Union[str, int]
+    nonce: str | int
+    amount: str | int
 
     def build_unsigned_transaction(self) -> Transaction:
         """
@@ -1566,16 +1477,17 @@ class NonFungibleTransferStep(TransactionStep):
         amount = int(utils.retrieve_value_from_any(self.amount))
         sender = utils.get_address_instance(self.sender)
         receiver = utils.get_address_instance(self.receiver)
-
+        serializer = Serializer("@")
+        nonce_as_str = serializer.serialize([U64Value(nonce)])
         esdt_transfers = [TokenTransfer(Token(token_identifier, nonce), amount)]
 
         LOGGER.info(
-            f"Sending {amount} {token_identifier}-{arg_to_string(nonce)} from "
+            f"Sending {amount} {token_identifier}-{nonce_as_str} from "
             f"{self.sender} ({sender.bech32()}) to {self.receiver} "
             f"({receiver.bech32()})"
         )
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
-        tr_factory = TransferTransactionsFactory(factory_config, TokenComputer())
+        tr_factory = TransferTransactionsFactory(factory_config)
         return tr_factory.create_transaction_for_esdt_token_transfer(
             sender=sender,
             receiver=receiver,
@@ -1590,12 +1502,12 @@ class MultiTransfersStep(TransactionStep):
     """
 
     receiver: str
-    transfers: List[EsdtTransfer]
+    transfers: list[EsdtTransfer]
 
     def __post_init__(self):
         """
         After the initialisation of an instance, if the esdt transfers are
-        found to be Dict,
+        found to be dict,
         will try to convert them to EsdtTransfers instances.
         Usefull for easy loading from yaml files
         """
@@ -1604,7 +1516,7 @@ class MultiTransfersStep(TransactionStep):
         for trf in self.transfers:
             if isinstance(trf, EsdtTransfer):
                 checked_transfers.append(trf)
-            elif isinstance(trf, Dict):
+            elif isinstance(trf, dict):
                 checked_transfers.append(EsdtTransfer(**trf))
             else:
                 raise ValueError(f"Unexpected type: {type(trf)}")
@@ -1621,22 +1533,21 @@ class MultiTransfersStep(TransactionStep):
         receiver = utils.get_address_instance(self.receiver)
         esdt_transfers = []
         esdt_transfers_strs = []
+        serializer = Serializer("@")
         for trf in self.transfers:
             token_identifier = utils.retrieve_value_from_string(trf.token_identifier)
             amount = int(utils.retrieve_value_from_any(trf.amount))
             nonce = int(utils.retrieve_value_from_any(trf.nonce))
-
+            nonce_as_str = serializer.serialize([U64Value(nonce)])
             esdt_transfers.append(TokenTransfer(Token(token_identifier, nonce), amount))
-            esdt_transfers_strs.append(
-                f"{amount} {token_identifier}-{arg_to_string(nonce)}"
-            )
+            esdt_transfers_strs.append(f"{amount} {token_identifier}-{nonce_as_str}")
 
         LOGGER.info(
             f"Sending {', '.join(esdt_transfers_strs)} from {self.sender} "
             f"({sender.bech32()}) to {self.receiver} ({receiver.bech32()})"
         )
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
-        tr_factory = TransferTransactionsFactory(factory_config, TokenComputer())
+        tr_factory = TransferTransactionsFactory(factory_config)
         return tr_factory.create_transaction_for_esdt_token_transfer(
             sender=sender,
             receiver=receiver,
@@ -1655,7 +1566,7 @@ class PythonStep(Step):
     arguments: list = field(default_factory=list)
     keyword_arguments: dict = field(default_factory=dict)
     print_result: bool = True
-    result_save_key: Optional[str] = None
+    result_save_key: str | None = None
 
     def execute(self):
         """
@@ -1708,14 +1619,14 @@ class SceneStep(Step):
         LOGGER.warning("The execute function of a SceneStep was called")
 
 
-def instanciate_steps(raw_steps: List[Dict]) -> List[Step]:
+def instanciate_steps(raw_steps: list[dict]) -> list[Step]:
     """
     Take steps as dictionaries and convert them to their corresponding step classes.
 
     :param raw_steps: steps to instantiate
-    :type raw_steps: List[Dict]
+    :type raw_steps: list[dict]
     :return: steps instances
-    :rtype: List[Step]
+    :rtype: list[Step]
     """
     steps_list = []
     for raw_step in raw_steps:
@@ -1746,7 +1657,7 @@ class SetVarsStep(Step):
     Represents a step to set variables within the Scenario
     """
 
-    variables: Dict[str, Any]
+    variables: dict[str, Any]
 
     def execute(self):
         """
@@ -1772,8 +1683,8 @@ class GenerateWalletsStep(Step):
     """
 
     save_folder: Path
-    wallets: Union[int, List[str]]
-    shard: Optional[int] = field(default=None)
+    wallets: int | list[str]
+    shard: int | None = field(default=None)
 
     def __post_init__(self):
         self.save_folder = Path(self.save_folder)
@@ -1786,7 +1697,7 @@ class GenerateWalletsStep(Step):
         if isinstance(self.wallets, int):
             n_wallets = self.wallets
             names = [None] * n_wallets
-        elif isinstance(self.wallets, List):
+        elif isinstance(self.wallets, list):
             n_wallets = len(self.wallets)
             names = self.wallets
         for i, name in enumerate(names):
@@ -1811,10 +1722,10 @@ class R3D4FaucetStep(Step):
     Represents a step to request some EGLD from the r3d4 faucet
     """
 
-    targets: Union[List[str], str]
-    ALLOWED_NETWORKS: ClassVar[Set] = (NetworkEnum.DEV, NetworkEnum.TEST)
+    targets: list[str] | str
+    ALLOWED_NETWORKS: ClassVar[set] = (NetworkEnum.DEV, NetworkEnum.TEST)
 
-    def get_egld_details(self) -> Dict:
+    def get_egld_details(self) -> dict:
         """
         Request r3d4 for the details regarding the EGLD token faucet
 
@@ -1896,9 +1807,9 @@ class ChainSimulatorFaucetStep(Step):
     (aka initial wallets of the chain simulator)
     """
 
-    targets: Union[List[str], str]
+    targets: list[str] | str
     amount: int
-    ALLOWED_NETWORKS: ClassVar[Set] = (NetworkEnum.CHAIN_SIMULATOR,)
+    ALLOWED_NETWORKS: ClassVar[set] = (NetworkEnum.CHAIN_SIMULATOR,)
 
     def execute(self):
         """
@@ -1913,7 +1824,7 @@ class ChainSimulatorFaucetStep(Step):
         proxy = MyProxyNetworkProvider()
         initial_wallet_data = proxy.get_initial_wallets()
         sender = initial_wallet_data["balanceWallets"]["0"]["address"]["bech32"]
-        sender_nonce = proxy.get_account(Address.from_bech32(sender)).nonce
+        sender_nonce = proxy.get_account(Address.new_from_bech32(sender)).nonce
         targets = utils.retrieve_value_from_any(self.targets)
         for target in targets:
             egld_step = EgldTransferStep(
@@ -1924,7 +1835,9 @@ class ChainSimulatorFaucetStep(Step):
             tx.nonce = sender_nonce
             on_chain_tx = send_and_wait_for_result(tx)
             SuccessCheck().raise_on_failure(on_chain_tx)
-            LOGGER.info(f"Transaction successful: {get_tx_link(on_chain_tx.hash)}")
+            LOGGER.info(
+                f"Transaction successful: {get_tx_link(on_chain_tx.hash.hex())}"
+            )
             sender_nonce += 1
 
 
@@ -1934,9 +1847,9 @@ class WaitStep(Step):
     Represent a step to wait until a condition is fulfilled
     """
 
-    for_seconds: Optional[Any] = field(default=None)
-    for_blocks: Optional[Any] = field(default=None)
-    shard: Optional[Any] = field(default=METACHAIN_ID)
+    for_seconds: Any | None = field(default=None)
+    for_blocks: Any | None = field(default=None)
+    shard: Any | None = field(default=METACHAIN_ID)
 
     def execute(self):
         """
@@ -1948,7 +1861,7 @@ class WaitStep(Step):
             LOGGER.info(f"Waiting for {for_seconds} seconds")
             time.sleep(for_seconds)
             return
-        elif for_blocks is not None:
+        if for_blocks is not None:
             network = Config.get_config().get_network()
             shard = utils.retrieve_value_from_any(self.shard)
             LOGGER.info(f"Waiting for {for_blocks} blocks on shard {shard}")

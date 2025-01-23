@@ -7,11 +7,10 @@ This module contains some utilities functions for the execution sub package
 import os
 import re
 import time
-from typing import Any, List, Optional
+from typing import Any
 
-from multiversx_sdk_cli.contracts import QueryResult, SmartContract
-from multiversx_sdk_core.address import Address
-from multiversx_sdk_core.errors import ErrBadAddress
+from multiversx_sdk import Address
+from multiversx_sdk.core.errors import BadAddressError
 
 from mxops.common.providers import MyProxyNetworkProvider
 from mxops.config.config import Config
@@ -20,7 +19,7 @@ from mxops import errors
 from mxops.execution.account import AccountsManager
 
 
-def convert_arg(arg: Any, desired_type: Optional[str]) -> Any:
+def convert_arg(arg: Any, desired_type: str | None) -> Any:
     """
     Convert an argument to a desired type.
     Supported type are str and int
@@ -28,7 +27,7 @@ def convert_arg(arg: Any, desired_type: Optional[str]) -> Any:
     :param arg: argument to convert
     :type arg: Any
     :param desired_type: type to convert the argument to
-    :type desired_type: Optional[str]
+    :type desired_type: str | None
     :return: converted argument if a specified type was provided
     :rtype: Any
     """
@@ -80,14 +79,14 @@ def retrieve_value_from_string(arg: str) -> Any:
     return retrieve_value_from_any(retrieved_value)
 
 
-def retrieve_values_from_strings(args: List[str]) -> List[Any]:
+def retrieve_values_from_strings(args: list[str]) -> list[Any]:
     """
     Dynamically evaluate the value of each element of the provided list
 
     :param args: args to evaluate
-    :type args: List[str]
+    :type args: list[str]
     :return: evaluated arguments
-    :rtype: List[Any]
+    :rtype: list[Any]
     """
     return [retrieve_value_from_string(arg) for arg in args]
 
@@ -114,14 +113,14 @@ def retrieve_value_from_any(arg: Any) -> Any:
     return arg
 
 
-def format_tx_arguments(arguments: List[Any]) -> List[Any]:
+def format_tx_arguments(arguments: list[Any]) -> list[Any]:
     """
     Transform the arguments so they can be recognised by multiversx sdk core
 
     :param arguments: list of arguments to be supplied to a endpoint
-    :type arguments: List[Any]
+    :type arguments: list[Any]
     :return: formatted arguments
-    :rtype: List[Any]
+    :rtype: list[Any]
     """
     formated_arguments = []
     for arg in arguments:
@@ -131,53 +130,22 @@ def format_tx_arguments(arguments: List[Any]) -> List[Any]:
         formated_arg = arg
         if isinstance(arg, str):
             if arg.startswith("erd") and len(arg) == 62:
-                formated_arg = Address.from_bech32(arg)
+                formated_arg = Address.new_from_bech32(arg)
         formated_arguments.append(formated_arg)
     return formated_arguments
 
 
-def retrieve_and_format_arguments(arguments: List[Any]) -> List[Any]:
+def retrieve_and_format_arguments(arguments: list[Any]) -> list[Any]:
     """
     Retrieve the MxOps value of the arguments if necessary and transform them
     to match multiversx sdk core format
 
     :param arguments: lisf of arguments to be supplied
-    :type arguments: List[Any]
+    :type arguments: list[Any]
     :return: format args
-    :rtype: List[Any]
+    :rtype: list[Any]
     """
     return format_tx_arguments(retrieve_value_from_any(arguments))
-
-
-def get_contract_instance(contract_str: str) -> SmartContract:
-    """
-    From a string return a smart contract instance.
-    The input will be parsed to dynamically evaluate values from
-    the environment, the config or from the saved data.
-
-    :param contract_str: contract address or mxops value
-    :type contract_str: str
-    :return: smart contract corresponding to the address
-    :rtype: SmartContract
-    """
-    # try to see if the string is a valid address
-    try:
-        return SmartContract(Address.from_bech32(contract_str))
-    except ErrBadAddress:
-        pass
-    # otherwise try to parse it as a mxops value
-    contract_address = retrieve_value_from_string(contract_str)
-    try:
-        return SmartContract(Address.from_bech32(contract_address))
-    except ErrBadAddress:
-        pass
-    # lastly try to see if it is a valid contract id
-    contract_address = retrieve_value_from_string(f"%{contract_str}.address")
-    try:
-        return SmartContract(Address.from_bech32(contract_address))
-    except ErrBadAddress:
-        pass
-    raise errors.ParsingError(contract_str, "contract address")
 
 
 def get_address_instance(address_str: str) -> Address:
@@ -196,15 +164,15 @@ def get_address_instance(address_str: str) -> Address:
 
     # try to see if the string is a valid address
     try:
-        return Address.from_bech32(evaluated_address_str)
-    except ErrBadAddress:
+        return Address.new_from_bech32(evaluated_address_str)
+    except BadAddressError:
         pass
 
     # else try to see if it is a valid contract id
     try:
         evaluated_address_str = retrieve_value_from_string(f"%{address_str}.address")
-        return Address.from_bech32(evaluated_address_str)
-    except (ErrBadAddress, errors.WrongDataKeyPath):
+        return Address.new_from_bech32(evaluated_address_str)
+    except (BadAddressError, errors.WrongDataKeyPath):
         pass
 
     # finally try to see if it designates a defined account
@@ -214,24 +182,6 @@ def get_address_instance(address_str: str) -> Address:
     except errors.UnknownAccount:
         pass
     raise errors.ParsingError(address_str, "address_str address")
-
-
-def parse_query_result(result: QueryResult, expected_return: str) -> Any:
-    """
-    Take the return of a query and tries to parse it in the specified return type
-
-    :param result: result of a query
-    :type result: QueryResult
-    :param expected_return: expected return of the query
-    :type expected_return: str
-    :return: parsed result of the query
-    :rtype: Any
-    """
-    if expected_return in ("number", "int"):
-        return result.number
-    if expected_return == "str":
-        return bytes.fromhex(result.hex).decode()
-    raise ValueError(f"Unkown expected return: {expected_return}")
 
 
 def wait_for_n_blocks(shard: int, n_blocks: int, cooldown: float = 0.2) -> int:
@@ -249,9 +199,9 @@ def wait_for_n_blocks(shard: int, n_blocks: int, cooldown: float = 0.2) -> int:
     """
     proxy_provider = MyProxyNetworkProvider()
     shard = retrieve_value_from_any(shard)
-    current_block = proxy_provider.get_network_status(shard).nonce
+    current_block = proxy_provider.get_network_status(shard).block_nonce
     target_block = current_block + n_blocks
     while current_block < target_block:
         time.sleep(cooldown)
-        current_block = proxy_provider.get_network_status(shard).nonce
+        current_block = proxy_provider.get_network_status(shard).block_nonce
     return current_block

@@ -14,7 +14,9 @@ from pathlib import Path
 import re
 import shutil
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any
+
+from multiversx_sdk.abi import Abi, AbiDefinition
 
 from mxops.config.config import Config
 from mxops.data.path_versions import v1_0_0 as data_path
@@ -27,7 +29,7 @@ from mxops.utils.logger import get_logger
 LOGGER = get_logger("data")
 
 
-def parse_value_key(path) -> List[int | str]:
+def parse_value_key(path) -> list[int | str]:
     """
     Parse a value key string into keys and indices using regex.
 
@@ -49,15 +51,48 @@ class SavedValuesData:
     Dataclass representing an object that can store nested values for the scenario
     """
 
-    saved_values: Dict[str, Any] = field(default_factory=dict)
+    saved_values: dict[str, Any] = field(default_factory=dict)
 
-    def _get_element(self, parsed_value_key: List[str | int]) -> Any:
+    def _get_element_value_from_single_key(self, element: Any, key: str | int) -> Any:
+        """
+        Fetch the value of the element using a single key
+
+        :param element: element to explore
+        :type element: Any
+        :param key: key of the value to fetch
+        :type key: str | int
+        :return: fetched value
+        :rtype: Any
+        """
+        if not isinstance(key, (int, str)):
+            raise TypeError(f"Key must be an int or a str, got {type(key)}")
+        if isinstance(element, (tuple, list)):
+            key = int(key)
+            return element[key]
+        if isinstance(element, dict):
+            try:
+                return element[key]
+            except KeyError:
+                pass
+            try:
+                if isinstance(key, int):
+                    key = str(key)
+                else:
+                    key = int(key)
+            except ValueError:
+                pass
+            return element[key]
+        raise TypeError(
+            f"Element must be a dict, a list or a tuple, got {type(element)}"
+        )
+
+    def _get_element(self, parsed_value_key: list[str | int]) -> Any:
         """
         Get the value saved under the specified value key.
 
 
         :param parsed_value_key: parsed elements of a value key
-        :type parsed_value_key: List[str | int]
+        :type parsed_value_key: list[str | int]
         :return: element saved under the value key
         :rtype: Any
         """
@@ -65,32 +100,13 @@ class SavedValuesData:
             raise errors.WrongDataKeyPath("Key path is empty")
         element = self.saved_values
         for key in parsed_value_key:
-            if isinstance(key, int):
-                if isinstance(element, (tuple, list)):
-                    try:
-                        element = element[key]
-                    except IndexError as err:
-                        raise errors.WrongDataKeyPath(
-                            f"Wrong index {repr(key)} in {parsed_value_key}"
-                            f" for data element {element}"
-                        ) from err
-                else:
-                    raise errors.WrongDataKeyPath(
-                        f"Expected a tuple or a list but found {element}"
-                    )
-            else:
-                if isinstance(element, dict):
-                    try:
-                        element = element[key]
-                    except KeyError as err:
-                        raise errors.WrongDataKeyPath(
-                            f"Wrong key {repr(key)} in {parsed_value_key}"
-                            f" for data element {element}"
-                        ) from err
-                else:
-                    raise errors.WrongDataKeyPath(
-                        f"Expected a dict but found {element}"
-                    )
+            try:
+                element = self._get_element_value_from_single_key(element, key)
+            except (KeyError, IndexError, ValueError) as err:
+                raise errors.WrongDataKeyPath(
+                    f"Wrong key {repr(key)} from keys {parsed_value_key} for "
+                    f"data element {element}"
+                ) from err
         return element
 
     def set_value(self, value_key: str, value: Any):
@@ -204,12 +220,12 @@ class ContractData(SavedValuesData):
         else:
             super().set_value(value_key, value)
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """
         Convert this instance to a dictionary
 
         :return: this instance as a dictionary
-        :rtype: Dict
+        :rtype: dict
         """
         self_dict = asdict(self)
         # add attribute to indicate internal/external
@@ -301,24 +317,24 @@ class TokenData(SavedValuesData):
     identifier: str
     type: mxops_enums.TokenTypeEnum
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """
         Transform this instance to a dictionnary
 
         :return: dictionary representing this instance
-        :rtype: Dict
+        :rtype: dict
         """
         self_dict = asdict(self)
         self_dict["type"] = self.type.value
         return self_dict
 
     @classmethod
-    def from_dict(cls, data: Dict) -> TokenData:
+    def from_dict(cls, data: dict) -> TokenData:
         """
         Create an instance of TokenData from a dictionary
 
         :param data: dictionary to transform into TokenData
-        :type data: Dict
+        :type data: dict
         :return: instance from the input dictionary
         :rtype: TokenData
         """
@@ -336,9 +352,9 @@ class _ScenarioData(SavedValuesData):
     network: mxops_enums.NetworkEnum
     creation_time: int
     last_update_time: int
-    contracts_data: Dict[str, ContractData] = field(default_factory=dict)
-    tokens_data: Dict[str, TokenData] = field(default_factory=dict)
-    _abi_cache: Dict[str, Dict] = field(default_factory=dict, init=False)
+    contracts_data: dict[str, ContractData] = field(default_factory=dict)
+    tokens_data: dict[str, TokenData] = field(default_factory=dict)
+    _abi_cache: dict[str, dict] = field(default_factory=dict, init=False)
 
     def get_contract_value(self, contract_id: str, value_key: str) -> Any:
         """
@@ -357,7 +373,7 @@ class _ScenarioData(SavedValuesData):
             raise errors.UnknownContract(self.name, contract_id) from err
         return contract.get_value(value_key)
 
-    def get_contract_abi(self, contract_id: str, use_cache: bool = True) -> Dict:
+    def get_contract_raw_abi(self, contract_id: str, use_cache: bool = True) -> dict:
         """
         Return the dictionary of a contract abi given its id.
         Look first if it exists in the cache, else try to search for
@@ -368,7 +384,7 @@ class _ScenarioData(SavedValuesData):
         :param use_cache: if the abi cache should be used, default to True
         :type use_cache: bool
         :return: abi of the contract as a json
-        :rtype: Dict
+        :rtype: dict
         """
         if use_cache:
             try:
@@ -384,6 +400,23 @@ class _ScenarioData(SavedValuesData):
         self._abi_cache[contract_id] = contract_abi
         return contract_abi
 
+    def get_contract_abi(self, contract_id: str, use_cache: bool = True) -> Abi:
+        """
+        Return the Abi instance of a contract abi given its id.
+        Look first if it exists in the cache, else try to search for
+        it in the Scenario locally saved data
+
+        :param contract_id: unique id of the contract to get the abi of
+        :type contract_id: str
+        :param use_cache: if the abi cache should be used, default to True
+        :type use_cache: bool
+        :return: abi of the contract
+        :rtype: Abi
+        """
+        return Abi(
+            AbiDefinition.from_dict(self.get_contract_raw_abi(contract_id, use_cache))
+        )
+
     def set_contract_abi_from_source(self, contract_id: str, abi_path: Path):
         """
         Return the dictionary of a contract abi given its id.
@@ -393,12 +426,12 @@ class _ScenarioData(SavedValuesData):
         :param contract_id: unique id of the contract to get the abi of
         :type contract_id: str
         :return: abi of the contract as a json
-        :rtype: Dict
+        :rtype: dict
         """
         file_path = data_path.get_contract_abi_file_path(self.name, contract_id)
         file_path.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(abi_path, file_path)
-        _ = self.get_contract_abi(contract_id, use_cache=False)  # update cache
+        _ = self.get_contract_raw_abi(contract_id, use_cache=False)  # update cache
 
     def set_contract_value(self, contract_id: str, value_key: str, value: Any):
         """
@@ -428,6 +461,7 @@ class _ScenarioData(SavedValuesData):
         if contract_data.contract_id in self.contracts_data:
             raise errors.ContractIdAlreadyExists(contract_data.contract_id)
         self.contracts_data[contract_data.contract_id] = contract_data
+        self.save()
 
     def get_token_value(self, token_name: str, value_key: str) -> Any:
         """
@@ -531,12 +565,12 @@ class _ScenarioData(SavedValuesData):
         data_file_path.parent.mkdir(parents=True, exist_ok=True)
         json_dump(data_file_path, self.to_dict())
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """
         Convert this instance to a dictionary
 
         :return: this instance as a dictionary
-        :rtype: Dict
+        :rtype: dict
         """
         self_dict = {**self.__dict__}
         for key in list(self_dict.keys()):
@@ -600,18 +634,18 @@ class _ScenarioData(SavedValuesData):
         return cls.from_dict(raw_content)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> _ScenarioData:
+    def from_dict(cls, data: dict[str, Any]) -> _ScenarioData:
         """
         Create an instance of _ScenarioData from a dict
 
         :param data: data with the needed attributes and values
-        :type data: Dict[str, Any]
+        :type data: dict[str, Any]
         :return: _ScenarioData instance corresponding to the provided data
         :rtype: ScenarioData
         """
         contracts_data = {}
         for contract_id, contract_data in data["contracts_data"].items():
-            if isinstance(contract_data, Dict):
+            if isinstance(contract_data, dict):
                 try:
                     is_external = contract_data.pop("is_external")
                 except KeyError:
@@ -640,7 +674,7 @@ class ScenarioData:  # pylint: disable=too-few-public-methods
     Only one scenario should be loaded by execution.
     """
 
-    _instance: Optional[_ScenarioData] = None
+    _instance: _ScenarioData | None = None
 
     @classmethod
     def get(cls) -> _ScenarioData:

@@ -6,9 +6,11 @@ This modules contains the class and functions to manage multiversX accounts
 
 import os
 from pathlib import Path
-from typing import List, Optional
 
-from multiversx_sdk_cli.accounts import Account, LedgerAccount
+from multiversx_sdk import (
+    Account,
+    LedgerAccount,
+)
 
 from mxops import errors
 from mxops.common.providers import MyProxyNetworkProvider
@@ -21,10 +23,10 @@ class AccountsManager:
     This allows to handle nonce incrementation in a centralised place
     """
 
-    _accounts = {}
+    _accounts: dict[str, Account | LedgerAccount] = {}
 
     @classmethod
-    def load_register_pem_from_folder(cls, name: str, folder_path: str) -> List[str]:
+    def load_register_pem_from_folder(cls, name: str, folder_path: str) -> list[str]:
         """
         Load all the pem account located in the given folder.
         The name of the accounts is the file name and the list of loaded accounts
@@ -35,13 +37,13 @@ class AccountsManager:
         :param folder_path: path to the folder where wallets are located
         :type folder_path: str
         :return: names of the loaded accounts
-        :rtype: List[str]
+        :rtype: list[str]
         """
         loaded_accounts_names = []
         for file_name in os.listdir(folder_path):
             file_path = Path(folder_path) / file_name
             if file_path.suffix == ".pem":
-                cls.load_register_account(file_path.stem, file_path.as_posix())
+                cls.load_register_account(file_path.stem, file_path)
                 loaded_accounts_names.append(file_path.stem)
         scenario_data = ScenarioData.get()
         scenario_data.set_value(name, sorted(loaded_accounts_names))
@@ -51,9 +53,9 @@ class AccountsManager:
     def load_register_account(
         cls,
         account_name: str,
-        pem_path: Optional[str] = None,
-        ledger_account_index: Optional[int] = None,
-        ledger_address_index: Optional[int] = None,
+        pem_path: str | Path | None = None,
+        ledger_account_index: int | None = None,
+        ledger_address_index: int | None = None,
     ):
         """
         Load an account from a pem path or ledger indices and register it
@@ -63,29 +65,31 @@ class AccountsManager:
             Must be unique.
         :type account_name: str
         :param pem_path: string path to the PEM file, defaults to None
-        :type pem_path: Optional[str], optional
+        :type pem_path: Optional[Path], optional
         :param ledger_account_index: index of the ledger account, defaults to None
         :type ledger_account_index: Optional[int], optional
         :param ledger_address_index: index of the ledger address, defaults to None
         :type ledger_address_index: Optional[int], optional
         """
-        if ledger_account_index is not None and ledger_address_index is not None:
-            account = LedgerAccount(ledger_account_index, ledger_address_index)
-        elif isinstance(pem_path, str):
-            account = Account(pem_file=pem_path)
+        if isinstance(pem_path, str):
+            pem_path = Path(pem_path)
+        if isinstance(pem_path, Path):
+            account = Account.new_from_pem(pem_path)
+        elif ledger_account_index is not None and ledger_address_index is not None:
+            account = LedgerAccount(ledger_address_index)
         else:
             raise ValueError(f"{account_name} is not correctly configured")
         cls.register_account(account_name, account)
 
     @classmethod
-    def register_account(cls, account_name: str, account: Account):
+    def register_account(cls, account_name: str, account: Account | LedgerAccount):
         """
         Register an account in the accounts manager
 
         :param account_name: name of the account for registration
         :type account_name: str
         :param account: account to register
-        :type account: Account
+        :type account: Account | LedgerAccount
         """
         cls._accounts[account_name] = account
         scenario_data = ScenarioData.get()
@@ -94,14 +98,14 @@ class AccountsManager:
         )
 
     @classmethod
-    def get_account(cls, account_name: str) -> Account:
+    def get_account(cls, account_name: str) -> Account | LedgerAccount:
         """
         Fetch an account from the pre-loaded account
 
         :param account_name: name of the account to fetch
         :type account_name: str
         :return: account under the provided name
-        :rtype: Account
+        :rtype: Account | LedgerAccount
         """
         try:
             return cls._accounts[account_name]
@@ -119,9 +123,11 @@ class AccountsManager:
         """
         proxy = MyProxyNetworkProvider()
         try:
-            cls._accounts[account_name].sync_nonce(proxy)
+            account = cls._accounts[account_name]
         except KeyError as err:
-            raise RuntimeError(f"Unkown account {account_name}") from err
+            raise errors.UnknownAccount(account_name) from err
+        account_on_network = proxy.get_account(account.address)
+        account.nonce = account_on_network.nonce
 
     @classmethod
     def sync_all_account(cls):

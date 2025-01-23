@@ -8,7 +8,6 @@ from dataclasses import dataclass, field
 import os
 from pathlib import Path
 import re
-from typing import Dict, List, Union
 
 import yaml
 
@@ -23,22 +22,22 @@ from mxops.utils.logger import get_logger
 LOGGER = get_logger("scene")
 
 
-def get_default_allowed_networks() -> List[str]:
+def get_default_allowed_networks() -> list[str]:
     """
     Return the network that are allowed by default on a scene
 
     :return: names of the allowed networks
-    :rtype: List[str]
+    :rtype: list[str]
     """
     return ["devnet", "testnet", "localnet", "chain-simulator"]
 
 
-def get_default_allowed_scenarios() -> List[str]:
+def get_default_allowed_scenarios() -> list[str]:
     """
     Return the scenarios that are allowed by default on a scene
 
     :return: regex of the allowed scenarios
-    :rtype: List[str]
+    :rtype: list[str]
     """
     return [".*"]
 
@@ -50,21 +49,19 @@ class Scene:
     within a scenario.
     """
 
-    allowed_networks: List[str] = field(default_factory=get_default_allowed_networks)
-    allowed_scenario: List[str] = field(default_factory=get_default_allowed_scenarios)
-    accounts: List[Dict] = field(default_factory=list)
-    steps: List[Step] = field(default_factory=list)
-    external_contracts: Dict[str, Union[str, Dict[str, str]]] = field(
-        default_factory=dict
-    )
+    allowed_networks: list[str] = field(default_factory=get_default_allowed_networks)
+    allowed_scenario: list[str] = field(default_factory=get_default_allowed_scenarios)
+    accounts: list[dict] = field(default_factory=list)
+    steps: list[Step] = field(default_factory=list)
+    external_contracts: dict[str, str | dict[str, str]] = field(default_factory=dict)
 
     def __post_init__(self):
         """
         After the initialisation of an instance, if the inner steps are
-        found to be Dict, will try to convert them to Steps instances.
+        found to be dict, will try to convert them to Steps instances.
         Usefull for easy loading from yaml files
         """
-        if len(self.steps) > 0 and isinstance(self.steps[0], Dict):
+        if len(self.steps) > 0 and isinstance(self.steps[0], dict):
             self.steps = instanciate_steps(self.steps)
 
 
@@ -75,7 +72,7 @@ def load_scene(path: Path) -> Scene:
     :param path: _description_
     :type path: Path
     :return: _description_
-    :rtype: List[Step]
+    :rtype: list[Step]
     """
     with open(path.as_posix(), "r", encoding="utf-8") as file:
         raw_scene = yaml.safe_load(file)

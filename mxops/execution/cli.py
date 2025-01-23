@@ -7,9 +7,9 @@ This module contains the cli for the execution subpackage
 from argparse import _SubParsersAction, Namespace
 import os
 from pathlib import Path
+
 from mxops.config.config import Config
 from mxops.data.execution_data import ScenarioData, delete_scenario_data
-
 from mxops.enums import parse_network_enum
 from mxops.execution.scene import execute_directory, execute_scene
 from mxops import errors

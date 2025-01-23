@@ -6,8 +6,8 @@ This module contains utils various functions related to wallets
 
 from typing import Optional, Tuple
 
-from multiversx_sdk_core import Address
-from multiversx_sdk_wallet import Mnemonic, UserPEM
+from multiversx_sdk import Address
+from multiversx_sdk.wallet import Mnemonic, UserPEM
 
 from mxops import errors
 
