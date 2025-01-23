@@ -1,7 +1,5 @@
 from pathlib import Path
 
-from mxpyserializer.abi_serializer import AbiSerializer
-
 from mxops.data.execution_data import ScenarioData
 from mxops.execution.checks import SuccessCheck
 from mxops.execution.scene import execute_scene, load_scene
@@ -54,15 +52,7 @@ def test_deploy_scene_instantiation(test_data_folder_path: Path):
             endpoint="getTokenIdentifier",
             contract="SEGLD-minter",
             arguments=[],
-            expected_results=[{"save_key": "TokenIdentifier", "result_type": "str"}],
-            print_results=True,
-        ),
-        ContractQueryStep(
-            endpoint="getTokenIdentifier",
-            contract="SEGLD-minter",
-            arguments=[],
             results_save_keys=["TokenIdentifier"],
-            results_types=[{"type": "TokenIdentifier"}],
             print_results=True,
         ),
         ContractUpgradeStep(
@@ -93,11 +83,14 @@ def test_abi_loading(test_data_folder_path: Path):
 
     # When
     execute_scene(scene_path)
-    contract_abi = scenario_data.get_contract_abi("adder")
-    serializer = AbiSerializer.from_abi_dict(contract_abi)
+    contract_abi = scenario_data.get_contract_raw_abi("adder")
 
     # Then
-    assert list(serializer.endpoints.keys()) == ["getSum", "upgrade", "add", "init"]
+    assert set(e["name"] for e in contract_abi["endpoints"]) == {
+        "getSum",
+        "upgrade",
+        "add",
+    }
 
 
 def test_default_loading(test_data_folder_path: Path):

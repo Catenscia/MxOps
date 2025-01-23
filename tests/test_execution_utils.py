@@ -1,7 +1,6 @@
 import os
 from typing import Any
 
-from multiversx_sdk_cli.contracts import SmartContract
 import pytest
 
 from mxops.data.execution_data import _ScenarioData
@@ -70,25 +69,6 @@ def test_address_from_account():
         retrieved_value.to_bech32()
         == "erd1jzw34pun678ktsstunk0dm0z2uh7m0ld9trw507ksnzt0wxalwwsv3fpa2"
     )
-
-
-def test_get_contract_instance():
-    """
-    Test that a contract can be retrieved correctly
-    """
-    # Given
-    contract_id = "my_test_contract"
-
-    # When
-    contract = utils.get_contract_instance(contract_id)
-    contract_bis = utils.get_contract_instance(
-        "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t"
-    )
-
-    # Then
-    assert isinstance(contract, SmartContract)
-    assert isinstance(contract_bis, SmartContract)
-    assert contract.address.bech32() == contract_bis.address.bech32()
 
 
 def test_retrieve_contract_address():

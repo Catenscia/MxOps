@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from unittest.mock import patch
 
-from multiversx_sdk_network_providers.network_config import NetworkConfig
+from multiversx_sdk.network_providers.resources import NetworkConfig
 
 from mxops.config.config import Config
 from mxops.data.execution_data import (
@@ -27,21 +27,18 @@ def mock_network_config():
     with patch(
         "mxops.config.config.ProxyNetworkProvider.get_network_config"
     ) as mock_method:
-        mock_method.return_value = NetworkConfig.from_http_response(
-            {
-                "chainId": "D",
-                "gasPerDataByte": 1500,
-                "topUpFactor": 0.5,
-                "startTime": 1694000000,
-                "roundDuration": 6000,
-                "roundsPerEpoch": 2400,
-                "topUpRewardsGradientPoint": 2000000000000000000000000,
-                "minGasLimit": 50000,
-                "minGasPrice": 1000000000,
-                "gasPriceModifier": 0.01,
-                "minTransactionVersion": 1,
-                "numShardsWithoutMeta": 3,
-            }
+        mock_method.return_value = NetworkConfig(
+            {},
+            chain_id="D",
+            gas_per_data_byte=1500,
+            genesis_timestamp=1694000000,
+            round_duration=6000,
+            num_rounds_per_epoch=2400,
+            min_gas_limit=50000,
+            min_gas_price=1000000000,
+            extra_gas_limit_for_guarded_transactions=10000,
+            gas_price_modifier=0.01,
+            num_shards=3,
         )
         yield
 
@@ -88,11 +85,11 @@ def scenario_data(network):  # must be executed after the network fixture
 def accounts_manager(scenario_data):  # scenario data must be initialized
     accounts_manager = AccountsManager()
     accounts_manager.load_register_account(
-        "test_user_A", pem_path="./tests/data/test_user_A.pem"
+        "test_user_A", pem_path=Path("./tests/data/test_user_A.pem")
     )
     accounts_manager.load_register_account(
-        "test_user_B", pem_path="./tests/data/test_user_B.pem"
+        "test_user_B", pem_path=Path("./tests/data/test_user_B.pem")
     )
     accounts_manager.load_register_pem_from_folder(
-        "wallets_folder", folder_path="./tests/data/wallets_folder"
+        "wallets_folder", folder_path=Path("./tests/data/wallets_folder")
     )

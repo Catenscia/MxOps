@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
-from typing import Any, List
+import re
+from typing import Any
 
 import pytest
 
@@ -91,32 +92,34 @@ def test_key_path_fetch_errors():
     )
 
     # When
-    try:
+    with pytest.raises(
+        errors.WrongDataKeyPath,
+        match=re.escape(
+            "Wrong key 'key_3' from keys ['key_3'] for data element {'key_1': "
+            "{'key_2': [{'data': 'wrong value'}, {'data': 'wrong value'}, "
+            "{'data': 'desired value'}]}}"
+        ),
+    ):
         saved_values.get_value("key_3")
-        raise RuntimeError("An error should have been raised by the line above")
-    except errors.WrongDataKeyPath as err:
-        assert err.args == (
-            "Wrong key 'key_3' in ['key_3'] for data element {'key_1': {'key_2': "
-            "[{'data': "
-            "'wrong value'}, {'data': 'wrong value'}, {'data': 'desired value'}]}}",
-        )
-    try:
-        saved_values.get_value("key_1.key_3")
-        raise RuntimeError("An error should have been raised by the line above")
-    except errors.WrongDataKeyPath as err:
-        assert err.args == (
-            "Wrong key 'key_3' in ['key_1', 'key_3'] for data element {'key_2': "
+
+    with pytest.raises(
+        errors.WrongDataKeyPath,
+        match=re.escape(
+            "Wrong key 'key_3' from keys ['key_1', 'key_3'] for data element {'key_2': "
             "[{'data': 'wrong value'}, {'data': 'wrong value'}, {'data': "
-            "'desired value'}]}",
-        )
-    try:
+            "'desired value'}]}"
+        ),
+    ):
+        saved_values.get_value("key_1.key_3")
+
+    with pytest.raises(
+        errors.WrongDataKeyPath,
+        match=re.escape(
+            "Wrong key 4 from keys ['key_1', 'key_2', 4] for data element [{'data': "
+            "'wrong value'}, {'data': 'wrong value'}, {'data': 'desired value'}]"
+        ),
+    ):
         saved_values.get_value("key_1.key_2[4]")
-        raise RuntimeError("An error should have been raised by the line above")
-    except errors.WrongDataKeyPath as err:
-        assert err.args == (
-            "Wrong index 4 in ['key_1', 'key_2', 4] for data element [{'data': "
-            "'wrong value'}, {'data': 'wrong value'}, {'data': 'desired value'}]",
-        )
 
 
 @pytest.mark.parametrize(
@@ -127,7 +130,7 @@ def test_key_path_fetch_errors():
         ("ping-pong.address", ["ping-pong", "address"]),
     ],
 )
-def test_parse_value_key(value_key: str, expected_result: List[str | int]):
+def test_parse_value_key(value_key: str, expected_result: list[str | int]):
     # When
     # Given
     result = parse_value_key(value_key)

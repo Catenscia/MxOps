@@ -53,17 +53,6 @@ steps:
     contract: SEGLD-minter
     endpoint: getTokenIdentifier
     arguments: []
-    expected_results:
-      - save_key: TokenIdentifier
-        result_type: str
-    print_results: true
-
-  - type: ContractQuery
-    contract: SEGLD-minter
-    endpoint: getTokenIdentifier
-    arguments: []
-    results_types:
-      - type: TokenIdentifier
     results_save_keys:
       - TokenIdentifier
     print_results: true
