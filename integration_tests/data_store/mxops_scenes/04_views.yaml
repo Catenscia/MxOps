@@ -16,20 +16,17 @@ steps:
       - Monday
       - Sunday
       - Default
-      - name: Today
-        values:
-          - "Tuesday"
-      - name: Write
-        values:
-          - [1, 2, 4, 8]
-          - 14
-      - name: Struct
-        values:
-          - 8
-          - [9, 45]
-          - 0
-          - 789484
-          - 485
+      - - Today
+        - Tuesday
+      - - Write
+        - [1, 2, 4, 8]
+        - 14
+      - - Struct
+        - 8
+        - [9, 45]
+        - 0
+        - 789484
+        - 485
     print_results: true
     results_save_keys: view_test_1_returns
 
@@ -38,40 +35,37 @@ steps:
     function: check_storage
     arguments:
       - data-store
-      - '{"view_test_1_returns": [{"name": "Monday", "discriminant": 0, "values": null}, {"name": "Sunday", "discriminant": 6, "values": null}, {"name": "Default", "discriminant": 0, "values": null}, {"name": "Today", "discriminant": 1, "values": [{"name": "Tuesday", "discriminant": 1, "values": null}]}, {"name": "Write", "discriminant": 2, "values": ["bytes:AQIECA==", 14]}, {"name": "Struct", "discriminant": 3, "values": [8, "bytes:CS0=", 0, 789484, 485]}]}'
+      - '{"view_test_1_returns": [{"__name__": "Monday", "__discriminant__": 0}, {"__name__": "Sunday", "__discriminant__": 6}, {"__name__": "Default", "__discriminant__": 0}, {"__name__": "Today", "__discriminant__": 1, "0": {"__name__": "Tuesday", "__discriminant__": 1}}, {"__name__": "Write", "__discriminant__": 2, "0": "bytes:AQIECA==", "1": 14}, {"__name__": "Struct", "__discriminant__": 3, "int": 8, "seq": "bytes:CS0=", "another_byte": 0, "uint_32": 789484, "uint_64": 485}]}'
 
   - type: ContractQuery  # check data access by launching an identical query
     contract: data-store
     endpoint: view_test_1
     arguments:
-      - "%data-store.view_test_1_returns[0].name"
-      - "%data-store.view_test_1_returns[1].name"
-      - "%data-store.view_test_1_returns[2].name"
-      - name: "%data-store.view_test_1_returns[3].name"
-        values:
-          - "%data-store.view_test_1_returns[3].values[0].name"
-      - name: "%data-store.view_test_1_returns[4].name"
-        values:
-          - "%data-store.view_test_1_returns[4].values[0]"
-          - "%data-store.view_test_1_returns[4].values[1]"
-      - name: "%data-store.view_test_1_returns[5].name"
-        values:
-          - "%data-store.view_test_1_returns[5].values[0]"
-          - "%data-store.view_test_1_returns[5].values[1]"
-          - "%data-store.view_test_1_returns[5].values[2]"
-          - "%data-store.view_test_1_returns[5].values[3]"
-          - "%data-store.view_test_1_returns[5].values[4]"
+      - "%data-store.view_test_1_returns[0].__name__"
+      - "%data-store.view_test_1_returns[1].__name__"
+      - "%data-store.view_test_1_returns[2].__name__"
+      - - "%data-store.view_test_1_returns[3].__name__"
+        - "%data-store.view_test_1_returns[3].0.__name__"
+      - - "%data-store.view_test_1_returns[4].__name__"
+        - "%data-store.view_test_1_returns[4].0"
+        - "%data-store.view_test_1_returns[4].1"
+      - - "%data-store.view_test_1_returns[5].__name__"
+        - "%data-store.view_test_1_returns[5].int"
+        - "%data-store.view_test_1_returns[5].seq"
+        - "%data-store.view_test_1_returns[5].another_byte"
+        - "%data-store.view_test_1_returns[5].uint_32"
+        - "%data-store.view_test_1_returns[5].uint_64"
   
   - type: ContractQuery
     contract: data-store
     endpoint: view_test_2
     arguments:
-      - - WEGLD-abcdef
-        - 0
-        - 89784651
-      - - MEX-abcdef
-        - 0
-        - 184791484
+      - - - WEGLD-abcdef
+          - 0
+          - 89784651
+        - - MEX-abcdef
+          - 0
+          - 184791484
     print_results: true
     results_save_keys: view_test_2_returns
 
@@ -80,15 +74,15 @@ steps:
     function: check_storage
     arguments:
       - data-store
-      - '{"view_test_2_returns": [{"token_identifier": "WEGLD-abcdef", "token_nonce": 0, "amount": 89784651}, {"token_identifier": "MEX-abcdef", "token_nonce": 0, "amount": 184791484}]}'
+      - '{"view_test_2_returns": [[{"token_identifier": "WEGLD-abcdef", "token_nonce": 0, "amount": 89784651}, {"token_identifier": "MEX-abcdef", "token_nonce": 0, "amount": 184791484}]]}'
 
   - type: ContractQuery  # check data access by launching an identical query
     contract: data-store
     endpoint: view_test_2
     arguments:
-      - - "%data-store.view_test_2_returns[0].token_identifier"
-        - "%data-store.view_test_2_returns[0].token_nonce"
-        - "%data-store.view_test_2_returns[0].amount"
-      - - "%data-store.view_test_2_returns[1].token_identifier"
-        - "%data-store.view_test_2_returns[1].token_nonce"
-        - "%data-store.view_test_2_returns[1].amount"
+      - - - "%data-store.view_test_2_returns[0][0].token_identifier"
+          - "%data-store.view_test_2_returns[0][0].token_nonce"
+          - "%data-store.view_test_2_returns[0][0].amount"
+        - - "%data-store.view_test_2_returns[0][1].token_identifier"
+          - "%data-store.view_test_2_returns[0][1].token_nonce"
+          - "%data-store.view_test_2_returns[0][1].amount"

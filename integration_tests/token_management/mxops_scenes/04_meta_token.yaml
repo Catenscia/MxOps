@@ -20,6 +20,25 @@ steps:
     function: check_token_properties
     arguments:
       - "ThomasMeta"
+
+  - type: MetaIssue
+    sender: thomas
+    token_name: ThomasMetaAllProp
+    token_ticker: TMT
+    num_decimals: 3
+    can_freeze: true
+    can_wipe: true
+    can_pause: true
+    can_change_owner: true
+    can_upgrade: true
+    can_add_special_roles: true
+    can_transfer_nft_create_role: true
+
+  - type: Python
+    module_path: ./integration_tests/token_management/scripts/checks.py
+    function: check_token_properties
+    arguments:
+      - "ThomasMetaAllProp"
   
   - type: ManageMetaTokenRoles
     sender: thomas
@@ -27,9 +46,9 @@ steps:
     token_identifier: "%ThomasMeta.identifier"
     target: "%thomas.address"
     roles:
-      - ESDTRoleNFTCreate
-      - ESDTRoleNFTBurn
-      - ESDTRoleNFTAddQuantity
+      - nft_create
+      - nft_burn
+      - nft_add_quantity
   
   - type: NonFungibleMint
     sender: thomas

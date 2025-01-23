@@ -15,6 +15,7 @@ steps:
     gas_limit: 60000000
     arguments:
       - 123987
+      - null
   
   - type: ContractQuery
     contract: data-store
@@ -77,12 +78,12 @@ steps:
     gas_limit: 60000000
     arguments:
       - -3
-      - 0
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
+      - - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
   
   - type: ContractQuery
     contract: data-store
@@ -96,7 +97,7 @@ steps:
     function: check_storage
     arguments:
       - data-store
-      - '{"test_3_params": [-3, 0, 1, 2, 3, 4, 5]}'
+      - '{"test_3_params": [-3, [0, 1, 2, 3, 4, 5]]}'
     
   - type: ContractCall
     sender: emmanuel
@@ -118,7 +119,7 @@ steps:
     function: check_storage
     arguments:
       - data-store
-      - '{"my_vec_biguint": [0, 1, 2, 3, 4, 5, 6]}'
+      - '{"my_vec_biguint": [[0, 1, 2, 3, 4, 5, 6]]}'
   
   - type: ContractQuery
     contract: data-store
