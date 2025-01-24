@@ -38,7 +38,6 @@ accounts:
     pem_path: path/to/bom_pem
 
   - account_name: alice
-    ledger_account_index: 12
     ledger_address_index: 2
 
   - name: user_wallets

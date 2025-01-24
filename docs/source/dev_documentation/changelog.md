@@ -36,6 +36,7 @@
 - 🚨 BREAKING CHANGE 🚨 OptionalValue are mandatory now (user must input "null")
 - 🚨 BREAKING CHANGE 🚨 Enums format has changed to use the one from the multiversx-sdk-py
 - 🚨 BREAKING CHANGE 🚨 MultiValueEncoded format has changed to use the one from the multiversx-sdk-py
+- 🚨 BREAKING CHANGE 🚨 ledger account index was dropped as it is not used by multiversx-sdk-py
 
 
 ## 2.2.0 - 2024-04-16
