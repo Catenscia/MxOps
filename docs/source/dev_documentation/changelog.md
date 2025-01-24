@@ -19,6 +19,7 @@
 - `LoopStep` can now directly use a list from the Scenario data
 - `ChainSimulatorFaucetStep` and `R3D4FaucetStep` can now directly use a list from the Scenario data as targets
 - `WaitStep`
+- classes for smart values to rationalize the conversion of smart values
 
 
 ### Changed
