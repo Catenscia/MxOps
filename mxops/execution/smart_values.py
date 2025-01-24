@@ -11,7 +11,7 @@ import os
 import re
 from typing import Any, List, Optional
 
-from multiversx_sdk import Address
+from multiversx_sdk import Address, Token, TokenTransfer
 from multiversx_sdk.core.errors import BadAddressError
 
 from mxops import errors
@@ -370,5 +370,113 @@ class SmartBech32(SmartValue):
 
         :return: evaluated value
         :rtype: str
+        """
+        return super().get_evaluated_value()
+
+
+@dataclass
+class SmartTokenTransfer(SmartValue):
+    """
+    Represent a smart value that should result in a TokenTransfer
+    """
+
+    @staticmethod
+    def type_enforce_value(value: Any) -> TokenTransfer:
+        """
+        Convert a value to the expected evaluated type
+
+        :param value: value to convert
+        :type value: Any
+        :return: converted value
+        :rtype: TokenTransfer
+        """
+        if isinstance(value, TokenTransfer):
+            return value
+        if isinstance(value, list):
+            if len(value) < 2:
+                raise ValueError(
+                    "Token transfer should have at least two elements: "
+                    "identifier and amount"
+                )
+            # assume token identifier, amount, nonce
+            token_identifier = value[0]
+            amount = value[1]
+            if len(value) == 3:
+                nonce = value[2]
+            else:
+                nonce = 0
+        elif isinstance(value, dict):
+            try:
+                token_identifier = value["identifier"]
+            except KeyError:
+                try:
+                    token_identifier = value["token_identifier"]
+                except KeyError as err:
+                    raise ValueError(
+                        "Missing identifier or token_identifier kwarg"
+                        " for the token transfer"
+                    ) from err
+            try:
+                nonce = value["nonce"]
+            except KeyError:
+                try:
+                    nonce = value["token_nonce"]
+                except KeyError:
+                    nonce = 0
+            try:
+                amount = value["amount"]
+            except KeyError as err:
+                raise ValueError("Missing amount kwarg for the token transfer") from err
+
+        token_identifier = SmartStr(token_identifier)
+        token_identifier.evaluate()
+        amount = SmartInt(amount)
+        amount.evaluate()
+        nonce = SmartInt(nonce)
+        nonce.evaluate()
+        return TokenTransfer(
+            Token(token_identifier.get_evaluated_value(), nonce.get_evaluated_value()),
+            amount.get_evaluated_value(),
+        )
+
+    def get_evaluated_value(self) -> TokenTransfer:
+        """
+        Return the evaluated value and enforce a type if necessary
+
+        :return: evaluated value
+        :rtype: TokenTransfer
+        """
+        return super().get_evaluated_value()
+
+
+@dataclass
+class SmartTokenTransfers(SmartValue):
+    """
+    Represent a smart value that should result in a list of TokenTransfers
+    """
+
+    @staticmethod
+    def type_enforce_value(value: Any) -> list[TokenTransfer]:
+        """
+        Convert a value to the expected evaluated type
+
+        :param value: value to convert
+        :type value: Any
+        :return: converted value
+        :rtype: list[TokenTransfer]
+        """
+        result = []
+        for transfer in list(value):
+            transfer = SmartTokenTransfer(transfer)
+            transfer.evaluate()
+            result.append(transfer.get_evaluated_value())
+        return result
+
+    def get_evaluated_value(self) -> list[TokenTransfer]:
+        """
+        Return the evaluated value and enforce a type if necessary
+
+        :return: evaluated value
+        :rtype: list[TokenTransfer]
         """
         return super().get_evaluated_value()

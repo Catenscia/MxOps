@@ -1,6 +1,6 @@
 from typing import Any
 
-from multiversx_sdk import Address
+from multiversx_sdk import Address, Token, TokenTransfer
 import pytest
 
 from mxops import errors
@@ -11,6 +11,8 @@ from mxops.execution.smart_values import (
     SmartBool,
     SmartInt,
     SmartStr,
+    SmartTokenTransfer,
+    SmartTokenTransfers,
     SmartValue,
 )
 
@@ -274,3 +276,86 @@ def test_smart_bech32(raw_value: Any, expected_result: Any, expected_str: str):
     assert smart_value.is_evaluated
     assert smart_value.get_evaluated_value() == expected_result
     assert smart_value.get_evaluation_string() == expected_str
+
+
+@pytest.mark.parametrize(
+    "raw_value, expected_result, expected_str",
+    [
+        (
+            ["WEGLD-abcdef", 123456],
+            TokenTransfer(Token("WEGLD-abcdef"), 123456),
+            ("TODO"),
+        ),
+        (
+            ["WEGLD-abcdef", 123456, 5],
+            TokenTransfer(Token("WEGLD-abcdef", 5), 123456),
+            ("TODO"),
+        ),
+        (
+            {"identifier": "WEGLD-abcdef", "amount": 123456},
+            TokenTransfer(Token("WEGLD-abcdef"), 123456),
+            ("TODO"),
+        ),
+        (
+            {"identifier": "WEGLD-abcdef", "amount": 123456, "nonce": 5},
+            TokenTransfer(Token("WEGLD-abcdef", 5), 123456),
+            ("TODO"),
+        ),
+        (
+            {"token_identifier": "WEGLD-abcdef", "amount": 123456, "token_nonce": 5},
+            TokenTransfer(Token("WEGLD-abcdef", 5), 123456),
+            ("TODO"),
+        ),
+    ],
+)
+def test_smart_token_transfer(
+    raw_value: Any, expected_result: TokenTransfer, expected_str: str
+):
+    # Given
+    smart_value = SmartTokenTransfer(raw_value)
+    # When
+    smart_value.evaluate()
+
+    # Then
+    assert smart_value.is_evaluated
+    evaluated_transfer = smart_value.get_evaluated_value()
+    assert evaluated_transfer.token.identifier == expected_result.token.identifier
+    assert evaluated_transfer.token.nonce == expected_result.token.nonce
+    assert evaluated_transfer.amount == expected_result.amount
+    assert smart_value.get_evaluation_string() == expected_str  # TODO: wait for str
+
+
+@pytest.mark.parametrize(
+    "raw_value, expected_result, expected_str",
+    [
+        (
+            [
+                ["WEGLD-abcdef", 123456],
+                {"identifier": "WEGLD-ghijkl", "amount": 789, "nonce": 8},
+            ],
+            [
+                TokenTransfer(Token("WEGLD-abcdef"), 123456),
+                TokenTransfer(Token("WEGLD-ghijkl", 8), 789),
+            ],
+            ("TODO"),
+        ),
+    ],
+)
+def test_smart_token_transfers(
+    raw_value: Any, expected_result: list[TokenTransfer], expected_str: str
+):
+    # Given
+    smart_value = SmartTokenTransfers(raw_value)
+    # When
+    smart_value.evaluate()
+
+    # Then
+    assert smart_value.is_evaluated
+    evaluated_transfers = smart_value.get_evaluated_value()
+    assert len(evaluated_transfers) == 2
+    for ev_tr, exp_tr in zip(evaluated_transfers, expected_result):
+        assert ev_tr.token.identifier == exp_tr.token.identifier
+        assert ev_tr.token.nonce == exp_tr.token.nonce
+        assert ev_tr.amount == exp_tr.amount
+
+    # assert smart_value.get_evaluation_string() == expected_str # TODO: wait for str
