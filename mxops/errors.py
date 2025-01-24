@@ -23,7 +23,7 @@ from mxops.utils.msc import get_tx_link
 
 class ParsingError(Exception):
     """
-    To be raise when some data could not be parsed successfuly
+    To be raised when some data could not be parsed successfuly
     """
 
     def __init__(
@@ -71,6 +71,18 @@ class MaxIterationError(Exception):
     """
     To be raised when too many iteration have been executed
     """
+
+
+class ClosingCharNotFound(Exception):
+    """
+    To be raised when a closing character could not be found in a given string
+    """
+
+    def __init__(self, string: str, closing_char: str) -> None:
+        message = (
+            f"Could not find a closing char '{closing_char}' for string '{string}'"
+        )
+        super().__init__(message)
 
 
 #############################################################
