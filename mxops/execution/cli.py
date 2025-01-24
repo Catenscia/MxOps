@@ -8,7 +8,6 @@ from argparse import _SubParsersAction, Namespace
 import os
 from pathlib import Path
 from mxops.config.config import Config
-from mxops.data import path
 from mxops.data.execution_data import ScenarioData, delete_scenario_data
 
 from mxops.enums import parse_network_enum
@@ -70,7 +69,6 @@ def execute_cli(args: Namespace):
     if args.command != "execute":
         raise ValueError(f"Command execute was expected, found {args.command}")
 
-    path.initialize_data_folder()
     Config.set_network(args.network)
 
     if args.clean:

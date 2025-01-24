@@ -93,7 +93,8 @@ def test_abi_loading(test_data_folder_path: Path):
 
     # When
     execute_scene(scene_path)
-    serializer: AbiSerializer = scenario_data.get_contract_value("adder", "serializer")
+    contract_abi = scenario_data.get_contract_abi("adder")
+    serializer = AbiSerializer.from_abi_dict(contract_abi)
 
     # Then
     assert list(serializer.endpoints.keys()) == ["getSum", "upgrade", "add", "init"]

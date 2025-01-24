@@ -1,11 +1,8 @@
 import json
 from pathlib import Path
-import time
 from typing import Any, List
 
 import pytest
-
-from mxpyserializer.abi_serializer import AbiSerializer
 
 from mxops import errors
 from mxops.data.execution_data import (
@@ -15,6 +12,7 @@ from mxops.data.execution_data import (
     TokenData,
     parse_value_key,
 )
+from mxops.data.migrations.v0_1_0__to__v1_0_0 import convert_scenario
 from mxops.enums import NetworkEnum, TokenTypeEnum
 
 
@@ -41,7 +39,6 @@ def test_scenario_loading(scenario_path: Path):
         "egld-ping-pong": InternalContractData(
             contract_id="egld-ping-pong",
             address="erd1qqqqqqqqqqqqqpgq0048vv3uk6l6cdreezpallvduy4qnfv2plcq74464k",
-            serializer=None,
             saved_values={},
             wasm_hash=(
                 "5ce403a4f73701481cc15b2378cdc5bce3e35fa215815aa5eb9104d9f7ab2451"
@@ -236,42 +233,24 @@ def test_io_unicity():
     assert scenario_dict == raw_data
 
 
-def test_abiserializer_io():
+def test_migration_v0_1_0_to_v1_0_0():
     """
-    Test that an AbiSerializer object is correctly loaded from ABI, saved and reloaded
-    from Scenario data
+    Test that a scenario file is correctly transformed from version v0.1.0
+    to v1.0.0
     """
     # Given
-    current_timestamp = int(time.time())
-    scenario_data = _ScenarioData(
-        "__MXOPS_TEST_SCENARIO_ARBITRAGER_IO",
-        NetworkEnum.LOCAL,
-        current_timestamp,
-        current_timestamp,
-        {},
-    )
-    serializer = AbiSerializer.from_abi(Path("tests/data/abis/adder.abi.json"))
-    contract_name = "contract-test"
-    contract_data = InternalContractData(
-        contract_id=contract_name,
-        address="erd1qqqqqqqqqqqqqpgq0048vv3uk6l6cdreezpallvduy4qnfv2plcq74464k",
-        saved_values={},
-        wasm_hash="hash",
-        deploy_time=current_timestamp,
-        last_upgrade_time=current_timestamp,
-        serializer=serializer,
-    )
-    scenario_data.add_contract_data(contract_data)
+    initial_scenario = json.loads(Path("tests/data/migrations/v0_1_0.json").read_text())
 
     # When
-    scenario_data_to_dict = scenario_data.to_dict()
-    reloaded_scenario_data = _ScenarioData.from_dict(scenario_data_to_dict)
+    result_scenario, abis = convert_scenario(initial_scenario)
 
     # Then
-    assert isinstance(
-        reloaded_scenario_data.contracts_data[contract_name].serializer, AbiSerializer
+    expected_scenario = json.loads(
+        Path("tests/data/migrations/v1_0_0.json").read_text()
     )
-    assert (
-        reloaded_scenario_data.contracts_data[contract_name].to_dict()
-        == scenario_data.contracts_data[contract_name].to_dict()
+    assert expected_scenario == result_scenario
+    assert len(abis) == 1
+    expected_abi = json.loads(
+        Path("tests/data/migrations/reconstructed.abi.json").read_text()
     )
+    assert abis["data-store"] == expected_abi

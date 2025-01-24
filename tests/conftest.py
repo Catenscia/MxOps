@@ -12,7 +12,6 @@ from mxops.data.execution_data import (
     TokenData,
     delete_scenario_data,
 )
-from mxops.data.path import initialize_data_folder
 from mxops.enums import NetworkEnum, TokenTypeEnum
 from mxops.execution.account import AccountsManager
 
@@ -20,6 +19,7 @@ from mxops.execution.account import AccountsManager
 @pytest.fixture(scope="session", autouse=True)
 def network():
     Config.set_network(NetworkEnum.LOCAL)
+    Config.get_config().set_option("DATA_PATH", "./tests/mxops_data")
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -52,8 +52,7 @@ def test_data_folder_path():
 
 
 @pytest.fixture(scope="session", autouse=True)
-def scenario_data():
-    initialize_data_folder()
+def scenario_data(network):  # must be executed after the network fixture
     ScenarioData.create_scenario("pytest_scenario")
     contract_id = "my_test_contract"
     address = "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t"
@@ -63,7 +62,6 @@ def scenario_data():
         InternalContractData(
             contract_id=contract_id,
             address=address,
-            serializer=None,
             wasm_hash=wasm_hash,
             deploy_time=1,
             last_upgrade_time=1,

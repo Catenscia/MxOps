@@ -10,7 +10,6 @@ from pathlib import Path
 import re
 from typing import Dict, List, Union
 
-from mxpyserializer.abi_serializer import AbiSerializer
 import yaml
 
 from mxops.config.config import Config
@@ -139,20 +138,18 @@ def execute_scene(scene_path: Path):
         if isinstance(contract_data, str):
             contract_data = {"address": contract_data}
         address = contract_data["address"]
-        try:
-            serializer = AbiSerializer.from_abi(Path(contract_data["abi_path"]))
-        except KeyError:
-            serializer = None
+        if "abi_path" in contract_data:
+            scenario_data.set_contract_abi_from_source(
+                contract_id, Path(contract_data["abi_path"])
+            )
         try:
             scenario_data.set_contract_value(contract_id, "address", address)
-            scenario_data.contracts_data[contract_id].serializer = serializer
         except errors.UnknownContract:
             # otherwise create the contract data
             scenario_data.add_contract_data(
                 ExternalContractData(
                     contract_id=contract_id,
                     address=address,
-                    serializer=serializer,
                     saved_values={},
                 )
             )
