@@ -1,8 +1,10 @@
 import json
 from pathlib import Path
 
-from multiversx_sdk_cli.accounts import Account, Address
-from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
+from multiversx_sdk import Account
+from multiversx_sdk.network_providers.http_resources import (
+    transaction_from_proxy_response,
+)
 
 from mxops.data.execution_data import InternalContractData, ScenarioData
 from mxops.errors import CheckFailed
@@ -113,11 +115,7 @@ def test_data_load_equality():
     # Given
     AccountsManager.register_account(
         "owner",
-        Account(
-            Address.from_bech32(
-                "erd1zzugxvypryhfym7qrnnkxvrlh8d9ylw2s0399q5tzp43g297plcq4p6d30"
-            )
-        ),
+        Account.new_from_pem(Path("./tests/data/wallets_folder/alice.pem")),
     )
     scenario = ScenarioData.get()
     contract_data = InternalContractData(
@@ -139,7 +137,7 @@ def test_data_load_equality():
 
     on_chain_transfers = [
         OnChainTransfer(
-            sender="erd1zzugxvypryhfym7qrnnkxvrlh8d9ylw2s0399q5tzp43g297plcq4p6d30",
+            sender="erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3",
             receiver="erd1qqqqqqqqqqqqqpgqpxkd9qgyyxykq5l6d8v9zud99hpwh7l0plcq3dae77",
             token_identifier="EGLD",
             amount="1000000000000000000",
@@ -156,7 +154,7 @@ def test_data_load_equality():
 def test_exact_add_liquidity_transfers_check(test_data_folder_path: Path):
     # Given
     with open(test_data_folder_path / "api_responses" / "add_liquidity.json") as file:
-        onchain_tx = TransactionOnNetwork.from_proxy_http_response(**json.load(file))
+        onchain_tx = transaction_from_proxy_response(**json.load(file))
 
     expected_transfers = [
         ExpectedTransfer(

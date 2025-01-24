@@ -23,14 +23,33 @@ steps:
     arguments:
       - "JeanToken"
 
+  - type: FungibleIssue
+    sender: jean
+    token_name: JeanTokenAllProp
+    token_ticker: JTK
+    initial_supply: 0
+    num_decimals: 18
+    can_freeze: true
+    can_wipe: true
+    can_pause: true
+    can_change_owner: true
+    can_upgrade: true
+    can_add_special_roles: true
+
+  - type: Python
+    module_path: ./integration_tests/token_management/scripts/checks.py
+    function: check_token_properties
+    arguments:
+      - "JeanTokenAllProp"
+
   - type: ManageFungibleTokenRoles
     sender: jean
     is_set: true
     token_identifier: "%JeanToken.identifier"
     target: "%jean.address"
     roles:
-      - ESDTRoleLocalMint
-      - ESDTRoleLocalBurn
+      - local_mint
+      - local_burn
   
   - type: FungibleMint
     sender: jean

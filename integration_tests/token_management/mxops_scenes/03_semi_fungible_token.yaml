@@ -22,6 +22,24 @@ steps:
     function: check_token_properties
     arguments:
       - "MartheSFT"
+
+  - type: SemiFungibleIssue
+    sender: marthe
+    token_name: MartheSFTAllProp
+    token_ticker: MSFT
+    can_freeze: true
+    can_wipe: true
+    can_pause: true
+    can_change_owner: true
+    can_upgrade: true
+    can_add_special_roles: true
+    can_transfer_nft_create_role: true
+
+  - type: Python
+    module_path: ./integration_tests/token_management/scripts/checks.py
+    function: check_token_properties
+    arguments:
+      - "MartheSFTAllProp"
   
   - type: ManageSemiFungibleTokenRoles
     sender: marthe
@@ -29,9 +47,9 @@ steps:
     token_identifier: "%MartheSFT.identifier"
     target: "%marthe.address"
     roles:
-      - ESDTRoleNFTCreate
-      - ESDTRoleNFTBurn
-      - ESDTRoleNFTAddQuantity
+      - nft_create
+      - nft_burn
+      - nft_add_quantity
   
   - type: NonFungibleMint
     sender: marthe

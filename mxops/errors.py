@@ -6,9 +6,9 @@ Errors used in the MxOps package
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
-from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
+from multiversx_sdk import TransactionOnNetwork
 
 from mxops.enums import NetworkEnum
 from mxops.utils.msc import get_tx_link
@@ -188,7 +188,7 @@ class ForbiddenSceneNetwork(Exception):
     """
 
     def __init__(
-        self, scene_path: Path, network_name: str, allowed_networks: List[str]
+        self, scene_path: Path, network_name: str, allowed_networks: list[str]
     ) -> None:
         message = (
             f"Scene {scene_path} not allowed to be executed "
@@ -205,7 +205,7 @@ class ForbiddenSceneScenario(Exception):
     """
 
     def __init__(
-        self, scene_path: Path, scenario_name: str, allowed_scenario: List[str]
+        self, scene_path: Path, scenario_name: str, allowed_scenario: list[str]
     ) -> None:
         message = (
             f"Scene {scene_path} not allowed to be executed "
@@ -250,7 +250,7 @@ class TransactionError(Exception):
         super().__init__()
 
     def __str__(self) -> str:
-        return f"Error on transaction {get_tx_link(self.tx.hash)}\n"
+        return f"Error on transaction {get_tx_link(self.tx.hash.hex())}\n"
 
 
 class FailedTransactionError(TransactionError):
@@ -324,7 +324,7 @@ class CheckFailed(Exception):
 
     def __str__(self) -> str:
         return (
-            f"Check failed on transaction {get_tx_link(self.tx.hash)}"
+            f"Check failed on transaction {get_tx_link(self.tx.hash.hex())}"
             f"\nCheck: {self.check}"
         )
 
@@ -373,7 +373,7 @@ class InvalidStepDefinition(Exception):
     to be raised when the arguments provided by the user for a Step are not valid
     """
 
-    def __init__(self, step_name: str, parameters: Dict) -> None:
+    def __init__(self, step_name: str, parameters: dict) -> None:
         self.step_name = step_name
         self.parameters = parameters
         super().__init__()
@@ -420,7 +420,7 @@ class WrongNetworkForStep(Exception):
     """
 
     def __init__(
-        self, current_network: NetworkEnum, allowed_networks: List[NetworkEnum]
+        self, current_network: NetworkEnum, allowed_networks: list[NetworkEnum]
     ):
         self.current_network = current_network
         self.allowed_networks = allowed_networks

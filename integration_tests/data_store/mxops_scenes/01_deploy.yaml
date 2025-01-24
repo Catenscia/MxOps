@@ -35,7 +35,7 @@ steps:
     function: check_storage
     arguments:
       - data-store
-      - '{"init_params": [{"name": "Default", "discriminant": 0, "values": null}, 123455, -3]}'
+      - '{"init_params": [{"__discriminant__": 0, "__name__": "Default"}, 123455, -3]}'
   
   - type: ContractQuery
     contract: data-store
@@ -47,15 +47,11 @@ steps:
           - a
           - b
           - c
-    results_types:  # override ABI definition
-      - type: u32
-      - type: u32
-      - type: i8
 
   - type: Python
     module_path: ./integration_tests/data_store/scripts/checks.py
     function: check_storage
     arguments:
       - data-store
-      - '{"init_params_2": {"a": 0, "b": 123455, "c": -3}}'
+      - '{"init_params_2": {"a": {"__discriminant__": 0, "__name__": "Default"}, "b": 123455, "c": -3}}'
   

@@ -5,11 +5,9 @@ This module contains the functions to pass transactions to the proxy and to moni
 """
 
 import time
-from typing import List, Union
 
-from multiversx_sdk_cli.transactions import Transaction as CliTransaction
-from multiversx_sdk_core import Address, Transaction
-from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
+from multiversx_sdk import Address, Transaction
+from multiversx_sdk import TransactionOnNetwork
 
 from mxops.common.providers import MyProxyNetworkProvider
 from mxops.config.config import Config
@@ -18,7 +16,7 @@ from mxops.enums import NetworkEnum
 from mxops.execution.msc import OnChainTransfer
 
 
-def send(tx: Union[CliTransaction, Transaction]) -> str:
+def send(tx: Transaction) -> str:
     """
     Send a transaction through the proxy without waiting for a return
 
@@ -28,11 +26,11 @@ def send(tx: Union[CliTransaction, Transaction]) -> str:
     :rtype: str
     """
     proxy = MyProxyNetworkProvider()
-    return proxy.send_transaction(tx)
+    return proxy.send_transaction(tx).hex()
 
 
 def send_and_wait_for_result(
-    tx: Union[CliTransaction, Transaction],
+    tx: Transaction,
 ) -> TransactionOnNetwork:
     """
     Transmit a transaction to a proxy constructed with the config.
@@ -49,7 +47,7 @@ def send_and_wait_for_result(
     timeout = int(config.get("TX_TIMEOUT"))
     refresh_period = float(config.get("TX_REFRESH_PERIOD"))
 
-    tx_hash = proxy.send_transaction(tx)
+    tx_hash = proxy.send_transaction(tx).hex()
     num_periods_to_wait = int(timeout / refresh_period)
     if config.get_network() == NetworkEnum.CHAIN_SIMULATOR:
         proxy.generate_blocks_until_tx_completion(tx_hash)
@@ -57,8 +55,8 @@ def send_and_wait_for_result(
     for _ in range(0, num_periods_to_wait):
         time.sleep(refresh_period)
 
-        on_chain_tx = proxy.get_transaction(tx_hash, True)
-        if on_chain_tx.is_completed:
+        on_chain_tx = proxy.get_transaction(tx_hash)
+        if on_chain_tx.status.is_completed:
             return on_chain_tx
 
     raise errors.UnfinalizedTransactionException(on_chain_tx)
@@ -75,11 +73,11 @@ def raise_on_errors(on_chain_tx: TransactionOnNetwork):
     :param onChainTx: on chain finalised transaction
     :type onChainTx: Transaction
     """
-    if on_chain_tx.status.is_invalid():
+    if on_chain_tx.status.status == "invalid":
         raise errors.InvalidTransactionError(on_chain_tx)
-    if on_chain_tx.status.is_failed():
+    if on_chain_tx.status.status in ("fail", "failed", "unsuccessful"):
         raise errors.FailedTransactionError(on_chain_tx)
-    if not on_chain_tx.status.is_successful() or on_chain_tx.status.is_failed():
+    if not on_chain_tx.status.is_completed:
         raise errors.UnfinalizedTransactionException(on_chain_tx)
 
     event_identifiers = {e.identifier for e in on_chain_tx.logs.events}
@@ -145,7 +143,7 @@ def extract_nft_transfer(sender: str, receiver: str, data: str) -> OnChainTransf
     return OnChainTransfer(sender, receiver, token_identifier, amount)
 
 
-def extract_multi_transfer(sender: str, data: str) -> List[OnChainTransfer]:
+def extract_multi_transfer(sender: str, data: str) -> list[OnChainTransfer]:
     """
     Extract a multi transfer from smart contract result data
 
@@ -154,7 +152,7 @@ def extract_multi_transfer(sender: str, data: str) -> List[OnChainTransfer]:
     :param data: data to analyze for multi transfer
     :type data: str
     :return: Transfers found in the data
-    :rtype: List[OnChainTransfer]
+    :rtype: list[OnChainTransfer]
     """
     if not data.startswith("MultiESDTNFTTransfer@"):
         raise ValueError(f"Data does not describe a multi transfer: {data}")
@@ -183,7 +181,7 @@ def extract_multi_transfer(sender: str, data: str) -> List[OnChainTransfer]:
 
 def get_transfers_from_data(
     sender: str, receiver: str, data: str
-) -> List[OnChainTransfer]:
+) -> list[OnChainTransfer]:
     """
     Try to extract token transfers from the data of a transaction or
     a smart contract result.
@@ -196,7 +194,7 @@ def get_transfers_from_data(
     :param data: data to analyze for transfers
     :type data: str
     :return: tranfers extracted from the data
-    :rtype: List[OnChainTransfer]
+    :rtype: list[OnChainTransfer]
     """
     try:
         return [extract_simple_esdt_transfer(sender, receiver, data)]
@@ -218,7 +216,7 @@ def get_transfers_from_data(
 
 def get_on_chain_transfers(
     on_chain_tx: TransactionOnNetwork, include_refund: bool = False
-) -> List[OnChainTransfer]:
+) -> list[OnChainTransfer]:
     """
     Extract from an on-chain transaction the tokens transfers that were operated in this
     transaction.
@@ -228,33 +226,37 @@ def get_on_chain_transfers(
     :param include_refund: if gas refund should be included in the transfers returned
     :type include_refund: bool, default to False
     :return: list of executed transfer
-    :rtype: List[OnChainTransfer]
+    :rtype: list[OnChainTransfer]
     """
     transfers = []
-    sender = on_chain_tx.sender.bech32()
-    receiver = on_chain_tx.receiver.bech32()
+    sender = on_chain_tx.sender.to_bech32()
+    receiver = on_chain_tx.receiver.to_bech32()
     amount = str(on_chain_tx.value)
     if amount != "0":
         transfers.append(OnChainTransfer(sender, receiver, "EGLD", amount))
-    elif sender != receiver and on_chain_tx.data.startswith("ESDTTransfer"):
+    elif sender != receiver and on_chain_tx.data.startswith(b"ESDTTransfer"):
         try:
             transfers.append(
-                extract_simple_esdt_transfer(sender, receiver, on_chain_tx.data)
+                extract_simple_esdt_transfer(
+                    sender, receiver, on_chain_tx.data.decode()
+                )
             )
         except errors.ParsingError:
             pass
-    elif on_chain_tx.data.startswith("MultiESDTNFTTransfer"):
+    elif on_chain_tx.data.startswith(b"MultiESDTNFTTransfer"):
         try:
-            transfers.extend(extract_multi_transfer(sender, on_chain_tx.data))
+            transfers.extend(extract_multi_transfer(sender, on_chain_tx.data.decode()))
         except errors.ParsingError:
             pass
 
-    for result in on_chain_tx.contract_results.items:
-        sender, receiver = result.sender.bech32(), result.receiver.bech32()
-        amount = str(result.value)
-        if amount != "0" and (include_refund or not result.is_refund):
+    for result in on_chain_tx.smart_contract_results:
+        sender, receiver = result.sender.to_bech32(), result.receiver.to_bech32()
+        amount = str(result.raw["value"])
+        if amount != "0" and (include_refund or not result.raw.get("isRefund", False)):
             transfers.append(OnChainTransfer(sender, receiver, "EGLD", amount))
         else:
-            transfers.extend(get_transfers_from_data(sender, receiver, result.data))
+            transfers.extend(
+                get_transfers_from_data(sender, receiver, result.raw["data"])
+            )
 
     return transfers

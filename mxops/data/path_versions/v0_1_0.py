@@ -14,7 +14,6 @@ mxops
 import os
 from pathlib import Path
 import platform
-from typing import List
 
 from appdirs import AppDirs
 
@@ -113,12 +112,12 @@ def get_scenario_file_path(scenario_name: str, checkpoint_name: str = "") -> Pat
     return data_path / network.name / f"{scenario_full_name}.json"
 
 
-def get_all_scenarios_names() -> List[str]:
+def get_all_scenarios_names() -> list[str]:
     """
     Return all the scenarios names that have locally saved data in the current network
 
     :return: list of scenario names
-    :rtype: List[str]
+    :rtype: list[str]
     """
     config = Config.get_config()
     network = config.get_network()
@@ -132,14 +131,14 @@ def get_all_scenarios_names() -> List[str]:
     ]
 
 
-def get_all_checkpoints_names(scenario_name: str) -> List[str]:
+def get_all_checkpoints_names(scenario_name: str) -> list[str]:
     """
     Return all the existing checkpoint for a given scenario
 
     :param scenario_name: name of the scenario
     :type scenario_name: str
     :return: list of the existing checkpoints
-    :rtype: List[str]
+    :rtype: list[str]
     """
     config = Config.get_config()
     network = config.get_network()

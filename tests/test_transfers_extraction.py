@@ -1,8 +1,9 @@
 import json
 from pathlib import Path
 
-from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
-
+from multiversx_sdk.network_providers.http_resources import (
+    transaction_from_proxy_response,
+)
 from mxops.execution.msc import OnChainTransfer
 from mxops.execution import network as ntk
 
@@ -84,7 +85,7 @@ def test_multi_esdt_extract():
 def test_add_liquidity(test_data_folder_path: Path):
     # Given
     with open(test_data_folder_path / "api_responses" / "add_liquidity.json") as file:
-        tx = TransactionOnNetwork.from_proxy_http_response(**json.load(file))
+        tx = transaction_from_proxy_response(**json.load(file))
 
     # When
     transfers = ntk.get_on_chain_transfers(tx)
@@ -123,10 +124,10 @@ def test_add_liquidity(test_data_folder_path: Path):
 def test_add_liquidity_with_refund(test_data_folder_path: Path):
     # Given
     with open(test_data_folder_path / "api_responses" / "add_liquidity.json") as file:
-        tx = TransactionOnNetwork.from_proxy_http_response(**json.load(file))
+        tx = transaction_from_proxy_response(**json.load(file))
 
     # When
-    transfers = ntk.get_on_chain_transfers(tx, True)
+    transfers = ntk.get_on_chain_transfers(tx, include_refund=True)
 
     # Then
     expected_result = [
@@ -168,7 +169,7 @@ def test_add_liquidity_with_refund(test_data_folder_path: Path):
 def test_claim(test_data_folder_path: Path):
     # Given
     with open(test_data_folder_path / "api_responses" / "claim.json") as file:
-        tx = TransactionOnNetwork.from_proxy_http_response(**json.load(file))
+        tx = transaction_from_proxy_response(**json.load(file))
 
     # When
     transfers = ntk.get_on_chain_transfers(tx)
@@ -189,8 +190,7 @@ def test_claim(test_data_folder_path: Path):
 def test_exit_farm(test_data_folder_path: Path):
     # Given
     with open(test_data_folder_path / "api_responses" / "exit_farm.json") as file:
-        tx = TransactionOnNetwork.from_proxy_http_response(**json.load(file))
-
+        tx = transaction_from_proxy_response(**json.load(file))
     # When
     transfers = ntk.get_on_chain_transfers(tx)
 
@@ -228,7 +228,7 @@ def test_exit_farm(test_data_folder_path: Path):
 def test_nft_transfer(test_data_folder_path: Path):
     # Given
     with open(test_data_folder_path / "api_responses" / "nft_transfer.json") as file:
-        tx = TransactionOnNetwork.from_proxy_http_response(**json.load(file))
+        tx = transaction_from_proxy_response(**json.load(file))
 
     # When
     transfers = ntk.get_on_chain_transfers(tx)
@@ -248,7 +248,7 @@ def test_nft_transfer(test_data_folder_path: Path):
 def test_swap(test_data_folder_path: Path):
     # Given
     with open(test_data_folder_path / "api_responses" / "swap.json") as file:
-        tx = TransactionOnNetwork.from_proxy_http_response(**json.load(file))
+        tx = transaction_from_proxy_response(**json.load(file))
 
     # When
     transfers = ntk.get_on_chain_transfers(tx)
@@ -286,7 +286,7 @@ def test_swap(test_data_folder_path: Path):
 def test_token_unlock(test_data_folder_path: Path):
     # Given
     with open(test_data_folder_path / "api_responses" / "token_unlock.json") as file:
-        tx = TransactionOnNetwork.from_proxy_http_response(**json.load(file))
+        tx = transaction_from_proxy_response(**json.load(file))
 
     # When
     transfers = ntk.get_on_chain_transfers(tx)

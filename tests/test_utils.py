@@ -1,4 +1,4 @@
-from multiversx_sdk_core import Address
+from multiversx_sdk import Address
 import pytest
 
 from mxops.execution.utils import get_address_instance
@@ -9,19 +9,19 @@ from mxops.execution.utils import get_address_instance
     [
         (
             "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t",
-            Address.from_bech32(
+            Address.new_from_bech32(
                 "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t",
             ),
         ),
         (
             "%my_test_contract.address",
-            Address.from_bech32(
+            Address.new_from_bech32(
                 "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t",
             ),
         ),
         (
             "my_test_contract",
-            Address.from_bech32(
+            Address.new_from_bech32(
                 "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t",
             ),
         ),

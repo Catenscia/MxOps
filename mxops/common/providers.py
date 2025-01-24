@@ -4,9 +4,7 @@ author: Etienne Wallet
 This module contains derrived classes from api or proxy providers
 """
 
-from typing import Dict
-from multiversx_sdk_core import Address
-from multiversx_sdk_network_providers import GenericResponse, ProxyNetworkProvider
+from multiversx_sdk import GenericResponse, ProxyNetworkProvider
 from mxops.config.config import Config
 
 
@@ -25,7 +23,7 @@ class MyProxyNetworkProvider(ProxyNetworkProvider):
     def _initialize(self):
         self.url = Config.get_config().get("PROXY")
 
-    def get_initial_wallets(self) -> Dict:
+    def get_initial_wallets(self) -> dict:
         url = "simulator/initial-wallets"
         return self.do_get_generic(url).to_dictionary()
 
@@ -36,11 +34,3 @@ class MyProxyNetworkProvider(ProxyNetworkProvider):
     def generate_blocks(self, n_blocks: int) -> GenericResponse:
         url = f"simulator/generate-blocks/{n_blocks}"
         return self.do_post_generic(url, None)
-
-    def get_address_storage_by_key(self, address: Address, key: str) -> str:
-        url = f"address/{address.bech32()}/key/{key}"
-        return self.do_get_generic(url).get("value")
-
-    def get_address_full_storage(self, address: Address) -> Dict[str, str]:
-        url = f"address/{address.bech32()}/keys"
-        return self.do_get_generic(url).get("pairs", {})

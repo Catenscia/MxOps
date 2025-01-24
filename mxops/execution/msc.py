@@ -6,7 +6,7 @@ Various elements for the execution sub package
 
 from __future__ import annotations
 from dataclasses import dataclass
-from typing import Any, Optional, Union
+from typing import Any
 
 from mxops.execution import utils
 from mxops.utils import msc
@@ -57,17 +57,17 @@ class ExpectedTransfer:
     sender: str
     receiver: str
     token_identifier: str
-    amount: Union[int, str]
-    nonce: Optional[Union[str, int]] = None
+    amount: int | str
+    nonce: str | int | None = None
 
-    def get_hex_nonce(self) -> Optional[str]:
+    def get_hex_nonce(self) -> str | None:
         """
         Transform the nonce attribute of this instance into a hex string
         (without the 0x).
         If the nonce does not exists, return None.
 
         :return: nonce is hex format
-        :rtype: Optional[str]
+        :rtype: str | None
         """
         if self.nonce is None:
             return None

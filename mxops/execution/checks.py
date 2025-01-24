@@ -6,9 +6,9 @@ This module contains the classes used to check on-chain transactions
 
 from dataclasses import dataclass
 import sys
-from typing import Dict, List, Literal
+from typing import Literal
 
-from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
+from multiversx_sdk import TransactionOnNetwork
 
 from mxops import errors
 from mxops.execution.msc import ExpectedTransfer
@@ -78,14 +78,14 @@ class TransfersCheck(Check):
     Check the transfers that an on-chain transaction contains specified transfers
     """
 
-    expected_transfers: List[ExpectedTransfer]
+    expected_transfers: list[ExpectedTransfer]
     condition: Literal["exact", "included"] = "exact"
     include_gas_refund: bool = False
 
     def __post_init__(self):
         """
         After the initialisation of an instance, if the inner steps are
-        found to be Dict, will try to convert them to TransfersCheck instances.
+        found to be dict, will try to convert them to TransfersCheck instances.
         Usefull for easy loading from yaml files
         """
         if self.condition not in ["exact", "included"]:
@@ -97,7 +97,7 @@ class TransfersCheck(Check):
             )
         expected_transfers = []
         for transfer in self.expected_transfers:
-            if isinstance(transfer, Dict):
+            if isinstance(transfer, dict):
                 expected_transfers.append(ExpectedTransfer(**transfer))
             elif isinstance(transfer, ExpectedTransfer):
                 expected_transfers.append(transfer)
@@ -116,7 +116,9 @@ class TransfersCheck(Check):
         :return: true if correct transfers were found
         :rtype: bool
         """
-        onchain_transfers = get_on_chain_transfers(onchain_tx, self.include_gas_refund)
+        onchain_transfers = get_on_chain_transfers(
+            onchain_tx, include_refund=self.include_gas_refund
+        )
         for expected_transfer in self.expected_transfers:
             try:
                 i_tr = onchain_transfers.index(expected_transfer)
@@ -142,14 +144,14 @@ class TransfersCheck(Check):
         return True
 
 
-def instanciate_checks(raw_checks: List[Dict]) -> List[Check]:
+def instanciate_checks(raw_checks: list[dict]) -> list[Check]:
     """
     Take checks as dictionaries and convert them to their corresponding check classes.
 
     :param raw_checks: checks to instantiate
-    :type raw_checks: List[Dict]
+    :type raw_checks: list[dict]
     :return: checks instances
-    :rtype: List[Check]
+    :rtype: list[Check]
     """
     checks_list = []
     for raw_check in raw_checks:
