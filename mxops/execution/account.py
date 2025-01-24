@@ -54,7 +54,6 @@ class AccountsManager:
         cls,
         account_name: str,
         pem_path: str | Path | None = None,
-        ledger_account_index: int | None = None,
         ledger_address_index: int | None = None,
     ):
         """
@@ -66,8 +65,6 @@ class AccountsManager:
         :type account_name: str
         :param pem_path: string path to the PEM file, defaults to None
         :type pem_path: Optional[Path], optional
-        :param ledger_account_index: index of the ledger account, defaults to None
-        :type ledger_account_index: Optional[int], optional
         :param ledger_address_index: index of the ledger address, defaults to None
         :type ledger_address_index: Optional[int], optional
         """
@@ -75,7 +72,7 @@ class AccountsManager:
             pem_path = Path(pem_path)
         if isinstance(pem_path, Path):
             account = Account.new_from_pem(pem_path)
-        elif ledger_account_index is not None and ledger_address_index is not None:
+        elif ledger_address_index is not None:
             account = LedgerAccount(ledger_address_index)
         else:
             raise ValueError(f"{account_name} is not correctly configured")
