@@ -14,6 +14,7 @@ from mxops.config import cli as config_cli
 from mxops.data import cli as data_cli
 from mxops.data.migrations.run import check_migrate_data
 from mxops.execution import cli as execution_cli
+from mxops.utils import chain_simulator
 
 
 def parse_args() -> Namespace:
@@ -31,6 +32,7 @@ def parse_args() -> Namespace:
     config_cli.add_subparser(subparsers_action)
     data_cli.add_subparser(subparsers_action)
     execution_cli.add_subparser(subparsers_action)
+    chain_simulator.add_subparser(subparsers_action)
 
     subparsers_action.add_parser("version")
 
@@ -59,6 +61,8 @@ def main():
         execution_cli.execute_cli(args)
     elif args.command == "version":
         print(metadata.version("mxops"))
+    elif args.command == "chain-simulator":
+        chain_simulator.execute_cli(args)
 
 
 if __name__ == "__main__":
