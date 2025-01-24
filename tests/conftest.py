@@ -19,7 +19,7 @@ from mxops.execution.account import AccountsManager
 @pytest.fixture(scope="session", autouse=True)
 def network():
     Config.set_network(NetworkEnum.LOCAL)
-    Config.get_config().set_option("DATA_PATH", "./tests/mxops_data")
+    Config.get_config().set_option("DATA_PATH", "./tests/.mxops_data")
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -50,7 +50,7 @@ def test_data_folder_path():
 
 @pytest.fixture(scope="session", autouse=True)
 def scenario_data(network):  # must be executed after the network fixture
-    ScenarioData.create_scenario("pytest_scenario")
+    ScenarioData.create_scenario("pytest_scenario", overwrite=True)
     contract_id = "my_test_contract"
     address = "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t"
     wasm_hash = "5ce403a4f73701481cc15b2378cdc5bce3e35fa215815aa5eb9104d9f7ab2451"

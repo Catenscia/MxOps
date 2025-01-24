@@ -60,6 +60,19 @@ class MaxIterations(Exception):
     """
 
 
+class SmartValueNotEvaluated(Exception):
+    """
+    To be raised when a smart values was asked for its evaluations
+    but it has yet to be evaluated
+    """
+
+
+class MaxIterationError(Exception):
+    """
+    To be raised when too many iteration have been executed
+    """
+
+
 #############################################################
 #
 #                   Data Management Errors
