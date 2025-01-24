@@ -341,6 +341,12 @@ def test_smart_token_transfer(
 ):
     # Given
     smart_value = SmartTokenTransfer(raw_value)
+
+    # When
+    smart_value.evaluate()
+
+    # Then
+    assert smart_value.is_evaluated
     evaluated_transfer = smart_value.get_evaluated_value()
     assert evaluated_transfer.token.identifier == expected_result.token.identifier
     assert evaluated_transfer.token.nonce == expected_result.token.nonce
