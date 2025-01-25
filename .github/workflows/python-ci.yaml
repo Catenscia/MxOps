@@ -59,6 +59,9 @@ jobs:
     
       - name: Install uv
         uses: astral-sh/setup-uv@v5
+
+      - name: Install aspell
+        run: sudo apt-get install -y aspell
     
       - name: Set up Python
         uses: actions/setup-python@v4
