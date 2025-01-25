@@ -23,6 +23,7 @@ jobs:
 
       - name: Check python code
         run: |
+          source .venv/bin/activate
           bash scripts/check_python_code.sh
 
 
@@ -46,6 +47,7 @@ jobs:
 
       - name: Test python code
         run: |
+          source .venv/bin/activate
           bash scripts/launch_unit_tests.sh
 
 
@@ -69,6 +71,7 @@ jobs:
 
       - name: Check and Build Documentation
         run: |
+          source .venv/bin/activate
           bash scripts/build_doc.sh
   
 
@@ -103,11 +106,14 @@ jobs:
 
       - name: Build python code
         if: steps.dist-cache.outputs.cache-hits != 'true'
-        run: bash scripts/build.sh
+        run: |
+          source .venv/bin/activate
+          bash scripts/build.sh
       
       - name: retrieve version
         id: retrieve-version
         run: |
+          source .venv/bin/activate
           PACKAGE_VERSION=$(bump2version --dry-run --list patch | grep current_version | sed -E 's/.*=//')
           echo "package_version=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
           if [ $GITHUB_REF == "refs/heads/main" ]
