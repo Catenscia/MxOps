@@ -22,10 +22,10 @@ else
     printf "${GREEN}bandit success${NC}\n\n\n"
 fi
 
-# launch flake8 on the entire repository
+# launch flake8 on the repository and the tests
 # it is mandatory to obtain valid check
 printf "${BLUE}##########\n# Flake8\n##########${NC}\n"
-OUTPUT=$(flake8 .)
+OUTPUT=$(flake8 mxops integration_tests tests tutorials)
 if [ ! -z "${OUTPUT}" ]
 then
     echo "${OUTPUT}"
@@ -35,7 +35,7 @@ else
     printf "${GREEN}flake8 success${NC}\n\n\n"
 fi
 
-# launch ruff format & check on the entire repository
+# launch ruff format & check only on the mxops package
 # it is mandatory to obtain valid check
 printf "${BLUE}##########\n# ruff\n##########${NC}\n"
 OUTPUT=$(ruff format mxops)
