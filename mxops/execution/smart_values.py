@@ -289,7 +289,7 @@ class SmartValue:
                 )
         enforced_type_value = self.type_enforce_value(last_value)
         if (
-            type(enforced_type_value) != type(last_value)
+            type(enforced_type_value) is not type(last_value)
             or enforced_type_value != last_value
         ):
             self.evaluated_values.append(enforced_type_value)
@@ -510,6 +510,10 @@ class SmartTokenTransfer(SmartValue):
                 amount = value["amount"]
             except KeyError as err:
                 raise ValueError("Missing amount kwarg for the token transfer") from err
+        else:
+            raise ValueError(
+                f"Cannot enforce type {type(value)} to TokenTransfer (value: {value})"
+            )
 
         token_identifier = SmartStr(token_identifier)
         token_identifier.evaluate()

@@ -1700,6 +1700,11 @@ class GenerateWalletsStep(Step):
         elif isinstance(self.wallets, list):
             n_wallets = len(self.wallets)
             names = self.wallets
+        else:
+            raise ValueError(
+                "the wallets argument must be of type int or list[str], "
+                f"got {type(self.wallets)}"
+            )
         for i, name in enumerate(names):
             pem_wallet, wallet_address = generate_pem_wallet(self.shard)
             if name is None:
