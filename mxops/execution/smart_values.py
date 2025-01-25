@@ -160,7 +160,9 @@ def retrieve_value_from_string(arg: str) -> Any:
 
     # reconstruct the string if needed
     if match_start > 0 or closing_pos < len(arg) - 1:
-        retrieved_value = f"{arg[:match_start]}{retrieved_value}{arg[closing_pos + 1:]}"
+        retrieved_value = (
+            f"{arg[:match_start]}{retrieved_value}{arg[closing_pos + 1 :]}"
+        )
     return retrieved_value
 
 

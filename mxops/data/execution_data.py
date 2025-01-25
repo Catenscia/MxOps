@@ -738,9 +738,7 @@ class ScenarioData:  # pylint: disable=too-few-public-methods
         cls._instance = _ScenarioData(
             scenario_name, network, current_timestamp, current_timestamp, {}
         )
-        LOGGER.info(
-            (f"Scenario {scenario_name} created for " f"network {network.value}")
-        )
+        LOGGER.info((f"Scenario {scenario_name} created for network {network.value}"))
 
 
 def delete_scenario_data(

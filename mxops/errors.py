@@ -118,7 +118,7 @@ class UnknownContract(Exception):
     """
 
     def __init__(self, scenario_name: str, contract_id: str) -> None:
-        message = f"Contract {contract_id} is unkown in " f"scenario {scenario_name}"
+        message = f"Contract {contract_id} is unkown in scenario {scenario_name}"
         super().__init__(message)
 
 
@@ -128,7 +128,7 @@ class UnknownAbiContract(Exception):
     """
 
     def __init__(self, scenario_name: str, contract_id: str) -> None:
-        message = f"Contract {contract_id} is unkown in " f"scenario {scenario_name}"
+        message = f"Contract {contract_id} is unkown in scenario {scenario_name}"
         super().__init__(message)
 
 
@@ -158,7 +158,7 @@ class UnknownToken(Exception):
     """
 
     def __init__(self, scenario_name: str, token_name: str) -> None:
-        message = f"Token named {token_name} is unkown in " f"scenario {scenario_name}"
+        message = f"Token named {token_name} is unkown in scenario {scenario_name}"
         super().__init__(message)
 
 
@@ -178,7 +178,7 @@ class UnknownRootName(Exception):
     """
 
     def __init__(self, scenario_name: str, root_name: str) -> None:
-        message = f"Root named {root_name} is unkown in " f"scenario {scenario_name}"
+        message = f"Root named {root_name} is unkown in scenario {scenario_name}"
         super().__init__(message)
 
 

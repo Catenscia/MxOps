@@ -28,14 +28,14 @@ def add_subparser(subparsers_action: _SubParsersAction):
         "--scenario",
         type=str,
         required=True,
-        help=("Name of the scenario in which the " "scene(s) will be executed"),
+        help=("Name of the scenario in which the scene(s) will be executed"),
     )
     scenario_parser.add_argument(
         "-n",
         "--network",
         type=parse_network_enum,
         required=True,
-        help=("Name of the network in which the " "scene(s) will be executed"),
+        help=("Name of the network in which the scene(s) will be executed"),
     )
     scenario_parser.add_argument(
         "-d",

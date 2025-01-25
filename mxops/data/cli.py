@@ -73,7 +73,7 @@ def add_subparser(subparsers_action: _SubParsersAction):
         "-l",
         "--list",
         action="store_true",
-        help="Display the names of all scenarios saved" " for the specified network",
+        help="Display the names of all scenarios saved for the specified network",
     )
 
     get_parser.add_argument(
