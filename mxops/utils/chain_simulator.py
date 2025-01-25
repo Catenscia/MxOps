@@ -122,7 +122,8 @@ def stop_chain_simulator():
 
     if process.returncode != 0:
         print(
-            f"Error: chain simulator process ended with return code {process.returncode}"
+            "Error: chain simulator process ended with return code "
+            f"{process.returncode}"
         )
     else:
         LOGGER.info("chain simulator successfully stopped")
