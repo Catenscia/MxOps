@@ -1,21 +1,13 @@
 #!/bin/bash
 set -e
 
-# Initialize Conda
-source ~/anaconda3/etc/profile.d/conda.sh
-
-# build
-rm dist/*
-python -m build
-
-# create a new env
-ENV_NAME="mxops_tutorial_test_env"
-conda create -n $ENV_NAME python=3.11 -y
-conda activate $ENV_NAME
+# create a new env and activate it
+ENV_NAME=".mxops_tutorial_env"
+uv venv $ENV_NAME --python 3.11
+source ${ENV_NAME}/bin/activate
 
 # install project
-pip install dist/*whl
-pip install -r requirements-dev.txt
+uv pip install -r pyproject.toml
 
 # launch first scene tutorial
 cd tutorials/first_scene
@@ -35,5 +27,5 @@ bash scripts/execute_onedex_with_abi.sh
 bash scripts/execute_xexchange_without_abi.sh
 
 # remove env
-conda deactivate
-conda env remove -n $ENV_NAME -y
+deactivate
+rm -rf ${ENV_NAME}
