@@ -23,7 +23,7 @@ version_string = pattern_match.groups(0)[0]
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "MxOps"
-copyright = "2023, Catenscia"
+copyright = "2025, Catenscia"
 author = "Catenscia"
 release = version_string
 version = version_string
@@ -33,7 +33,6 @@ version = version_string
 
 extensions = [
     "myst_parser",
-    "sphinxcontrib.images",
 ]
 
 templates_path = ["_templates"]

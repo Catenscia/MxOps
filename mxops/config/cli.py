@@ -31,7 +31,7 @@ def add_subparser(subparsers_action: _SubParsersAction):
         "-o",
         "--options",
         action="store_true",
-        help=("list of options in the config for the " "specified network"),
+        help=("list of options in the config for the specified network"),
     )
 
     config_parser.add_argument(
@@ -39,8 +39,7 @@ def add_subparser(subparsers_action: _SubParsersAction):
         "--values",
         action="store_true",
         help=(
-            "list of options and their values in the"
-            " config for the specified network"
+            "list of options and their values in the config for the specified network"
         ),
     )
 

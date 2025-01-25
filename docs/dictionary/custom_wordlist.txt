@@ -12,6 +12,7 @@ Catenscia
 ChangeLog
 composability
 composable
+conda
 config
 configparser
 cli
@@ -51,5 +52,6 @@ StackOverflow
 stackoverflow
 td
 th
+uv
 VScode
 wasm

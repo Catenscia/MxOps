@@ -160,7 +160,9 @@ def retrieve_value_from_string(arg: str) -> Any:
 
     # reconstruct the string if needed
     if match_start > 0 or closing_pos < len(arg) - 1:
-        retrieved_value = f"{arg[:match_start]}{retrieved_value}{arg[closing_pos + 1:]}"
+        retrieved_value = (
+            f"{arg[:match_start]}{retrieved_value}{arg[closing_pos + 1 :]}"
+        )
     return retrieved_value
 
 
@@ -287,7 +289,7 @@ class SmartValue:
                 )
         enforced_type_value = self.type_enforce_value(last_value)
         if (
-            type(enforced_type_value) != type(last_value)
+            type(enforced_type_value) is not type(last_value)
             or enforced_type_value != last_value
         ):
             self.evaluated_values.append(enforced_type_value)
@@ -508,6 +510,10 @@ class SmartTokenTransfer(SmartValue):
                 amount = value["amount"]
             except KeyError as err:
                 raise ValueError("Missing amount kwarg for the token transfer") from err
+        else:
+            raise ValueError(
+                f"Cannot enforce type {type(value)} to TokenTransfer (value: {value})"
+            )
 
         token_identifier = SmartStr(token_identifier)
         token_identifier.evaluate()

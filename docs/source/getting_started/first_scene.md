@@ -29,7 +29,11 @@ The secret key is written in clear in a pem file! It is very useful for tests bu
 
 We will execute this tutorial on the devnet, so the account you just created will need some devnet eGLD. You an use the faucet on the [devnet wallet](https://devnet-wallet.multiversx.com) to get some.
 
-```{thumbnail} ../images/devnet_faucet.png
+
+```{figure} ../_images/devnet_faucet.png
+:alt: Image of the devnet faucet
+:align: center
+:target: ../_images/devnet_faucet.png
 ```
 
 ## Smart Contract Build

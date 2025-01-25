@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mxops"
-version = "3.0.0-dev25"
+version = "3.0.0-dev26"
 authors = [
   {name="Etienne Wallet"},
 ]
@@ -18,7 +18,17 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 requires-python = ">=3.10"
-dynamic = ["dependencies"]
+dependencies = [
+    "appdirs~=1.4.4",
+    "configparser~=7.1.0",
+    "importlib-resources~=6.5.2",
+    "matplotlib~=3.10.0",
+    "multiversx-sdk~=1.0.0b3",
+    "pandas~=2.2.3",
+    "pyyaml~=6.0.2",
+    "simpleeval~=1.0.3",
+    "tqdm~=4.67.1",
+]
 
 [project.scripts]
 mxops = "mxops.__main__:main"
@@ -34,11 +44,28 @@ namespaces = false
 [tool.setuptools.package-data]
 "*" = ["*.txt", "*.ini"]
 
-[tool.setuptools.dynamic]
-dependencies = {file = ["requirements.txt"]}
-
 [tool.pytest.ini_options]
 filterwarnings = [
     "ignore:ssl.PROTOCOL_TLS is deprecated:DeprecationWarning",
     "ignore:ssl.match_hostname\\(\\) is deprecated:DeprecationWarning",
+]
+
+[dependency-groups]
+dev = [
+    "bandit>=1.8.2",
+    "black>=24.10.0",
+    "build>=1.2.2.post1",
+    "bump2version>=1.0.1",
+    "coverage>=7.6.10",
+    "flake8>=7.1.1",
+    "myst-parser>=4.0.0",
+    "pep8>=1.7.1",
+    "pylint>=3.3.3",
+    "pyspelling>=2.10",
+    "pytest>=8.3.4",
+    "pytest-mock>=3.14.0",
+    "ruff>=0.9.3",
+    "setuptools>=75.8.0",
+    "sphinx>=8.1.3",
+    "sphinx-rtd-theme>=3.0.2",
 ]

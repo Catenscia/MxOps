@@ -6,9 +6,9 @@ else
     scene="integration_tests/setup_scenes/02b_r3d4_faucet.yaml"
 fi
 
-python -m mxops \
-            execute \
-            -n $1 \
-            -s integration_test \
-            integration_tests/setup_scenes/01_accounts.yaml \
-            $scene \
+mxops \
+    execute \
+    -n $1 \
+    -s integration_test \
+    integration_tests/setup_scenes/01_accounts.yaml \
+    $scene \

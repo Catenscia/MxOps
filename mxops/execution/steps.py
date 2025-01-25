@@ -717,7 +717,7 @@ class FileFuzzerStep(Step):
         LOGGER.info(f"Found {n_tests} tests")
         for i, params in enumerate(exec_parameters):
             LOGGER.info(
-                f"Executing fuzz test n°{i+1}/{n_tests} ({i/n_tests:.0%}): "
+                f"Executing fuzz test n°{i + 1}/{n_tests} ({i / n_tests:.0%}): "
                 f"{params.description}"
             )
             self._execute_fuzz(contract_abi, params)
@@ -1700,6 +1700,11 @@ class GenerateWalletsStep(Step):
         elif isinstance(self.wallets, list):
             n_wallets = len(self.wallets)
             names = self.wallets
+        else:
+            raise ValueError(
+                "the wallets argument must be of type int or list[str], "
+                f"got {type(self.wallets)}"
+            )
         for i, name in enumerate(names):
             pem_wallet, wallet_address = generate_pem_wallet(self.shard)
             if name is None:
@@ -1711,7 +1716,7 @@ class GenerateWalletsStep(Step):
                 raise errors.WalletAlreadyExist(wallet_path)
             pem_wallet.save(wallet_path)
             LOGGER.info(
-                f"Wallet n°{i+1}/{n_wallets} generated with address "
+                f"Wallet n°{i + 1}/{n_wallets} generated with address "
                 f"{wallet_address.to_bech32()} at {wallet_path}"
             )
 
@@ -1871,6 +1876,5 @@ class WaitStep(Step):
                 utils.wait_for_n_blocks(shard, for_blocks)
         else:
             raise ValueError(
-                "Either for_seconds or for_blocks must have a value different"
-                " from None"
+                "Either for_seconds or for_blocks must have a value different from None"
             )

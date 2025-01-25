@@ -15,7 +15,10 @@ For this example, we have created two smart-contracts: a contract in charge of m
 The image below is a map with the main interactions between these contracts and agents. (click on it for full view).
 You will also find some explanation in the next two sections.
 
-```{thumbnail} ../images/piggy_bank_contracts_map.svg
+```{figure} ../_images/piggy_bank_contracts_map.svg
+:alt: Map of interactions between contracts and agents
+:align: center
+:target: ../_images/piggy_bank_contracts_map.svg
 ```
 
 ```{warning}

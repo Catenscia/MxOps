@@ -116,13 +116,15 @@ def reconstruct_abi_from_serializer_dict(
     }
     contract_abi["constructor"] = reconstruct_endpoint_data(endpoints.pop("init"), True)
 
+    upgrade_endpoint = None
     if "upgrade" in endpoints:
         upgrade_endpoint = endpoints.pop("upgrade")
     elif "upgradeConstructor" in endpoints:
         upgrade_endpoint = endpoints.pop("upgradeConstructor")
-    contract_abi["upgradeConstructor"] = reconstruct_endpoint_data(
-        upgrade_endpoint, True
-    )
+    if upgrade_endpoint is not None:
+        contract_abi["upgradeConstructor"] = reconstruct_endpoint_data(
+            upgrade_endpoint, True
+        )
 
     contract_abi["endpoints"] = [
         reconstruct_endpoint_data(e) for e in endpoints.values()

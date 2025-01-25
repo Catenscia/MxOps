@@ -6,10 +6,10 @@ if ! [[ " ${1} " =~ " devnet " ]]; then
     exit 0
 fi
 
-python -m mxops \
-            execute \
-            -n $1 \
-            -s integration_test_wrapping \
-            -d \
-            integration_tests/setup_scenes/01_accounts.yaml \
-            integration_tests/wrapping/mxops_scenes/
+mxops \
+    execute \
+    -n $1 \
+    -s integration_test_wrapping \
+    -d \
+    integration_tests/setup_scenes/01_accounts.yaml \
+    integration_tests/wrapping/mxops_scenes/

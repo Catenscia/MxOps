@@ -183,8 +183,12 @@ This data is accessible to MxOps and can be reused within `Scenes`.
 
 Here is a little illustration of what is happening (click on it to zoom-in):
 
-```{thumbnail} ../images/mxops_illustration.svg
+```{figure} ../_images/mxops_illustration.svg
+:alt: User flow on MxOps
+:align: center
+:target: ../_images/mxops_illustration.svg
 ```
+
 
 If you are a bit confused by this illustration, don't worry: the only thing you will have to do as a user is to write `Scenes` and execute them. Next paragraph gives you a broad understanding of the constitution of a `Scene`.
 
