@@ -37,6 +37,8 @@
 - 🚨 BREAKING CHANGE 🚨 Enums format has changed to use the one from the multiversx-sdk-py
 - 🚨 BREAKING CHANGE 🚨 MultiValueEncoded format has changed to use the one from the multiversx-sdk-py
 - 🚨 BREAKING CHANGE 🚨 ledger account index was dropped as it is not used by multiversx-sdk-py
+- upgraded all dependencies
+- use uv instead of conda for development and env tests
 
 
 ## 2.2.0 - 2024-04-16
