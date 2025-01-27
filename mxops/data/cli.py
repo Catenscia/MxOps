@@ -14,7 +14,6 @@ from argparse import (
 import argparse
 from typing import Literal
 
-from importlib_resources import files
 
 from mxops.data.path_versions import v1_0_0 as data_path
 from mxops.config.config import Config
@@ -45,9 +44,7 @@ def add_subparser(subparsers_action: _SubParsersAction):
     )
 
     # create sub parser for data cli
-    description = files("mxops.resources").joinpath("data_parser_help.txt")
     data_subparsers_actions = data_parser.add_subparsers(
-        description=description.read_text(),
         dest="data_command",
     )
 
