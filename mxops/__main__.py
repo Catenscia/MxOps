@@ -8,8 +8,6 @@ from argparse import Namespace, RawDescriptionHelpFormatter
 import argparse
 from importlib import metadata
 
-from importlib_resources import files
-
 from mxops.config import cli as config_cli
 from mxops.data import cli as data_cli
 from mxops.data.migrations.run import check_migrate_data
@@ -24,10 +22,26 @@ def parse_args() -> Namespace:
     :return: result of the user inputs parsing
     :rtype: Namespace
     """
-    parser = argparse.ArgumentParser(formatter_class=RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description="""
+-----------
+DESCRIPTION
+-----------
+MxOps is a python package created to automate MultiversX transactions: be it smart
+contracts deployments, calls, queries or just simple transfers.
+Inspired from DevOps tools and built on top of mx-sdk-py, it aims to ease and make
+reproducible any interaction with the blockchain.
 
-    description = files("mxops.resources").joinpath("parser_help.txt").read_text()
-    subparsers_action = parser.add_subparsers(description=description, dest="command")
+MxOps targets a broad audience of users and developers, by providing a clear, easy
+to read and write syntax, even for non technical users.
+
+See:
+ - https://mxops.readthedocs.io/en/stable/
+        """,
+        formatter_class=RawDescriptionHelpFormatter,
+    )
+
+    subparsers_action = parser.add_subparsers(dest="command")
 
     config_cli.add_subparser(subparsers_action)
     data_cli.add_subparser(subparsers_action)
