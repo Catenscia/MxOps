@@ -2,9 +2,12 @@
 
 ![MxOps full logo](./docs/source/_images/mxops_full_logo.png)
 
-MxOps is a python package created to automate MultiversX transactions: be it smart contracts deployments, calls, queries or just simple transfers. Inspired from DevOps tools and built on top of [mxpy](https://github.com/multiversx/mx-sdk-py-cli), it aims to ease and make reproducible any set of these interactions with the blockchain.
 
-MxOps aims to be useful in these situations:
+MxOps is a python package created to automate MultiversX transactions: be it smart contracts deployments, calls, queries or just simple transfers. Inspired from DevOps tools and built on top of [mx-sdk-py](https://github.com/multiversx/mx-sdk-py), it aims to ease and make reproducible any interaction with the blockchain.
+
+MxOps targets a broad audience of users and developers, by providing a clear, easy to read and write syntax, even for non technical users.
+
+MxOps aims to be particularely useful in these situations:
 
 - deployment automation
 - on-chain integration tests
