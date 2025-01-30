@@ -7,8 +7,32 @@ This module contains abstract base Steps that are used to construct other Steps
 from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from types import UnionType
+from typing import Type, get_args
 
 from mxops.execution.smart_values import SmartValue
+
+
+def extract_first_smart_value_class(field_type: Type | UnionType) -> Type | None:
+    """
+    Extract the first Smart Value type within a type field
+    if none is found, return None
+
+    :param field_type: field type to inspect
+    :type field_type: Type | UnionType
+    :return: extract type
+    :rtype: Type | None
+    """
+    if isinstance(field_type, UnionType):
+        possible_types = get_args(field_type)
+        smart_value_type = next(
+            (t for t in possible_types if issubclass(t, SmartValue)), None
+        )
+        if smart_value_type:
+            return smart_value_type
+    elif issubclass(field_type, SmartValue):
+        return field_type
+    return None
 
 
 @dataclass
@@ -39,14 +63,17 @@ class Step(ABC):
         Automatically convert attributes that are expected to be smart values
         into their expected class
         """
-        for attr_name in self.__dataclass_fields__:
+        # pylint: disable=no-member
+        for attr_name, attr in self.__dataclass_fields__.items():
             attr_value = getattr(self, attr_name)
-            field_type = self.__dataclass_fields__[attr_name].type
-            if isinstance(attr_value, field_type):
+            smart_type = extract_first_smart_value_class(attr.type)
+            if attr_value is None or smart_type is None:
                 continue
-            if not issubclass(field_type, SmartValue):
+            if isinstance(attr_value, smart_type):
                 continue
-            setattr(self, attr_name, field_type(attr_value))
+            if not issubclass(smart_type, SmartValue):
+                continue
+            setattr(self, attr_name, smart_type(attr_value))
 
     def __post_init__(self):
         """
@@ -58,6 +85,7 @@ class Step(ABC):
         """
         Trigger the evaluation method of all smart values fields
         """
+        # pylint: disable=no-member
         for attr_name in self.__dataclass_fields__:
             attr_value = getattr(self, attr_name)
             if isinstance(attr_value, SmartValue):
