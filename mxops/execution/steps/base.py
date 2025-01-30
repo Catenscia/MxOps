@@ -18,8 +18,17 @@ class Step(ABC):
     within a scene
     """
 
-    @abstractmethod
     def execute(self):
+        """
+        Function that manage the workflow of the execution of a step
+        Currently, it only evaluate all the smart values before triggering
+        the actual execution of the step
+        """
+        self.evaluate_smart_values()
+        self._execute()
+
+    @abstractmethod
+    def _execute(self):
         """
         Interface for the method to execute the action described by a Step instance.
         Each child class must overrid this method
