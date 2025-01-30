@@ -567,3 +567,59 @@ class SmartTokenTransfers(SmartValue):
         :rtype: list[TokenTransfer]
         """
         return super().get_evaluated_value()
+
+
+@dataclass
+class SmartDict(SmartValue):
+    """
+    Represent a smart value that should result in a dict
+    """
+
+    @staticmethod
+    def type_enforce_value(value: Any) -> dict:
+        """
+        Convert a value to the expected evaluated type
+
+        :param value: value to convert
+        :type value: Any
+        :return: converted value
+        :rtype: dict
+        """
+        return dict(value)
+
+    def get_evaluated_value(self) -> dict:
+        """
+        Return the evaluated value
+
+        :return: evaluated value
+        :rtype: dict
+        """
+        return super().get_evaluated_value()
+
+
+@dataclass
+class SmartList(SmartValue):
+    """
+    Represent a smart value that should result in a list
+    """
+
+    @staticmethod
+    def type_enforce_value(value: Any) -> list:
+        """
+        Convert a value to the expected evaluated type
+
+        :param value: value to convert
+        :type value: Any
+        :return: converted value
+        :rtype: list
+        """
+        return list(value)
+
+    def get_evaluated_value(self) -> list:
+        """
+        Return the evaluated value
+
+        :return: evaluated value
+        :rtype: list
+        """
+        return super().get_evaluated_value()
