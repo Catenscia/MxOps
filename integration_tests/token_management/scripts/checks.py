@@ -4,7 +4,7 @@ from multiversx_sdk.core.constants import ESDT_CONTRACT_ADDRESS_HEX
 from multiversx_sdk.abi import TokenIdentifierValue
 
 from mxops.data.execution_data import ScenarioData
-from mxops.execution.steps import ContractQueryStep
+from mxops.execution.legacy_steps import ContractQueryStep
 
 
 EXPECTED_PROPERTIES = {

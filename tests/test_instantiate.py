@@ -3,7 +3,7 @@ from pathlib import Path
 from mxops.data.execution_data import ScenarioData
 from mxops.execution.checks import SuccessCheck
 from mxops.execution.scene import execute_scene, load_scene
-from mxops.execution.steps import (
+from mxops.execution.legacy_steps import (
     ContractCallStep,
     ContractDeployStep,
     ContractQueryStep,

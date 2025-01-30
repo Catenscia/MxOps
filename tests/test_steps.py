@@ -1,7 +1,7 @@
 from typing import Any
 from mxops import errors
 from mxops.data.execution_data import ScenarioData
-from mxops.execution.steps import LoopStep, PythonStep, SetVarsStep
+from mxops.execution.legacy_steps import LoopStep, PythonStep, SetVarsStep
 
 
 def test_python_step():
