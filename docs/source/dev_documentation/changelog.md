@@ -23,6 +23,7 @@
 - classes for smart values to rationalize the conversion of smart values
 - Formulas can be directly supplied as arguments within MxOps scenes
 - chain-simulator can be started and stopped from MxOps
+- results for smart-contract calls can now be saved too
 
 
 ### Changed
