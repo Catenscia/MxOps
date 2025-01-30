@@ -379,80 +379,6 @@ class ContractUpgradeStep(TransactionStep):
 
 
 @dataclass
-class ContractCallStep(TransactionStep):
-    """
-    Represents a smart contract endpoint call
-    """
-
-    contract: str
-    endpoint: str
-    gas_limit: int
-    arguments: list = field(default_factory=list)
-    value: int | str = 0
-    esdt_transfers: list[EsdtTransfer] = field(default_factory=list)
-
-    def build_unsigned_transaction(self) -> Transaction:
-        """
-        Build the transaction for a contract call
-
-        :return: transaction built
-        :rtype: Transaction
-        """
-        contract = utils.retrieve_value_from_any(self.contract)
-        LOGGER.info(f"Calling {self.endpoint} for {contract} ")
-        scenario_data = ScenarioData.get()
-
-        retrieved_arguments = utils.retrieve_value_from_any(self.arguments)
-        try:
-            contract_abi = scenario_data.get_contract_abi(contract)
-        except errors.UnknownAbiContract:
-            contract_abi = None
-
-        esdt_transfers = [
-            TokenTransfer(
-                Token(
-                    utils.retrieve_value_from_string(trf.token_identifier),
-                    utils.retrieve_value_from_any(trf.nonce),
-                ),
-                utils.retrieve_value_from_any(trf.amount),
-            )
-            for trf in self.esdt_transfers
-        ]
-        value = utils.retrieve_value_from_any(self.value)
-
-        factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
-        sc_factory = SmartContractTransactionsFactory(factory_config, abi=contract_abi)
-
-        return sc_factory.create_transaction_for_execute(
-            sender=utils.get_address_instance(self.sender),
-            contract=utils.get_address_instance(contract),
-            function=self.endpoint,
-            arguments=retrieved_arguments,
-            gas_limit=self.gas_limit,
-            native_transfer_amount=value,
-            token_transfers=esdt_transfers,
-        )
-
-    def __post_init__(self):
-        """
-        After the initialisation of an instance, if the esdt transfers are
-        found to be dict,
-        will try to convert them to EsdtTransfers instances.
-        Usefull for easy loading from yaml files
-        """
-        super().__post_init__()
-        checked_transfers = []
-        for trf in self.esdt_transfers:
-            if isinstance(trf, EsdtTransfer):
-                checked_transfers.append(trf)
-            elif isinstance(trf, dict):
-                checked_transfers.append(EsdtTransfer(**trf))
-            else:
-                raise ValueError(f"Unexpected type: {type(trf)}")
-        self.esdt_transfers = checked_transfers
-
-
-@dataclass
 class ResultsSaveKeys:
     master_key: str | None
     sub_keys: list[str | None] | None
@@ -490,6 +416,153 @@ class ResultsSaveKeys:
             return ResultsSaveKeys(master_key, sub_keys)
         raise TypeError(f"ResultsSaveKeys can not parse the following input {data}")
 
+    def parse_data_to_save(self, data: list) -> dict:
+        """
+        Parse data and break it into key-value pairs to save as data
+
+        :param data: data to parse according the the results keys of this instance
+        :type data: list
+        :return: key-value pairs to save
+        :rtype: dict
+        """
+        sub_keys = self.sub_keys
+        if sub_keys is not None:
+            if len(sub_keys) != len(data):
+                raise ValueError(
+                    f"Number of data parts ({len(data)} -> "
+                    f"{data}) and save keys "
+                    f"({len(sub_keys)} -> {sub_keys}) doesn't match"
+                )
+            to_save = dict(zip(sub_keys, data))
+            if self.master_key is not None:
+                to_save = {self.master_key: to_save}
+        else:
+            to_save = {self.master_key: data}
+        return to_save
+
+
+@dataclass
+class ContractCallStep(TransactionStep):
+    """
+    Represents a smart contract endpoint call
+    """
+
+    contract: str
+    endpoint: str
+    gas_limit: int
+    arguments: list = field(default_factory=list)
+    value: int | str = 0
+    esdt_transfers: list[EsdtTransfer] = field(default_factory=list)
+    print_results: bool = False
+    results_save_keys: ResultsSaveKeys | None = field(default=None)
+    returned_data_parts: list | None = field(init=False, default=None)
+    saved_results: dict = field(init=False, default_factory=dict)
+
+    def build_unsigned_transaction(self) -> Transaction:
+        """
+        Build the transaction for a contract call
+
+        :return: transaction built
+        :rtype: Transaction
+        """
+        contract = utils.retrieve_value_from_any(self.contract)
+        LOGGER.info(f"Calling {self.endpoint} for {contract} ")
+        scenario_data = ScenarioData.get()
+
+        retrieved_arguments = utils.retrieve_value_from_any(self.arguments)
+        try:
+            contract_abi = scenario_data.get_contract_abi(contract)
+        except errors.UnknownAbiContract:
+            contract_abi = None
+
+        esdt_transfers = [
+            TokenTransfer(
+                Token(
+                    utils.retrieve_value_from_string(trf.token_identifier),
+                    utils.retrieve_value_from_any(trf.nonce),
+                ),
+                utils.retrieve_value_from_any(trf.amount),
+            )
+            for trf in self.esdt_transfers
+        ]
+        value = utils.retrieve_value_from_any(self.value)
+
+        factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
+        sc_factory = SmartContractTransactionsFactory(factory_config, abi=contract_abi)
+        endpoint = utils.retrieve_value_from_string(self.endpoint)
+        return sc_factory.create_transaction_for_execute(
+            sender=utils.get_address_instance(self.sender),
+            contract=utils.get_address_instance(contract),
+            function=endpoint,
+            arguments=retrieved_arguments,
+            gas_limit=self.gas_limit,
+            native_transfer_amount=value,
+            token_transfers=esdt_transfers,
+        )
+
+    def _post_transaction_execution(self, on_chain_tx: TransactionOnNetwork | None):
+        """
+        Extract results of the smart contract call if it is successful
+
+        :param on_chain_tx: successful transaction
+        :type on_chain_tx: TransactionOnNetwork | None
+        """
+        scenario_data = ScenarioData.get()
+        if self.results_save_keys is None:
+            return
+
+        contract = utils.retrieve_value_from_any(self.contract)
+        scenario_data = ScenarioData.get()
+        if not isinstance(on_chain_tx, TransactionOnNetwork):
+            return
+        if not on_chain_tx.status.is_successful:
+            return
+        try:
+            contract_abi = scenario_data.get_contract_abi(contract)
+        except errors.UnknownAbiContract:
+            contract_abi = None
+        parser = SmartContractTransactionsOutcomeParser(abi=contract_abi)
+        endpoint = utils.retrieve_value_from_string(self.endpoint)
+        outcome = parser.parse_execute(transaction=on_chain_tx, function=endpoint)
+        self.returned_data_parts = convert_mx_data_to_vanilla(outcome.values)
+
+        if self.returned_data_parts is None:
+            raise ValueError("No data to save")
+        to_save = self.results_save_keys.parse_data_to_save(self.returned_data_parts)
+        for save_key, value in to_save.items():
+            if save_key is not None:
+                scenario_data.set_contract_value(contract, save_key, value)
+                self.saved_results[save_key] = value
+
+        if self.print_results:
+            if self.saved_results is not None:
+                print(json_dumps(self.saved_results))
+            elif self.returned_data_parts is not None:
+                print(json_dumps(self.returned_data_parts))
+
+    def __post_init__(self):
+        """
+        After the initialisation of an instance, if the esdt transfers are
+        found to be dict,
+        will try to convert them to EsdtTransfers instances.
+        Usefull for easy loading from yaml files
+        """
+        super().__post_init__()
+        checked_transfers = []
+        for trf in self.esdt_transfers:
+            if isinstance(trf, EsdtTransfer):
+                checked_transfers.append(trf)
+            elif isinstance(trf, dict):
+                checked_transfers.append(EsdtTransfer(**trf))
+            else:
+                raise ValueError(f"Unexpected type: {type(trf)}")
+        self.esdt_transfers = checked_transfers
+
+        if self.results_save_keys is not None and not isinstance(
+            self.results_save_keys, ResultsSaveKeys
+        ):
+            self.results_save_keys = ResultsSaveKeys.from_input(self.results_save_keys)
+
 
 @dataclass
 class ContractQueryStep(Step):
@@ -499,10 +572,10 @@ class ContractQueryStep(Step):
 
     contract: str
     endpoint: str
-    arguments: list[Any] = field(default_factory=list)
+    arguments: list = field(default_factory=list)
     print_results: bool = False
     results_save_keys: ResultsSaveKeys | None = field(default=None)
-    returned_data_parts: list[Any] | None = field(init=False, default=None)
+    returned_data_parts: list | None = field(init=False, default=None)
     saved_results: dict = field(init=False, default_factory=dict)
 
     def __post_init__(self):
@@ -530,22 +603,10 @@ class ContractQueryStep(Step):
             raise ValueError("No data to save")
 
         LOGGER.info("Saving query results")
-        sub_keys = self.results_save_keys.sub_keys
-        if sub_keys is not None:
-            if len(sub_keys) != len(self.returned_data_parts):
-                raise ValueError(
-                    f"Number of data parts ({len(self.returned_data_parts)} -> "
-                    f"{self.returned_data_parts}) and save keys "
-                    f"({len(sub_keys)} -> {sub_keys}) doesn't match"
-                )
-            to_save = dict(zip(sub_keys, self.returned_data_parts))
-            if self.results_save_keys.master_key is not None:
-                to_save = {self.results_save_keys.master_key: to_save}
-        else:
-            to_save = {self.results_save_keys.master_key: self.returned_data_parts}
 
         self.saved_results = {}
         contract = utils.retrieve_value_from_any(self.contract)
+        to_save = self.results_save_keys.parse_data_to_save(self.returned_data_parts)
         for save_key, value in to_save.items():
             if save_key is not None:
                 scenario_data.set_contract_value(contract, save_key, value)
@@ -780,6 +841,7 @@ class FileFuzzerStep(Step):
         :type execution_parameters: FuzzExecutionParameters
         """
         contract = utils.retrieve_value_from_any(self.contract)
+        save_key = "fuzz_test_call_results"
         call_step = ContractCallStep(
             contract=contract,
             endpoint=execution_parameters.endpoint,
@@ -788,8 +850,17 @@ class FileFuzzerStep(Step):
             value=execution_parameters.value,
             esdt_transfers=execution_parameters.esdt_transfers,
             sender=execution_parameters.sender,
+            results_save_keys=save_key,
         )
         call_step.execute()
+        if execution_parameters.expected_outputs is not None:
+            scenario_data = ScenarioData.get()
+            results = scenario_data.get_contract_value(contract, save_key)
+            if results != execution_parameters.expected_outputs:
+                raise errors.FuzzTestFailed(
+                    f"Outputs are different from expected: found {results} but wanted "
+                    f"{execution_parameters.expected_outputs}"
+                )
 
 
 @dataclass
