@@ -1,19 +1,26 @@
 from dataclasses import dataclass
+
+from multiversx_sdk import Address, Token, TokenTransfer
+from mxops.data.execution_data import ScenarioData
 from mxops.execution.steps.base import Step
+from mxops.execution.steps import LoopStep, SetVarsStep
 from mxops.execution.smart_values import (
     SmartAddress,
     SmartBech32,
     SmartBool,
+    SmartDict,
     SmartInt,
+    SmartList,
     SmartStr,
     SmartTokenTransfer,
     SmartTokenTransfers,
     SmartValue,
 )
+from mxops.execution.steps.factory import SmartStep, SmartSteps
 
 
 @dataclass
-class TestStep(Step):
+class DummyStep(Step):
     smart_value: SmartValue
     smart_int: SmartInt
     smart_bool: SmartBool
@@ -22,17 +29,21 @@ class TestStep(Step):
     smart_bech32: SmartBech32
     smart_token_transfer: SmartTokenTransfer
     smart_token_transfers: SmartTokenTransfers
+    smart_list: SmartList
+    smart_dict: SmartDict
+    smart_step: SmartStep
+    smart_steps: SmartSteps
 
-    def execute(self):
+    def _execute(self):
         pass
 
 
-def test_smart_values_auto_conversion():
+def test_step_smart_values_auto_conversion():
     """
     Check that the values are converted into the correct smart values
     """
     # Given
-    step = TestStep(
+    step = DummyStep(
         1,
         1,
         "True",
@@ -41,26 +52,48 @@ def test_smart_values_auto_conversion():
         "erd1qqqqqqqqqqqqqpgq0048vv3uk6l6cdreezpallvduy4qnfv2plcq74464k",
         ["WEGLD-abcdef", 123456],
         [["WEGLD-abcdef", 123456]],
+        [],
+        {},
+        {"type": "SetVars", "variables": {"counter": 0}},
+        [{"type": "SetVars", "variables": {"counter": 0}}],
     )
 
     # When
+    step.evaluate_smart_values()
+
     # Then
-    assert isinstance(step.smart_value, SmartValue)
-    assert isinstance(step.smart_int, SmartInt)
-    assert isinstance(step.smart_bool, SmartBool)
-    assert isinstance(step.smart_str, SmartStr)
-    assert isinstance(step.smart_address, SmartAddress)
-    assert isinstance(step.smart_bech32, SmartBech32)
-    assert isinstance(step.smart_token_transfer, SmartTokenTransfer)
-    assert isinstance(step.smart_token_transfers, SmartTokenTransfers)
+    assert step.smart_value.get_evaluated_value() == 1
+    assert step.smart_int.get_evaluated_value() == 1
+    assert step.smart_bool.get_evaluated_value() is True
+    assert step.smart_str.get_evaluated_value() == "hello"
+    assert step.smart_address.get_evaluated_value() == Address.new_from_bech32(
+        "erd1qqqqqqqqqqqqqpgq0048vv3uk6l6cdreezpallvduy4qnfv2plcq74464k"
+    )
+    assert step.smart_bech32.get_evaluated_value() == (
+        "erd1qqqqqqqqqqqqqpgq0048vv3uk6l6cdreezpallvduy4qnfv2plcq74464k"
+    )
+    assert step.smart_token_transfer.get_evaluated_value() == TokenTransfer(
+        Token("WEGLD-abcdef"), 123456
+    )
+    assert step.smart_token_transfers.get_evaluated_value() == [
+        TokenTransfer(Token("WEGLD-abcdef"), 123456)
+    ]
+    assert step.smart_list.get_evaluated_value() == []
+    assert step.smart_dict.get_evaluated_value() == {}
+    assert step.smart_step.get_evaluated_value() == SetVarsStep(
+        variables={"counter": 0}
+    )
+    assert step.smart_steps.get_evaluated_value() == [
+        SetVarsStep(variables={"counter": 0})
+    ]
 
 
-def test_smart_values_normal_instantiation():
+def test_step_smart_values_normal_instantiation():
     """
     Check that nothing is changed when supplied values already have the correct type
     """
     # Given
-    step = TestStep(
+    step = DummyStep(
         SmartValue(1),
         SmartInt(1),
         SmartBool("True"),
@@ -69,19 +102,105 @@ def test_smart_values_normal_instantiation():
         SmartBech32("erd1qqqqqqqqqqqqqpgq0048vv3uk6l6cdreezpallvduy4qnfv2plcq74464k"),
         SmartTokenTransfer(["WEGLD-abcdef", 123456]),
         SmartTokenTransfers([["WEGLD-abcdef", 123456]]),
+        SmartList([]),
+        SmartDict({}),
+        SmartStep({"type": "SetVars", "variables": {"counter": 0}}),
+        SmartSteps([{"type": "SetVars", "variables": {"counter": 0}}]),
     )
 
     # When
+    step.evaluate_smart_values()
+
     # Then
-    assert step.smart_value == SmartValue(1)
-    assert step.smart_int == SmartInt(1)
-    assert step.smart_bool == SmartBool("True")
-    assert step.smart_str == SmartStr("hello")
-    assert step.smart_address == SmartAddress(
+    assert step.smart_value.get_evaluated_value() == 1
+    assert step.smart_int.get_evaluated_value() == 1
+    assert step.smart_bool.get_evaluated_value() is True
+    assert step.smart_str.get_evaluated_value() == "hello"
+    assert step.smart_address.get_evaluated_value() == Address.new_from_bech32(
         "erd1qqqqqqqqqqqqqpgq0048vv3uk6l6cdreezpallvduy4qnfv2plcq74464k"
     )
-    assert step.smart_bech32 == SmartBech32(
+    assert step.smart_bech32.get_evaluated_value() == (
         "erd1qqqqqqqqqqqqqpgq0048vv3uk6l6cdreezpallvduy4qnfv2plcq74464k"
     )
-    assert step.smart_token_transfer == SmartTokenTransfer(["WEGLD-abcdef", 123456])
-    assert step.smart_token_transfers == SmartTokenTransfers([["WEGLD-abcdef", 123456]])
+    assert step.smart_token_transfer.get_evaluated_value() == TokenTransfer(
+        Token("WEGLD-abcdef"), 123456
+    )
+    assert step.smart_token_transfers.get_evaluated_value() == [
+        TokenTransfer(Token("WEGLD-abcdef"), 123456)
+    ]
+    assert step.smart_list.get_evaluated_value() == []
+    assert step.smart_dict.get_evaluated_value() == {}
+    assert step.smart_step.get_evaluated_value() == SetVarsStep(
+        variables={"counter": 0}
+    )
+    assert step.smart_steps.get_evaluated_value() == [
+        SetVarsStep(variables={"counter": 0})
+    ]
+
+
+def test_loop_step_with_range():
+    # Given
+    step = LoopStep(
+        [
+            {"type": "Loop", "var_name": "loop_var_2", "steps": [], "var_list": []},
+            {"type": "SetVars", "variables": {"counter": 0}},
+        ],
+        "loop_var",
+        var_start=0,
+        var_end=2,
+    )
+    scenario_data = ScenarioData.get()
+
+    # When / Then
+    for i, step in enumerate(step.generate_steps()):
+        assert scenario_data.get_value("loop_var") == i // 2
+        if i % 2 == 0:
+            assert step == LoopStep(steps=[], var_name="loop_var_2", var_list=[])
+        else:
+            assert step == SetVarsStep(variables={"counter": 0})
+    assert i == 3  # (2 - 0) * 2
+
+
+def test_loop_step_with_list():
+    # Given
+    var_list = ["hey", 42]
+    step = LoopStep(
+        [
+            {"type": "Loop", "var_name": "loop_var_2", "steps": [], "var_list": []},
+            {"type": "SetVars", "variables": {"counter": 0}},
+        ],
+        "loop_var",
+        var_list=var_list,
+    )
+    scenario_data = ScenarioData.get()
+
+    # When / Then
+    for i, step in enumerate(step.generate_steps()):
+        assert scenario_data.get_value("loop_var") == var_list[i // 2]
+        if i % 2 == 0:
+            assert step == LoopStep(steps=[], var_name="loop_var_2", var_list=[])
+        else:
+            assert step == SetVarsStep(variables={"counter": 0})
+    assert i == 3  # (2 - 0) * 2
+
+
+def test_set_vars_step():
+    # Given
+    scenario_data = ScenarioData.get()
+    step = SetVarsStep(
+        variables={
+            "test_set_vars_step_var1": "%{${OWNER_NAME}_%{suffix}.identifier}",
+            "test_set_vars_step_var2": "%my_dict",
+        }
+    )
+
+    # When
+    step.execute()
+
+    # Then
+    assert scenario_data.get_value("test_set_vars_step_var1") == "BOBT-123456"
+    assert scenario_data.get_value("test_set_vars_step_var2") == {
+        "key1": "1",
+        "key2": 2,
+        "key3": ["x", "y", "z"],
+    }
