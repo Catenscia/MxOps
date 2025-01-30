@@ -107,7 +107,9 @@ def test_loop_step_from_scenario_data_list():
     scenario_data.set_value("var_list", [1, 2, 4])
     loop_step = LoopStep(
         steps=[
-            PythonStep("./tests/test_steps.py", "register_value_in_list", ["%loop_var"])
+            PythonStep(
+                "./tests/test_legacy_steps.py", "register_value_in_list", ["%loop_var"]
+            )
         ],
         var_name="loop_var",
         var_list="%var_list",
