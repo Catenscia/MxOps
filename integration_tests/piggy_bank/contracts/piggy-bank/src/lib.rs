@@ -49,14 +49,20 @@ pub trait PiggyBank {
     ///
     /// * **deposit_payment** : Single payment of piggy token
     ///
+    /// ### Returns
+    ///
+    /// * **BigUint** : Current total deposit of the user after deposit
+    ///
     #[endpoint(deposit)]
     #[payable("*")]
-    fn deposit(&self) {
+    fn deposit(&self) -> BigUint {
         let deposit_payment = self.call_value().single_esdt();
         let caller = self.blockchain().get_caller();
         self.require_good_token_identifier(&deposit_payment);
-        self.address_amount(caller)
+        self.address_amount(caller.clone())
             .update(|val| *val += deposit_payment.amount);
+
+        self.address_amount(caller).get()
     }
 
     /// Allow a user to withdraw all its piggy tokens from the piggy bank.

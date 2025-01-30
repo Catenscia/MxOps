@@ -31,7 +31,7 @@ steps:
     results_save_keys: init_params
 
   - type: Python
-    module_path: ./integration_tests/data_store/scripts/checks.py
+    module_path: ./integration_tests/scripts/checks.py
     function: check_storage
     arguments:
       - data-store
@@ -49,7 +49,7 @@ steps:
           - c
 
   - type: Python
-    module_path: ./integration_tests/data_store/scripts/checks.py
+    module_path: ./integration_tests/scripts/checks.py
     function: check_storage
     arguments:
       - data-store
