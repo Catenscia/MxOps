@@ -58,8 +58,7 @@ class LoopStep(Step):
         scenario_data = ScenarioData.get()
         for var in iterator:
             scenario_data.set_value(var_name, var)
-            for step in self.steps.get_evaluated_value():
-                yield step
+            yield from self.steps.get_evaluated_value()
 
     def _execute(self):
         """

@@ -29,7 +29,7 @@ class SmartStep(SmartValue):
         """
         if isinstance(value, Step):
             return value
-        elif isinstance(value, dict):
+        if isinstance(value, dict):
             return instanciate_steps([value])[0]
         raise ValueError(f"Cannot create a step from type {type(value)} ({value})")
 
