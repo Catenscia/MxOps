@@ -6,7 +6,7 @@ Various elements for the execution sub package
 
 from dataclasses import dataclass
 
-from mxops.execution.smart_values import SmartAddress, SmartInt, SmartToken
+from multiversx_sdk import Address, Token
 
 
 @dataclass
@@ -15,7 +15,7 @@ class OnChainTokenTransfer:
     Holds the information of an onchain token transfer
     """
 
-    sender: SmartAddress
-    receiver: SmartAddress
-    token: SmartToken
-    amount: SmartInt
+    sender: Address
+    receiver: Address
+    token: Token
+    amount: int
