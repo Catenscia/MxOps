@@ -346,6 +346,34 @@ class SmartInt(SmartValue):
 
 
 @dataclass
+class SmartFloat(SmartValue):
+    """
+    Represent a smart value that should result in a float
+    """
+
+    @staticmethod
+    def type_enforce_value(value: Any) -> int:
+        """
+        Convert a value to the expected evaluated type
+
+        :param value: value to convert
+        :type value: Any
+        :return: converted value
+        :rtype: float
+        """
+        return float(value)
+
+    def get_evaluated_value(self) -> float:
+        """
+        Return the evaluated value
+
+        :return: evaluated value
+        :rtype: float
+        """
+        return super().get_evaluated_value()
+
+
+@dataclass
 class SmartBool(SmartValue):
     """
     Represent a smart value that should result in a boolean

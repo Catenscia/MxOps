@@ -9,6 +9,7 @@ from mxops.execution.smart_values import (
     SmartAddress,
     SmartBech32,
     SmartBool,
+    SmartFloat,
     SmartInt,
     SmartStr,
     SmartTokenTransfer,
@@ -146,6 +147,39 @@ def test_infinite_evaluation():
 def test_smart_int(raw_value: Any, expected_result: Any, expected_str: str):
     # Given
     smart_value = SmartInt(raw_value)
+
+    # When
+    smart_value.evaluate()
+
+    # Then
+    assert smart_value.is_evaluated
+    assert smart_value.get_evaluated_value() == expected_result
+    assert smart_value.get_evaluation_string() == expected_str
+
+
+@pytest.mark.parametrize(
+    "raw_value, expected_result, expected_str",
+    [
+        (
+            12241412.23,
+            12241412.23,
+            "12241412.23",
+        ),
+        (
+            "12241412.23",
+            12241412.23,
+            "12241412.23",
+        ),
+        (
+            3,
+            3,
+            "3.0 (3)",
+        ),
+    ],
+)
+def test_smart_float(raw_value: Any, expected_result: Any, expected_str: str):
+    # Given
+    smart_value = SmartFloat(raw_value)
 
     # When
     smart_value.evaluate()
