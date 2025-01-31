@@ -5,6 +5,7 @@ This module contains miscelanious Steps
 """
 
 from dataclasses import dataclass, field
+from importlib.util import spec_from_file_location, module_from_spec
 import time
 from typing import Iterator
 
@@ -13,12 +14,16 @@ from multiversx_sdk.core.constants import METACHAIN_ID
 from mxops.common.providers import MyProxyNetworkProvider
 from mxops.config.config import Config
 from mxops.data.execution_data import ScenarioData
+from mxops.data.utils import json_dumps
 from mxops.enums import NetworkEnum
 from mxops.execution import utils
 from mxops.execution.smart_values import (
+    SmartBool,
     SmartDict,
     SmartFloat,
     SmartInt,
+    SmartList,
+    SmartPath,
     SmartStr,
     SmartValue,
 )
@@ -127,3 +132,50 @@ class WaitStep(Step):
             raise ValueError(
                 "Either for_seconds or for_blocks must have a value different from None"
             )
+
+
+@dataclass
+class PythonStep(Step):
+    """
+    This Step execute a custom python function of the user
+    """
+
+    module_path: SmartPath
+    function: SmartStr
+    arguments: SmartList = field(default_factory=lambda: SmartList([]))
+    keyword_arguments: SmartDict = field(default_factory=lambda: SmartDict({}))
+    print_result: SmartBool = field(default_factory=lambda: SmartBool(True))
+    result_save_key: SmartStr | None = None
+
+    def _execute(self):
+        """
+        Execute the specified function
+        """
+        module_path = self.module_path.get_evaluated_value()
+        module_name = module_path.stem
+        function = self.function.get_evaluated_value()
+        LOGGER.info(
+            f"Executing python function {function} from user module {module_name}"
+        )
+
+        # load module and function
+        spec = spec_from_file_location(module_name, module_path.as_posix())
+        user_module = module_from_spec(spec)
+        spec.loader.exec_module(user_module)
+        function = utils.retrieve_value_from_string(function)
+        user_function = getattr(user_module, function)
+
+        # transform args and kwargs and execute
+        arguments = self.arguments.get_evaluated_value()
+        keyword_arguments = self.keyword_arguments.get_evaluated_value()
+        result = user_function(*arguments, **keyword_arguments)
+
+        if self.result_save_key is not None:
+            result_save_key = self.result_save_key.get_evaluated_value()
+            scenario_data = ScenarioData.get()
+            scenario_data.set_value(result_save_key, result)
+            LOGGER.info(
+                f"Saving function result at {result_save_key}: {json_dumps(result)}"
+            )
+        elif self.print_result.get_evaluated_value():
+            LOGGER.info(f"Function result: {json_dumps(result)}")
