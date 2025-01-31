@@ -513,7 +513,7 @@ class SmartTokenTransfer(SmartValue):
             # assume token identifier, amount, nonce
             token_identifier = value[0]
             amount = value[1]
-            if len(value) == 3:
+            if len(value) >= 3:
                 nonce = value[2]
             else:
                 nonce = 0
@@ -678,5 +678,72 @@ class SmartPath(SmartValue):
 
         :return: evaluated value
         :rtype: Path
+        """
+        return super().get_evaluated_value()
+
+
+@dataclass
+class SmartToken(SmartValue):
+    """
+    Represent a smart value that should result in a Token
+    """
+
+    @staticmethod
+    def type_enforce_value(value: Any) -> Token:
+        """
+        Convert a value to the expected evaluated type
+
+        :param value: value to convert
+        :type value: Any
+        :return: converted value
+        :rtype: Token
+        """
+        if isinstance(value, Token):
+            return value
+        if isinstance(value, list):
+            if len(value) < 1:
+                raise ValueError("Token should have at least the token identifier ")
+            # assume token identifier and optionnaly nonce
+            token_identifier = value[0]
+            if len(value) >= 2:
+                nonce = value[1]
+            else:
+                nonce = 0
+        elif isinstance(value, dict):
+            try:
+                token_identifier = value["identifier"]
+            except KeyError:
+                try:
+                    token_identifier = value["token_identifier"]
+                except KeyError as err:
+                    raise ValueError(
+                        "Missing identifier or token_identifier kwarg for the token"
+                    ) from err
+            try:
+                nonce = value["nonce"]
+            except KeyError:
+                try:
+                    nonce = value["token_nonce"]
+                except KeyError:
+                    nonce = 0
+        else:
+            raise ValueError(
+                f"Cannot enforce type {type(value)} to Token (value: {value})"
+            )
+
+        token_identifier = SmartStr(token_identifier)
+        token_identifier.evaluate()
+        nonce = SmartInt(nonce)
+        nonce.evaluate()
+        return Token(
+            token_identifier.get_evaluated_value(), nonce.get_evaluated_value()
+        )
+
+    def get_evaluated_value(self) -> Token:
+        """
+        Return the evaluated value
+
+        :return: evaluated value
+        :rtype: Token
         """
         return super().get_evaluated_value()

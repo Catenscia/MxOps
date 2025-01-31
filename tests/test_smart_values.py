@@ -14,6 +14,7 @@ from mxops.execution.smart_values import (
     SmartInt,
     SmartPath,
     SmartStr,
+    SmartToken,
     SmartTokenTransfer,
     SmartTokenTransfers,
     SmartValue,
@@ -487,3 +488,48 @@ def test_smart_path():
     # Then
     assert smart_value.is_evaluated
     assert smart_value.get_evaluated_value() == Path("./tests")
+
+
+@pytest.mark.parametrize(
+    "raw_value, expected_result, expected_str",
+    [
+        (
+            ["WEGLD-abcdef"],
+            Token("WEGLD-abcdef"),
+            ("TODO"),
+        ),
+        (
+            ["NFT-abcdef", 5],
+            Token("NFT-abcdef", 5),
+            ("TODO"),
+        ),
+        (
+            {"identifier": "WEGLD-abcdef"},
+            Token("WEGLD-abcdef"),
+            ("TODO"),
+        ),
+        (
+            {"identifier": "NFT-abcdef", "nonce": 5},
+            Token("NFT-abcdef", 5),
+            ("TODO"),
+        ),
+        (
+            {"token_identifier": "NFT-abcdef", "token_nonce": 5},
+            Token("NFT-abcdef", 5),
+            ("TODO"),
+        ),
+    ],
+)
+def test_smart_token(raw_value: Any, expected_result: Token, expected_str: str):
+    # Given
+    smart_value = SmartToken(raw_value)
+
+    # When
+    smart_value.evaluate()
+
+    # Then
+    assert smart_value.is_evaluated
+    evaluated_token = smart_value.get_evaluated_value()
+    assert evaluated_token.identifier == expected_result.identifier
+    assert evaluated_token.nonce == expected_result.nonce
+    # assert smart_value.get_evaluation_string() == expected_str  # TODO wait for next/feat from sdk
