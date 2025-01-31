@@ -532,4 +532,4 @@ def test_smart_token(raw_value: Any, expected_result: Token, expected_str: str):
     evaluated_token = smart_value.get_evaluated_value()
     assert evaluated_token.identifier == expected_result.identifier
     assert evaluated_token.nonce == expected_result.nonce
-    # assert smart_value.get_evaluation_string() == expected_str  # TODO wait for next/feat from sdk
+    # assert smart_value.get_evaluation_string() == expected_str  # TODO wait for sdk
