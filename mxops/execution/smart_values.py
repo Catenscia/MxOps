@@ -10,7 +10,8 @@ from dataclasses import dataclass, field
 import os
 from pathlib import Path
 import re
-from typing import Any, List, Optional
+from types import UnionType
+from typing import Any, List, Optional, Type, get_args
 
 from multiversx_sdk import Address, Token, TokenTransfer
 from multiversx_sdk.core.errors import BadAddressError
@@ -21,6 +22,29 @@ from mxops import errors
 from mxops.config.config import Config
 from mxops.data.execution_data import ScenarioData
 from mxops.execution.account import AccountsManager
+from mxops.execution.msc import OnChainTokenTransfer
+
+
+def extract_first_smart_value_class(field_type: Type | UnionType) -> Type | None:
+    """
+    Extract the first Smart Value type within a type field
+    if none is found, return None
+
+    :param field_type: field type to inspect
+    :type field_type: Type | UnionType
+    :return: extract type
+    :rtype: Type | None
+    """
+    if isinstance(field_type, UnionType):
+        possible_types = get_args(field_type)
+        smart_value_type = next(
+            (t for t in possible_types if issubclass(t, SmartValue)), None
+        )
+        if smart_value_type:
+            return smart_value_type
+    elif issubclass(field_type, SmartValue):
+        return field_type
+    return None
 
 
 def replace_escaped_characters(s: str) -> str:
@@ -745,5 +769,127 @@ class SmartToken(SmartValue):
 
         :return: evaluated value
         :rtype: Token
+        """
+        return super().get_evaluated_value()
+
+
+@dataclass
+class SmartOnChainTokenTransfer(SmartValue):
+    """
+    Represent a smart value that should result in an OnChainTokenTransfer
+    """
+
+    @staticmethod
+    def type_enforce_value(value: Any) -> OnChainTokenTransfer:
+        """
+        Convert a value to the expected evaluated type
+
+        :param value: value to convert
+        :type value: Any
+        :return: converted value
+        :rtype: OnChainTokenTransfer
+        """
+        if isinstance(value, OnChainTokenTransfer):
+            return value
+        if isinstance(value, list):
+            if len(value) < 2:
+                raise ValueError(
+                    "OnChainTokenTransfer should have at least four elements: "
+                    "sender, receiver, identifier and amount"
+                )
+            # assume sender, receiver, identifier, amount, nonce
+            sender = value[0]
+            receiver = value[1]
+            token_identifier = value[2]
+            amount = value[3]
+            if len(value) >= 5:
+                nonce = value[4]
+            else:
+                nonce = 0
+        elif isinstance(value, dict):
+            try:
+                sender = value["sender"]
+                receiver = value["receiver"]
+                amount = value["amount"]
+            except KeyError as err:
+                raise ValueError("Missing kwarg for the OnChainTokenTransfer") from err
+            try:
+                token_identifier = value["identifier"]
+            except KeyError:
+                try:
+                    token_identifier = value["token_identifier"]
+                except KeyError as err:
+                    raise ValueError(
+                        "Missing identifier or token_identifier kwarg"
+                        " for the token transfer"
+                    ) from err
+            try:
+                nonce = value["nonce"]
+            except KeyError:
+                try:
+                    nonce = value["token_nonce"]
+                except KeyError:
+                    nonce = 0
+
+        else:
+            raise ValueError(
+                f"Cannot enforce type {type(value)} to TokenTransfer (value: {value})"
+            )
+        sender = SmartAddress(sender)
+        sender.evaluate()
+        receiver = SmartAddress(receiver)
+        receiver.evaluate()
+        token_identifier = SmartStr(token_identifier)
+        token_identifier.evaluate()
+        amount = SmartInt(amount)
+        amount.evaluate()
+        nonce = SmartInt(nonce)
+        nonce.evaluate()
+        return OnChainTokenTransfer(
+            sender.get_evaluated_value(),
+            receiver.get_evaluated_value(),
+            Token(token_identifier.get_evaluated_value(), nonce.get_evaluated_value()),
+            amount.get_evaluated_value(),
+        )
+
+    def get_evaluated_value(self) -> OnChainTokenTransfer:
+        """
+        Return the evaluated value and enforce a type if necessary
+
+        :return: evaluated value
+        :rtype: OnChainTokenTransfer
+        """
+        return super().get_evaluated_value()
+
+
+@dataclass
+class SmartOnChainTokenTransfers(SmartValue):
+    """
+    Represent a smart value that should result in a list of OnChainTokenTransfers
+    """
+
+    @staticmethod
+    def type_enforce_value(value: Any) -> list[OnChainTokenTransfer]:
+        """
+        Convert a value to the expected evaluated type
+
+        :param value: value to convert
+        :type value: Any
+        :return: converted value
+        :rtype: list[OnChainTokenTransfer]
+        """
+        result = []
+        for transfer in list(value):
+            transfer = SmartOnChainTokenTransfer(transfer)
+            transfer.evaluate()
+            result.append(transfer.get_evaluated_value())
+        return result
+
+    def get_evaluated_value(self) -> list[OnChainTokenTransfer]:
+        """
+        Return the evaluated value and enforce a type if necessary
+
+        :return: evaluated value
+        :rtype: list[OnChainTokenTransfer]
         """
         return super().get_evaluated_value()

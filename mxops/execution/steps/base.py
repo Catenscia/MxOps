@@ -7,32 +7,8 @@ This module contains abstract base Steps that are used to construct other Steps
 from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from types import UnionType
-from typing import Type, get_args
 
-from mxops.execution.smart_values import SmartValue
-
-
-def extract_first_smart_value_class(field_type: Type | UnionType) -> Type | None:
-    """
-    Extract the first Smart Value type within a type field
-    if none is found, return None
-
-    :param field_type: field type to inspect
-    :type field_type: Type | UnionType
-    :return: extract type
-    :rtype: Type | None
-    """
-    if isinstance(field_type, UnionType):
-        possible_types = get_args(field_type)
-        smart_value_type = next(
-            (t for t in possible_types if issubclass(t, SmartValue)), None
-        )
-        if smart_value_type:
-            return smart_value_type
-    elif issubclass(field_type, SmartValue):
-        return field_type
-    return None
+from mxops.execution.smart_values import SmartValue, extract_first_smart_value_class
 
 
 @dataclass
