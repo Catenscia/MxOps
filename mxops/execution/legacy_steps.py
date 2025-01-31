@@ -41,7 +41,7 @@ from mxops.enums import NetworkEnum, TokenTypeEnum
 from mxops.execution import utils
 
 from mxops.execution.account import AccountsManager
-from mxops.execution.checks import Check, SuccessCheck, instanciate_checks
+from mxops.execution.legacy_checks import Check, SuccessCheck, instanciate_checks
 from mxops.execution.msc import EsdtTransfer
 from mxops.execution.network import send, send_and_wait_for_result
 from mxops.utils.logger import get_logger
