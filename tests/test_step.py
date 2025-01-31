@@ -1,7 +1,11 @@
 from dataclasses import dataclass
+import time
 
-from multiversx_sdk import Address, Token, TokenTransfer
+from multiversx_sdk import Address, NetworkStatus, Token, TokenTransfer
+from unittest.mock import patch
+
 from mxops.data.execution_data import ScenarioData
+from mxops.execution.legacy_steps import WaitStep
 from mxops.execution.steps.base import Step
 from mxops.execution.steps import LoopStep, SetVarsStep
 from mxops.execution.smart_values import (
@@ -204,3 +208,36 @@ def test_set_vars_step():
         "key2": 2,
         "key3": ["x", "y", "z"],
     }
+
+
+def test_time_wait_step():
+    # Given
+    step = WaitStep(for_seconds=0.1)
+
+    # When
+    t0 = time.time()
+    step.execute()
+
+    # Then
+    assert 0.11 > time.time() - t0 > 0.1
+
+
+def test_block_wait_step():
+    # Given
+    step = WaitStep(for_blocks=1)
+    side_effect = [
+        NetworkStatus({}, 0, 10, 10, 1, 1),
+        NetworkStatus({}, 0, 10, 10, 1, 1),
+        NetworkStatus({}, 0, 11, 10, 1, 1),
+    ]
+
+    # When
+    with patch(
+        "mxops.config.config.ProxyNetworkProvider.get_network_status"
+    ) as mock_method:
+        mock_method.side_effect = side_effect
+        t0 = time.time()
+        step.execute()
+
+    # Then
+    assert 3 * 0.2 > time.time() - t0 > 2 * 0.2  # wait time between network status call

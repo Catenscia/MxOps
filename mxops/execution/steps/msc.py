@@ -4,10 +4,17 @@ author: Etienne Wallet
 This module contains miscelanious Steps
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+import time
 from typing import Iterator
 
+from multiversx_sdk.core.constants import METACHAIN_ID
+
+from mxops.common.providers import MyProxyNetworkProvider
+from mxops.config.config import Config
 from mxops.data.execution_data import ScenarioData
+from mxops.enums import NetworkEnum
+from mxops.execution import utils
 from mxops.execution.smart_values import (
     SmartDict,
     SmartInt,
@@ -85,3 +92,37 @@ class SetVarsStep(Step):
         for key, value in self.variables.get_evaluated_value().items():
             LOGGER.info(f"Setting variable `{key}` with the value `{value}`")
             scenario_data.set_value(key, value)
+
+
+@dataclass
+class WaitStep(Step):
+    """
+    Represent a step to wait until a condition is fulfilled
+    """
+
+    for_seconds: SmartInt | None = field(default=None)
+    for_blocks: SmartInt | None = field(default=None)
+    shard: SmartInt = field(default_factory=lambda _: SmartInt(METACHAIN_ID))
+
+    def execute(self):
+        """
+        Wait until the specified condition is met
+        """
+        if self.for_seconds is not None:
+            for_seconds = self.for_seconds.get_evaluated_value()
+            LOGGER.info(f"Waiting for {for_seconds} seconds")
+            time.sleep(for_seconds)
+            return
+        if self.for_blocks is not None:
+            for_blocks = self.for_blocks.get_evaluated_value()
+            network = Config.get_config().get_network()
+            shard = self.shard.get_evaluated_value()
+            LOGGER.info(f"Waiting for {for_blocks} blocks on shard {shard}")
+            if network == NetworkEnum.CHAIN_SIMULATOR:
+                MyProxyNetworkProvider().generate_blocks(for_blocks)
+            else:
+                utils.wait_for_n_blocks(shard, for_blocks)
+        else:
+            raise ValueError(
+                "Either for_seconds or for_blocks must have a value different from None"
+            )
