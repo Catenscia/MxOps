@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Any
 
 from multiversx_sdk import Address, Token, TokenTransfer
@@ -11,6 +12,7 @@ from mxops.execution.smart_values import (
     SmartBool,
     SmartFloat,
     SmartInt,
+    SmartPath,
     SmartStr,
     SmartTokenTransfer,
     SmartTokenTransfers,
@@ -473,3 +475,15 @@ def test_randchoice_nested():
     # Then
     assert smart_value.is_evaluated
     assert smart_value.get_evaluated_value() in scenario_data.get_value("my_list")
+
+
+def test_smart_path():
+    # Given
+    smart_value = SmartPath("./tests")
+
+    # When
+    smart_value.evaluate()
+
+    # Then
+    assert smart_value.is_evaluated
+    assert smart_value.get_evaluated_value() == Path("./tests")

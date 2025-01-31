@@ -8,6 +8,7 @@ which are values evaluated at run time
 import base64
 from dataclasses import dataclass, field
 import os
+from pathlib import Path
 import re
 from typing import Any, List, Optional
 
@@ -415,7 +416,7 @@ class SmartStr(SmartValue):
         :param value: value to convert
         :type value: Any
         :return: converted value
-        :rtype: bool
+        :rtype: str
         """
         return str(value)
 
@@ -424,7 +425,7 @@ class SmartStr(SmartValue):
         Return the evaluated value
 
         :return: evaluated value
-        :rtype: int
+        :rtype: str
         """
         return super().get_evaluated_value()
 
@@ -649,5 +650,33 @@ class SmartList(SmartValue):
 
         :return: evaluated value
         :rtype: list
+        """
+        return super().get_evaluated_value()
+
+
+@dataclass
+class SmartPath(SmartValue):
+    """
+    Represent a smart value that should result in a path
+    """
+
+    @staticmethod
+    def type_enforce_value(value: Any) -> Path:
+        """
+        Convert a value to the expected evaluated type
+
+        :param value: value to convert
+        :type value: Any
+        :return: converted value
+        :rtype: Path
+        """
+        return Path(value)
+
+    def get_evaluated_value(self) -> Path:
+        """
+        Return the evaluated value
+
+        :return: evaluated value
+        :rtype: Path
         """
         return super().get_evaluated_value()
