@@ -380,6 +380,19 @@ class UnkownStep(Exception):
         return f"Unkown Step name: {self.step_name}"
 
 
+class UnkownCheck(Exception):
+    """
+    to be raised when the user provide a check name that is unkown
+    """
+
+    def __init__(self, check_name: str) -> None:
+        self.check_name = check_name
+        super().__init__()
+
+    def __str__(self) -> str:
+        return f"Unkown Check name: {self.check_name}"
+
+
 class UnkownVariable(Exception):
     """
     to be raised when the user provide a variable name that is unkown
@@ -405,6 +418,22 @@ class InvalidStepDefinition(Exception):
 
     def __str__(self) -> str:
         return f"Step {self.step_name} received invalid parameters {self.parameters}"
+
+
+class InvalidCheckDefinition(Exception):
+    """
+    to be raised when the arguments provided by the user for a Check are not valid
+    """
+
+    def __init__(self, check_name: str, parameters: dict) -> None:
+        self.check_name = check_name
+        self.parameters = parameters
+        super().__init__()
+
+    def __str__(self) -> str:
+        return (
+            f"SChecktep {self.check_name} received invalid parameters {self.parameters}"
+        )
 
 
 class InvalidQueryResultsDefinition(Exception):

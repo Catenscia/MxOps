@@ -1,15 +1,9 @@
-import json
 from pathlib import Path
 
 from multiversx_sdk import Account
-from multiversx_sdk.network_providers.http_resources import (
-    transaction_from_proxy_response,
-)
 
 from mxops.data.execution_data import InternalContractData, ScenarioData
-from mxops.errors import CheckFailed
 from mxops.execution.account import AccountsManager
-from mxops.execution.legacy_checks import TransfersCheck
 from mxops.execution.legacy_msc import ExpectedTransfer, OnChainTransfer
 
 
@@ -119,7 +113,7 @@ def test_data_load_equality():
     )
     scenario = ScenarioData.get()
     contract_data = InternalContractData(
-        contract_id="egld-ping-pong",
+        contract_id="egld-ping-pong-legacy",
         address="erd1qqqqqqqqqqqqqpgqpxkd9qgyyxykq5l6d8v9zud99hpwh7l0plcq3dae77",
         saved_values={"PingAmount": 1000000000000000000},
         wasm_hash="1383133d22b8be01c4dc6dfda448dbf0b70ba1acb348a50dd3224b9c8bb21757",
@@ -130,9 +124,9 @@ def test_data_load_equality():
 
     expected_transfer = ExpectedTransfer(
         sender="%owner.address",
-        receiver="%egld-ping-pong.address",
+        receiver="%egld-ping-pong-legacy.address",
         token_identifier="EGLD",
-        amount="%egld-ping-pong.PingAmount",
+        amount="%egld-ping-pong-legacy.PingAmount",
     )
 
     on_chain_transfers = [
@@ -149,64 +143,3 @@ def test_data_load_equality():
 
     # Then
     assert index == 0
-
-
-def test_exact_add_liquidity_transfers_check(test_data_folder_path: Path):
-    # Given
-    with open(test_data_folder_path / "api_responses" / "add_liquidity.json") as file:
-        onchain_tx = transaction_from_proxy_response(**json.load(file))
-
-    expected_transfers = [
-        ExpectedTransfer(
-            "erd1n775edthxhyrhntcutmqfspanmjvscumxuydmm83xumlahz75kfsgp62ss",
-            "erd1qqqqqqqqqqqqqpgqav09xenkuqsdyeyy5evqyhuusvu4gl3t2jpss57g8x",
-            "WEGLD-bd4d79",
-            "2662383390769244262",
-        ),
-        ExpectedTransfer(
-            "erd1n775edthxhyrhntcutmqfspanmjvscumxuydmm83xumlahz75kfsgp62ss",
-            "erd1qqqqqqqqqqqqqpgqav09xenkuqsdyeyy5evqyhuusvu4gl3t2jpss57g8x",
-            "RIDE-7d18e9",
-            "1931527217545745197301",
-        ),
-        ExpectedTransfer(
-            "erd1qqqqqqqqqqqqqpgqav09xenkuqsdyeyy5evqyhuusvu4gl3t2jpss57g8x",
-            "erd1n775edthxhyrhntcutmqfspanmjvscumxuydmm83xumlahz75kfsgp62ss",
-            "EGLDRIDE-7bd51a",
-            "1224365948567992620",
-        ),
-        ExpectedTransfer(
-            "erd1qqqqqqqqqqqqqpgqav09xenkuqsdyeyy5evqyhuusvu4gl3t2jpss57g8x",
-            "erd1n775edthxhyrhntcutmqfspanmjvscumxuydmm83xumlahz75kfsgp62ss",
-            "RIDE-7d18e9",
-            "37",
-        ),
-    ]
-
-    # When
-    transfer_check = TransfersCheck(expected_transfers, condition="exact")
-    exact_result = transfer_check.get_check_status(onchain_tx)
-
-    transfer_check = TransfersCheck(expected_transfers, condition="included")
-    include_result = transfer_check.get_check_status(onchain_tx)
-
-    transfer_check = TransfersCheck(
-        expected_transfers, condition="exact", include_gas_refund=True
-    )
-    refund_result = transfer_check.get_check_status(onchain_tx)
-    try:
-        transfer_check.raise_on_failure(onchain_tx)
-        raise RuntimeError("Above line should raise an error")
-    except CheckFailed:
-        pass
-
-    transfer_check = TransfersCheck(
-        expected_transfers, condition="included", include_gas_refund=True
-    )
-    included_refund_result = transfer_check.get_check_status(onchain_tx)
-
-    # Then
-    assert exact_result
-    assert include_result
-    assert not refund_result
-    assert included_refund_result
