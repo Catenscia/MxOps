@@ -179,3 +179,19 @@ class PythonStep(Step):
             )
         elif self.print_result.get_evaluated_value():
             LOGGER.info(f"Function result: {json_dumps(result)}")
+
+
+@dataclass
+class SceneStep(Step):
+    """
+    This Step does nothing asside holding a variable
+    with the path of the scene. The actual action is operated at the `Scene` level.
+    """
+
+    scene_path: SmartPath
+
+    def execute(self):
+        """
+        Does nothing and should not be called
+        """
+        LOGGER.warning("The execute function of a SceneStep was called")
