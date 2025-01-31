@@ -4,7 +4,7 @@ from pathlib import Path
 from multiversx_sdk.network_providers.http_resources import (
     transaction_from_proxy_response,
 )
-from mxops.execution.msc import OnChainTransfer
+from mxops.execution.legacy_msc import OnChainTransfer
 from mxops.execution import network as ntk
 
 

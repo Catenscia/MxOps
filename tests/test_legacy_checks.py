@@ -10,7 +10,7 @@ from mxops.data.execution_data import InternalContractData, ScenarioData
 from mxops.errors import CheckFailed
 from mxops.execution.account import AccountsManager
 from mxops.execution.legacy_checks import TransfersCheck
-from mxops.execution.msc import ExpectedTransfer, OnChainTransfer
+from mxops.execution.legacy_msc import ExpectedTransfer, OnChainTransfer
 
 
 def test_transfers_equality():

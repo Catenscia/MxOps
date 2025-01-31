@@ -13,7 +13,7 @@ from mxops.common.providers import MyProxyNetworkProvider
 from mxops.config.config import Config
 from mxops import errors
 from mxops.enums import NetworkEnum
-from mxops.execution.msc import OnChainTransfer
+from mxops.execution.legacy_msc import OnChainTransfer
 
 
 def send(tx: Transaction) -> str:

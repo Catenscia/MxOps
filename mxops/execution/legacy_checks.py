@@ -11,7 +11,7 @@ from typing import Literal
 from multiversx_sdk import TransactionOnNetwork
 
 from mxops import errors
-from mxops.execution.msc import ExpectedTransfer
+from mxops.execution.legacy_msc import ExpectedTransfer
 from mxops.execution.network import get_on_chain_transfers, raise_on_errors
 from mxops.utils.logger import get_logger
 
