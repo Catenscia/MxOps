@@ -5,9 +5,8 @@ from multiversx_sdk import Address, NetworkStatus, Token, TokenTransfer
 from unittest.mock import patch
 
 from mxops.data.execution_data import ScenarioData
-from mxops.execution.legacy_steps import WaitStep
 from mxops.execution.steps.base import Step
-from mxops.execution.steps import LoopStep, SetVarsStep
+from mxops.execution.steps import LoopStep, SetVarsStep, WaitStep
 from mxops.execution.smart_values import (
     SmartAddress,
     SmartBech32,

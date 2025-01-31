@@ -17,6 +17,7 @@ from mxops.enums import NetworkEnum
 from mxops.execution import utils
 from mxops.execution.smart_values import (
     SmartDict,
+    SmartFloat,
     SmartInt,
     SmartStr,
     SmartValue,
@@ -100,11 +101,11 @@ class WaitStep(Step):
     Represent a step to wait until a condition is fulfilled
     """
 
-    for_seconds: SmartInt | None = field(default=None)
+    for_seconds: SmartFloat | None = field(default=None)
     for_blocks: SmartInt | None = field(default=None)
-    shard: SmartInt = field(default_factory=lambda _: SmartInt(METACHAIN_ID))
+    shard: SmartInt = field(default_factory=lambda: SmartInt(METACHAIN_ID))
 
-    def execute(self):
+    def _execute(self):
         """
         Wait until the specified condition is met
         """
