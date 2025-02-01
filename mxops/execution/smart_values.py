@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 import os
 from pathlib import Path
 import re
+import sys
 from types import UnionType
 from typing import Any, List, Optional, Type, get_args
 
@@ -25,16 +26,22 @@ from mxops.execution.account import AccountsManager
 from mxops.execution.msc import OnChainTokenTransfer
 
 
-def extract_first_smart_value_class(field_type: Type | UnionType) -> Type | None:
+def extract_first_smart_value_class(field_type: Type | UnionType | str) -> Type | None:
     """
     Extract the first Smart Value type within a type field
     if none is found, return None
 
     :param field_type: field type to inspect
-    :type field_type: Type | UnionType
+    :type field_type: Type | UnionType | str
     :return: extract type
     :rtype: Type | None
     """
+    # if is the same of a type, try to instantiate it
+    if isinstance(field_type, str):
+        try:
+            field_type = getattr(sys.modules[__name__], field_type)
+        except AttributeError:
+            return None
     if isinstance(field_type, UnionType):
         possible_types = get_args(field_type)
         smart_value_type = next(
