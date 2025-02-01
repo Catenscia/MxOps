@@ -410,3 +410,39 @@ def test_token_unlock(test_data_folder_path: Path):
         ),
     ]
     assert transfers == expected_result
+
+
+def test_multi_transfer_with_egld(test_data_folder_path: Path):
+    # Given
+    with open(
+        test_data_folder_path / "api_responses" / "multi_transfer_with_egld.json"
+    ) as file:
+        tx = transaction_from_proxy_response(**json.load(file))
+
+    # When
+    transfers = ntk.get_on_chain_transfers(tx)
+
+    # Then
+    expected_result = [
+        OnChainTokenTransfer(
+            Address.new_from_bech32(
+                "erd1qsnaz30h4c6fdn9q752kmjt57zwmgl5qg27r4jswwpj6vt3rsjyqsjck4k"
+            ),
+            Address.new_from_bech32(
+                "erd1fmd662htrgt07xxd8me09newa9s0euzvpz3wp0c4pz78f83grt9qm6pn57"
+            ),
+            Token("EGLD"),
+            1000000000000000000,
+        ),
+        OnChainTokenTransfer(
+            Address.new_from_bech32(
+                "erd1qsnaz30h4c6fdn9q752kmjt57zwmgl5qg27r4jswwpj6vt3rsjyqsjck4k"
+            ),
+            Address.new_from_bech32(
+                "erd1fmd662htrgt07xxd8me09newa9s0euzvpz3wp0c4pz78f83grt9qm6pn57"
+            ),
+            Token("XOXNO-589e09"),
+            1000000000000000000,
+        ),
+    ]
+    assert transfers == expected_result
