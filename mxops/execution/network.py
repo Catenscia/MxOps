@@ -8,6 +8,7 @@ import time
 
 from multiversx_sdk import Address, Token, Transaction
 from multiversx_sdk import TransactionOnNetwork
+from multiversx_sdk.core.constants import EGLD_IDENTIFIER_FOR_MULTI_ESDTNFT_TRANSFER
 
 from mxops.common.providers import MyProxyNetworkProvider
 from mxops.config.config import Config
@@ -181,6 +182,8 @@ def extract_multi_transfer(sender: Address, data: str) -> list[OnChainTokenTrans
             nonce = int(nonce, base=16)
         else:
             nonce = 0
+        if token_identifier == EGLD_IDENTIFIER_FOR_MULTI_ESDTNFT_TRANSFER:
+            token_identifier = "EGLD"
         transfers.append(
             OnChainTokenTransfer(
                 sender, receiver, Token(token_identifier, nonce), amount
@@ -209,17 +212,17 @@ def get_transfers_from_data(
     """
     try:
         return [extract_simple_esdt_transfer(sender, receiver, data)]
-    except ValueError:
+    except (ValueError, errors.ParsingError):
         pass
 
     try:
         return [extract_nft_transfer(sender, receiver, data)]
-    except ValueError:
+    except (ValueError, errors.ParsingError):
         pass
 
     try:
         return extract_multi_transfer(sender, data)
-    except ValueError:
+    except (ValueError, errors.ParsingError):
         pass
 
     return []
@@ -258,15 +261,15 @@ def get_on_chain_transfers(
             pass
 
     for result in on_chain_tx.smart_contract_results:
-        sender, receiver = result.sender, result.receiver
+        r_sender, r_receiver = result.sender, result.receiver
         amount = int(result.raw["value"])
         if amount != 0 and (include_refund or not result.raw.get("isRefund", False)):
             transfers.append(
-                OnChainTokenTransfer(sender, receiver, Token("EGLD"), amount)
+                OnChainTokenTransfer(r_sender, r_receiver, Token("EGLD"), amount)
             )
         elif "data" in result.raw:
             transfers.extend(
-                get_transfers_from_data(sender, receiver, result.raw["data"])
+                get_transfers_from_data(r_sender, r_receiver, result.raw["data"])
             )
 
     return transfers
