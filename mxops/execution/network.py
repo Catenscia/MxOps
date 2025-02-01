@@ -183,7 +183,7 @@ def extract_multi_transfer(sender: Address, data: str) -> list[OnChainTokenTrans
         else:
             nonce = 0
         if token_identifier == EGLD_IDENTIFIER_FOR_MULTI_ESDTNFT_TRANSFER:
-            token_identifier = "EGLD"
+            token_identifier = "EGLD"  # nosec
         transfers.append(
             OnChainTokenTransfer(
                 sender, receiver, Token(token_identifier, nonce), amount

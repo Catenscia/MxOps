@@ -3,9 +3,77 @@ This module contains the functions to create Checks
 It is separated to avoid having circular import
 """
 
+from dataclasses import dataclass
 import importlib
+from typing import Any
 from mxops import errors
 from mxops.execution.checks.base import Check
+from mxops.execution.smart_values import SmartValue
+
+
+@dataclass
+class SmartCheck(SmartValue):
+    """
+    Represent a smart value that should result in a step
+    """
+
+    @staticmethod
+    def type_enforce_value(value: Any) -> Check:
+        """
+        Convert a value to the expected evaluated type
+
+        :param value: value to convert
+        :type value: Any
+        :return: converted value
+        :rtype: Step
+        """
+        if isinstance(value, Check):
+            return value
+        if isinstance(value, dict):
+            return instanciate_checks([value])[0]
+        raise ValueError(f"Cannot create a check from type {type(value)} ({value})")
+
+    def get_evaluated_value(self) -> Check:
+        """
+        Return the evaluated value
+
+        :return: evaluated value
+        :rtype: Check
+        """
+        return super().get_evaluated_value()
+
+
+@dataclass
+class SmartChecks(SmartValue):
+    """
+    Represent a smart value that should result in a list of steps
+    """
+
+    @staticmethod
+    def type_enforce_value(value: Any) -> list[Check]:
+        """
+        Convert a value to the expected evaluated type
+
+        :param value: value to convert
+        :type value: Any
+        :return: converted value
+        :rtype: list[Check]
+        """
+        result = []
+        for raw_step in list(value):
+            step = SmartCheck(raw_step)
+            step.evaluate()
+            result.append(step.get_evaluated_value())
+        return result
+
+    def get_evaluated_value(self) -> list[Check]:
+        """
+        Return the evaluated value
+
+        :return: evaluated value
+        :rtype: list[Check]
+        """
+        return super().get_evaluated_value()
 
 
 def instanciate_checks(raw_checks: list[dict]) -> list[Check]:
