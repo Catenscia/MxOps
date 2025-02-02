@@ -7,6 +7,7 @@ This module contains Steps for smart-contract transactions
 from dataclasses import dataclass, field
 
 from multiversx_sdk import (
+    SmartContractController,
     SmartContractTransactionsFactory,
     SmartContractTransactionsOutcomeParser,
     Transaction,
@@ -17,6 +18,7 @@ from multiversx_sdk.abi import Abi
 from multiversx_sdk.core.errors import BadAddressError
 
 from mxops import errors
+from mxops.common.providers import MyProxyNetworkProvider
 from mxops.config.config import Config
 from mxops.data.execution_data import InternalContractData, ScenarioData
 from mxops.data.utils import convert_mx_data_to_vanilla, json_dumps
@@ -30,7 +32,7 @@ from mxops.execution.smart_values import (
     SmartStr,
     SmartTokenTransfers,
 )
-from mxops.execution.steps.base import TransactionStep
+from mxops.execution.steps.base import Step, TransactionStep
 from mxops.utils.logger import get_logger
 from mxops.utils.msc import get_file_hash
 
@@ -307,3 +309,76 @@ class ContractCallStep(TransactionStep):
                 print(json_dumps(self.saved_results))
             elif self.returned_data_parts is not None:
                 print(json_dumps(self.returned_data_parts))
+
+
+@dataclass
+class ContractQueryStep(Step):
+    """
+    Represents a smart contract query
+    """
+
+    contract: SmartStr
+    endpoint: SmartStr
+    arguments: SmartList = field(default_factory=lambda: SmartList([]))
+    print_results: SmartBool = field(default_factory=lambda: SmartBool(False))
+    results_save_keys: SmartResultsSaveKeys | None = field(default=None)
+    returned_data_parts: list | None = field(init=False, default=None)
+    saved_results: dict = field(init=False, default_factory=dict)
+
+    def save_results(self):
+        """
+        Save the results the query. This method replace the old way that was using
+        expected_results
+        """
+        scenario_data = ScenarioData.get()
+        if self.results_save_keys is None:
+            return
+
+        results_save_keys = self.results_save_keys.get_evaluated_value()
+        if self.returned_data_parts is None:
+            raise ValueError("No data to save")
+
+        LOGGER.info("Saving query results")
+
+        self.saved_results = {}
+        contract = self.contract.get_evaluated_value()
+        to_save = results_save_keys.parse_data_to_save(self.returned_data_parts)
+        for save_key, value in to_save.items():
+            if save_key is not None:
+                scenario_data.set_contract_value(contract, save_key, value)
+                self.saved_results[save_key] = value
+
+    def execute(self):
+        """
+        Execute a query and optionally save the result
+        """
+        endpoint = self.endpoint.get_evaluated_value()
+        contract = self.contract.get_evaluated_value()
+        LOGGER.info(f"Query on {endpoint} for {contract}")
+        scenario_data = ScenarioData.get()
+        arguments = self.arguments.get_evaluated_value()
+        try:
+            contract_abi = scenario_data.get_contract_abi(contract)
+        except errors.UnknownAbiContract:
+            contract_abi = None
+
+        sc_controller = SmartContractController(
+            Config.get_config().get("CHAIN"), MyProxyNetworkProvider(), abi=contract_abi
+        )
+        contract_address = utils.get_address_instance(contract)
+        returned_data_parts = sc_controller.query(
+            contract=contract_address,
+            function=endpoint,
+            arguments=arguments,
+        )
+        self.returned_data_parts = convert_mx_data_to_vanilla(returned_data_parts)
+
+        self.save_results()
+
+        if self.print_results:
+            if self.saved_results is not None:
+                print(json_dumps(self.saved_results))
+            elif self.returned_data_parts is not None:
+                print(json_dumps(self.returned_data_parts))
+
+        LOGGER.info("Query successful")

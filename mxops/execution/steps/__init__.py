@@ -9,6 +9,7 @@ from mxops.execution.steps.setup import GenerateWalletsStep
 from mxops.execution.steps.smart_contract import (
     ContractCallStep,
     ContractDeployStep,
+    ContractQueryStep,
     ContractUpgradeStep,
 )
 from mxops.execution.steps.transactions import TransferStep
@@ -16,6 +17,7 @@ from mxops.execution.steps.transactions import TransferStep
 __all__ = [
     "ContractCallStep",
     "ContractDeployStep",
+    "ContractQueryStep",
     "ContractUpgradeStep",
     "GenerateWalletsStep",
     "LoopStep",
