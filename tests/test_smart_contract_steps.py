@@ -1,4 +1,8 @@
-from mxops.execution.steps import ContractDeployStep, ContractUpgradeStep
+from mxops.execution.steps import (
+    ContractCallStep,
+    ContractDeployStep,
+    ContractUpgradeStep,
+)
 
 
 def test_deploy_step():
@@ -67,3 +71,29 @@ def test_upgrade_step():
         b"180212001002100004404180800841191001000b0b0300010b0b210100418080080b1977726f"
         b"6e67206e756d626572206f6620617267756d656e7473@0506"
     )
+
+
+def test_call_step():
+    # Given
+    step = ContractCallStep(
+        sender="alice",
+        contract="piggy-bank",
+        endpoint="deposit",
+        gas_limit=100000,
+        esdt_transfers=[["MYESDT-abcdef", 123456]],
+    )
+
+    # When
+    step.evaluate_smart_values()
+    tx = step.build_unsigned_transaction()
+
+    # Then
+    assert (
+        tx.sender.to_bech32()
+        == "erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3"
+    )
+    assert (
+        tx.receiver.to_bech32()
+        == "erd1qqqqqqqqqqqqqpgqxt0y7s830gh5r38ypsslt9hrd2zxn98rv5ys0jd2mg"
+    )
+    assert tx.data == b"ESDTTransfer@4d59455344542d616263646566@01e240@6465706f736974"

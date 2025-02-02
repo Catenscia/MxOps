@@ -1,0 +1,129 @@
+{
+    "buildInfo": {
+        "rustc": {
+            "version": "1.79.0",
+            "commitHash": "129f3b9964af4d4a709d1383930ade12dfe7c081",
+            "commitDate": "2024-06-10",
+            "channel": "Stable",
+            "short": "rustc 1.79.0 (129f3b996 2024-06-10)"
+        },
+        "contractCrate": {
+            "name": "piggy-bank",
+            "version": "0.0.0"
+        },
+        "framework": {
+            "name": "multiversx-sc",
+            "version": "0.53.0"
+        }
+    },
+    "name": "PiggyBank",
+    "constructor": {
+        "inputs": [
+            {
+                "name": "piggy_token_identifier",
+                "type": "TokenIdentifier"
+            },
+            {
+                "name": "esdt_minter_address",
+                "type": "Address"
+            }
+        ],
+        "outputs": []
+    },
+    "upgradeConstructor": {
+        "inputs": [],
+        "outputs": []
+    },
+    "endpoints": [
+        {
+            "docs": [
+                "Token identifier for the token of the bank"
+            ],
+            "name": "getTokenIdentifier",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Address of the esdt-minter contract for the piggy token"
+            ],
+            "name": "getEsdtMinnterAddress",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "Address"
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Amount of token deposit per adress"
+            ],
+            "name": "getAddressAmount",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Allow a user to deposit some piggy tokens in the piggy bank.",
+                "",
+                "### Payments",
+                "",
+                "* **deposit_payment** : Single payment of piggy token",
+                "",
+                "### Returns",
+                "",
+                "* **BigUint** : Current total deposit of the user after deposit",
+                ""
+            ],
+            "name": "deposit",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Allow a user to withdraw all its piggy tokens from the piggy bank.",
+                "Interest will be issued and send along the principal.",
+                "",
+                "### Return Payments",
+                "",
+                "* **withdraw_payment** : Single payment of piggy tokens containing all the user deposits and the interests earned",
+                ""
+            ],
+            "name": "withdraw",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": []
+        }
+    ],
+    "esdtAttributes": [],
+    "hasCallback": false,
+    "types": {}
+}

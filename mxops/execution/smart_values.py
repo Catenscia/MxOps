@@ -23,7 +23,7 @@ from mxops import errors
 from mxops.config.config import Config
 from mxops.data.execution_data import ScenarioData
 from mxops.execution.account import AccountsManager
-from mxops.execution.msc import OnChainTokenTransfer
+from mxops.execution.msc import OnChainTokenTransfer, ResultsSaveKeys
 
 
 def extract_first_smart_value_class(field_type: Type | UnionType | str) -> Type | None:
@@ -898,5 +898,33 @@ class SmartOnChainTokenTransfers(SmartValue):
 
         :return: evaluated value
         :rtype: list[OnChainTokenTransfer]
+        """
+        return super().get_evaluated_value()
+
+
+@dataclass
+class SmartResultsSaveKeys(SmartValue):
+    """
+    Represent a smart value that should result in a ResultsSaveKeys
+    """
+
+    @staticmethod
+    def type_enforce_value(value: Any) -> ResultsSaveKeys:
+        """
+        Convert a value to the expected evaluated type
+
+        :param value: value to convert
+        :type value: Any
+        :return: converted value
+        :rtype: ResultsSaveKeys
+        """
+        return ResultsSaveKeys.from_input(value)
+
+    def get_evaluated_value(self) -> ResultsSaveKeys:
+        """
+        Return the evaluated value and enforce a type if necessary
+
+        :return: evaluated value
+        :rtype: ResultsSaveKeys
         """
         return super().get_evaluated_value()
