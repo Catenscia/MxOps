@@ -16,6 +16,10 @@ from mxops.config.config import Config
 from mxops.execution import utils
 from mxops.execution.smart_values import SmartAddress, SmartInt, SmartTokenTransfers
 from mxops.execution.steps.base import TransactionStep
+from mxops.utils.logger import get_logger
+
+
+LOGGER = get_logger("transactions steps")
 
 
 @dataclass
@@ -42,6 +46,18 @@ class TransferStep(TransactionStep):
         value = self.value.get_evaluated_value()
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
         tr_factory = TransferTransactionsFactory(factory_config)
+        tr_message = ""
+        if self.value.get_evaluated_value() > 0:
+            tr_message = f"{self.value.get_evaluation_string()} eGLD"
+        if len(self.transfers.get_evaluated_value()) > 0:
+            if len(tr_message) > 0:
+                tr_message += " and "
+            tr_message += f"{self.transfers.get_evaluation_string()}"
+
+        LOGGER.info(
+            f"Sending {tr_message} from {self.sender.get_evaluation_string()} "
+            f"to {self.receiver.get_evaluation_string()}"
+        )
         return tr_factory.create_transaction_for_transfer(
             sender=sender,
             receiver=receiver,

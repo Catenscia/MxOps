@@ -91,11 +91,11 @@ class ContractDeployStep(TransactionStep):
             sender=sender,
             bytecode=bytecode,
             arguments=arguments,
-            gas_limit=self.gas_limit,
-            is_upgradeable=self.upgradeable,
-            is_readable=self.readable,
-            is_payable=self.payable,
-            is_payable_by_sc=self.payable_by_sc,
+            gas_limit=self.gas_limit.get_evaluated_value(),
+            is_upgradeable=self.upgradeable.get_evaluated_value(),
+            is_readable=self.readable.get_evaluated_value(),
+            is_payable=self.payable.get_evaluated_value(),
+            is_payable_by_sc=self.payable_by_sc.get_evaluated_value(),
         )
 
     def _post_transaction_execution(self, on_chain_tx: TransactionOnNetwork | None):
@@ -110,8 +110,10 @@ class ContractDeployStep(TransactionStep):
         scenario_data = ScenarioData.get()
 
         # save the abi
-        contract_id = utils.retrieve_value_from_any(self.contract_id)
-        scenario_data.set_contract_abi_from_source(contract_id, self.abi_path)
+        contract_id = self.contract_id.get_evaluated_value()
+        scenario_data.set_contract_abi_from_source(
+            contract_id, self.abi_path.get_evaluated_value()
+        )
 
         # get the new deployed address
         parser = SmartContractTransactionsOutcomeParser()
@@ -187,11 +189,11 @@ class ContractUpgradeStep(TransactionStep):
             contract=contract_address,
             bytecode=bytecode,
             arguments=arguments,
-            gas_limit=self.gas_limit,
-            is_upgradeable=self.upgradeable,
-            is_readable=self.readable,
-            is_payable=self.payable,
-            is_payable_by_sc=self.payable_by_sc,
+            gas_limit=self.gas_limit.get_evaluated_value(),
+            is_upgradeable=self.upgradeable.get_evaluated_value(),
+            is_readable=self.readable.get_evaluated_value(),
+            is_payable=self.payable.get_evaluated_value(),
+            is_payable_by_sc=self.payable_by_sc.get_evaluated_value(),
         )
 
     def _post_transaction_execution(self, on_chain_tx: TransactionOnNetwork | None):
@@ -227,7 +229,9 @@ class ContractCallStep(TransactionStep):
     gas_limit: SmartInt
     arguments: SmartList = field(default_factory=lambda: SmartList([]))
     value: SmartInt = field(default_factory=lambda: SmartInt(0))
-    esdt_transfers: SmartTokenTransfers = field(default_factory=SmartTokenTransfers([]))
+    esdt_transfers: SmartTokenTransfers = field(
+        default_factory=lambda: SmartTokenTransfers([])
+    )
     print_results: SmartBool = field(default_factory=lambda: SmartBool(False))
     results_save_keys: SmartResultsSaveKeys | None = field(default=None)
     returned_data_parts: list | None = field(init=False, default=None)
@@ -406,6 +410,21 @@ class FuzzExecutionParameters:
     description: SmartStr = field(default_factory=lambda: SmartStr(""))
     gas_limit: SmartInt | None = field(default=None)
 
+    def evaluate_smart_values(self):
+        """
+        Evaluate all attributes that are smart values
+        """
+        self.sender.evaluate()
+        self.endpoint.evaluate()
+        self.value.evaluate()
+        self.esdt_transfers.evaluate()
+        self.arguments.evaluate()
+        if self.expected_outputs is not None:
+            self.expected_outputs.evaluate()
+        self.description.evaluate()
+        if self.gas_limit is not None:
+            self.gas_limit.evaluate()
+
     @staticmethod
     def from_dict(data: dict) -> FuzzExecutionParameters:
         """
@@ -514,9 +533,10 @@ class FileFuzzerStep(Step):
         n_tests = len(exec_parameters)
         LOGGER.info(f"Found {n_tests} tests")
         for i, params in enumerate(exec_parameters):
+            params.evaluate_smart_values()
             LOGGER.info(
                 f"Executing fuzz test n°{i + 1}/{n_tests} ({i / n_tests:.0%}): "
-                f"{params.description}"
+                f"{params.description.get_evaluated_value()}"
             )
             self._execute_fuzz(contract_abi, params)
         LOGGER.info("Fuzzing execution complete (100%)")
@@ -534,13 +554,13 @@ class FileFuzzerStep(Step):
         """
         endpoint = None
         for e in contract_abi["endpoints"]:
-            if e["name"] == execution_parameters.endpoint:
+            if e["name"] == execution_parameters.endpoint.get_evaluated_value():
                 endpoint = e
                 break
         if endpoint is None:
             raise errors.WrongFuzzTestFile(
-                f"Endpoint {execution_parameters.endpoint} not found in the contract "
-                f"abi {contract_abi['name']}"
+                f"Endpoint {execution_parameters.endpoint.get_evaluation_string()} "
+                f"not found in the contract abi {contract_abi['name']}"
             )
         if endpoint.get("mutability", "mutable") == "readonly":
             self._execute_fuzz_query(execution_parameters)
@@ -581,16 +601,16 @@ class FileFuzzerStep(Step):
         :param execution_parameters: parameters of the test to execute
         :type execution_parameters: FuzzExecutionParameters
         """
-        contract = utils.retrieve_value_from_any(self.contract)
+        contract = self.contract.get_evaluated_value()
         save_key = "fuzz_test_call_results"
         call_step = ContractCallStep(
             contract=contract,
-            endpoint=execution_parameters.endpoint,
-            gas_limit=execution_parameters.gas_limit,
-            arguments=execution_parameters.arguments,
-            value=execution_parameters.value,
-            esdt_transfers=execution_parameters.esdt_transfers,
-            sender=execution_parameters.sender,
+            endpoint=execution_parameters.endpoint.get_evaluated_value(),
+            gas_limit=execution_parameters.gas_limit.get_evaluated_value(),
+            arguments=execution_parameters.arguments.get_evaluated_value(),
+            value=execution_parameters.value.get_evaluated_value(),
+            esdt_transfers=execution_parameters.esdt_transfers.get_evaluated_value(),
+            sender=execution_parameters.sender.get_evaluated_value(),
             results_save_keys=save_key,
         )
         call_step.execute()
