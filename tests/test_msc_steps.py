@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from pathlib import Path
 import time
 from typing import Any
 
@@ -16,6 +17,7 @@ from mxops.execution.smart_values import (
     SmartDict,
     SmartInt,
     SmartList,
+    SmartPath,
     SmartStr,
     SmartTokenTransfer,
     SmartTokenTransfers,
@@ -38,6 +40,16 @@ class DummyStep(Step):
     smart_dict: SmartDict
     smart_step: SmartStep
     smart_steps: SmartSteps
+
+    def _execute(self):
+        pass
+
+
+@dataclass
+class DummyUnionStep(Step):
+    smart_value: SmartValue = field(default_factory=lambda: SmartValue(""))
+    smart_int: SmartInt | None = field(default_factory=lambda: SmartInt(0))
+    smart_path: SmartPath | None = None
 
     def _execute(self):
         pass
@@ -141,6 +153,32 @@ def test_step_smart_values_normal_instantiation():
     assert step.smart_steps.get_evaluated_value() == [
         SetVarsStep(variables={"counter": 0})
     ]
+
+
+def test_smart_values_with_default_instantiation_1():
+    # Given
+    step = DummyUnionStep()
+
+    # When
+    step.evaluate_smart_values()
+
+    # Then
+    assert step.smart_value.get_evaluated_value() == ""
+    assert step.smart_int.get_evaluated_value() == 0
+    assert step.smart_path is None
+
+
+def test_smart_values_with_default_instantiation_2():
+    # Given
+    step = DummyUnionStep("test", 123456, "./my/path/to/folder")
+
+    # When
+    step.evaluate_smart_values()
+
+    # Then
+    assert step.smart_value.get_evaluated_value() == "test"
+    assert step.smart_int.get_evaluated_value() == 123456
+    assert step.smart_path.get_evaluated_value() == Path("./my/path/to/folder")
 
 
 def test_loop_step_with_range():
