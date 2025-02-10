@@ -12,12 +12,14 @@ from mxops.execution.smart_values.custom import (
 )
 from mxops.execution.smart_values.mx_sdk import (
     SmartAddress,
+    SmartAddresses,
     SmartBech32,
     SmartToken,
     SmartTokenTransfer,
     SmartTokenTransfers,
 )
 from mxops.execution.smart_values.native import (
+    SmartBytes,
     SmartInt,
     SmartFloat,
     SmartBool,
@@ -29,8 +31,10 @@ from mxops.execution.smart_values.native import (
 
 __all__ = [
     "SmartAddress",
+    "SmartAddresses",
     "SmartBech32",
     "SmartBool",
+    "SmartBytes",
     "SmartDict",
     "SmartFloat",
     "SmartInt",

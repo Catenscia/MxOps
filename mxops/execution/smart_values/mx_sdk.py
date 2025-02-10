@@ -42,6 +42,34 @@ class SmartAddress(SmartValue):
 
 
 @dataclass
+class SmartAddresses(SmartValue):
+    """
+    Represent a smart value that should result in a list of Addresses
+    """
+
+    @staticmethod
+    def type_enforce_value(value: Any) -> list[Address]:
+        """
+        Convert a value to the expected evaluated type
+
+        :param value: value to convert
+        :type value: Any
+        :return: converted value
+        :rtype: list[Address]
+        """
+        return [get_address_instance(v) for v in value]
+
+    def get_evaluated_value(self) -> list[Address]:
+        """
+        Return the evaluated value and enforce a type if necessary
+
+        :return: evaluated value
+        :rtype: list[Address]
+        """
+        return super().get_evaluated_value()
+
+
+@dataclass
 class SmartBech32(SmartValue):
     """
     Represent a smart value that should result in a bech32

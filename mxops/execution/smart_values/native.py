@@ -205,3 +205,30 @@ class SmartPath(SmartValue):
         :rtype: Path
         """
         return super().get_evaluated_value()
+
+
+class SmartBytes(SmartValue):
+    """
+    Represent a smart value that should result in bytes
+    """
+
+    @staticmethod
+    def type_enforce_value(value: Any) -> bytes:
+        """
+        Convert a value to the expected evaluated type
+
+        :param value: value to convert
+        :type value: Any
+        :return: converted value
+        :rtype: bytes
+        """
+        return bytes(value, encoding="utf-8")
+
+    def get_evaluated_value(self) -> bytes:
+        """
+        Return the evaluated value
+
+        :return: evaluated value
+        :rtype: bytes
+        """
+        return super().get_evaluated_value()
