@@ -13,9 +13,11 @@ import yaml
 
 from mxops.config.config import Config
 from mxops.data.execution_data import _ScenarioData, ExternalContractData, ScenarioData
-from mxops.execution.legacy_steps import LoopStep, SceneStep, Step, instanciate_steps
 from mxops.execution.account import AccountsManager
 from mxops import errors
+from mxops.execution.steps import LoopStep, SceneStep
+from mxops.execution.steps.base import Step
+from mxops.execution.steps.factory import instanciate_steps
 from mxops.utils.logger import get_logger
 
 
@@ -166,11 +168,13 @@ def execute_step(step: Step, scenario_data: _ScenarioData):
     :type scenario_data: _ScenarioData
     """
     if isinstance(step, SceneStep):
+        step.evaluate_smart_values()
         execute_scene(Path(step.scene_path))
     elif isinstance(step, LoopStep):
         for sub_step in step.generate_steps():
             execute_step(sub_step, scenario_data)
     else:
+        step.evaluate_smart_values()
         step.execute()
         scenario_data.save()
 
