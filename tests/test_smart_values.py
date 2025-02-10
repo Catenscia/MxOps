@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any
+from typing import Any, Union
 
 from multiversx_sdk import Address, Token, TokenTransfer
 import pytest
@@ -19,6 +19,7 @@ from mxops.execution.smart_values import (
     SmartTokenTransfers,
     SmartValue,
 )
+from mxops.execution.smart_values.factory import extract_first_smart_value_class
 
 
 @pytest.mark.parametrize(
@@ -533,3 +534,58 @@ def test_smart_token(raw_value: Any, expected_result: Token, expected_str: str):
     assert evaluated_token.identifier == expected_result.identifier
     assert evaluated_token.nonce == expected_result.nonce
     # assert smart_value.get_evaluation_string() == expected_str  # TODO wait for sdk
+
+
+@pytest.mark.parametrize(
+    "input_value, expected_result",
+    [
+        (SmartInt, SmartInt),
+        ("SmartValue", SmartValue),
+        (SmartPath | str, SmartPath),
+        (Union[SmartPath, str], SmartPath),
+        (str, None),
+        (SmartBech32 | None, SmartBech32),
+        ("SmartFloat | None", SmartFloat),
+        (int | None, None),
+    ],
+)
+def test_extract_first_smart_value_class(input_value: Any, expected_result: Any):
+    # Given
+    # When
+    extracted_type = extract_first_smart_value_class(input_value)
+
+    # Then
+    if expected_result is None:
+        assert extracted_type is None
+    else:
+        assert extracted_type == expected_result
+
+
+def test_all_extraction():
+    # Given
+    names = [
+        "SmartAddress",
+        "SmartBech32",
+        "SmartBool",
+        "SmartCheck",
+        "SmartChecks",
+        "SmartDict",
+        "SmartFloat",
+        "SmartInt",
+        "SmartList",
+        "SmartOnChainTokenTransfer",
+        "SmartOnChainTokenTransfers",
+        "SmartPath",
+        "SmartResultsSaveKeys",
+        "SmartStep",
+        "SmartSteps",
+        "SmartStr",
+        "SmartToken",
+        "SmartTokenTransfer",
+        "SmartTokenTransfers",
+        "SmartValue",
+    ]
+    # When
+    for name in names:
+        extracted_type = extract_first_smart_value_class(name)
+        assert issubclass(extracted_type, SmartValue)
