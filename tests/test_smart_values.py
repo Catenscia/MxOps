@@ -366,14 +366,16 @@ def test_smart_bech32(raw_value: Any, expected_result: Any, expected_str: str):
             {"identifier": "WEGLD-abcdef", "amount": 123456, "nonce": 5},
             TokenTransfer(Token("WEGLD-abcdef", 5), 123456),
             (
-                "123456 WEGLD-abcdef-05 ({'identifier': 'WEGLD-abcdef', 'amount': 123456, 'nonce': 5})"
+                "123456 WEGLD-abcdef-05 ({'identifier': 'WEGLD-abcdef', "
+                "'amount': 123456, 'nonce': 5})"
             ),
         ),
         (
             {"token_identifier": "WEGLD-abcdef", "amount": 123456, "token_nonce": 5},
             TokenTransfer(Token("WEGLD-abcdef", 5), 123456),
             (
-                "123456 WEGLD-abcdef-05 ({'token_identifier': 'WEGLD-abcdef', 'amount': 123456, 'token_nonce': 5})"
+                "123456 WEGLD-abcdef-05 ({'token_identifier': 'WEGLD-abcdef', "
+                "'amount': 123456, 'token_nonce': 5})"
             ),
         ),
     ],
@@ -407,7 +409,8 @@ def test_smart_token_transfer(
                 TokenTransfer(Token("WEGLD-ghijkl", 8), 789),
             ],
             (
-                "['123456 WEGLD-abcdef', '789 WEGLD-ghijkl-08'] ([['WEGLD-abcdef', 123456], {'identifier': 'WEGLD-ghijkl', 'amount': 789, 'nonce': 8}])"
+                "['123456 WEGLD-abcdef', '789 WEGLD-ghijkl-08'] ([['WEGLD-abcdef', "
+                "123456], {'identifier': 'WEGLD-ghijkl', 'amount': 789, 'nonce': 8}])"
             ),
         ),
     ],
