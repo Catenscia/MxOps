@@ -1,9 +1,8 @@
 from pathlib import Path
 
 from mxops.data.execution_data import ScenarioData
-from mxops.execution.legacy_checks import SuccessCheck
 from mxops.execution.scene import execute_scene, load_scene
-from mxops.execution.legacy_steps import (
+from mxops.execution.steps import (
     ContractCallStep,
     ContractDeployStep,
     ContractQueryStep,
@@ -39,7 +38,11 @@ def test_deploy_scene_instantiation(test_data_folder_path: Path):
             gas_limit=80000000,
             arguments=["SEGLD", "SEGLD", 18],
             value="&BASE_ISSUING_COST",
-            checks=[SuccessCheck()],
+            checks=[
+                {
+                    "type": "Success",
+                },
+            ],
         ),
         ContractCallStep(
             sender="owner",

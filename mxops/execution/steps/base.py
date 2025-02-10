@@ -129,9 +129,10 @@ class TransactionStep(Step):
         tx = self.build_unsigned_transaction()
         self.set_nonce_and_sign_transaction(tx)
 
-        if len(self.checks) > 0:
+        checks = self.checks.get_evaluated_value()
+        if len(checks) > 0:
             on_chain_tx = send_and_wait_for_result(tx)
-            for check in self.checks.get_evaluated_value():
+            for check in checks:
                 check.raise_on_failure(on_chain_tx)
             LOGGER.info(
                 f"Transaction successful: {get_tx_link(on_chain_tx.hash.hex())}"

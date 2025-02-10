@@ -350,27 +350,31 @@ def test_smart_bech32(raw_value: Any, expected_result: Any, expected_str: str):
         (
             ["WEGLD-abcdef", 123456],
             TokenTransfer(Token("WEGLD-abcdef"), 123456),
-            ("TODO"),
+            ("123456 WEGLD-abcdef (['WEGLD-abcdef', 123456])"),
         ),
         (
             ["WEGLD-abcdef", 123456, 5],
             TokenTransfer(Token("WEGLD-abcdef", 5), 123456),
-            ("TODO"),
+            ("123456 WEGLD-abcdef-05 (['WEGLD-abcdef', 123456, 5])"),
         ),
         (
             {"identifier": "WEGLD-abcdef", "amount": 123456},
             TokenTransfer(Token("WEGLD-abcdef"), 123456),
-            ("TODO"),
+            ("123456 WEGLD-abcdef ({'identifier': 'WEGLD-abcdef', 'amount': 123456})"),
         ),
         (
             {"identifier": "WEGLD-abcdef", "amount": 123456, "nonce": 5},
             TokenTransfer(Token("WEGLD-abcdef", 5), 123456),
-            ("TODO"),
+            (
+                "123456 WEGLD-abcdef-05 ({'identifier': 'WEGLD-abcdef', 'amount': 123456, 'nonce': 5})"
+            ),
         ),
         (
             {"token_identifier": "WEGLD-abcdef", "amount": 123456, "token_nonce": 5},
             TokenTransfer(Token("WEGLD-abcdef", 5), 123456),
-            ("TODO"),
+            (
+                "123456 WEGLD-abcdef-05 ({'token_identifier': 'WEGLD-abcdef', 'amount': 123456, 'token_nonce': 5})"
+            ),
         ),
     ],
 )
@@ -386,10 +390,8 @@ def test_smart_token_transfer(
     # Then
     assert smart_value.is_evaluated
     evaluated_transfer = smart_value.get_evaluated_value()
-    assert evaluated_transfer.token.identifier == expected_result.token.identifier
-    assert evaluated_transfer.token.nonce == expected_result.token.nonce
-    assert evaluated_transfer.amount == expected_result.amount
-    # assert smart_value.get_evaluation_string() == expected_str  # TODO: wait for str
+    assert evaluated_transfer == expected_result
+    assert smart_value.get_evaluation_string() == expected_str
 
 
 @pytest.mark.parametrize(
@@ -404,7 +406,9 @@ def test_smart_token_transfer(
                 TokenTransfer(Token("WEGLD-abcdef"), 123456),
                 TokenTransfer(Token("WEGLD-ghijkl", 8), 789),
             ],
-            ("TODO"),
+            (
+                "['123456 WEGLD-abcdef', '789 WEGLD-ghijkl-08'] ([['WEGLD-abcdef', 123456], {'identifier': 'WEGLD-ghijkl', 'amount': 789, 'nonce': 8}])"
+            ),
         ),
     ],
 )
@@ -421,12 +425,9 @@ def test_smart_token_transfers(
     assert smart_value.is_evaluated
     evaluated_transfers = smart_value.get_evaluated_value()
     assert len(evaluated_transfers) == 2
-    for ev_tr, exp_tr in zip(evaluated_transfers, expected_result):
-        assert ev_tr.token.identifier == exp_tr.token.identifier
-        assert ev_tr.token.nonce == exp_tr.token.nonce
-        assert ev_tr.amount == exp_tr.amount
+    assert evaluated_transfers == expected_result
 
-    # assert smart_value.get_evaluation_string() == expected_str # TODO: wait for str
+    assert smart_value.get_evaluation_string() == expected_str
 
 
 def test_randint():
