@@ -9,7 +9,7 @@ import os
 import re
 from typing import Any
 
-from multiversx_sdk import Address
+from multiversx_sdk import Address, TokenTransfer
 from multiversx_sdk.core.errors import BadAddressError
 import numpy as np
 from simpleeval import EvalWithCompoundTypes
@@ -217,3 +217,24 @@ def get_address_instance(address_str: str) -> Address:
     except errors.UnknownAccount:
         pass
     raise errors.ParsingError(address_str, "address_str address")
+
+
+def force_str(value: Any) -> str:
+    """
+    for the use of str in an object instead of __repr__ when
+    __repr__ is not defined
+
+    :param value: valeu to convert to str
+    :type value: Any
+    :return: converted value
+    :rtype: str
+    """
+    if isinstance(value, list):
+        as_str = []
+        for e in value:
+            if isinstance(e, TokenTransfer):
+                as_str.append(str(e))
+            else:
+                as_str.append(e)
+        return str(as_str)
+    return str(value)

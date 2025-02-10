@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from typing import Any
 from mxops import errors
 from mxops.execution.smart_values.utils import (
+    force_str,
     replace_escaped_characters,
     retrieve_value_from_any,
 )
@@ -47,11 +48,11 @@ class SmartValue:
         """
         self.require_evaluated()
         evaluated_value = self.get_evaluated_value()
-        evaluation_str = str(evaluated_value)
+        evaluation_str = force_str(evaluated_value)
         middle_values_str = []
         previous_str = None
         for mid_val in [self.raw_value, *self.evaluated_values]:
-            mid_val_str = replace_escaped_characters(str(mid_val))
+            mid_val_str = replace_escaped_characters(force_str(mid_val))
             if mid_val_str in (evaluation_str, previous_str):
                 continue
             previous_str = mid_val_str

@@ -24,6 +24,8 @@ def extract_smart_values_type_from_str(type_str: str) -> Type | None:
     :return: retrieved type if it exists
     :rtype: Type | None
     """
+    if "Smart" not in type_str:
+        return None
     for module_name in MODULES_WITH_SMART_VALUES:
         try:
             module = importlib.import_module(module_name)
@@ -52,7 +54,6 @@ def parse_field_type_from_str(field_type_str: str) -> Type | UnionType | None:
         else:
             actual_type = extract_smart_values_type_from_str(type_str)
             if actual_type is None:
-                LOGGER.warning(f"Type {type_str} not found")
                 continue
         actual_types.append(actual_type)
 
