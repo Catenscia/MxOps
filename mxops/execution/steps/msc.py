@@ -46,6 +46,15 @@ class LoopStep(Step):
     var_end: SmartInt | None = None
     var_list: SmartValue | None = None
 
+    def _initiate_var(self):
+        """
+        initiate the loop variable with a value to avoid pre-evaluation
+        error when a sub steps is defined using the loop variable
+        """
+        self.var_name.evaluate()
+        scenario_data = ScenarioData.get()
+        scenario_data.set_value(self.var_name.get_evaluated_value(), 0)
+
     def generate_steps(self) -> Iterator[Step]:
         """
         Generate the steps that sould be executed
@@ -53,6 +62,7 @@ class LoopStep(Step):
         :yield: steps to be executed
         :rtype: Iterator[Step]
         """
+        self._initiate_var()
         self.evaluate_smart_values()
         var_name = self.var_name.get_evaluated_value()
         var_start = (
@@ -71,6 +81,7 @@ class LoopStep(Step):
         scenario_data = ScenarioData.get()
         for var in iterator:
             scenario_data.set_value(var_name, var)
+            self.steps.evaluate()
             yield from self.steps.get_evaluated_value()
 
     def _execute(self):

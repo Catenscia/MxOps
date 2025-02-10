@@ -3,6 +3,7 @@ This module contains the functions to create Steps
 It is separated to avoid having circular import
 """
 
+from copy import deepcopy
 from dataclasses import dataclass
 import importlib
 from typing import Any
@@ -86,7 +87,7 @@ def instanciate_steps(raw_steps: list[dict]) -> list[Step]:
     :rtype: list[Step]
     """
     steps_list = []
-    for raw_step in raw_steps:
+    for raw_step in deepcopy(raw_steps):
         step_type: str = raw_step.pop("type")
         if raw_step.pop("skip", False):
             continue
