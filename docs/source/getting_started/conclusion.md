@@ -12,6 +12,7 @@ Among other features, you can learn:
 - [how to save complex data from queries and how to reuse it](contract_query_target)
 - [how to communicate with any external tools during an MxOps execution](python_step_target)
 - [how to issue and manage tokens](token_management_target)
+- [use composition and formulas in your variables](smart_values_target)
 - and much more!
 
 We hope to have shown how MxOps can help you build more easily, safely and consistently. In any case, we will really appreciate any feedback you have on this tool or documentation, so don't hesitate to contact us on [Twitter](https://twitter.com/catenscia) or in the [discussion tab on github](https://github.com/Catenscia/MxOps/discussions/categories/feedback).

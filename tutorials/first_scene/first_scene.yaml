@@ -1,9 +1,3 @@
-allowed_networks:
-    - devnet
-
-allowed_scenario:
-    - mxops_tutorial_first_scene
-
 accounts:
   - account_name: owner
     pem_path: ./wallets/my_devnet_wallet.pem

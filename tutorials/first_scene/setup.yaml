@@ -1,0 +1,9 @@
+steps:
+  - type: GenerateWallets
+    save_folder: ./wallets
+    wallets:
+      - my_devnet_wallet
+
+  - type: R3D4FaucetStep
+    targets:
+      - my_devnet_wallet

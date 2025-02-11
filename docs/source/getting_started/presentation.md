@@ -1,6 +1,12 @@
 # MxOps Presentation
 
-MxOps is a python package created to facilitate and automate MultiversX interactions: be it smart contracts deployments, calls, queries or just simple transfers. Inspired from DevOps tools and built on top of [mxpy](https://github.com/multiversx/mx-sdk-py-cli), it aims to ease and make reproducible any set of these interactions with the blockchain.
+```{figure} ../_images/mxops_full_logo.png
+:alt: MxOps Logo
+:align: center
+:target: ../_images/mxops_full_logo.png
+```
+
+MxOps is a python package created to facilitate and automate MultiversX interactions: be it smart contracts deployments, calls, queries or just simple transfers. Inspired from DevOps tools and built on top of [mx-sdk-py](https://github.com/multiversx/mx-sdk-py), it aims to ease and make reproducible any set of these interactions with the blockchain.
 
 MxOps aims to be useful in these situations:
 
@@ -17,13 +23,6 @@ Here are some basic uses cases to illustrate how MxOps works and give a very bri
 Here, MxOps is used to issue a fungible token, assign mint and burn roles to the issuer and then mint some token.
 
 ```yaml
-allowed_networks:
-  - devnet
-  - localnet
-
-allowed_scenario:
-  - "alice_mint"
-
 accounts:  # define the accounts to use
   - account_name: alice
     pem_path: ./wallets/alice.pem
@@ -43,26 +42,22 @@ steps:
     token_identifier: "%AliceToken.identifier"
     target: alice
     roles:
-      - ESDTRoleLocalMint
-      - ESDTRoleLocalBurn
+      - local_mint
+      - local_burn
   
   - type: FungibleMint  # make alice mint some tokens
     sender: alice
     token_identifier: "%AliceToken.identifier"
     amount: 100000000  # 100,000.000 ATK
-
 ```
 
-### Query with ABI
+### Contract Query
 
 MxOps is used below to fetch information from the [live Onedex contract](https://explorer.multiversx.com/accounts/erd1qqqqqqqqqqqqqpgqqz6vp9y50ep867vnr296mqf3dduh6guvmvlsu3sujc) on the mainnet. We specifically query the state of the pool n°10. This example relies on the ABI definition of the Onedex smart-contract.
 
 ```yaml
 allowed_networks:
     - mainnet
-
-allowed_scenario:
-    - .*
 
 external_contracts:
   onedex-swap: 
@@ -85,9 +80,8 @@ Printed results:
     {
         "pair_id": 10,
         "state": {
-            "name": "Active",
-            "discriminant": 1,
-            "values": null
+            "__discriminant__": 1,
+            "__name__": "Active"
         },
         "enabled": true,
         "owner": "erd1rfs4pg224d2wmndmntvu2dhfhesmuda6m502vt5mfctn3wg7tu4sk6rtku",
@@ -95,45 +89,11 @@ Printed results:
         "second_token_id": "USDC-c76f1f",
         "lp_token_id": "MPHUSDC-777138",
         "lp_token_decimal": 18,
-        "first_token_reserve": 16,
-        "second_token_reserve": 1076937,
+        "first_token_reserve": 15,
+        "second_token_reserve": 2331925,
         "lp_token_supply": 393944771203191982,
         "lp_token_roles_are_set": true
     }
-]
-```
-
-### Query without ABI
-
-In this example, we will query an xExchange pool on the [mainnet](https://explorer.multiversx.com/accounts/erd1qqqqqqqqqqqqqpgqeel2kumf0r8ffyhth7pqdujjat9nx0862jpsg2pqaq) but we do not have the abi file of the contract. However, we know that we are supposed to get three `BigUint` when calling the endpoint `getReservesAndTotalSupply`: the reserves of each token and the LP supplies.
-
-```yaml
-allowed_networks:
-    - mainnet
-
-allowed_scenario:
-    - .*
-
-external_contracts:
-  xexchange-wegld-usdc: erd1qqqqqqqqqqqqqpgqeel2kumf0r8ffyhth7pqdujjat9nx0862jpsg2pqaq
-
-steps:
-
-  - type: ContractQuery
-    contract: xexchange-wegld-usdc
-    endpoint: getReservesAndTotalSupply
-    print_results: true
-    results_types:
-      - type: BigUint
-      - type: BigUint
-      - type: BigUint
-```
-Printed results:
-```bash
-[
-    81478482319716395147753,
-    4878990096191,
-    9390873908175
 ]
 ```
 
@@ -142,14 +102,6 @@ Printed results:
 Here, MxOps is used to call a contract while sending tokens. The example shows what it would look like to add some liquidity to a pool.
 
 ```yaml
-allowed_networks:
-  - localnet
-  - testnet
-  - devnet
-
-allowed_scenario:
-  - .*
-
 steps:
   - type: ContractCall
     sender: thomas
@@ -179,7 +131,7 @@ During execution, MxOps will save some data locally on your computer, for exampl
 - token identifier for newly issued tokens
 - query results when asked by the user
 
-This data is accessible to MxOps and can be reused within `Scenes`.
+This data is accessible to MxOps and can be reused within any of your `Scenes`.
 
 Here is a little illustration of what is happening (click on it to zoom-in):
 
