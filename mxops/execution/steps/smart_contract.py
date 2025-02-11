@@ -235,7 +235,7 @@ class ContractCallStep(TransactionStep):
     print_results: SmartBool = field(default_factory=lambda: SmartBool(False))
     results_save_keys: SmartResultsSaveKeys | None = field(default=None)
     returned_data_parts: list | None = field(init=False, default=None)
-    saved_results: dict = field(init=False, default_factory=dict)
+    saved_results: dict | None = field(init=False, default=None)
 
     def build_unsigned_transaction(self) -> Transaction:
         """
@@ -329,7 +329,7 @@ class ContractQueryStep(Step):
     print_results: SmartBool = field(default_factory=lambda: SmartBool(False))
     results_save_keys: SmartResultsSaveKeys | None = field(default=None)
     returned_data_parts: list | None = field(init=False, default=None)
-    saved_results: dict = field(init=False, default_factory=dict)
+    saved_results: dict | None = field(init=False, default=None)
 
     def save_results(self):
         """
@@ -386,6 +386,8 @@ class ContractQueryStep(Step):
                 print(json_dumps(self.saved_results))
             elif self.returned_data_parts is not None:
                 print(json_dumps(self.returned_data_parts))
+            else:
+                print("empty result")
 
         LOGGER.info("Query successful")
 
