@@ -1,9 +1,6 @@
 allowed_networks:
     - mainnet
 
-allowed_scenario:
-    - .*
-
 external_contracts:
   onedex-swap: 
     address: erd1qqqqqqqqqqqqqpgqqz6vp9y50ep867vnr296mqf3dduh6guvmvlsu3sujc

@@ -7,7 +7,7 @@ uv venv $ENV_NAME --python 3.11
 source ${ENV_NAME}/bin/activate
 
 # install project
-uv pip install -r pyproject.toml
+uv pip install .
 
 # launch first scene tutorial
 cd tutorials/first_scene
@@ -23,9 +23,9 @@ bash scripts/execute_pong_scene.sh
 
 # launch queries tutorial
 cd ../queries
-bash scripts/execute_onedex_with_abi.sh
-bash scripts/execute_xexchange_without_abi.sh
+bash scripts/execute_onedex.sh
 
 # remove env
+cd ../..
 deactivate
 rm -rf ${ENV_NAME}
