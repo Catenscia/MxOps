@@ -41,6 +41,7 @@
 - 🚨 BREAKING CHANGE 🚨 ledger account index was dropped as it is not used by multiversx-sdk-py
 - upgraded all dependencies
 - use uv instead of conda for development and env tests
+- 🚨 BREAKING CHANGE 🚨 new class workflow for checks, smart-values and steps
 
 
 ## 2.2.0 - 2024-04-16

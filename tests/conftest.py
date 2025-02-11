@@ -7,6 +7,7 @@ from multiversx_sdk.network_providers.resources import NetworkConfig
 
 from mxops.config.config import Config
 from mxops.data.execution_data import (
+    ExternalContractData,
     InternalContractData,
     ScenarioData,
     TokenData,
@@ -64,6 +65,16 @@ def scenario_data(network):  # must be executed after the network fixture
             last_upgrade_time=1,
             saved_values={"query_result_1": [0, 1, {2: "abc"}]},
         )
+    )
+    scenario_data.add_contract_data(
+        ExternalContractData(
+            "piggy-bank",
+            "erd1qqqqqqqqqqqqqpgqxt0y7s830gh5r38ypsslt9hrd2zxn98rv5ys0jd2mg",
+            saved_values={},
+        )
+    )
+    scenario_data.set_contract_abi_from_source(
+        "piggy-bank", Path("./tests/data/abis/piggy-bank.abi.json")
     )
     scenario_data.add_token_data(
         token_data=TokenData("bob_token", "BOBT", "BOBT-123456", TokenTypeEnum.FUNGIBLE)

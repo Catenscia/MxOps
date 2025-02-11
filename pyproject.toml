@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mxops"
-version = "3.0.0-dev28"
+version = "3.0.0-dev29"
 authors = [
   {name="Etienne Wallet"},
 ]
@@ -23,7 +23,7 @@ dependencies = [
     "configparser~=7.1.0",
     "importlib-resources~=6.5.2",
     "matplotlib~=3.10.0",
-    "multiversx-sdk~=1.0.0b3",
+    "multiversx-sdk~=1.1.0",
     "pandas~=2.2.3",
     "pyyaml~=6.0.2",
     "simpleeval~=1.0.3",

@@ -1,4 +1,5 @@
-from typing import Any
+from pathlib import Path
+from typing import Any, Union
 
 from multiversx_sdk import Address, Token, TokenTransfer
 import pytest
@@ -9,12 +10,16 @@ from mxops.execution.smart_values import (
     SmartAddress,
     SmartBech32,
     SmartBool,
+    SmartFloat,
     SmartInt,
+    SmartPath,
     SmartStr,
+    SmartToken,
     SmartTokenTransfer,
     SmartTokenTransfers,
     SmartValue,
 )
+from mxops.execution.smart_values.factory import extract_first_smart_value_class
 
 
 @pytest.mark.parametrize(
@@ -146,6 +151,39 @@ def test_infinite_evaluation():
 def test_smart_int(raw_value: Any, expected_result: Any, expected_str: str):
     # Given
     smart_value = SmartInt(raw_value)
+
+    # When
+    smart_value.evaluate()
+
+    # Then
+    assert smart_value.is_evaluated
+    assert smart_value.get_evaluated_value() == expected_result
+    assert smart_value.get_evaluation_string() == expected_str
+
+
+@pytest.mark.parametrize(
+    "raw_value, expected_result, expected_str",
+    [
+        (
+            12241412.23,
+            12241412.23,
+            "12241412.23",
+        ),
+        (
+            "12241412.23",
+            12241412.23,
+            "12241412.23",
+        ),
+        (
+            3,
+            3,
+            "3.0 (3)",
+        ),
+    ],
+)
+def test_smart_float(raw_value: Any, expected_result: Any, expected_str: str):
+    # Given
+    smart_value = SmartFloat(raw_value)
 
     # When
     smart_value.evaluate()
@@ -312,27 +350,33 @@ def test_smart_bech32(raw_value: Any, expected_result: Any, expected_str: str):
         (
             ["WEGLD-abcdef", 123456],
             TokenTransfer(Token("WEGLD-abcdef"), 123456),
-            ("TODO"),
+            ("123456 WEGLD-abcdef (['WEGLD-abcdef', 123456])"),
         ),
         (
             ["WEGLD-abcdef", 123456, 5],
             TokenTransfer(Token("WEGLD-abcdef", 5), 123456),
-            ("TODO"),
+            ("123456 WEGLD-abcdef-05 (['WEGLD-abcdef', 123456, 5])"),
         ),
         (
             {"identifier": "WEGLD-abcdef", "amount": 123456},
             TokenTransfer(Token("WEGLD-abcdef"), 123456),
-            ("TODO"),
+            ("123456 WEGLD-abcdef ({'identifier': 'WEGLD-abcdef', 'amount': 123456})"),
         ),
         (
             {"identifier": "WEGLD-abcdef", "amount": 123456, "nonce": 5},
             TokenTransfer(Token("WEGLD-abcdef", 5), 123456),
-            ("TODO"),
+            (
+                "123456 WEGLD-abcdef-05 ({'identifier': 'WEGLD-abcdef', "
+                "'amount': 123456, 'nonce': 5})"
+            ),
         ),
         (
             {"token_identifier": "WEGLD-abcdef", "amount": 123456, "token_nonce": 5},
             TokenTransfer(Token("WEGLD-abcdef", 5), 123456),
-            ("TODO"),
+            (
+                "123456 WEGLD-abcdef-05 ({'token_identifier': 'WEGLD-abcdef', "
+                "'amount': 123456, 'token_nonce': 5})"
+            ),
         ),
     ],
 )
@@ -348,10 +392,8 @@ def test_smart_token_transfer(
     # Then
     assert smart_value.is_evaluated
     evaluated_transfer = smart_value.get_evaluated_value()
-    assert evaluated_transfer.token.identifier == expected_result.token.identifier
-    assert evaluated_transfer.token.nonce == expected_result.token.nonce
-    assert evaluated_transfer.amount == expected_result.amount
-    # assert smart_value.get_evaluation_string() == expected_str  # TODO: wait for str
+    assert evaluated_transfer == expected_result
+    assert smart_value.get_evaluation_string() == expected_str
 
 
 @pytest.mark.parametrize(
@@ -366,7 +408,10 @@ def test_smart_token_transfer(
                 TokenTransfer(Token("WEGLD-abcdef"), 123456),
                 TokenTransfer(Token("WEGLD-ghijkl", 8), 789),
             ],
-            ("TODO"),
+            (
+                "['123456 WEGLD-abcdef', '789 WEGLD-ghijkl-08'] ([['WEGLD-abcdef', "
+                "123456], {'identifier': 'WEGLD-ghijkl', 'amount': 789, 'nonce': 8}])"
+            ),
         ),
     ],
 )
@@ -383,12 +428,9 @@ def test_smart_token_transfers(
     assert smart_value.is_evaluated
     evaluated_transfers = smart_value.get_evaluated_value()
     assert len(evaluated_transfers) == 2
-    for ev_tr, exp_tr in zip(evaluated_transfers, expected_result):
-        assert ev_tr.token.identifier == exp_tr.token.identifier
-        assert ev_tr.token.nonce == exp_tr.token.nonce
-        assert ev_tr.amount == exp_tr.amount
+    assert evaluated_transfers == expected_result
 
-    # assert smart_value.get_evaluation_string() == expected_str # TODO: wait for str
+    assert smart_value.get_evaluation_string() == expected_str
 
 
 def test_randint():
@@ -439,3 +481,115 @@ def test_randchoice_nested():
     # Then
     assert smart_value.is_evaluated
     assert smart_value.get_evaluated_value() in scenario_data.get_value("my_list")
+
+
+def test_smart_path():
+    # Given
+    smart_value = SmartPath("./tests")
+
+    # When
+    smart_value.evaluate()
+
+    # Then
+    assert smart_value.is_evaluated
+    assert smart_value.get_evaluated_value() == Path("./tests")
+
+
+@pytest.mark.parametrize(
+    "raw_value, expected_result, expected_str",
+    [
+        (
+            ["WEGLD-abcdef"],
+            Token("WEGLD-abcdef"),
+            ("TODO"),
+        ),
+        (
+            ["NFT-abcdef", 5],
+            Token("NFT-abcdef", 5),
+            ("TODO"),
+        ),
+        (
+            {"identifier": "WEGLD-abcdef"},
+            Token("WEGLD-abcdef"),
+            ("TODO"),
+        ),
+        (
+            {"identifier": "NFT-abcdef", "nonce": 5},
+            Token("NFT-abcdef", 5),
+            ("TODO"),
+        ),
+        (
+            {"token_identifier": "NFT-abcdef", "token_nonce": 5},
+            Token("NFT-abcdef", 5),
+            ("TODO"),
+        ),
+    ],
+)
+def test_smart_token(raw_value: Any, expected_result: Token, expected_str: str):
+    # Given
+    smart_value = SmartToken(raw_value)
+
+    # When
+    smart_value.evaluate()
+
+    # Then
+    assert smart_value.is_evaluated
+    evaluated_token = smart_value.get_evaluated_value()
+    assert evaluated_token.identifier == expected_result.identifier
+    assert evaluated_token.nonce == expected_result.nonce
+    # assert smart_value.get_evaluation_string() == expected_str  # TODO wait for sdk
+
+
+@pytest.mark.parametrize(
+    "input_value, expected_result",
+    [
+        (SmartInt, SmartInt),
+        ("SmartValue", SmartValue),
+        (SmartPath | str, SmartPath),
+        (Union[SmartPath, str], SmartPath),
+        (str, None),
+        (SmartBech32 | None, SmartBech32),
+        ("SmartFloat | None", SmartFloat),
+        (int | None, None),
+    ],
+)
+def test_extract_first_smart_value_class(input_value: Any, expected_result: Any):
+    # Given
+    # When
+    extracted_type = extract_first_smart_value_class(input_value)
+
+    # Then
+    if expected_result is None:
+        assert extracted_type is None
+    else:
+        assert extracted_type == expected_result
+
+
+def test_all_extraction():
+    # Given
+    names = [
+        "SmartAddress",
+        "SmartBech32",
+        "SmartBool",
+        "SmartCheck",
+        "SmartChecks",
+        "SmartDict",
+        "SmartFloat",
+        "SmartInt",
+        "SmartList",
+        "SmartOnChainTokenTransfer",
+        "SmartOnChainTokenTransfers",
+        "SmartPath",
+        "SmartResultsSaveKeys",
+        "SmartStep",
+        "SmartSteps",
+        "SmartStr",
+        "SmartToken",
+        "SmartTokenTransfer",
+        "SmartTokenTransfers",
+        "SmartValue",
+    ]
+    # When
+    for name in names:
+        extracted_type = extract_first_smart_value_class(name)
+        assert issubclass(extracted_type, SmartValue)

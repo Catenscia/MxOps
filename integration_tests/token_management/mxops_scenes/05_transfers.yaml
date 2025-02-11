@@ -8,34 +8,46 @@ allowed_scenario:
   - "integration_test_token_management.*"
 
 steps:
-  - type: FungibleTransfer
+  - type: Transfer
     sender: jean
     receiver: marie
-    token_identifier: "%JeanToken.identifier"
-    amount: 100000  # 100.000 JTK
+    transfers:
+      - token_identifier: "%JeanToken.identifier"
+        amount: 100000  # 100.000 JTK
+  
+  - type: Transfer
+    sender: jean
+    receiver: marie
+    value: 10
+    transfers:
+      - token_identifier: "%JeanToken.identifier"
+        amount: 100000  # 100.000 JTK
 
-  - type: NonFungibleTransfer
+  - type: Transfer
     sender: marc
     receiver: marie
-    token_identifier: "%MarcNFT.identifier"
-    amount: 1  # 1 MNFT
-    nonce: 1
+    transfers:
+      - token_identifier: "%MarcNFT.identifier"
+        amount: 1  # 1 MNFT
+        nonce: 1
 
-  - type: NonFungibleTransfer
+  - type: Transfer
     sender: marthe
     receiver: marie
-    token_identifier: "%MartheSFT.identifier"
-    amount: 100  # 100 MSFT
-    nonce: 1
+    transfers:
+      - token_identifier: "%MartheSFT.identifier"
+        amount: 100  # 100 MSFT
+        nonce: 1
 
-  - type: NonFungibleTransfer
+  - type: Transfer
     sender: thomas
     receiver: marie
-    token_identifier: "%ThomasMeta.identifier"
-    amount: 1000  # 1.000 TMT
-    nonce: 1
+    transfers:
+      - token_identifier: "%ThomasMeta.identifier"
+        amount: 1000  # 1.000 TMT
+        nonce: 1
   
-  - type: MultiTransfers
+  - type: Transfer
     sender: marie
     receiver: emmanuel
     transfers:

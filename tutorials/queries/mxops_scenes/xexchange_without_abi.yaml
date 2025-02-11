@@ -13,7 +13,3 @@ steps:
     contract: xexchange-wegld-usdc
     endpoint: getReservesAndTotalSupply
     print_results: true
-    results_types:
-      - type: BigUint
-      - type: BigUint
-      - type: BigUint
