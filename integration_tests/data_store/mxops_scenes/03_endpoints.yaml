@@ -16,6 +16,15 @@ steps:
     arguments:
       - 123987
       - null
+    print_results: true
+    results_save_keys: test_1_results
+
+  - type: Python
+    module_path: ./integration_tests/scripts/checks.py
+    function: check_storage
+    arguments:
+      - data-store
+      - '{"test_1_results": [123987, null]}'
   
   - type: ContractQuery
     contract: data-store
@@ -26,7 +35,7 @@ steps:
       - my_option_biguint
 
   - type: Python
-    module_path: ./integration_tests/data_store/scripts/checks.py
+    module_path: ./integration_tests/scripts/checks.py
     function: check_storage
     arguments:
       - data-store
@@ -41,7 +50,7 @@ steps:
       - my_token_identifier
 
   - type: Python
-    module_path: ./integration_tests/data_store/scripts/checks.py
+    module_path: ./integration_tests/scripts/checks.py
     function: check_storage
     arguments:
       - data-store
@@ -55,6 +64,15 @@ steps:
     arguments:
       - erd1qqqqqqqqqqqqqpgqf48ydzn8shr8mnmrvydq2fn9v2afzd3c4fvsk4wglm
       - WEGLD-abcdef
+    print_results: true
+    results_save_keys: test_2_results
+
+  - type: Python
+    module_path: ./integration_tests/scripts/checks.py
+    function: check_storage
+    arguments:
+      - data-store
+      - '{"test_2_results": ["erd1qqqqqqqqqqqqqpgqf48ydzn8shr8mnmrvydq2fn9v2afzd3c4fvsk4wglm", "WEGLD-abcdef"]}'
   
   - type: ContractQuery
     contract: data-store
@@ -65,7 +83,7 @@ steps:
       - test_2_params
 
   - type: Python
-    module_path: ./integration_tests/data_store/scripts/checks.py
+    module_path: ./integration_tests/scripts/checks.py
     function: check_storage
     arguments:
       - data-store
@@ -84,6 +102,16 @@ steps:
         - 3
         - 4
         - 5
+    print_results: true
+    results_save_keys: test_3_results
+
+  - type: Python
+    module_path: ./integration_tests/scripts/checks.py
+    function: check_storage
+    arguments:
+      - data-store
+      - '{"test_3_results": [-3, [0, 1, 2, 3, 4, 5]]}'
+  
   
   - type: ContractQuery
     contract: data-store
@@ -93,7 +121,7 @@ steps:
     results_save_keys: test_3_params
 
   - type: Python
-    module_path: ./integration_tests/data_store/scripts/checks.py
+    module_path: ./integration_tests/scripts/checks.py
     function: check_storage
     arguments:
       - data-store
@@ -106,6 +134,15 @@ steps:
     gas_limit: 60000000
     arguments:
       - [0, 1, 2, 3, 4, 5, 6]
+    print_results: true
+    results_save_keys: test_4_results
+
+  - type: Python
+    module_path: ./integration_tests/scripts/checks.py
+    function: check_storage
+    arguments:
+      - data-store
+      - '{"test_4_results": [[0, 1, 2, 3, 4, 5, 6]]}'
   
   - type: ContractQuery
     contract: data-store
@@ -115,7 +152,7 @@ steps:
     results_save_keys: my_vec_biguint
 
   - type: Python
-    module_path: ./integration_tests/data_store/scripts/checks.py
+    module_path: ./integration_tests/scripts/checks.py
     function: check_storage
     arguments:
       - data-store
@@ -130,7 +167,7 @@ steps:
     - test_4_params
 
   - type: Python
-    module_path: ./integration_tests/data_store/scripts/checks.py
+    module_path: ./integration_tests/scripts/checks.py
     function: check_storage
     arguments:
       - data-store

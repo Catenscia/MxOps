@@ -31,7 +31,7 @@ steps:
     results_save_keys: view_test_1_returns
 
   - type: Python
-    module_path: ./integration_tests/data_store/scripts/checks.py
+    module_path: ./integration_tests/scripts/checks.py
     function: check_storage
     arguments:
       - data-store
@@ -70,7 +70,7 @@ steps:
     results_save_keys: view_test_2_returns
 
   - type: Python
-    module_path: ./integration_tests/data_store/scripts/checks.py
+    module_path: ./integration_tests/scripts/checks.py
     function: check_storage
     arguments:
       - data-store

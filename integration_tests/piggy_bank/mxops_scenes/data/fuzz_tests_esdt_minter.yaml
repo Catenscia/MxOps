@@ -19,6 +19,8 @@ parameters:
     sender: thomas
     gas_limit: 5000000
     description: "claiming airdrop"
+    expected_outputs:
+      - 12471682
 
   - endpoint: getAirdropAmount 
     sender: thomas
