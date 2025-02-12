@@ -303,6 +303,7 @@ class ContractCallStep(TransactionStep):
             raise ValueError("No data to save")
 
         if self.results_save_keys is not None:
+            self.saved_results = {}
             results_save_keys = self.results_save_keys.get_evaluated_value()
             to_save = results_save_keys.parse_data_to_save(self.returned_data_parts)
             for save_key, value in to_save.items():
