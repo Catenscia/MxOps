@@ -377,7 +377,7 @@ parameters:
 At the moment, this step is a work in progress.
 
 - esdt transfers happening within a transaction cannot be tested
-- intentionnal error cannot be tested
+- intentional error cannot be tested
 
 (token_management_target)=
 ## Token Management Steps
