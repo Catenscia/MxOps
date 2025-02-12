@@ -2,10 +2,10 @@
 
 ## Dependencies
 
-MxOps heavily relies on the [python sdks](https://github.com/multiversx?q=sdk-py&type=all&language=&sort=) written by the MultiversX team and requires a python version of at least 3.10.
+MxOps heavily relies on the [multiversx-py-sdk](https://github.com/multiversx/mx-sdk-py) written by the MultiversX team and requires a python version of at least 3.10.
 As the MultiversX team has a very high release rate, we strongly recommend to have a dedicated environment for MxOps to avoid any dependencies conflicts with your own projects.
 
-If you only to use Mxops only as a command line, we recommend to install it with [pipx](https://github.com/pypa/pipx):
+We recommend to install it with [pipx](https://github.com/pypa/pipx), which will create a dedicated environment for MxOps:
 
 ```bash
 pipx install mxops
@@ -23,6 +23,14 @@ Otherwise, you can use [Anaconda](https://www.anaconda.com/download) for example
 conda create -n mxops_env python=3.11 -y
 conda activate mxops_env
 pip install -U mxops
+```
+
+or the awesome [uv](https://docs.astral.sh/uv/) tool:
+
+```bash
+uv venv mxops_env --python 3.11
+source mxops_env/bin/activate
+uv pip install -U mxops
 ```
 
 

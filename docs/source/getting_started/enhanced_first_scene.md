@@ -14,9 +14,6 @@ We will write the `Scene`  `mxops_scenes/accounts/devnet.yaml` with no step at a
 allowed_networks:
     - devnet
 
-allowed_scenario:
-    - ".*"  # regex for allowing all scenarios
-
 accounts:
   - account_name: owner
     pem_path: ./wallets/my_devnet_wallet.pem
@@ -32,18 +29,13 @@ For example if you also wanted to execute this tutorial on a localnet, you could
 allowed_networks:
     - localnet
 
-allowed_scenario:
-    - ".*"
-
 accounts:
   - account_name: owner
     pem_path: ./wallets/bob.pem  # one of the default public account with funds on the localnet
 ```
 
-Two details to notice:
-
-- a regex has been used for the allowed `Scenarios`: we want to allow all `Scenarios` as we are just specifying the accounts.
-- the wallets my_devnet_wallet.pem and bob.pem have been defined with the same `account_name`: in later `Scenes`, we only have to refer to the `account_name` "owner" and it will work both the `devnet` and the ` localnet`.
+One detail to notice:
+The wallets my_devnet_wallet.pem and bob.pem have been defined with the same `account_name`: in later `Scenes`, we only have to refer to the `account_name` "owner" and it will work both the `devnet` and the `localnet`.
 
 ## Deploy Scene
 
@@ -52,13 +44,6 @@ The deployment will be written in a separate `Scene` so that we can ping and pon
 Create the new file `mxops_scenes/01_deploy.yaml`:
 
 ```yaml
-allowed_networks:
-    - devnet
-    - localnet
-
-allowed_scenario:
-    - mxops_tutorial_enhanced_first_scene
-
 steps:
 
   - type: ContractDeploy
@@ -68,20 +53,17 @@ steps:
     contract_id: "egld-ping-pong"
     gas_limit: 40000000
     arguments:
-      - "$PING_PONG_AMOUNT:int"
-      - "$PONG_WAIT_TIME:int"
+      - "$PING_PONG_AMOUNT"
+      - "$PONG_WAIT_TIME"
     upgradeable: true
     readable: false
     payable: false
     payable_by_sc: true
 ```
 
-Four important changes:
+One important change:
+Instead of writing the ping amount and the pong wait time directly in the scene, we will pull them from environment variables.
 
-- The devnet and the localnet have been allowed to execute this `Scene`
-- We changed the `Scenario` name to "mxops_tutorial_enhanced_first_scene"
-- Instead of writing the ping amount and the pong wait time directly in the scene, we will pull them from environment variables.
-- we added the argument `abi_file` for the `ContractDeploy` `Step`: this will allow MxOps to automatically parse the arguments sent to an endpoint and to automatically decode the results of a query. 
 
 ## PingAmount and Query
 
@@ -146,13 +128,6 @@ By default if checks are not specified by the user, MxOps will run a `SuccessChe
 But let's finish our ping `Scene` named `mxops_scenes/02_ping.yaml`:
 
 ```yaml
-allowed_networks:
-    - devnet
-    - localnet
-
-allowed_scenario:
-    - mxops_tutorial_enhanced_first_scene
-
 steps:
 
   - type: ContractQuery
@@ -183,13 +158,6 @@ steps:
 and our last `Scene` named `mxops_scenes/03_pong.yaml`:
 
 ```yaml
-allowed_networks:
-    - devnet
-    - localnet
-
-allowed_scenario:
-    - mxops_tutorial_enhanced_first_scene
-
 steps:
 
   - type: ContractCall

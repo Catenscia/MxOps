@@ -16,25 +16,50 @@ In this tutorial, we will create some files and clone a git repository. To keep 
 
 ## Owner Wallet
 
-We will need a wallet to make our tests. The easiest is to use a pem wallet, as it doesn't require a confirmation when signing transactions:
+We will need a wallet to make our tests. The easiest is to use a pem wallet, as it doesn't require a confirmation when signing transactions.
+We also need some initial funds to cover the transactions costs. The easiest way to do this is to create a setup `Scene` that we will simply call `setup.yaml`:
+
+```yaml
+steps:
+  - type: GenerateWallets
+    save_folder: ./wallets
+    wallets:
+      - my_devnet_wallet
+
+  - type: R3D4FaucetStep
+    targets:
+      - my_devnet_wallet
+```
+
+This will create a pem wallet at `wallets/my_devnet_wallet.pem` and ask the [r3d4](https://r3d4.fr/faucet) faucet for some initial funds. 
+You can execute this `Scene` on the devnet with the command below:
 
 ```bash
-mkdir wallets
-mxpy wallet derive wallets/my_devnet_wallet.pem
+mxops execute \
+        -n devnet \
+        -s mxops_tutorial_first_scene \
+        setup.yaml
 ```
 
-```{warning}
-The secret key is written in clear in a pem file! It is very useful for tests but unless you know what you are doing, don't use pem files for the mainnet.
+```{note}
+The r3d4 faucet is heavily used, so it may be empty when you try to claim some EGLD.
+In this situation, MxOps will give you the following error:
+mxops.errors.FaucetFailed: Balance is too low. Try again later
+
 ```
 
-We will execute this tutorial on the devnet, so the account you just created will need some devnet eGLD. You an use the faucet on the [devnet wallet](https://devnet-wallet.multiversx.com) to get some.
-
+You can also manually ask for some funds on the regular faucet on the [devnet wallet](https://devnet-wallet.multiversx.com)
 
 ```{figure} ../_images/devnet_faucet.png
 :alt: Image of the devnet faucet
 :align: center
 :target: ../_images/devnet_faucet.png
 ```
+
+```{warning}
+The secret key of the wallet is written in clear in a pem file! It is very useful for tests but unless you know what you are doing, don't use pem files for the mainnet.
+```
+
 
 ## Smart Contract Build
 
@@ -75,28 +100,12 @@ mxops_tutorial
 ├── wallets
 │   └── my_devnet_wallet.pem
 └── first_scene.yaml
-```
-
-### Blockchain Network
-
-The first element we specify in a `Scene` is the network(s) onto which it is allowed to run.
-As said above, we will work on the devnet so write these lines at the top of the `Scene`:
-
-```yaml
-allowed_networks:
-    - devnet
-```
-
-We will also add the following lines, but you don't have to bother with what they do at the moment.
-
-```yaml
-allowed_scenario:
-    - mxops_tutorial_first_scene
+└── setup.yaml
 ```
 
 ### Wallet
 
-The next thing we can specify in a `Scene` is a list of wallets we will use later on. Here we have only one wallet and we will use it to deploy the ping-pong contract so we will name it `owner`.
+The first element we will specify in our `Scene` is the wallet that we want to use to deploy the ping-pong contract. To make it more user-friendly, MxOps allows you to set a name when defining an account. Let's call our wallet `owner`.
 
 ```yaml
 accounts:
@@ -107,7 +116,7 @@ accounts:
 ### Steps
 
 We want to perform three actions: one deployment and two contract calls. In MxOps, any action is called a `Step`.
-In other words, a `Scene` contains a series of `Steps` that tells what MxOps should do.
+In other words, a `Scene` contains a series of `Steps` that tell what MxOps should do.
 
 #### Step 1: Deployment
 
@@ -133,12 +142,14 @@ The `ContractStep` will look like this:
 ```yaml
   - type: ContractDeploy
     sender: owner
-    wasm_path: "./contract/ping-pong/output/ping-pong.wasm"
-    contract_id: "egld-ping-pong"
+    wasm_path: ./contract/ping-pong/output/ping-pong.wasm
+    abi_path: ./contract/ping-pong/output/ping-pong.abi.json
+    contract_id: egld-ping-pong
     gas_limit: 50000000
     arguments:
       - 500000000000000000 # 0.5eGLD
       - 1 # 1 sec
+      - null  # egld by default
     upgradeable: true
     readable: false
     payable: false
@@ -160,7 +171,8 @@ Once our contract is deployed, we can ping it. This will be done with a `Contrac
 
 #### Step 3: Pong
 
-As we set a wait time of 1 second and a block confirmation time is more than that, we can call the "pong" endpoint immediately after the ping confirmation.
+As we set a wait time of 1 second and a block confirmation time is more than that, we can call the "pong" endpoint immediately after the ping confirmation. Indeed by default, MxOps wait for each transaction to be confirmed before sending the next one.
+As MultiversX block are 6 seconds long, the wait period for the pong action will be over.
 
 We will use again a `ContractCall` `Step` but this time for the `pong` endpoint which doesn't needs any arguments nor transfers.
 
@@ -175,12 +187,6 @@ We will use again a `ContractCall` `Step` but this time for the `pong` endpoint 
 With this, we finished our first scene and your file `first_scene.yaml` should now look like this:
 
 ```yaml
-allowed_networks:
-    - devnet
-
-allowed_scenario:
-    - mxops_tutorial_first_scene
-
 accounts:
   - account_name: owner
     pem_path: ./wallets/my_devnet_wallet.pem
@@ -190,11 +196,13 @@ steps:
   - type: ContractDeploy
     sender: owner
     wasm_path: "./contract/ping-pong/output/ping-pong.wasm"
+    abi_path: "./contract/ping-pong/output/ping-pong.abi.json"
     contract_id: "egld-ping-pong"
     gas_limit: 3000000
     arguments:
       - 500000000000000000
       - 1
+      - null
     upgradeable: true
     readable: false
     payable: false

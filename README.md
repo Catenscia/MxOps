@@ -31,13 +31,6 @@ Here are some basic uses cases to illustrate how MxOps works.
 ### Token Mint
 
 ```yaml
-allowed_networks:
-  - devnet
-  - localnet
-
-allowed_scenario:
-  - "alice_mint"
-
 accounts:  # define the accounts to use
   - account_name: alice
     pem_path: ./wallets/alice.pem
@@ -57,8 +50,8 @@ steps:
     token_identifier: "%AliceToken.identifier"
     target: alice
     roles:
-      - ESDTRoleLocalMint
-      - ESDTRoleLocalBurn
+      - local_mint
+      - local_burn
   
   - type: FungibleMint  # make alice mint some tokens
     sender: alice
@@ -72,9 +65,6 @@ steps:
 ```yaml
 allowed_networks:
     - mainnet
-
-allowed_scenario:
-    - .*
 
 external_contracts:
   onedex-swap: 
@@ -96,9 +86,8 @@ steps:
     {
         "pair_id": 10,
         "state": {
-            "name": "Active",
-            "discriminant": 1,
-            "values": null
+            "__discriminant__": 1,
+            "__name__": "Active"
         },
         "enabled": true,
         "owner": "erd1rfs4pg224d2wmndmntvu2dhfhesmuda6m502vt5mfctn3wg7tu4sk6rtku",
@@ -106,57 +95,17 @@ steps:
         "second_token_id": "USDC-c76f1f",
         "lp_token_id": "MPHUSDC-777138",
         "lp_token_decimal": 18,
-        "first_token_reserve": 16,
-        "second_token_reserve": 1076937,
+        "first_token_reserve": 15,
+        "second_token_reserve": 2331925,
         "lp_token_supply": 393944771203191982,
         "lp_token_roles_are_set": true
     }
 ]
 ```
 
-### Query without ABI
-
-```yaml
-allowed_networks:
-    - mainnet
-
-allowed_scenario:
-    - .*
-
-external_contracts:
-  xexchange-wegld-usdc: erd1qqqqqqqqqqqqqpgqeel2kumf0r8ffyhth7pqdujjat9nx0862jpsg2pqaq
-
-steps:
-
-  - type: ContractQuery
-    contract: xexchange-wegld-usdc
-    endpoint: getReservesAndTotalSupply
-    print_results: true
-    results_types:
-      - type: BigUint
-      - type: BigUint
-      - type: BigUint
-```
-
-```bash
-[
-    81478482319716395147753,
-    4878990096191,
-    9390873908175
-]
-```
-
 ### Contract Call with Payments
 
 ```yaml
-allowed_networks:
-  - localnet
-  - testnet
-  - devnet
-
-allowed_scenario:
-  - .*
-
 steps:
   - type: ContractCall
     sender: thomas

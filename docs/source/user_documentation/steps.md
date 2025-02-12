@@ -1,62 +1,26 @@
 # Steps
 
 In MxOps, any action to be executed is called a `Step`.
-In other words, a `Scene` contains a series of `Steps` that tells what MxOps should do.
+In other words, a `Scene` contains a series of `Steps` that tell what MxOps should do.
 
 Several type of `Steps` exists, to allow users to easily construct complex `Scenes`.
 If you feel something is missing, please make a suggestion in the [github](https://github.com/Catenscia/MxOps/discussions/categories/ideas)!
 
-## Transfer Steps
+## Transfer Step
 
-### EGLD Transfer Step
-
-This step is used to transfer eGLD from an address to another
+The same step is used to describe any king of transfer: native token, simple esdt, nft, multi-transfers, ...
 
 ```yaml
-type: EgldTransfer
+type: Transfer
 sender: bob
 receiver: alice   # you can also directly write a bech32 address here
-amount: 7895651689  # integer amount here (for example 1 EGLD = 1000000000000000000)
-```
-
-### Fungible Transfer Step
-
-This step is used to transfer classic (fungible) ESDT from an address to another
-
-```yaml
-type: FungibleTransfer
-sender: bob
-receiver: alice
-token_identifier: "MYTOK-a123ec"
-amount: 7895651689
-```
-
-### Non Fungible Transfer Step
-
-This step is used to transfer a NFT, some SFT or some Meta ESDT from an address to another
-
-```yaml
-type: NonFungibleTransfer
-sender: bob
-receiver: alice
-token_identifier: "MTESDT-a123ec"
-nonce: 4
-amount: 65481 # 1 for NFT
-```
-
-### Multi Transfers Step
-
-```yaml
-type: MutliTransfers
-sender: bob
-receiver: alice
-transfers:
-  - token_identifier: "MYSFT-a123ec"
-    amount: 25
-    nonce: 4
-  - token_identifier: "FUNG-a123ec"
-    amount: 87941198416
-    nonce: 0 # 0 for fungible ESDT
+value: 7895651689  # optional, integer amount of EGLD to send
+transfers:  # optional, any ESDT, NFT, SFT, MEta-ESDT transfers
+  - identifier: "MYNFT-a123ec"
+    nonce: 156
+    amount: 1  
+  - identifier: "WEGLD-abcdef"
+    amount: 14894651698498  
 ```
 
 ## Contract Steps
@@ -70,7 +34,7 @@ saved in the `Scenario` (specified at execution time) under the provided id to a
 type: ContractDeploy
 sender: bob
 wasm_path: "path/to/wasm"
-abi_path: "path/to/abi"  # optional but stongly recommended
+abi_path: "path/to/abi"  # optional but strongly recommended
 contract_id: my_first_sc
 gas_limit: 1584000
 arguments: # optional, if any args must be submitted
@@ -91,7 +55,7 @@ This `Step` is used to upgrade a contract.
 type: ContractUpgrade
 sender: bob
 wasm_path: "path/to/upgraded_wasm"
-abi_path: "path/to/abi"  # optional but stongly recommended
+abi_path: "path/to/abi"  # optional but strongly recommended
 contract: my_first_sc
 gas_limit: 1584000
 arguments: # optional, if any args must be submitted
@@ -145,11 +109,9 @@ For example to fetch the identifier of a token created by a contract and stored 
 type: ContractQuery
 contract: my_first_sc
 endpoint: getEsdtIdentifier
-arguments: []
+arguments: []  # optional, if the view needs any arguments
 results_save_keys: # optional, key(s) under which save the results of the query
   - EsdtIdentifier
-results_types:  # mandatory if results are to be saved and no ABI have been provided for this contract
-  - type: TokenIdentifier
 print_results: true # optional, if the query results should be printed in the console
 ```
 
@@ -402,7 +364,7 @@ parameters:
     arguments:  # optional, argument to pass to the query/call as usual in MxOps
       - 12145
       - TOKEN-abcdef
-    expected_outputs:  # optional, excepted output of the query
+    expected_outputs:  # optional, excepted output of the query or call
       - 12124115
     description: "test description"
 
@@ -414,8 +376,8 @@ parameters:
 
 At the moment, this step is a work in progress.
 
-- expected output works only for queries
 - esdt transfers happening within a transaction cannot be tested
+- intentional error cannot be tested
 
 (token_management_target)=
 ## Token Management Steps
@@ -458,9 +420,9 @@ token_identifier: MTK-abcdef
 target: erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw
 is_set: true # if false, this will unset the provided roles
 roles: # choose one or several of the roles below
-  - ESDTRoleLocalMint
-  - ESDTRoleLocalBurn
-  - ESDTTransferRole
+  - local_mint
+  - local_burn
+  - esdt_transfer_role
 ```
 
 Details on the roles can be found [here](https://docs.multiversx.com/tokens/esdt-tokens/#setting-and-unsetting-special-roles).
@@ -564,11 +526,17 @@ token_identifier: MNFT-abcdef
 target: erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw
 is_set: true # if false, this will unset the provided roles
 roles: # choose one or several of the roles below
-  - ESDTRoleNFTCreate
-  - ESDTRoleNFTBurn
-  - ESDTRoleNFTUpdateAttributes
-  - ESDTRoleNFTAddURI
-  - ESDTTransferRole
+  - nft_create
+  - nft_burn
+  - nft_update_attributes
+  - nft_add_uri
+  - esdt_transfer_role
+  - nft_update
+  - esdt_modify_royalties
+  - esdt_set_new_uri
+  - esdt_modify_creator
+  - nft_recreate
+
 ```
 
 Details on the roles can be found [here](https://docs.multiversx.com/tokens/nft-tokens#roles).
@@ -584,10 +552,15 @@ token_identifier: MNFT-abcdef
 target: erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw
 is_set: true # if false, this will unset the provided roles
 roles: # choose one or several of the roles below
-  - ESDTRoleNFTCreate
-  - ESDTRoleNFTBurn
-  - ESDTRoleNFTAddQuantity
-  - ESDTTransferRole
+  - nft_create
+  - nft_burn
+  - nft_add_quantity
+  - esdt_transfer_role
+  - nft_update
+  - esdt_modify_royalties
+  - esdt_set_new_uri
+  - esdt_modify_creator
+  - nft_recreate
 ```
 
 Details on the roles can be found [here](https://docs.multiversx.com/tokens/nft-tokens#roles).
@@ -603,10 +576,15 @@ token_identifier: META-abcdef
 target: erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw
 is_set: true # if false, this will unset the provided roles
 roles: # choose one or several of the roles below
-  - ESDTRoleNFTCreate
-  - ESDTRoleNFTBurn
-  - ESDTRoleNFTAddQuantity
-  - ESDTTransferRole
+  - nft_create
+  - nft_burn
+  - nft_add_quantity
+  - esdt_transfer_role
+  - nft_update
+  - esdt_modify_royalties
+  - esdt_set_new_uri
+  - esdt_modify_creator
+  - nft_recreate
 ```
 
 Details on the roles can be found [here](https://docs.multiversx.com/tokens/nft-tokens#roles).
@@ -667,7 +645,7 @@ steps:
     arguments:
       - TokenIdentifier4
       - "%LOOP_VAR" # nonce
-      - "%my_first_sc.TokenIdentifier4Amount." # result of the query
+      - "%my_first_sc.TokenIdentifier4Amount" # result of the query
 ```
 
 Instead of using `var_start` and `var_end` for the loop variable, a custom list of values can be provided with the keyword `var_list` like below.

@@ -74,6 +74,6 @@ If you were to execute other `Scenes` in the scenario `mxops_tutorial_first_scen
     gas_limit: 3000000
 ```
 
-And the better part is that you can also save query results in a `Scenario` and use these results in later interactions.
+And the better part is that you can also save query and calls results in a `Scenario` and use these results in later interactions.
 
  So now that `Scenarios` have been introduced to you, we are going to take a look again at our first `Scene` and improve it to make it much more practical: let's head to the 👉 {doc}`next section!<enhanced_first_scene>` 👈
