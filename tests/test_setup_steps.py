@@ -29,7 +29,7 @@ def test_generate_n_wallet_step():
 def test_generate_named_wallet_step():
     # Given
     step = GenerateWalletsStep(
-        "./tests/data/TEMP_UNIT_TEST/wallets/folder", ["alice", "bob"]
+        "./tests/data/TEMP_UNIT_TEST/wallets/folder", ["charles", "david"]
     )
 
     # When
@@ -38,7 +38,7 @@ def test_generate_named_wallet_step():
     # Then
     save_folder = Path("./tests/data/TEMP_UNIT_TEST/wallets/folder")
     files = os.listdir(save_folder)
-    assert set(files) == {"alice.pem", "bob.pem"}
+    assert set(files) == {"charles.pem", "david.pem"}
     for file in files:
         _ = Account.new_from_pem(save_folder / file)
 

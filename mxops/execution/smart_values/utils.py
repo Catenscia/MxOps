@@ -212,7 +212,7 @@ def get_address_instance(address_str: str) -> Address:
 
     # finally try to see if it designates a defined account
     try:
-        account = AccountsManager.get_account(evaluated_address_str)
+        account = AccountsManager.get_account(address_str)
         return account.address
     except errors.UnknownAccount:
         pass
