@@ -201,7 +201,7 @@ class SceneStep(Step):
 
     scene_path: SmartPath
 
-    def execute(self):
+    def _execute(self):
         """
         Does nothing and should not be called
         """
