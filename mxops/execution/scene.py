@@ -169,7 +169,7 @@ def execute_step(step: Step, scenario_data: _ScenarioData):
     """
     if isinstance(step, SceneStep):
         step.evaluate_smart_values()
-        execute_scene(Path(step.scene_path))
+        execute_scene(Path(step.scene_path.get_evaluated_value()))
     elif isinstance(step, LoopStep):
         for sub_step in step.generate_steps():
             execute_step(sub_step, scenario_data)
