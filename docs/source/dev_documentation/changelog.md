@@ -43,6 +43,9 @@
 - use uv instead of conda for development and env tests
 - 🚨 BREAKING CHANGE 🚨 new class workflow for checks, smart-values and steps
 - 🚨 BREAKING CHANGE 🚨 Accounts are now saved by bech32, the name to bech32 translation is done using the storage
+- 🚨 BREAKING CHANGE 🚨 ABIS are now stored using a contract bech32
+- 🚨 BREAKING CHANGE 🚨 Contracts are now handled using contract bech32 by the Scenario Data
+
 
 
 ## 2.2.0 - 2024-04-16

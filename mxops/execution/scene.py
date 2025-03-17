@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import re
 
+from multiversx_sdk import Address
 import yaml
 
 from mxops.config.config import Config
@@ -142,19 +143,19 @@ def execute_scene(scene_path: Path):
     for contract_id, contract_data in scene.external_contracts.items():
         if isinstance(contract_data, str):
             contract_data = {"address": contract_data}
-        address = contract_data["address"]
+        bech32 = contract_data["address"]
         if "abi_path" in contract_data:
             scenario_data.set_contract_abi_from_source(
-                contract_id, Path(contract_data["abi_path"])
+                Address.new_from_bech32(bech32), Path(contract_data["abi_path"])
             )
         try:
-            scenario_data.set_contract_value(contract_id, "address", address)
+            scenario_data.set_contract_value(contract_id, "bech32", bech32)
         except errors.UnknownContract:
             # otherwise create the contract data
             scenario_data.add_contract_data(
                 ExternalContractData(
                     contract_id=contract_id,
-                    address=address,
+                    bech32=bech32,
                     saved_values={},
                 )
             )

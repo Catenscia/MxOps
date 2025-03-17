@@ -7,6 +7,8 @@ This modules contains the functions to migration mxops data from v0.1.0 to v1.0.
 from copy import deepcopy
 import json
 
+from multiversx_sdk import Address
+
 from mxops.config.config import Config
 from mxops.data.path_versions import v0_1_0, v1_0_0
 from mxops.enums import NetworkEnum
@@ -96,7 +98,7 @@ def reconstruct_abi_from_serializer_dict(
     contract_id: str, serializer_data: dict
 ) -> dict:
     """
-    Reconstruct an partial abi file from the dictionary representation
+    Reconstruct a partial abi file from the dictionary representation
     of a AbiSerializer
 
     :param contract_id: id of the contract that had the provided serializer
@@ -140,7 +142,7 @@ def reconstruct_abi_from_serializer_dict(
     return contract_abi
 
 
-def convert_scenario(source_data: dict) -> tuple[dict, dict[str, dict]]:
+def convert_scenario(source_data: dict) -> tuple[dict, dict[Address, dict]]:
     """
     Convert a scenario file from v0.1.0 to the elements needed for v.1.0.0
 
@@ -151,12 +153,17 @@ def convert_scenario(source_data: dict) -> tuple[dict, dict[str, dict]]:
     """
     abis = {}
     dest_data = deepcopy(source_data)
+    new_contracts_data = {}
     for contract_id, contract_data in dest_data["contracts_data"].items():
+        contract_bech32 = contract_data.pop("address")
+        contract_data["bech32"] = contract_bech32
         serializer_data = contract_data.pop("serializer", None)
         if serializer_data is not None:
-            abis[contract_id] = reconstruct_abi_from_serializer_dict(
+            abis[contract_bech32] = reconstruct_abi_from_serializer_dict(
                 contract_id, serializer_data
             )
+        new_contracts_data[contract_bech32] = contract_data
+    dest_data["contracts_data"] = new_contracts_data
     return dest_data, abis
 
 
@@ -175,8 +182,11 @@ def migrate_scenario(scenario_name: str, scenario_data: dict):
     data_file_path.parent.mkdir(parents=True, exist_ok=True)
     data_file_path.write_text(json.dumps(converted_data, indent=4))
 
-    for contract_id, abi_data in abis.items():
-        abis_file_path = v1_0_0.get_contract_abi_file_path(scenario_name, contract_id)
+    for contract_bech32, abi_data in abis.items():
+        contract_address = Address.new_from_bech32(contract_bech32)
+        abis_file_path = v1_0_0.get_contract_abi_file_path(
+            scenario_name, contract_address
+        )
         abis_file_path.parent.mkdir(parents=True, exist_ok=True)
         abis_file_path.write_text(json.dumps(abi_data, indent=4))
 
@@ -202,9 +212,10 @@ def migrate_scenario_checkpoint(
     data_file_path.parent.mkdir(parents=True, exist_ok=True)
     data_file_path.write_text(json.dumps(converted_data, indent=4))
 
-    for contract_id, abi_data in abis.items():
+    for contract_bech32, abi_data in abis.items():
+        contract_address = Address.new_from_bech32(contract_bech32)
         abis_file_path = v1_0_0.get_checkpoint_contract_abi_file_path(
-            scenario_name, checkpoint_name, contract_id
+            scenario_name, checkpoint_name, contract_address
         )
         abis_file_path.parent.mkdir(parents=True, exist_ok=True)
         abis_file_path.write_text(json.dumps(abi_data, indent=4))

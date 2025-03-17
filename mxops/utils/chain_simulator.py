@@ -76,6 +76,7 @@ def fetch_and_save_docker_compose():
         LOGGER.info(f"Copying the docker compose file from {source_path}")
         source_content = Path(source_path).read_text(encoding="utf-8")
     file_path = get_docker_compose_path()
+    file_path.parent.mkdir(parents=True, exist_ok=True)
     file_path.write_text(source_content)
 
 

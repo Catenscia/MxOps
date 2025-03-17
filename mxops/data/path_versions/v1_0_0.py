@@ -26,6 +26,7 @@ from pathlib import Path
 import platform
 
 from appdirs import AppDirs
+from multiversx_sdk import Address
 
 from mxops.config.config import Config
 from mxops.data.path_versions.msc import version_name_to_version_path_name
@@ -137,19 +138,19 @@ def get_scenario_current_abis_path(scenario_name: str) -> Path:
     return get_scenario_current_path(scenario_name) / "abis"
 
 
-def get_contract_abi_file_path(scenario_name: str, contract_id: str) -> Path:
+def get_contract_abi_file_path(scenario_name: str, contract_address: Address) -> Path:
     """
     Return the file path for a contract abi in the current data of a scenario
 
     :param scenario_name: name of the scenario
     :type scenario_name: str
-    :param contract_id: unique id of the contract
-    :type contract_id: str
+    :param contract_address: address of the contract
+    :type contract_address: Address
     :return: folder path
     :rtype: Path
     """
-    folder_path = get_scenario_current_path(scenario_name) / "abis"
-    return folder_path / f"{contract_id}.abi.json"
+    folder_path = get_scenario_current_abis_path(scenario_name)
+    return folder_path / f"{contract_address.to_bech32()}.abi.json"
 
 
 def get_scenario_checkpoint_path(scenario_name: str, checkpoint_name: str) -> Path:
@@ -184,7 +185,7 @@ def get_scenario_checkpoint_data_path(scenario_name: str, checkpoint_name: str) 
 
 
 def get_checkpoint_contract_abi_file_path(
-    scenario_name: str, checkpoint_name: str, contract_id: str
+    scenario_name: str, checkpoint_name: str, contract_address: Address
 ) -> Path:
     """
     Return the file path for a contract abi in the checkpoint data of a scenario
@@ -193,13 +194,13 @@ def get_checkpoint_contract_abi_file_path(
     :type scenario_name: str
     :param scenario_name: name of the checkpoint
     :type scenario_name: str
-    :param contract_id: unique id of the contract
-    :type contract_id: str
+    :param contract_address: address of the contract
+    :type contract_address: Address
     :return: folder path
     :rtype: Path
     """
     folder_path = get_scenario_checkpoint_path(scenario_name, checkpoint_name) / "abis"
-    return folder_path / f"{contract_id}.abi.json"
+    return folder_path / f"{contract_address.to_bech32()}.abi.json"
 
 
 def get_scenario_logs_folder(scenario_name: str) -> Path:
