@@ -59,7 +59,7 @@ def scenario_data(network):  # must be executed after the network fixture
     scenario_data.add_contract_data(
         InternalContractData(
             contract_id=contract_id,
-            address=address,
+            bech32=address,
             wasm_hash=wasm_hash,
             deploy_time=1,
             last_upgrade_time=1,

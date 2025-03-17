@@ -16,7 +16,9 @@ import shutil
 import time
 from typing import Any
 
+from multiversx_sdk import Address
 from multiversx_sdk.abi import Abi, AbiDefinition
+from multiversx_sdk.core.errors import BadAddressError
 
 from mxops.config.config import Config
 from mxops.data.path_versions import v1_0_0 as data_path
@@ -368,101 +370,141 @@ class _ScenarioData(SavedValuesData):
     creation_time: int
     last_update_time: int
     contracts_data: dict[str, ContractData] = field(default_factory=dict)
+    contract_id_to_bech32: dict[str, str] = field(default_factory=dict)
+    contract_bech32_to_id: dict[str, str] = field(default_factory=dict)
     tokens_data: dict[str, TokenData] = field(default_factory=dict)
     _abi_cache: dict[str, dict] = field(default_factory=dict, init=False)
 
-    def get_contract_value(self, contract_id: str, value_key: str) -> Any:
+    def get_contract_address(self, designation: str | Address) -> Address:
+        """
+        Using the stored contracts, return a contract address from a contract id,
+        a bech32
+
+        :param designation: designation of the contract
+        :type designation: str | Address
+        :return: address of the contract
+        :rtype: Address
+        """
+        if isinstance(designation, Address):
+            return designation
+        try:
+            return Address.new_from_bech32(designation)
+        except BadAddressError:
+            pass
+        try:
+            bech32 = self.contract_id_to_bech32[designation]
+            return Address.new_from_bech32(bech32)
+        except (KeyError, BadAddressError):
+            raise errors.UnknownContract(self.name, designation)
+
+    def get_contract_value(self, designation: Address | str, value_key: str) -> Any:
         """
         Return the value of a contract for a given key
 
-        :param contract_id: unique id of the contract in the scenario
-        :type contract_id: str
+        :param designation: address or id of the contract in the scenario
+        :type designation: Address | str
         :param value_key: key for the value to fetch
         :type value_key: str
         :return: value saved under the given key
         :rtype: Any
         """
+        contract_bech32 = self.get_contract_address(designation).to_bech32()
         try:
-            contract = self.contracts_data[contract_id]
+            contract = self.contracts_data[contract_bech32]
         except KeyError as err:
-            raise errors.UnknownContract(self.name, contract_id) from err
+            raise errors.UnknownContract(self.name, designation) from err
         return contract.get_value(value_key)
 
-    def get_contract_raw_abi(self, contract_id: str, use_cache: bool = True) -> dict:
+    def get_contract_raw_abi(
+        self, designation: Address | str, use_cache: bool = True
+    ) -> dict:
         """
-        Return the dictionary of a contract abi given its id.
+        Return the dictionary of a contract abi given its designation.
         Look first if it exists in the cache, else try to search for
         it in the Scenario locally saved data
 
-        :param contract_id: unique id of the contract to get the abi of
-        :type contract_id: str
+        :param designation: address or id of the contract to get the ABI of
+        :type designation: designation: Address | str
         :param use_cache: if the abi cache should be used, default to True
         :type use_cache: bool
         :return: abi of the contract as a json
         :rtype: dict
         """
+        contract_address = self.get_contract_address(designation)
+        contract_bech32 = contract_address.to_bech32()
         if use_cache:
             try:
-                return self._abi_cache[contract_id]
+                return self._abi_cache[contract_bech32]
             except KeyError:
                 pass
-        file_path = data_path.get_contract_abi_file_path(self.name, contract_id)
+        file_path = data_path.get_contract_abi_file_path(self.name, contract_address)
         try:
             content = file_path.read_text()
         except FileNotFoundError as err:
-            raise errors.UnknownAbiContract(self.name, contract_id) from err
+            raise errors.UnknownAbiContract(self.name, contract_address) from err
         contract_abi = json.loads(content)
-        self._abi_cache[contract_id] = contract_abi
+        self._abi_cache[contract_bech32] = contract_abi
         return contract_abi
 
-    def get_contract_abi(self, contract_id: str, use_cache: bool = True) -> Abi:
+    def get_contract_abi(
+        self, contract_designation: Address | str, use_cache: bool = True
+    ) -> Abi:
         """
-        Return the Abi instance of a contract abi given its id.
+        Return the Abi instance of a contract abi given its address or id.
         Look first if it exists in the cache, else try to search for
         it in the Scenario locally saved data
 
-        :param contract_id: unique id of the contract to get the abi of
-        :type contract_id: str
+        :param contract_address: address or id of the contract to get the abi of
+        :type contract_address: Address | str
         :param use_cache: if the abi cache should be used, default to True
         :type use_cache: bool
         :return: abi of the contract
         :rtype: Abi
         """
         return Abi(
-            AbiDefinition.from_dict(self.get_contract_raw_abi(contract_id, use_cache))
+            AbiDefinition.from_dict(
+                self.get_contract_raw_abi(contract_designation, use_cache)
+            )
         )
 
-    def set_contract_abi_from_source(self, contract_id: str, abi_path: Path):
+    def set_contract_abi_from_source(
+        self, contract_designation: Address | str, abi_path: Path
+    ):
         """
-        Return the dictionary of a contract abi given its id.
+        Return the dictionary of a contract abi given its address or id.
         Look first if it exists in the cache, else try to search for
         it in the Scenario locally saved data
 
-        :param contract_id: unique id of the contract to get the abi of
-        :type contract_id: str
+        :param contract_designation: address or id of the contract to get the abi of
+        :type contract_designation: Address | str
         :return: abi of the contract as a json
         :rtype: dict
         """
-        file_path = data_path.get_contract_abi_file_path(self.name, contract_id)
+        contract_address = self.get_contract_address(contract_designation)
+        file_path = data_path.get_contract_abi_file_path(self.name, contract_address)
         file_path.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(abi_path, file_path)
-        _ = self.get_contract_raw_abi(contract_id, use_cache=False)  # update cache
+        _ = self.get_contract_raw_abi(contract_address, use_cache=False)  # update cache
 
-    def set_contract_value(self, contract_id: str, value_key: str, value: Any):
+    def set_contract_value(
+        self, contract_designation: Address | str, value_key: str, value: Any
+    ):
         """
         Set the value of a contract for a given key
 
-        :param contract_id: unique id of the contract in the scenario
-        :type contract_id: str
+        :param contract_address: address or id of the contract in the scenario
+        :type contract_address: Address | str
         :param value_key: key for the value to set
         :type value_key: str
         """
-        self._set_update_time()
+        contract_address = self.get_contract_address(contract_designation)
+        contract_bech32 = contract_address.to_bech32()
         try:
-            contract = self.contracts_data[contract_id]
+            contract = self.contracts_data[contract_bech32]
         except KeyError as err:
-            raise errors.UnknownContract(self.name, contract_id) from err
+            raise errors.UnknownContract(self.name, contract_address) from err
         contract.set_value(value_key, value)
+        self._set_update_time()
         self.save()
 
     def add_contract_data(self, contract_data: ContractData):
@@ -472,10 +514,19 @@ class _ScenarioData(SavedValuesData):
         :param contract_data: data to add to the scenario
         :type contract_data: ContractData
         """
-        self._set_update_time()
-        if contract_data.contract_id in self.contracts_data:
+
+        if contract_data.contract_id in self.contract_id_to_bech32:
             raise errors.ContractIdAlreadyExists(contract_data.contract_id)
-        self.contracts_data[contract_data.contract_id] = contract_data
+        if contract_data.bech32 in self.contract_bech32_to_id:
+            raise errors.ContractAlreadyHasId(
+                contract_data.bech32,
+                self.contract_bech32_to_id[contract_data.bech32],
+                contract_data.contract_id,
+            )
+        self.contract_id_to_bech32[contract_data.contract_id] = contract_data.bech32
+        self.contract_bech32_to_id[contract_data.bech32] = contract_data.contract_id
+        self.contracts_data[contract_data.bech32] = contract_data
+        self._set_update_time()
         self.save()
 
     def get_token_value(self, token_name: str, value_key: str) -> Any:
@@ -659,16 +710,20 @@ class _ScenarioData(SavedValuesData):
         :rtype: ScenarioData
         """
         contracts_data = {}
-        for contract_id, contract_data in data["contracts_data"].items():
+        for contract_bech32, contract_data in data["contracts_data"].items():
             if isinstance(contract_data, dict):
                 try:
                     is_external = contract_data.pop("is_external")
                 except KeyError:
                     is_external = False
                 if is_external:
-                    contracts_data[contract_id] = ExternalContractData(**contract_data)
+                    contracts_data[contract_bech32] = ExternalContractData(
+                        **contract_data
+                    )
                 else:
-                    contracts_data[contract_id] = InternalContractData(**contract_data)
+                    contracts_data[contract_bech32] = InternalContractData(
+                        **contract_data
+                    )
 
         tokens_data = data.get("tokens_data", {})
         tokens_data = {k: TokenData.from_dict(v) for k, v in tokens_data.items()}

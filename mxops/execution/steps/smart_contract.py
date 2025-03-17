@@ -24,7 +24,6 @@ from mxops.common.providers import MyProxyNetworkProvider
 from mxops.config.config import Config
 from mxops.data.execution_data import InternalContractData, ScenarioData
 from mxops.data.utils import convert_mx_data_to_vanilla, json_dumps
-from mxops.execution import utils
 from mxops.execution.smart_values import (
     SmartBool,
     SmartInt,
@@ -34,6 +33,7 @@ from mxops.execution.smart_values import (
     SmartStr,
     SmartTokenTransfers,
 )
+from mxops.execution.smart_values.mx_sdk import SmartAddress
 from mxops.execution.steps.base import Step, TransactionStep
 from mxops.utils.logger import get_logger
 from mxops.utils.msc import get_file_hash
@@ -105,12 +105,7 @@ class ContractDeployStep(TransactionStep):
         if not isinstance(on_chain_tx, TransactionOnNetwork):
             raise ValueError("On chain transaction is None")
         scenario_data = ScenarioData.get()
-
-        # save the abi
         contract_id = self.contract_id.get_evaluated_value()
-        scenario_data.set_contract_abi_from_source(
-            contract_id, self.abi_path.get_evaluated_value()
-        )
 
         # get the new deployed address
         parser = SmartContractTransactionsOutcomeParser()
@@ -132,13 +127,18 @@ class ContractDeployStep(TransactionStep):
         file_hash = get_file_hash(self.wasm_path.get_evaluated_value())
         contract_data = InternalContractData(
             contract_id=contract_id,
-            address=contract_address.to_bech32(),
+            bech32=contract_address.to_bech32(),
             saved_values={},
             wasm_hash=file_hash,
             deploy_time=on_chain_tx.timestamp,
             last_upgrade_time=on_chain_tx.timestamp,
         )
         scenario_data.add_contract_data(contract_data)
+
+        # save the abi
+        scenario_data.set_contract_abi_from_source(
+            contract_id, self.abi_path.get_evaluated_value()
+        )
 
 
 @dataclass
@@ -147,7 +147,7 @@ class ContractUpgradeStep(TransactionStep):
     Represents a smart contract upgrade
     """
 
-    contract: SmartStr
+    contract: SmartAddress
     wasm_path: SmartPath
     gas_limit: SmartInt
     abi_path: SmartPath | None = None
@@ -166,9 +166,6 @@ class ContractUpgradeStep(TransactionStep):
         """
         LOGGER.info(f"Upgrading contract {self.contract.get_evaluation_string()}")
 
-        contract_designation = self.contract.get_evaluated_value()
-        contract_address = utils.get_address_instance(contract_designation)
-
         if self.abi_path is not None:
             abi = Abi.load(self.abi_path.get_evaluated_value())
         else:
@@ -182,7 +179,7 @@ class ContractUpgradeStep(TransactionStep):
 
         return sc_factory.create_transaction_for_upgrade(
             sender=self.sender.get_evaluated_value(),
-            contract=contract_address,
+            contract=self.contract.get_evaluated_value(),
             bytecode=bytecode,
             arguments=arguments,
             gas_limit=self.gas_limit.get_evaluated_value(),
@@ -201,14 +198,14 @@ class ContractUpgradeStep(TransactionStep):
         """
         if not isinstance(on_chain_tx, TransactionOnNetwork):
             raise ValueError("On chain transaction is None")
-        contract = self.contract.get_evaluated_value()
+        contract_address = self.contract.get_evaluated_value()
         scenario_data = ScenarioData.get()
         scenario_data.set_contract_abi_from_source(
-            contract, self.abi_path.get_evaluated_value()
+            contract_address, self.abi_path.get_evaluated_value()
         )
         try:
             scenario_data.set_contract_value(
-                contract, "last_upgrade_time", on_chain_tx.timestamp
+                contract_address, "last_upgrade_time", on_chain_tx.timestamp
             )
         except errors.UnknownContract:  # any contract can be upgraded
             pass
@@ -220,7 +217,7 @@ class ContractCallStep(TransactionStep):
     Represents a smart contract endpoint call
     """
 
-    contract: SmartStr
+    contract: SmartAddress
     endpoint: SmartStr
     gas_limit: SmartInt
     arguments: SmartList = field(default_factory=lambda: SmartList([]))
@@ -240,14 +237,14 @@ class ContractCallStep(TransactionStep):
         :return: transaction built
         :rtype: Transaction
         """
-        contract = self.contract.get_evaluated_value()
         endpoint = self.endpoint.get_evaluated_value()
-        LOGGER.info(f"Calling {endpoint} for {contract} ")
+        LOGGER.info(f"Calling {endpoint} on {self.contract.get_evaluation_string()} ")
         scenario_data = ScenarioData.get()
 
         arguments = self.arguments.get_evaluated_value()
+        contract_address = self.contract.get_evaluated_value()
         try:
-            contract_abi = scenario_data.get_contract_abi(contract)
+            contract_abi = scenario_data.get_contract_abi(contract_address)
         except errors.UnknownAbiContract:
             contract_abi = None
 
@@ -256,7 +253,6 @@ class ContractCallStep(TransactionStep):
 
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
         sc_factory = SmartContractTransactionsFactory(factory_config, abi=contract_abi)
-        contract_address = utils.get_address_instance(contract)
         gas_limit = self.gas_limit.get_evaluated_value()
         return sc_factory.create_transaction_for_execute(
             sender=self.sender.get_evaluated_value(),
@@ -279,14 +275,14 @@ class ContractCallStep(TransactionStep):
         if self.results_save_keys is None:
             return
 
-        contract = self.contract.get_evaluated_value()
+        contract_address = self.contract.get_evaluated_value()
         scenario_data = ScenarioData.get()
         if not isinstance(on_chain_tx, TransactionOnNetwork):
             return
         if not on_chain_tx.status.is_successful:
             return
         try:
-            contract_abi = scenario_data.get_contract_abi(contract)
+            contract_abi = scenario_data.get_contract_abi(contract_address)
         except errors.UnknownAbiContract:
             contract_abi = None
         parser = SmartContractTransactionsOutcomeParser(abi=contract_abi)
@@ -303,7 +299,7 @@ class ContractCallStep(TransactionStep):
             to_save = results_save_keys.parse_data_to_save(self.returned_data_parts)
             for save_key, value in to_save.items():
                 if save_key is not None:
-                    scenario_data.set_contract_value(contract, save_key, value)
+                    scenario_data.set_contract_value(contract_address, save_key, value)
                     self.saved_results[save_key] = value
 
         if self.print_results:
@@ -319,7 +315,7 @@ class ContractQueryStep(Step):
     Represents a smart contract query
     """
 
-    contract: SmartStr
+    contract: SmartAddress
     endpoint: SmartStr
     arguments: SmartList = field(default_factory=lambda: SmartList([]))
     print_results: SmartBool = field(default_factory=lambda: SmartBool(False))
@@ -343,11 +339,12 @@ class ContractQueryStep(Step):
         LOGGER.info("Saving query results")
 
         self.saved_results = {}
-        contract = self.contract.get_evaluated_value()
         to_save = results_save_keys.parse_data_to_save(self.returned_data_parts)
         for save_key, value in to_save.items():
             if save_key is not None:
-                scenario_data.set_contract_value(contract, save_key, value)
+                scenario_data.set_contract_value(
+                    self.contract.get_evaluated_value(), save_key, value
+                )
                 self.saved_results[save_key] = value
 
     def _execute(self):
@@ -355,19 +352,18 @@ class ContractQueryStep(Step):
         Execute a query and optionally save the result
         """
         endpoint = self.endpoint.get_evaluated_value()
-        contract = self.contract.get_evaluated_value()
-        LOGGER.info(f"Query on {endpoint} for {contract}")
+        LOGGER.info(f"Query {endpoint} on {self.contract.get_evaluation_string()}")
         scenario_data = ScenarioData.get()
         arguments = self.arguments.get_evaluated_value()
+        contract_address = self.contract.get_evaluated_value()
         try:
-            contract_abi = scenario_data.get_contract_abi(contract)
+            contract_abi = scenario_data.get_contract_abi(contract_address)
         except errors.UnknownAbiContract:
             contract_abi = None
 
         sc_controller = SmartContractController(
             Config.get_config().get("CHAIN"), MyProxyNetworkProvider(), abi=contract_abi
         )
-        contract_address = utils.get_address_instance(contract)
         returned_data_parts = sc_controller.query(
             contract=contract_address,
             function=endpoint,
@@ -464,7 +460,7 @@ class FileFuzzerStep(Step):
     are taken from a file
     """
 
-    contract: SmartStr
+    contract: SmartAddress
     file_path: SmartPath
 
     def load_executions_parameters(self) -> list[FuzzExecutionParameters]:
@@ -516,10 +512,10 @@ class FileFuzzerStep(Step):
         Execute fuzz testing on the given contract using the parameters
         from the provided file
         """
-        contract = self.contract.get_evaluated_value()
+        contract_address = self.contract.get_evaluated_value()
         scenario_data = ScenarioData.get()
         try:
-            contract_abi = scenario_data.get_contract_raw_abi(contract)
+            contract_abi = scenario_data.get_contract_raw_abi(contract_address)
         except errors.UnknownAbiContract as err:
             raise errors.WrongFuzzTestFile(
                 "ABI file must be provided for fuzz testing"
@@ -572,10 +568,10 @@ class FileFuzzerStep(Step):
         :param execution_parameters: parameters of the test to execute
         :type execution_parameters: FuzzExecutionParameters
         """
-        contract = self.contract.get_evaluated_value()
+        contract_address = self.contract.get_evaluated_value()
         save_key = "fuzz_test_query_results"
         query_step = ContractQueryStep(
-            contract,
+            contract_address,
             execution_parameters.endpoint.get_evaluated_value(),
             arguments=execution_parameters.arguments.get_evaluated_value(),
             results_save_keys=save_key,
@@ -585,7 +581,7 @@ class FileFuzzerStep(Step):
             return
 
         scenario_data = ScenarioData.get()
-        results = scenario_data.get_contract_value(contract, save_key)
+        results = scenario_data.get_contract_value(contract_address, save_key)
         if results != execution_parameters.expected_outputs.get_evaluated_value():
             raise errors.FuzzTestFailed(
                 f"Outputs are different from expected: found {results} but wanted "
@@ -599,10 +595,10 @@ class FileFuzzerStep(Step):
         :param execution_parameters: parameters of the test to execute
         :type execution_parameters: FuzzExecutionParameters
         """
-        contract = self.contract.get_evaluated_value()
+        contract_address = self.contract.get_evaluated_value()
         save_key = "fuzz_test_call_results"
         call_step = ContractCallStep(
-            contract=contract,
+            contract=contract_address,
             endpoint=execution_parameters.endpoint.get_evaluated_value(),
             gas_limit=execution_parameters.gas_limit.get_evaluated_value(),
             arguments=execution_parameters.arguments.get_evaluated_value(),
@@ -616,7 +612,7 @@ class FileFuzzerStep(Step):
             return
 
         scenario_data = ScenarioData.get()
-        results = scenario_data.get_contract_value(contract, save_key)
+        results = scenario_data.get_contract_value(contract_address, save_key)
         if results != execution_parameters.expected_outputs.get_evaluated_value():
             raise errors.FuzzTestFailed(
                 f"Outputs are different from expected: found {results} but wanted "

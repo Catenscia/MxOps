@@ -8,6 +8,7 @@ import pytest
 from mxops import errors
 from mxops.data.execution_data import (
     _ScenarioData,
+    ExternalContractData,
     InternalContractData,
     SavedValuesData,
     TokenData,
@@ -37,9 +38,9 @@ def test_scenario_loading(scenario_path: Path):
     assert scenario.network == NetworkEnum.DEV
     assert scenario.name == "___test_mxops_tutorial_first_scene"
     assert scenario.contracts_data == {
-        "egld-ping-pong": InternalContractData(
+        "erd1qqqqqqqqqqqqqpgq0048vv3uk6l6cdreezpallvduy4qnfv2plcq74464k": InternalContractData(  # noqa
             contract_id="egld-ping-pong",
-            address="erd1qqqqqqqqqqqqqpgq0048vv3uk6l6cdreezpallvduy4qnfv2plcq74464k",
+            bech32="erd1qqqqqqqqqqqqqpgq0048vv3uk6l6cdreezpallvduy4qnfv2plcq74464k",
             saved_values={},
             wasm_hash=(
                 "5ce403a4f73701481cc15b2378cdc5bce3e35fa215815aa5eb9104d9f7ab2451"
@@ -48,6 +49,29 @@ def test_scenario_loading(scenario_path: Path):
             last_upgrade_time=1677134892,
         )
     }
+
+
+def test_contract_add(scenario_data: _ScenarioData):
+    # Given
+    contract_bech32 = "erd1qqqqqqqqqqqqqpgqtccau7hl9djzdtwfe4354u0egp0x2c3futhse96haz"
+    contract_id = "extr-contract"
+    contract_data = ExternalContractData(
+        contract_id,
+        contract_bech32,
+        saved_values={},
+    )
+    # When
+    scenario_data.add_contract_data(contract_data)
+    address_fetched = scenario_data.get_contract_address(contract_id)
+    contract_id_fetched = scenario_data.get_contract_value(
+        contract_bech32, "contract_id"
+    )
+
+    # Then
+    assert address_fetched.to_bech32() == contract_bech32
+    assert contract_id_fetched == contract_id
+    assert contract_bech32 in scenario_data.contracts_data
+    assert contract_id not in scenario_data.contracts_data
 
 
 def test_key_path_fetch():
@@ -256,4 +280,7 @@ def test_migration_v0_1_0_to_v1_0_0():
     expected_abi = json.loads(
         Path("tests/data/migrations/reconstructed.abi.json").read_text()
     )
-    assert abis["data-store"] == expected_abi
+    assert (
+        abis["erd1qqqqqqqqqqqqqpgq5d4kvm8mdznek3e3ty6npluuneuhxsxajmwqvya7p8"]
+        == expected_abi
+    )

@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from multiversx_sdk import TransactionOnNetwork
+from multiversx_sdk import Address, TransactionOnNetwork
 
 from mxops.enums import NetworkEnum
 from mxops.utils.msc import get_tx_link
@@ -117,8 +117,12 @@ class UnknownContract(Exception):
     To be raised when a specified contract is not found in a scenario
     """
 
-    def __init__(self, scenario_name: str, contract_id: str) -> None:
-        message = f"Contract {contract_id} is unkown in scenario {scenario_name}"
+    def __init__(self, scenario_name: str, contract_designation: str | Address) -> None:
+        if isinstance(contract_designation, Address):
+            contract_designation = contract_designation.to_bech32()
+        message = (
+            f"Contract {contract_designation} is unkown in scenario {scenario_name}"
+        )
         super().__init__(message)
 
 
@@ -127,8 +131,11 @@ class UnknownAbiContract(Exception):
     To be raised when the abi of a specified contract is not found in a scenario
     """
 
-    def __init__(self, scenario_name: str, contract_id: str) -> None:
-        message = f"Contract {contract_id} is unkown in scenario {scenario_name}"
+    def __init__(self, scenario_name: str, contract_address: Address) -> None:
+        message = (
+            f"No ABI found for contract {contract_address.to_bech32()} is "
+            f"unkown in scenario {scenario_name}"
+        )
         super().__init__(message)
 
 
@@ -149,6 +156,19 @@ class ContractIdAlreadyExists(Exception):
 
     def __init__(self, contract_id: str) -> None:
         message = f"Contract id {contract_id} already exists"
+        super().__init__(message)
+
+
+class ContractAlreadyHasId(Exception):
+    """
+    To be raised when there is a conflict with contract bech32
+    """
+
+    def __init__(self, contract_bech32: str, existing_id: str, new_id: str) -> None:
+        message = (
+            f"Contract {contract_bech32} already had the id {existing_id}"
+            f" when trying to set the id {new_id}"
+        )
         super().__init__(message)
 
 

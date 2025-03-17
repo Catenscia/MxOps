@@ -131,8 +131,8 @@ class NonFungibleIssueStep(TransactionStep):
         """
         LOGGER.info(
             "Issuing non fungible token named "
-            f"{self.token_name.get_evaluation_string()}"
-            f"for {self.sender.get_evaluation_string()})"
+            f"{self.token_name.get_evaluation_string()} "
+            f"for {self.sender.get_evaluation_string()}"
         )
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
         tx_factory = TokenManagementTransactionsFactory(factory_config)

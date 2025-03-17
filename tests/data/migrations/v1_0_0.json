@@ -48,7 +48,7 @@
     "creation_time": 1734282389,
     "last_update_time": 1734282390,
     "contracts_data": {
-        "data-store": {
+        "erd1qqqqqqqqqqqqqpgq5d4kvm8mdznek3e3ty6npluuneuhxsxajmwqvya7p8": {
             "saved_values": {
                 "init_params": [
                     {
@@ -162,7 +162,7 @@
                 ]
             },
             "contract_id": "data-store",
-            "address": "erd1qqqqqqqqqqqqqpgq5d4kvm8mdznek3e3ty6npluuneuhxsxajmwqvya7p8",
+            "bech32": "erd1qqqqqqqqqqqqqpgq5d4kvm8mdznek3e3ty6npluuneuhxsxajmwqvya7p8",
             "wasm_hash": "45b70609707c56d046e6a5ec0990d9d7feb54000503fcc171f7153aa399dc224",
             "deploy_time": 1734283186,
             "last_upgrade_time": 1734283192,

@@ -186,7 +186,7 @@ def retrieve_value_from_any(arg: Any) -> Any:
     return arg
 
 
-def get_address_instance(address_str: str) -> Address:
+def get_address_instance(raw_address: str) -> Address:
     """
     From a string return an Address instance.
     The input will be parsed to dynamically evaluate values from the environment,
@@ -197,26 +197,28 @@ def get_address_instance(address_str: str) -> Address:
     :return: address instance corresponding to the input
     :rtype: Address
     """
+    if isinstance(raw_address, Address):
+        return raw_address
     # try to see if the string is a valid address
     try:
-        return Address.from_bech32(address_str)
+        return Address.from_bech32(raw_address)
     except BadAddressError:
         pass
 
     # else try to see if it is a valid contract id or account name
     try:
-        evaluated_address_str = retrieve_value_from_string(f"%{address_str}.address")
+        evaluated_address_str = retrieve_value_from_string(f"%{raw_address}.address")
         return Address.from_bech32(evaluated_address_str)
     except (BadAddressError, errors.WrongDataKeyPath):
         pass
 
     # finally try to see if it designates a defined account
     try:
-        account = AccountsManager.get_account(address_str)
+        account = AccountsManager.get_account(raw_address)
         return account.address
     except errors.UnknownAccount:
         pass
-    raise errors.ParsingError(address_str, "address_str address")
+    raise errors.ParsingError(raw_address, "address_str address")
 
 
 def force_str(value: Any) -> str:
