@@ -95,12 +95,14 @@ def scenario_data(network):  # must be executed after the network fixture
 @pytest.fixture(scope="session", autouse=True)
 def accounts_manager(scenario_data):  # scenario data must be initialized
     accounts_manager = AccountsManager()
-    accounts_manager.load_register_account(
-        "test_user_A", pem_path=Path("./tests/data/test_user_A.pem")
+    accounts_manager.load_register_pem_account(
+        pem_path=Path("./tests/data/test_user_A.pem"),
+        account_name="test_user_A",
     )
-    accounts_manager.load_register_account(
-        "test_user_B", pem_path=Path("./tests/data/test_user_B.pem")
+    accounts_manager.load_register_pem_account(
+        pem_path=Path("./tests/data/test_user_B.pem"),
+        account_name="test_user_B",
     )
     accounts_manager.load_register_pem_from_folder(
-        "wallets_folder", folder_path=Path("./tests/data/wallets_folder")
+        name="wallets_folder", folder_path=Path("./tests/data/wallets_folder")
     )
