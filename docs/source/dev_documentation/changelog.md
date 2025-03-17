@@ -42,6 +42,7 @@
 - upgraded all dependencies
 - use uv instead of conda for development and env tests
 - 🚨 BREAKING CHANGE 🚨 new class workflow for checks, smart-values and steps
+- 🚨 BREAKING CHANGE 🚨 Accounts are now saved by bech32, the name to bech32 translation is done using the storage
 
 
 ## 2.2.0 - 2024-04-16
