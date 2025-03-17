@@ -204,7 +204,7 @@ class ContractData(SavedValuesData):
     """
 
     contract_id: str
-    address: str
+    bech32: str
 
     def set_value(self, value_key: str, value: Any):
         """
@@ -215,10 +215,25 @@ class ContractData(SavedValuesData):
         :param value: value to save
         :type value: Any
         """
-        if value_key == "address":
-            setattr(self, value_key, value)
+        if value_key in ("address", "bech32"):
+            setattr(self, "bech32", value)
         else:
             super().set_value(value_key, value)
+
+    def get_value(self, value_key: str) -> Any:
+        """
+        Fetch a value from the attribute of the class or from the saved value
+
+        :param value_key: key for the value
+        :type value_key: str
+        :return: value saved under the attribute or the value key provided
+        :rtype: Any
+        """
+        if value_key in ("address", "bech32"):
+            return self.bech32
+        if value_key == "contract_id":
+            return self.contract_id
+        return super().get_value(value_key)
 
     def to_dict(self) -> dict:
         """
