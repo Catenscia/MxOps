@@ -27,7 +27,7 @@ class OnChainTokenTransfer:
 class ResultsSaveKeys:
     """
     Class describing how the results of a query or a call should be
-    saved. Namely, under which key(s) save which reuslt(s)
+    saved. Namely, under which key(s) save which result(s)
     """
 
     master_key: str | None

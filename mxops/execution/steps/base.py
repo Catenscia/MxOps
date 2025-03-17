@@ -14,8 +14,9 @@ from mxops.execution.account import AccountsManager
 from mxops.execution.checks.factory import SmartChecks
 from mxops.execution.checks import SuccessCheck
 from mxops.execution.network import send, send_and_wait_for_result
-from mxops.execution.smart_values import SmartStr, SmartValue
+from mxops.execution.smart_values import SmartValue
 from mxops.execution.smart_values.factory import extract_first_smart_value_class
+from mxops.execution.smart_values.mx_sdk import SmartAddress
 from mxops.utils.logger import get_logger
 from mxops.utils.msc import get_tx_link
 
@@ -85,7 +86,7 @@ class TransactionStep(Step):
     Represents a step that produces and send a transaction
     """
 
-    sender: SmartStr
+    sender: SmartAddress
     checks: SmartChecks = field(default_factory=lambda: SmartChecks([SuccessCheck()]))
 
     @abstractmethod
@@ -106,8 +107,7 @@ class TransactionStep(Step):
         :param tx: tra
         :type tx: Transaction
         """
-        sender = self.sender.get_evaluated_value()
-        sender_account = AccountsManager.get_account(sender)
+        sender_account = AccountsManager.get_account(tx.sender)
         tx.nonce = sender_account.get_nonce_then_increment()
         tx.signature = sender_account.sign_transaction(tx)
 

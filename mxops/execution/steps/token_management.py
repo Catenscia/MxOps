@@ -20,7 +20,6 @@ from multiversx_sdk import (
 from mxops.config.config import Config
 from mxops.data.execution_data import ScenarioData, TokenData
 from mxops.enums import TokenTypeEnum
-from mxops.execution import utils
 from mxops.execution.smart_values.mx_sdk import SmartAddress
 from mxops.execution.smart_values.native import (
     SmartBool,
@@ -65,9 +64,8 @@ class FungibleIssueStep(TransactionStep):
         )
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
         tx_factory = TokenManagementTransactionsFactory(factory_config)
-        sender_adress = utils.get_address_instance(self.sender.get_evaluated_value())
         return tx_factory.create_transaction_for_issuing_fungible(
-            sender=sender_adress,
+            sender=self.sender.get_evaluated_value(),
             token_name=self.token_name.get_evaluated_value(),
             token_ticker=self.token_ticker.get_evaluated_value(),
             initial_supply=self.initial_supply.get_evaluated_value(),
@@ -138,9 +136,8 @@ class NonFungibleIssueStep(TransactionStep):
         )
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
         tx_factory = TokenManagementTransactionsFactory(factory_config)
-        sender_adress = utils.get_address_instance(self.sender.get_evaluated_value())
         return tx_factory.create_transaction_for_issuing_non_fungible(
-            sender=sender_adress,
+            sender=self.sender.get_evaluated_value(),
             token_name=self.token_name.get_evaluated_value(),
             token_ticker=self.token_ticker.get_evaluated_value(),
             can_freeze=self.can_freeze.get_evaluated_value(),
@@ -214,9 +211,8 @@ class SemiFungibleIssueStep(TransactionStep):
         )
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
         tx_factory = TokenManagementTransactionsFactory(factory_config)
-        sender_adress = utils.get_address_instance(self.sender.get_evaluated_value())
         return tx_factory.create_transaction_for_issuing_semi_fungible(
-            sender=sender_adress,
+            sender=self.sender.get_evaluated_value(),
             token_name=self.token_name.get_evaluated_value(),
             token_ticker=self.token_ticker.get_evaluated_value(),
             can_freeze=self.can_freeze.get_evaluated_value(),
@@ -290,9 +286,8 @@ class MetaIssueStep(TransactionStep):
         )
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
         tx_factory = TokenManagementTransactionsFactory(factory_config)
-        sender_address = utils.get_address_instance(self.sender.get_evaluated_value())
         return tx_factory.create_transaction_for_registering_meta_esdt(
-            sender=sender_address,
+            sender=self.sender.get_evaluated_value(),
             token_name=self.token_name.get_evaluated_value(),
             token_ticker=self.token_ticker.get_evaluated_value(),
             num_decimals=self.num_decimals.get_evaluated_value(),
@@ -402,17 +397,16 @@ class ManageFungibleTokenRolesStep(ManageTokenRolesStep):
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
         tx_factory = TokenManagementTransactionsFactory(factory_config)
         role_kwargs = self.construct_role_kwargs(include_missing=True)
-        sender_address = utils.get_address_instance(self.sender.get_evaluated_value())
         if self.is_set:
             return tx_factory.create_transaction_for_setting_special_role_on_fungible_token(  # noqa: E501 pylint: disable=C0301
-                sender=sender_address,
+                sender=self.sender.get_evaluated_value(),
                 user=self.target.get_evaluated_value(),
                 token_identifier=self.token_identifier.get_evaluated_value(),
                 **role_kwargs,
             )
         return (
             tx_factory.create_transaction_for_unsetting_special_role_on_fungible_token(  # noqa: E501 pylint: disable=C0301
-                sender=sender_address,
+                sender=self.sender.get_evaluated_value(),
                 user=self.target.get_evaluated_value(),
                 token_identifier=self.token_identifier.get_evaluated_value(),
                 **role_kwargs,
@@ -456,16 +450,15 @@ class ManageNonFungibleTokenRolesStep(ManageTokenRolesStep):
         tx_factory = TokenManagementTransactionsFactory(factory_config)
 
         role_kwargs = self.construct_role_kwargs()
-        sender_address = utils.get_address_instance(self.sender.get_evaluated_value())
         if self.is_set:
             return tx_factory.create_transaction_for_setting_special_role_on_non_fungible_token(  # noqa: E501 pylint: disable=C0301
-                sender=sender_address,
+                sender=self.sender.get_evaluated_value(),
                 user=self.target.get_evaluated_value(),
                 token_identifier=self.token_identifier.get_evaluated_value(),
                 **role_kwargs,
             )
         return tx_factory.create_transaction_for_unsetting_special_role_on_non_fungible_token(  # noqa: E501 pylint: disable=C0301
-            sender=sender_address,
+            sender=self.sender.get_evaluated_value(),
             user=self.target.get_evaluated_value(),
             token_identifier=self.token_identifier.get_evaluated_value(),
             **role_kwargs,
@@ -507,16 +500,15 @@ class ManageSemiFungibleTokenRolesStep(ManageTokenRolesStep):
         tx_factory = TokenManagementTransactionsFactory(factory_config)
 
         role_kwargs = self.construct_role_kwargs()
-        sender_address = utils.get_address_instance(self.sender.get_evaluated_value())
         if self.is_set:
             return tx_factory.create_transaction_for_setting_special_role_on_semi_fungible_token(  # noqa: E501 pylint: disable=C0301
-                sender=sender_address,
+                sender=self.sender.get_evaluated_value(),
                 user=self.target.get_evaluated_value(),
                 token_identifier=self.token_identifier.get_evaluated_value(),
                 **role_kwargs,
             )
         return tx_factory.create_transaction_for_unsetting_special_role_on_semi_fungible_token(  # noqa: E501 pylint: disable=C0301
-            sender=sender_address,
+            sender=self.sender.get_evaluated_value(),
             user=self.target.get_evaluated_value(),
             token_identifier=self.token_identifier.get_evaluated_value(),
             **role_kwargs,
@@ -554,9 +546,8 @@ class FungibleMintStep(TransactionStep):
         )
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
         tx_factory = TokenManagementTransactionsFactory(factory_config)
-        sender_address = utils.get_address_instance(self.sender.get_evaluated_value())
         return tx_factory.create_transaction_for_local_minting(
-            sender=sender_address,
+            sender=self.sender.get_evaluated_value(),
             token_identifier=self.token_identifier.get_evaluated_value(),
             supply_to_mint=self.amount.get_evaluated_value(),
         )
@@ -591,9 +582,8 @@ class NonFungibleMintStep(TransactionStep):
 
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
         tx_factory = TokenManagementTransactionsFactory(factory_config)
-        sender_address = utils.get_address_instance(self.sender.get_evaluated_value())
         return tx_factory.create_transaction_for_creating_nft(
-            sender=sender_address,
+            sender=self.sender.get_evaluated_value(),
             token_identifier=self.token_identifier.get_evaluated_value(),
             initial_quantity=self.amount.get_evaluated_value(),
             name=self.name.get_evaluated_value(),
