@@ -25,6 +25,11 @@ class OnChainTokenTransfer:
 
 @dataclass
 class ResultsSaveKeys:
+    """
+    Class describing how the results of a query or a call should be
+    saved. Namely, under which key(s) save which reuslt(s)
+    """
+
     master_key: str | None
     sub_keys: list[str | None] | None
 

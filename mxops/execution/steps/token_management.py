@@ -404,14 +404,14 @@ class ManageFungibleTokenRolesStep(ManageTokenRolesStep):
         role_kwargs = self.construct_role_kwargs(include_missing=True)
         sender_address = utils.get_address_instance(self.sender.get_evaluated_value())
         if self.is_set:
-            return tx_factory.create_transaction_for_setting_special_role_on_fungible_token(  # noqa: E501
+            return tx_factory.create_transaction_for_setting_special_role_on_fungible_token(  # noqa: E501 pylint: disable=C0301
                 sender=sender_address,
                 user=self.target.get_evaluated_value(),
                 token_identifier=self.token_identifier.get_evaluated_value(),
                 **role_kwargs,
             )
         return (
-            tx_factory.create_transaction_for_unsetting_special_role_on_fungible_token(  # noqa: E501
+            tx_factory.create_transaction_for_unsetting_special_role_on_fungible_token(  # noqa: E501 pylint: disable=C0301
                 sender=sender_address,
                 user=self.target.get_evaluated_value(),
                 token_identifier=self.token_identifier.get_evaluated_value(),
@@ -458,13 +458,13 @@ class ManageNonFungibleTokenRolesStep(ManageTokenRolesStep):
         role_kwargs = self.construct_role_kwargs()
         sender_address = utils.get_address_instance(self.sender.get_evaluated_value())
         if self.is_set:
-            return tx_factory.create_transaction_for_setting_special_role_on_non_fungible_token(  # noqa: E501
+            return tx_factory.create_transaction_for_setting_special_role_on_non_fungible_token(  # noqa: E501 pylint: disable=C0301
                 sender=sender_address,
                 user=self.target.get_evaluated_value(),
                 token_identifier=self.token_identifier.get_evaluated_value(),
                 **role_kwargs,
             )
-        return tx_factory.create_transaction_for_unsetting_special_role_on_non_fungible_token(  # noqa: E501
+        return tx_factory.create_transaction_for_unsetting_special_role_on_non_fungible_token(  # noqa: E501 pylint: disable=C0301
             sender=sender_address,
             user=self.target.get_evaluated_value(),
             token_identifier=self.token_identifier.get_evaluated_value(),
@@ -509,13 +509,13 @@ class ManageSemiFungibleTokenRolesStep(ManageTokenRolesStep):
         role_kwargs = self.construct_role_kwargs()
         sender_address = utils.get_address_instance(self.sender.get_evaluated_value())
         if self.is_set:
-            return tx_factory.create_transaction_for_setting_special_role_on_semi_fungible_token(  # noqa: E501
+            return tx_factory.create_transaction_for_setting_special_role_on_semi_fungible_token(  # noqa: E501 pylint: disable=C0301
                 sender=sender_address,
                 user=self.target.get_evaluated_value(),
                 token_identifier=self.token_identifier.get_evaluated_value(),
                 **role_kwargs,
             )
-        return tx_factory.create_transaction_for_unsetting_special_role_on_semi_fungible_token(  # noqa: E501
+        return tx_factory.create_transaction_for_unsetting_special_role_on_semi_fungible_token(  # noqa: E501 pylint: disable=C0301
             sender=sender_address,
             user=self.target.get_evaluated_value(),
             token_identifier=self.token_identifier.get_evaluated_value(),
