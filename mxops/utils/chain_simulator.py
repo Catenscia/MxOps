@@ -1,3 +1,9 @@
+"""
+author: Etienne Wallet
+
+This module contains utils functions to interact with the chain-simulator
+"""
+
 from argparse import _SubParsersAction, ArgumentParser, Namespace
 from pathlib import Path
 import subprocess  # nosec
@@ -68,7 +74,7 @@ def fetch_and_save_docker_compose():
         source_content = response.text
     else:
         LOGGER.info(f"Copying the docker compose file from {source_path}")
-        source_content = Path(source_path).read_text()
+        source_content = Path(source_path).read_text(encoding="utf-8")
     file_path = get_docker_compose_path()
     file_path.write_text(source_content)
 

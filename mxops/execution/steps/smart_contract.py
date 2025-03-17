@@ -84,13 +84,10 @@ class ContractDeployStep(TransactionStep):
         sc_factory = SmartContractTransactionsFactory(factory_config, abi=abi)
         bytecode = self.wasm_path.get_evaluated_value().read_bytes()
 
-        arguments = self.arguments.get_evaluated_value()
-        sender = utils.get_address_instance(self.sender.get_evaluated_value())
-
         return sc_factory.create_transaction_for_deploy(
-            sender=sender,
+            sender=self.sender.get_evaluated_value(),
             bytecode=bytecode,
-            arguments=arguments,
+            arguments=self.arguments.get_evaluated_value(),
             gas_limit=self.gas_limit.get_evaluated_value(),
             is_upgradeable=self.upgradeable.get_evaluated_value(),
             is_readable=self.readable.get_evaluated_value(),
@@ -182,10 +179,9 @@ class ContractUpgradeStep(TransactionStep):
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
         sc_factory = SmartContractTransactionsFactory(factory_config, abi=abi)
         bytecode = self.wasm_path.get_evaluated_value().read_bytes()
-        sender = utils.get_address_instance(self.sender.get_evaluated_value())
 
         return sc_factory.create_transaction_for_upgrade(
-            sender=sender,
+            sender=self.sender.get_evaluated_value(),
             contract=contract_address,
             bytecode=bytecode,
             arguments=arguments,
@@ -260,11 +256,10 @@ class ContractCallStep(TransactionStep):
 
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
         sc_factory = SmartContractTransactionsFactory(factory_config, abi=contract_abi)
-        sender_address = utils.get_address_instance(self.sender.get_evaluated_value())
         contract_address = utils.get_address_instance(contract)
         gas_limit = self.gas_limit.get_evaluated_value()
         return sc_factory.create_transaction_for_execute(
-            sender=sender_address,
+            sender=self.sender.get_evaluated_value(),
             contract=contract_address,
             function=endpoint,
             arguments=arguments,

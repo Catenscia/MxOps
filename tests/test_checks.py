@@ -19,8 +19,8 @@ from mxops.execution.smart_values import SmartOnChainTokenTransfer
 def test_data_load_equality():
     # Given
     AccountsManager.register_account(
-        "owner",
-        Account.new_from_pem(Path("./tests/data/wallets_folder/alice.pem")),
+        account=Account.new_from_pem(Path("./tests/data/wallets_folder/alice.pem")),
+        account_name="owner",
     )
     scenario = ScenarioData.get()
     contract_data = InternalContractData(

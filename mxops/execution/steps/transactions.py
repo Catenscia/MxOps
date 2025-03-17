@@ -13,7 +13,6 @@ from multiversx_sdk import (
 )
 
 from mxops.config.config import Config
-from mxops.execution import utils
 from mxops.execution.smart_values import SmartAddress, SmartInt, SmartTokenTransfers
 from mxops.execution.steps.base import TransactionStep
 from mxops.utils.logger import get_logger
@@ -41,8 +40,6 @@ class TransferStep(TransactionStep):
         :return: transaction built
         :rtype: Transaction
         """
-        sender = utils.get_address_instance(self.sender.get_evaluated_value())
-        receiver = self.receiver.get_evaluated_value()
         value = self.value.get_evaluated_value()
         factory_config = TransactionsFactoryConfig(Config.get_config().get("CHAIN"))
         tr_factory = TransferTransactionsFactory(factory_config)
@@ -59,8 +56,8 @@ class TransferStep(TransactionStep):
             f"to {self.receiver.get_evaluation_string()}"
         )
         return tr_factory.create_transaction_for_transfer(
-            sender=sender,
-            receiver=receiver,
+            sender=self.sender.get_evaluated_value(),
+            receiver=self.receiver.get_evaluated_value(),
             native_amount=value,
             token_transfers=self.transfers.get_evaluated_value(),
         )

@@ -203,7 +203,7 @@ def get_address_instance(address_str: str) -> Address:
     except BadAddressError:
         pass
 
-    # else try to see if it is a valid contract id
+    # else try to see if it is a valid contract id or account name
     try:
         evaluated_address_str = retrieve_value_from_string(f"%{address_str}.address")
         return Address.from_bech32(evaluated_address_str)

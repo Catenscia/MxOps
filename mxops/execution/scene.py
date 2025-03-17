@@ -120,16 +120,22 @@ def execute_scene(scene_path: Path):
         )
 
     # load accounts
-    loaded_accounts_names = []
+    loaded_accounts_addresses = []
     for account in scene.accounts:
         if "folder_path" in account:
-            loaded_accounts_names.extend(
+            loaded_accounts_addresses.extend(
                 AccountsManager.load_register_pem_from_folder(**account)
             )
-        else:
-            AccountsManager.load_register_account(**account)
-            loaded_accounts_names.append(account["account_name"])
-    for account_name in loaded_accounts_names:
+        elif "ledger" in account:
+            loaded_accounts_addresses.append(
+                AccountsManager.load_register_ledger_account(**account)
+            )
+        elif "pem" in account:
+            loaded_accounts_addresses.append(
+                AccountsManager.load_register_pem_account(**account)
+            )
+
+    for account_name in loaded_accounts_addresses:
         AccountsManager.sync_account(account_name)
 
     # load external contracts addresses

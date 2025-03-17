@@ -1,3 +1,8 @@
+"""
+This module contains the functions to create SmartValues
+It is separated to avoid having circular import
+"""
+
 import importlib
 from types import UnionType
 from typing import Type, Union, get_args, get_origin
@@ -61,8 +66,7 @@ def parse_field_type_from_str(field_type_str: str) -> Type | UnionType | None:
         return Union[tuple(actual_types)]
     elif actual_types:
         return actual_types[0]
-    else:
-        return None
+    return None
 
 
 def extract_first_smart_value_class(
@@ -88,6 +92,6 @@ def extract_first_smart_value_class(
             if issubclass(t, SmartValue):
                 return t
         return None
-    elif isinstance(field_type, type) and issubclass(field_type, SmartValue):
+    if isinstance(field_type, type) and issubclass(field_type, SmartValue):
         return field_type
     return None
