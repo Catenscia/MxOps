@@ -10,6 +10,10 @@ from dataclasses import dataclass, field
 
 from multiversx_sdk import Transaction, TransactionOnNetwork
 
+from mxops import errors
+from mxops.common.providers import MyProxyNetworkProvider
+from mxops.config.config import Config
+from mxops.enums import NetworkEnum
 from mxops.execution.account import AccountsManager
 from mxops.execution.checks.factory import SmartChecks
 from mxops.execution.checks import SuccessCheck
@@ -102,14 +106,30 @@ class TransactionStep(Step):
 
     def set_nonce_and_sign_transaction(self, tx: Transaction):
         """
-        Sign the transaction created by this step and update the account nonce
+        Set the nonce in the transaction, sign it and increment the
+        sender account nonce.
+        If the account is unknown and the network is the chain simulator,
+        the signature and increment step will be skipped to allow to send transactions
+        with any account within the chain simulator
 
-        :param tx: tra
+        :param tx: transaction to sign
         :type tx: Transaction
         """
-        sender_account = AccountsManager.get_account(tx.sender)
-        tx.nonce = sender_account.get_nonce_then_increment()
-        tx.signature = sender_account.sign_transaction(tx)
+        network = Config.get_config().get_network()
+        try:
+            sender_account = AccountsManager.get_account(tx.sender)
+        except errors.UnknownAccount as err:
+            if network != NetworkEnum.CHAIN_SIMULATOR:
+                raise err
+            sender_account = None
+        if sender_account is None:
+            account_on_network = MyProxyNetworkProvider().get_account(tx.sender)
+            tx.nonce = account_on_network.nonce
+            tx.signature = b"aaaaa"
+        else:
+            sender_account = AccountsManager.get_account(tx.sender)
+            tx.nonce = sender_account.get_nonce_then_increment()
+            tx.signature = sender_account.sign_transaction(tx)
 
     def _post_transaction_execution(self, on_chain_tx: TransactionOnNetwork | None):
         """

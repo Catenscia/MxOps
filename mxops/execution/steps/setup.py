@@ -8,7 +8,6 @@ from dataclasses import dataclass, field
 import os
 from typing import ClassVar
 
-from multiversx_sdk import Address
 import requests
 
 from mxops import errors
@@ -17,14 +16,11 @@ from mxops.config.config import Config
 from mxops.data.execution_data import ScenarioData
 from mxops.enums import NetworkEnum
 from mxops.execution import utils
-from mxops.execution.checks.transactions import SuccessCheck
-from mxops.execution.network import send_and_wait_for_result
 from mxops.execution.smart_values import SmartInt, SmartPath, SmartValue
 from mxops.execution.smart_values.mx_sdk import SmartAddresses
 from mxops.execution.steps.base import Step
 from mxops.execution.steps.transactions import TransferStep
 from mxops.utils.logger import get_logger
-from mxops.utils.msc import get_tx_link
 from mxops.utils.wallets import generate_pem_wallet
 
 
@@ -178,8 +174,8 @@ class ChainSimulatorFaucetStep(Step):
 
     def _execute(self):
         """
-        Seach for the r3d4 token id of EGLD in the current network and
-        ask for EGLD from the faucet
+        Retrieve the initial wallets of the chain simulator and
+        make them send some funds
         """
         scenario_data = ScenarioData.get()
         if scenario_data.network not in self.ALLOWED_NETWORKS:
@@ -189,18 +185,8 @@ class ChainSimulatorFaucetStep(Step):
         proxy = MyProxyNetworkProvider()
         initial_wallet_data = proxy.get_initial_wallets()
         sender = initial_wallet_data["balanceWallets"]["0"]["address"]["bech32"]
-        sender_nonce = proxy.get_account(Address.new_from_bech32(sender)).nonce
         for target in self.targets.get_evaluated_value():
-            egld_step = TransferStep(
-                sender=sender, receiver=target.to_bech32(), value=self.amount
+            egld_transfer_step = TransferStep(
+                sender=sender, receiver=target, value=self.amount.get_evaluated_value()
             )
-            egld_step.evaluate_smart_values()
-            tx = egld_step.build_unsigned_transaction()
-            tx.signature = b"aa"
-            tx.nonce = sender_nonce
-            on_chain_tx = send_and_wait_for_result(tx)
-            SuccessCheck().raise_on_failure(on_chain_tx)
-            LOGGER.info(
-                f"Transaction successful: {get_tx_link(on_chain_tx.hash.hex())}"
-            )
-            sender_nonce += 1
+            egld_transfer_step.execute()
