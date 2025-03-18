@@ -25,6 +25,7 @@
 - chain-simulator can be started and stopped from MxOps
 - results for smart-contract calls can now be saved too
 - skip simulator transaction signature when the sender account is unknown
+- `AccountCloneStep`
 
 
 ### Changed
