@@ -58,6 +58,7 @@ dev = [
     "bump2version>=1.0.1",
     "coverage>=7.6.10",
     "flake8>=7.1.1",
+    "ipykernel>=6.29.5",
     "myst-parser>=4.0.0",
     "pep8>=1.7.1",
     "pylint>=3.3.3",
