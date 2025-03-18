@@ -802,6 +802,26 @@ targets:
   - erd1y3296u7m2v5653pddey3p7l5zacqmsgqc7vsu3w74p9jm2qp3tqqz950yl  # or direct bech32
 ```
 
+(account_clone_target)=
+### Account clone step
+
+Exclusive to the chain simulator.
+This `Step` allows you to clone an account from another network (ex mainnet) and to import it to the chain simulator.
+You can choose to clone, the code, the balance, the storage and the tokens of an account.
+
+When cloning tokens, MxOps makes sure that the tokens are well defined in the network and you will be able to use them as if they were natively generated on the chain-simulator in the first place.
+
+```yaml
+type: AccountClone
+address: my_mainnet_contract
+source_network: mainnet
+clone_balance: true  # optional, default to true
+clone_code: true  # optional, default to true
+clone_storage: true  # optional, default to true
+clone_esdts: true  # optional, default to true
+overwrite: true  # optional, default to true
+```
+
 
 (wait_target)=
 ### Wait Step
