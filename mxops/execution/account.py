@@ -137,7 +137,12 @@ class AccountsManager:
             account_bech32 = account_designation.bech32()
         else:
             scenario_data = ScenarioData.get()
-            account_bech32 = scenario_data.get_value(f"{account_designation}.address")
+            try:
+                account_bech32 = scenario_data.get_value(
+                    f"{account_designation}.address"
+                )
+            except errors.WrongDataKeyPath as err:
+                raise errors.UnknownAccount(account_designation) from err
         try:
             return cls._accounts[account_bech32]
         except KeyError as err:
