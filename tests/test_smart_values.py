@@ -6,6 +6,7 @@ import pytest
 
 from mxops import errors
 from mxops.data.execution_data import ScenarioData
+from mxops.execution.msc import OnChainTokenTransfer
 from mxops.execution.smart_values import (
     SmartAddress,
     SmartBech32,
@@ -19,6 +20,7 @@ from mxops.execution.smart_values import (
     SmartTokenTransfers,
     SmartValue,
 )
+from mxops.execution.smart_values.custom import SmartOnChainTokenTransfers
 from mxops.execution.smart_values.factory import extract_first_smart_value_class
 
 
@@ -538,6 +540,43 @@ def test_smart_token(raw_value: Any, expected_result: Token, expected_str: str):
     assert evaluated_token.identifier == expected_result.identifier
     assert evaluated_token.nonce == expected_result.nonce
     # assert smart_value.get_evaluation_string() == expected_str  # TODO wait for sdk
+
+
+def test_smart_on_hcain_transfers():
+    # Given
+    raw_value = [
+        {
+            "sender": "my_test_contract",
+            "receiver": "alice",
+            "token_identifier": "WEGLD-bd4d79",
+            "amount": 1000000000000000000,
+        }
+    ]
+
+    # When
+    smart_value = SmartOnChainTokenTransfers(raw_value)
+    smart_value.evaluate()
+
+    # Then
+    assert smart_value.is_evaluated
+    evaluated_transfers = smart_value.get_evaluated_value()
+    assert Address.new_from_bech32(
+        "erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3"
+    ) == Address.new_from_bech32(
+        "erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3"
+    )
+    assert evaluated_transfers == [
+        OnChainTokenTransfer(
+            sender=Address.new_from_bech32(
+                "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t"
+            ),
+            receiver=Address.new_from_bech32(
+                "erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3"
+            ),
+            token=Token("WEGLD-bd4d79"),
+            amount=1000000000000000000,
+        )
+    ]
 
 
 @pytest.mark.parametrize(
