@@ -75,16 +75,23 @@ class _Config:
             ).get_network_config()
         return self.__network_config
 
-    def get(self, option: str) -> str:
+    def get(self, option: str, network: NetworkEnum | None = None) -> str:
         """
         return the specified option for the current environment
+        or a specified environnement
 
         :param option: option to get from the config file
         :type option: str
+        :param network: netowrk to get the option of, default to None wich is current
+        :type network: NetworkEnum | None
         :return: value for the option as a string
         :rtype: str
         """
-        return self.__config.get(self.__network.name, option)
+        if network is None:
+            network_name = self.__network.name
+        else:
+            network_name = network.name
+        return self.__config.get(network_name, option)
 
     def get_options(self) -> list[str]:
         """
