@@ -87,8 +87,12 @@ def instanciate_steps(raw_steps: list[dict]) -> list[Step]:
     :rtype: list[Step]
     """
     steps_list = []
-    for raw_step in deepcopy(raw_steps):
-        step_type: str = raw_step.pop("type")
+    for source_raw_step in raw_steps:
+        raw_step = deepcopy(source_raw_step)
+        try:
+            step_type: str = raw_step.pop("type")
+        except KeyError as err:
+            raise errors.InvalidStepDefinition("step", raw_step) from err
         if raw_step.pop("skip", False):
             continue
         step_class_name = (

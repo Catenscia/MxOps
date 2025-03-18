@@ -451,9 +451,7 @@ class InvalidCheckDefinition(Exception):
         super().__init__()
 
     def __str__(self) -> str:
-        return (
-            f"SChecktep {self.check_name} received invalid parameters {self.parameters}"
-        )
+        return f"Check {self.check_name} received invalid parameters {self.parameters}"
 
 
 class InvalidQueryResultsDefinition(Exception):

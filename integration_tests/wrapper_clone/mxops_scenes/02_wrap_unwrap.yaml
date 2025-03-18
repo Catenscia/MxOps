@@ -1,0 +1,36 @@
+steps:
+  - type: ContractCall
+    sender: paul
+    contract: egld_wrapper_shard_1 
+    endpoint: wrapEgld
+    gas_limit: 5000000
+    value: 1000000000000000000  # 1 EGLD
+    checks:
+      - type: Success
+      - type: Transfers
+        condition: included
+        expected_transfers: 
+          - sender: egld_wrapper_shard_1
+            receiver: paul
+            token_identifier: "%{egld_wrapper_shard_1.wegld_identifier}"
+            amount: 1000000000000000000
+  
+  - type: ContractCall
+    sender: paul
+    contract: egld_wrapper_shard_1 
+    endpoint: unwrapEgld
+    gas_limit: 5000000
+    value: 0
+    esdt_transfers:
+      - token_identifier: "%{egld_wrapper_shard_1.wegld_identifier}"
+        nonce: 0
+        amount: 1000000000000000000  # 1 WEGLD
+    checks:
+      - type: Success
+      - type: Transfers
+        condition: included
+        expected_transfers: 
+          - sender: egld_wrapper_shard_1
+            receiver: paul
+            token_identifier: EGLD
+            amount: 1000000000000000000

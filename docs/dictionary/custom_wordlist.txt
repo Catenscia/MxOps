@@ -30,6 +30,7 @@ json
 https
 monotypes
 Monotypes
+natively
 os
 pipx
 png

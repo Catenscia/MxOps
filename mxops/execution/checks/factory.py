@@ -3,6 +3,7 @@ This module contains the functions to create Checks
 It is separated to avoid having circular import
 """
 
+from copy import deepcopy
 from dataclasses import dataclass
 import importlib
 from typing import Any
@@ -86,8 +87,12 @@ def instanciate_checks(raw_checks: list[dict]) -> list[Check]:
     :rtype: list[Check]
     """
     checks_list = []
-    for raw_check in raw_checks:
-        check_type = raw_check.pop("type")
+    for source_raw_check in raw_checks:
+        raw_check = deepcopy(source_raw_check)
+        try:
+            check_type: str = raw_check.pop("type")
+        except KeyError as err:
+            raise errors.InvalidCheckDefinition("check", raw_check) from err
         check_class_name = (
             check_type if check_type.endswith("Check") else check_type + "Check"
         )
