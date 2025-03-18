@@ -12,6 +12,7 @@ from mxops.execution.steps.msc import (
     SceneStep,
 )
 from mxops.execution.steps.setup import (
+    AccountCloneStep,
     ChainSimulatorFaucetStep,
     GenerateWalletsStep,
     R3D4FaucetStep,
@@ -38,6 +39,7 @@ from mxops.execution.steps.token_management import (
 )
 
 __all__ = [
+    "AccountCloneStep",
     "ChainSimulatorFaucetStep",
     "ContractCallStep",
     "ContractDeployStep",

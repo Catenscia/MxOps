@@ -4,22 +4,27 @@ author: Etienne Wallet
 This module contains Steps used to setup environnement, chain or workflow
 """
 
+from copy import deepcopy
 from dataclasses import dataclass, field
 import os
 from typing import ClassVar
 
+from multiversx_sdk import Address, ProxyNetworkProvider
 import requests
 
 from mxops import errors
+from mxops.common.constants import ESDT_MODULE_BECH32
 from mxops.common.providers import MyProxyNetworkProvider
 from mxops.config.config import Config
 from mxops.data.execution_data import ScenarioData
-from mxops.enums import NetworkEnum
+from mxops.enums import NetworkEnum, parse_network_enum
 from mxops.execution import utils
 from mxops.execution.smart_values import SmartInt, SmartPath, SmartValue
-from mxops.execution.smart_values.mx_sdk import SmartAddresses
+from mxops.execution.smart_values.mx_sdk import SmartAddress, SmartAddresses
+from mxops.execution.smart_values.native import SmartBool, SmartStr
 from mxops.execution.steps.base import Step
 from mxops.execution.steps.transactions import TransferStep
+from mxops.utils.account_storage import separate_esdt_related_storage
 from mxops.utils.logger import get_logger
 from mxops.utils.wallets import generate_pem_wallet
 
@@ -190,3 +195,158 @@ class ChainSimulatorFaucetStep(Step):
                 sender=sender, receiver=target, value=self.amount.get_evaluated_value()
             )
             egld_transfer_step.execute()
+
+
+@dataclass
+class AccountCloneStep(Step):
+    """
+    Represent a step that clone an account from another network
+    to the current network
+    If needed, ESDT that do not exist in the current network will
+    be created to be identical to the other network
+    """
+
+    address: SmartAddress
+    source_network: SmartStr
+    clone_balance: SmartBool = True
+    clone_code: SmartBool = True
+    clone_storage: SmartBool = True
+    clone_esdts: SmartBool = True
+    overwrite: SmartBool = True
+    ALLOWED_NETWORKS: ClassVar[set] = (NetworkEnum.CHAIN_SIMULATOR,)
+
+    def get_account_clone_data(self) -> dict:
+        """
+        Fetch and construct the raw data to clone the account, the balance
+        and the code of the account
+
+        :return: raw data to clone and set in the current network
+        :rtype: dict
+        """
+        scenario_data = ScenarioData.get()
+        if scenario_data.network not in self.ALLOWED_NETWORKS:
+            raise errors.WrongNetworkForStep(
+                scenario_data.network, self.ALLOWED_NETWORKS
+            )
+        source_network = parse_network_enum(self.source_network.get_evaluated_value())
+        address = self.address.get_evaluated_value()
+
+        source_proxy = ProxyNetworkProvider(
+            Config.get_config().get("PROXY", source_network)
+        )
+        proxy = MyProxyNetworkProvider()
+        current_raw_account = proxy.get_account(address).raw["account"]
+        source_account = source_proxy.get_account(address)
+        raw_account_to_set = deepcopy(source_account.raw["account"])
+        raw_account_to_set["rootHash"] = current_raw_account["rootHash"]
+
+        if not self.clone_balance.get_evaluated_value():
+            raw_account_to_set["balance"] = current_raw_account["balance"]
+
+        if not self.clone_code.get_evaluated_value():
+            raw_account_to_set["code"] = current_raw_account["code"]
+            raw_account_to_set["codeHash"] = current_raw_account["codeHash"]
+            raw_account_to_set["codeMetadata"] = current_raw_account["codeMetadata"]
+        return raw_account_to_set
+
+    def get_storage_clone_data(self) -> tuple[dict, set[str]]:
+        """
+        Fetch and construct the raw data to clone the storage of the account
+
+        :return: raw storage data to clone and seen esdt in the storage to clone
+        :rtype: tuple[dict, set[str]]
+        """
+        source_network = parse_network_enum(self.source_network.get_evaluated_value())
+        address = self.address.get_evaluated_value()
+
+        source_proxy = ProxyNetworkProvider(
+            Config.get_config().get("PROXY", source_network)
+        )
+
+        source_storage = source_proxy.get_account_storage(address)
+
+        source_esdts_entries, source_other_entries = separate_esdt_related_storage(
+            source_storage.entries
+        )
+
+        raw_data = {}
+        seen_esdt = set()
+        if self.clone_storage.get_evaluated_value():
+            for entry in source_other_entries:
+                raw_data.update(entry.raw)
+
+        if self.clone_esdts.get_evaluated_value():
+            for identifier, entries in source_esdts_entries.items():
+                seen_esdt.add(identifier)
+                for entry in entries:
+                    raw_data.update(entry.raw)
+
+        return raw_data, seen_esdt
+
+    def get_esdt_module_clone_data(self, esdt_identifiers: list[str]) -> dict:
+        """
+        Using a list of identifiers, determine for each esdt if it is already known
+        to the current network, otherwise fetch the data on the source network
+
+        :param esdt_identifiers: esdt identifier to check
+        :type esdt_identifiers: list[str]
+        :return: data to set for the esdt module
+        :rtype: dict
+        """
+        source_network = parse_network_enum(self.source_network.get_evaluated_value())
+        source_proxy = ProxyNetworkProvider(
+            Config.get_config().get("PROXY", source_network)
+        )
+        proxy = MyProxyNetworkProvider()
+        esdt_module_address = Address.new_from_bech32(ESDT_MODULE_BECH32)
+
+        raw_account_data = proxy.get_account(esdt_module_address).raw["account"]
+        raw_account_data["pairs"] = {}
+
+        for identifier in esdt_identifiers:
+            # check if it is known
+            current_entry = proxy.get_account_storage_entry(
+                esdt_module_address, identifier
+            )
+            if len(current_entry.value) > 0:
+                continue
+            # otherwise clone it
+            source_entry = source_proxy.get_account_storage_entry(
+                esdt_module_address, identifier
+            )
+            hex_identifier = identifier.encode("utf-8").hex()
+            raw_account_data["pairs"][hex_identifier] = source_entry.raw["value"]
+
+        return raw_account_data
+
+    def _execute(self):
+        """
+        Retrieve the source  account and its storage
+        and set this state to the current network
+        """
+        source_network = parse_network_enum(self.source_network.get_evaluated_value())
+        LOGGER.info(
+            f"Cloning account {self.address.get_evaluation_string()} for "
+            f"{source_network.value}"
+        )
+        proxy = MyProxyNetworkProvider()
+
+        account_state = self.get_account_clone_data()
+        if (
+            self.clone_esdts.get_evaluated_value()
+            or self.clone_storage.get_evaluated_value()
+        ):
+            account_state["pairs"], esdt_seen = self.get_storage_clone_data()
+        else:
+            esdt_seen = set()
+        LOGGER.debug(f"Account state: {account_state}")
+
+        if len(esdt_seen):
+            esdt_module_state = self.get_esdt_module_clone_data(esdt_seen)
+            LOGGER.debug(f"Esdt module state: {esdt_module_state}")
+            proxy.set_state([esdt_module_state])
+
+        if self.overwrite.get_evaluated_value():
+            proxy.set_state_overwrite([account_state])
+        else:
+            proxy.set_state([account_state])
