@@ -38,3 +38,7 @@ class MyProxyNetworkProvider(ProxyNetworkProvider):
     def set_state(self, states: list[dict]) -> GenericResponse:
         url = "simulator/set-state"
         return self.do_post_generic(url, states)
+
+    def set_state_overwrite(self, states: list[dict]) -> GenericResponse:
+        url = "simulator/set-state-overwrite"
+        return self.do_post_generic(url, states)
