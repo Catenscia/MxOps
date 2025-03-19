@@ -55,7 +55,6 @@ class GenerateWalletsStep(Step):
         Create the wanted wallets at the designated location
 
         """
-        scenario_data = ScenarioData.get()
         save_folder = self.save_folder.get_evaluated_value()
         save_folder.mkdir(parents=True, exist_ok=True)
         wallets = self.wallets.get_evaluated_value()
