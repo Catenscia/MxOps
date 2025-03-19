@@ -1,10 +1,10 @@
 # MxOps related files
 
 mxops_config.ini
-tutorials/**/contract
 logs
 testnet/*
 temp/*
+wallets
 .mxops
 .mxops_data
 uv.lock
