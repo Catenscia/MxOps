@@ -1,0 +1,28 @@
+
+
+steps:
+  - type: ContractDeploy
+    sender: owner
+    wasm_path: contract/output/trader-sc.wasm
+    abi_path: contract/output/trader-sc.abi.json
+    contract_id: trader-sc
+    gas_limit: 100000000
+    arguments:
+      - "%jex_wegld_jexchange_pair.jex_identifier"
+      - "%egld_wrapper_shard_1.wegld_identifier"
+      - "%jex_wegld_jexchange_pair.address"
+      - "%bot.address"
+    upgradeable: true
+    readable: false
+    payable: false
+    payable_by_sc: true
+  
+  - type: ContractCall
+    sender: owner
+    contract: trader-sc
+    endpoint: deposit
+    gas_limit: 60000000
+    esdt_transfers:
+      - token_identifier: "%egld_wrapper_shard_1.wegld_identifier"
+        nonce: 0
+        amount: 1000000000000000000  # 1 WEGLD
