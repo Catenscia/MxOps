@@ -2,6 +2,7 @@ abi
 ABIS
 Astrarizon
 bech
+bernard
 BigUint
 BigInt
 devnet
