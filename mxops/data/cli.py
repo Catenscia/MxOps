@@ -15,7 +15,7 @@ import argparse
 from typing import Literal
 
 
-from mxops.data.path_versions import v1_0_0 as data_path
+from mxops.data import data_path
 from mxops.config.config import Config
 from mxops.data.execution_data import (
     ScenarioData,
