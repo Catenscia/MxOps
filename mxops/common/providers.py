@@ -35,6 +35,10 @@ class MyProxyNetworkProvider(ProxyNetworkProvider):
         url = f"simulator/generate-blocks/{n_blocks}"
         return self.do_post_generic(url, None)
 
+    def generate_blocks_until_epoch(self, epoch: int) -> GenericResponse:
+        url = f"simulator/generate-blocks-until-epoch-reached/{epoch}"
+        return self.do_post_generic(url, None)
+
     def set_state(self, states: list[dict]) -> GenericResponse:
         url = "simulator/set-state"
         return self.do_post_generic(url, states)

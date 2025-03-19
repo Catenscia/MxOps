@@ -8,12 +8,16 @@ from argparse import _SubParsersAction, ArgumentParser, Namespace
 from pathlib import Path
 import subprocess  # nosec
 import sys
+import time
 
 import requests
+from multiversx_sdk.network_providers.errors import GenericError
 
 from mxops.config.config import Config
 from mxops.data.cli import data_path
 from mxops.utils.logger import get_logger
+from mxops.enums import NetworkEnum
+from mxops.common.providers import MyProxyNetworkProvider
 
 LOGGER = get_logger("CHAIN SIMULATOR")
 
@@ -42,6 +46,7 @@ def execute_cli(args: Namespace):  # pylint: disable=R0912
     """
     if args.command != "chain-simulator":
         raise ValueError(f"Command chain-simulator was expected, found {args.command}")
+    Config.set_network(NetworkEnum.CHAIN_SIMULATOR)
 
     if args.action == "start":
         fetch_and_save_docker_compose()
@@ -104,8 +109,18 @@ def start_chain_simulator():
             "Error: chain simulator process ended with return code "
             f"{process.returncode}"
         )
-    else:
-        LOGGER.info("chain simulator successfully started")
+    return
+
+    # generate the first epoch
+    proxy = MyProxyNetworkProvider()
+    while True:
+        LOGGER.info("Generating the first epoch")
+        try:
+            proxy.generate_blocks_until_epoch(2)
+            break
+        except GenericError:  # node not ready yet
+            time.sleep(1)
+    LOGGER.info("chain simulator successfully started")
 
 
 def stop_chain_simulator():
