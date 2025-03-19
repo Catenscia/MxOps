@@ -109,7 +109,7 @@ def start_chain_simulator():
             "Error: chain simulator process ended with return code "
             f"{process.returncode}"
         )
-    return
+        return
 
     # generate the first epoch
     proxy = MyProxyNetworkProvider()
