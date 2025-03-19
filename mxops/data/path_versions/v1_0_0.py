@@ -30,6 +30,7 @@ from multiversx_sdk import Address
 
 from mxops.config.config import Config
 from mxops.data.path_versions.msc import version_name_to_version_path_name
+from mxops.enums import NetworkEnum
 
 VERSION = "v1.0.0"
 
@@ -264,3 +265,20 @@ def does_scenario_exist(scenario_name: str) -> bool:
     """
     scenario_root_path = get_root_scenario_data_path(scenario_name)
     return scenario_root_path.exists()
+
+
+def get_data_cache_file_path(file_name: str, network: NetworkEnum | None) -> Path:
+    """
+    Return the path to a file containing cache data
+
+    :param file_name: name of the file
+    :type file_name: str
+    :param network: related to the data, defaults to None which will be current network
+    :type network: str
+    :return: path to the cache file
+    :rtype: Path
+    """
+    mxops_data_path = get_mxops_data_path()
+    if network is None:
+        network = Config.get_config().get_network()
+    return mxops_data_path / network.name / "cache" / file_name
