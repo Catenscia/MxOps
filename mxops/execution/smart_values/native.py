@@ -5,9 +5,13 @@ This module contains native python smart values (int, float, ...)
 """
 
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+import dateparser
+
+from mxops import errors
 from mxops.execution.smart_values.base import SmartValue
 
 
@@ -230,5 +234,38 @@ class SmartBytes(SmartValue):
 
         :return: evaluated value
         :rtype: bytes
+        """
+        return super().get_evaluated_value()
+
+
+@dataclass
+class SmartDatetime(SmartValue):
+    """
+    Represent a smart value that should result in a datetime
+    """
+
+    @staticmethod
+    def type_enforce_value(value: Any) -> datetime:
+        """
+        Convert a value to the expected evaluated type
+
+        :param value: value to convert
+        :type value: Any
+        :return: converted value
+        :rtype: datetime
+        """
+        result = dateparser.parse(
+            str(value), settings={"TIMEZONE": "UTC", "RETURN_AS_TIMEZONE_AWARE": True}
+        )
+        if isinstance(result, datetime):
+            return result
+        raise errors.ParsingError(value, "datetime")
+
+    def get_evaluated_value(self) -> datetime:
+        """
+        Return the evaluated value
+
+        :return: evaluated value
+        :rtype: datetime
         """
         return super().get_evaluated_value()
