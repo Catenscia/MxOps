@@ -25,6 +25,7 @@ from mxops.data.data_cache import (
 from mxops.data.execution_data import ScenarioData
 from mxops.enums import NetworkEnum, parse_network_enum
 from mxops.execution import utils
+from mxops.execution.account import AccountsManager
 from mxops.execution.smart_values import SmartInt, SmartPath, SmartValue
 from mxops.execution.smart_values.mx_sdk import SmartAddress, SmartAddresses
 from mxops.execution.smart_values.native import SmartBool, SmartDatetime, SmartStr
@@ -54,11 +55,11 @@ class GenerateWalletsStep(Step):
         Create the wanted wallets at the designated location
 
         """
-        scenario_data = ScenarioData.get()
         save_folder = self.save_folder.get_evaluated_value()
         save_folder.mkdir(parents=True, exist_ok=True)
         wallets = self.wallets.get_evaluated_value()
         shard = None if self.shard is None else self.shard.get_evaluated_value()
+        account_manager = AccountsManager()
         if isinstance(wallets, int):
             n_wallets = wallets
             names = [None] * n_wallets
@@ -81,9 +82,7 @@ class GenerateWalletsStep(Step):
                 raise errors.WalletAlreadyExist(wallet_path)
 
             pem_wallet.save(wallet_path)
-            scenario_data.set_value(
-                f"{wallet_name}.address", wallet_address.to_bech32()
-            )
+            account_manager.load_register_pem_account(wallet_path, wallet_name)
             LOGGER.info(
                 f"Wallet n°{i + 1}/{n_wallets} generated with address "
                 f"{wallet_address.to_bech32()} at {wallet_path}"
