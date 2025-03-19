@@ -16,12 +16,18 @@ from mxops import errors
 from mxops.common.constants import ESDT_MODULE_BECH32
 from mxops.common.providers import MyProxyNetworkProvider
 from mxops.config.config import Config
+from mxops.data.data_cache import (
+    save_account_data,
+    save_account_storage_data,
+    try_load_account_data,
+    try_load_account_storage_data,
+)
 from mxops.data.execution_data import ScenarioData
 from mxops.enums import NetworkEnum, parse_network_enum
 from mxops.execution import utils
 from mxops.execution.smart_values import SmartInt, SmartPath, SmartValue
 from mxops.execution.smart_values.mx_sdk import SmartAddress, SmartAddresses
-from mxops.execution.smart_values.native import SmartBool, SmartStr
+from mxops.execution.smart_values.native import SmartBool, SmartDatetime, SmartStr
 from mxops.execution.steps.base import Step
 from mxops.execution.steps.transactions import TransferStep
 from mxops.utils.account_storage import separate_esdt_related_storage
@@ -213,6 +219,7 @@ class AccountCloneStep(Step):
     clone_storage: SmartBool = True
     clone_esdts: SmartBool = True
     overwrite: SmartBool = True
+    caching_period: SmartDatetime = "10 days"
     ALLOWED_NETWORKS: ClassVar[set] = (NetworkEnum.CHAIN_SIMULATOR,)
 
     def get_account_clone_data(self) -> dict:
@@ -231,12 +238,23 @@ class AccountCloneStep(Step):
         source_network = parse_network_enum(self.source_network.get_evaluated_value())
         address = self.address.get_evaluated_value()
 
-        source_proxy = ProxyNetworkProvider(
-            Config.get_config().get("PROXY", source_network)
+        # fetch the source account from cache or proxy
+        source_account = try_load_account_data(
+            source_network, address, self.caching_period.get_evaluated_value()
         )
+        if source_account is None:
+            LOGGER.debug(
+                f"Fetchting account of {address.to_bech32()} on {source_network.value}"
+            )
+            source_proxy = ProxyNetworkProvider(
+                Config.get_config().get("PROXY", source_network)
+            )
+            source_account = source_proxy.get_account(address)
+            save_account_data(source_network, source_account)
+
+        # fetch current account and build the account to set
         proxy = MyProxyNetworkProvider()
         current_raw_account = proxy.get_account(address).raw["account"]
-        source_account = source_proxy.get_account(address)
         raw_account_to_set = deepcopy(source_account.raw["account"])
         raw_account_to_set["rootHash"] = current_raw_account["rootHash"]
 
@@ -259,12 +277,21 @@ class AccountCloneStep(Step):
         source_network = parse_network_enum(self.source_network.get_evaluated_value())
         address = self.address.get_evaluated_value()
 
-        source_proxy = ProxyNetworkProvider(
-            Config.get_config().get("PROXY", source_network)
+        # fetch the source account from cache or proxy
+        source_storage = try_load_account_storage_data(
+            source_network, address, self.caching_period.get_evaluated_value()
         )
+        if source_storage is None:
+            LOGGER.debug(
+                f"Fetchting storage of {address.to_bech32()} on {source_network.value}"
+            )
+            source_proxy = ProxyNetworkProvider(
+                Config.get_config().get("PROXY", source_network)
+            )
+            source_storage = source_proxy.get_account_storage(address)
+            save_account_storage_data(source_network, address, source_storage)
 
-        source_storage = source_proxy.get_account_storage(address)
-
+        # build the storage to set
         source_esdts_entries, source_other_entries = separate_esdt_related_storage(
             source_storage.entries
         )
@@ -326,7 +353,7 @@ class AccountCloneStep(Step):
         """
         source_network = parse_network_enum(self.source_network.get_evaluated_value())
         LOGGER.info(
-            f"Cloning account {self.address.get_evaluation_string()} for "
+            f"Cloning account {self.address.get_evaluation_string()} from "
             f"{source_network.value}"
         )
         proxy = MyProxyNetworkProvider()
@@ -339,11 +366,9 @@ class AccountCloneStep(Step):
             account_state["pairs"], esdt_seen = self.get_storage_clone_data()
         else:
             esdt_seen = set()
-        LOGGER.debug(f"Account state: {account_state}")
 
         if len(esdt_seen):
             esdt_module_state = self.get_esdt_module_clone_data(esdt_seen)
-            LOGGER.debug(f"Esdt module state: {esdt_module_state}")
             proxy.set_state([esdt_module_state])
 
         if self.overwrite.get_evaluated_value():

@@ -1,11 +1,23 @@
+from datetime import datetime, timezone
 import json
 from pathlib import Path
 import re
 from typing import Any
 
+from multiversx_sdk import Address
 import pytest
+from multiversx_sdk.network_providers.proxy_network_provider import (
+    account_from_proxy_response,
+    account_storage_from_response,
+)
 
 from mxops import errors
+from mxops.data.data_cache import (
+    save_account_data,
+    save_account_storage_data,
+    try_load_account_data,
+    try_load_account_storage_data,
+)
 from mxops.data.execution_data import (
     _ScenarioData,
     ExternalContractData,
@@ -284,3 +296,115 @@ def test_migration_v0_1_0_to_v1_0_0():
         abis["erd1qqqqqqqqqqqqqpgq5d4kvm8mdznek3e3ty6npluuneuhxsxajmwqvya7p8"]
         == expected_abi
     )
+
+
+def test_account_data_cache():
+    # Given
+    account = account_from_proxy_response(
+        {
+            "account": {
+                "address": "erd1qqqqqqqqqqqqqpgqs8r2jhfymgle49dqx42xyypx6r2smt602jps2kcn8f",  # noqa
+                "nonce": 0,
+                "balance": "0",
+                "username": "",
+                "code": "01010101",
+                "codeHash": "6fEXlxljyzwksU4qdpjUjBcDNa8vXIFnd0xIw8HGVOM=",
+                "rootHash": "e8Q66wDcKKbUSsGMu8TWzbifcuwINVXOKe3XnryurmY=",
+                "codeMetadata": "BQQ=",
+                "developerReward": "4965025595400558975",
+                "ownerAddress": "erd1qqqqqqqqqqqqqpgqq66xk9gfr4esuhem3jru86wg5hvp33a62jps2fy57p",  # noqa
+            },
+            "blockInfo": {
+                "nonce": 24357191,
+                "hash": "1aed3ef7e850bb5876302488fafd34bdc8949c9724c0364d053de464d2d8021a",  # noqa
+                "rootHash": "2d7d98e1f35755344a500f440168b2e191a9ad9bbe15907472d9f463eea39686",  # noqa
+            },
+        }
+    )
+    network = NetworkEnum.DEV
+
+    # When
+    save_account_data(
+        network, account, data_datetime=datetime(2025, 2, 1, tzinfo=timezone.utc)
+    )
+    loaded_account = try_load_account_data(network, account.address)
+    loaded_account_2 = try_load_account_data(
+        network,
+        account.address,
+        datetime_threshold=datetime(2025, 1, 1, tzinfo=timezone.utc),
+    )
+    wrong_network = try_load_account_data(NetworkEnum.MAIN, account.address)
+    too_old = try_load_account_data(
+        network,
+        account.address,
+        datetime_threshold=datetime(2025, 3, 1, tzinfo=timezone.utc),
+    )
+    wrong_address = try_load_account_data(
+        network,
+        Address.new_from_bech32(
+            "erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3"
+        ),
+    )
+
+    # Then
+    assert loaded_account == account
+    assert loaded_account_2 == account
+    assert wrong_network is None
+    assert too_old is None
+    assert wrong_address is None
+
+
+def test_storage_data_cache():
+    # Given
+    address = Address.new_from_bech32(
+        "erd1qqqqqqqqqqqqqpgqs8r2jhfymgle49dqx42xyypx6r2smt602jps2kcn8f"
+    )
+    storage = account_storage_from_response(
+        {
+            "blockInfo": {
+                "hash": "5af3c9fe5e74d433c9f493d59a534b8a5f1f04536b6b573452dfdbf86db04bf2",  # noqa
+                "nonce": 24357404,
+                "rootHash": "cde6249d26bcf13bf9c5bafa3ab4156c4d267c91540c018c1bf8ebd61cd78fe5",  # noqa
+            },
+            "pairs": {
+                "454c524f4e446573647445474c445553482d653633313537": "12030003e8",  # noqa
+                "454c524f4e44657364745553482d313131653039": "120c00015d650347ae260628715b",  # noqa
+                "454c524f4e44657364745745474c442d626434643739": "120b0013202041d1cef3b4f095",  # noqa
+                "454c524f4e44726f6c656573647445474c445553482d653633313537": "010101",  # noqa
+            },
+        }
+    )
+    network = NetworkEnum.DEV
+
+    # When
+    save_account_storage_data(
+        network,
+        address,
+        storage,
+        data_datetime=datetime(2025, 2, 1, tzinfo=timezone.utc),
+    )
+    loaded_storage = try_load_account_storage_data(network, address)
+    loaded_storage_2 = try_load_account_storage_data(
+        network,
+        address,
+        datetime_threshold=datetime(2025, 1, 1, tzinfo=timezone.utc),
+    )
+    wrong_network = try_load_account_storage_data(NetworkEnum.MAIN, address)
+    too_old = try_load_account_data(
+        network,
+        address,
+        datetime_threshold=datetime(2025, 3, 1, tzinfo=timezone.utc),
+    )
+    wrong_address = try_load_account_storage_data(
+        network,
+        Address.new_from_bech32(
+            "erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3"
+        ),
+    )
+
+    # Then
+    assert loaded_storage == storage
+    assert loaded_storage_2 == storage
+    assert wrong_network is None
+    assert too_old is None
+    assert wrong_address is None

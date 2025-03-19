@@ -21,7 +21,7 @@ from multiversx_sdk.abi import Abi, AbiDefinition
 from multiversx_sdk.core.errors import BadAddressError
 
 from mxops.config.config import Config
-from mxops.data.path_versions import v1_0_0 as data_path
+from mxops.data import data_path
 from mxops import enums as mxops_enums
 from mxops import errors
 from mxops.data.utils import json_dump, json_load

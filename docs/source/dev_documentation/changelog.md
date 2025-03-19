@@ -26,6 +26,8 @@
 - results for smart-contract calls can now be saved too
 - skip simulator transaction signature when the sender account is unknown
 - `AccountCloneStep`
+- a file cache system per network
+- account cloning now use the cache system
 
 
 ### Changed

@@ -820,7 +820,12 @@ clone_code: true  # optional, default to true
 clone_storage: true  # optional, default to true
 clone_esdts: true  # optional, default to true
 overwrite: true  # optional, default to true
+overwrite: true  # optional, default to true
+caching_period: "10 days"  # optional, default to true
 ```
+
+Account cloning can lead to huge data requests. If you are using the public proxy, please use a high caching period.
+Currently, some clones will even fail because the storage of the account is too big. This will be fixed in the [bernard release](https://github.com/multiversx/mx-chain-go/pull/6547) by the core team.
 
 
 (wait_target)=
