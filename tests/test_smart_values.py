@@ -542,7 +542,7 @@ def test_smart_token(raw_value: Any, expected_result: Token, expected_str: str):
     # assert smart_value.get_evaluation_string() == expected_str  # TODO wait for sdk
 
 
-def test_smart_on_hcain_transfers():
+def test_smart_on_chain_transfers():
     # Given
     raw_value = [
         {
