@@ -105,7 +105,7 @@ pub trait PiggyBank {
     ///
     /// ### Returns
     ///
-    /// * **payment** - `EsdtTokenPayment<Self::Api>` back payment recieved from the esdt-minter (principal + interests)
+    /// * **payment** - `EsdtTokenPayment<Self::Api>` back payment received from the esdt-minter (principal + interests)
     ///
     fn call_claim_interests_sync(&self, amount: BigUint) -> EsdtTokenPayment<Self::Api> {
         let proxy_address = self.esdt_minter_address().get();

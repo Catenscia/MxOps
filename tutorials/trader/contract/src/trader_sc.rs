@@ -10,7 +10,7 @@ use multiversx_sc::imports::*;
 #[multiversx_sc::contract]
 pub trait TraderSc {
     // #################################
-    //             storages
+    //             storage
     // #################################
 
     /// Holds the identifier of the JEX token used when trading

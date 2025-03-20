@@ -145,9 +145,9 @@ class R3D4FaucetStep(Step):
 
         :param bech32: address where to receive the tokens
         :type bech32: str
-        :param token_id: r3d4 token id to recieve
+        :param token_id: r3d4 token id to receive
         :type token_id: int
-        :param amount: amount of token to recieve, with decimal
+        :param amount: amount of token to receive, with decimal
         :type amount: str
         """
         config = Config.get_config()

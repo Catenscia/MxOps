@@ -8,7 +8,7 @@ steps:
     endpoint: executeTrade
     arguments:
       - true  # buy
-      - 500000000000000000 # 0.5 WELGD to spend to buy JEX
+      - 500000000000000000 # 0.5 WEGLD to spend to buy JEX
     gas_limit: 20000000
     results_save_keys:
       - received_jex_amount

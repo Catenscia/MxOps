@@ -46,6 +46,7 @@ If you are new here, we recommend going first to the :doc:`getting_started/prese
    examples/wrapping
    examples/queries
    examples/python_steps
+   examples/trader_sc
 
 .. toctree::
    :maxdepth: 1
