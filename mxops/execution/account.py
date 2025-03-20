@@ -16,7 +16,7 @@ from multiversx_sdk.core.errors import BadAddressError
 
 from mxops import errors
 from mxops.common.providers import MyProxyNetworkProvider
-from mxops.data.execution_data import ScenarioData
+from mxops.data.execution_data import LedgerAccountData, PemAccountData, ScenarioData
 
 
 class AccountsManager:
@@ -73,13 +73,20 @@ class AccountsManager:
         if isinstance(pem_path, str):
             pem_path = Path(pem_path)
         account = Account.new_from_pem(pem_path)
-        cls.register_account(account, account_name)
+        cls.register_account(account, account_id)
+        ScenarioData.get().add_account_data(
+            PemAccountData(
+                account_id=account_id,
+                bech32=account.address.to_bech32(),
+                pem_path=pem_path.as_posix(),
+            )
+        )
         return account.address
 
     @classmethod
     def load_register_ledger_account(
         cls, ledger_address_index: int, account_id: str | None = None
-    ) -> str:
+    ) -> Address:
         """
         Load a Ledger account and register it
 
@@ -91,7 +98,14 @@ class AccountsManager:
         :rtype: Address
         """
         account = LedgerAccount(ledger_address_index)
-        cls.register_account(account, account_name)
+        cls.register_account(account, account_id)
+        ScenarioData.get().add_account_data(
+            LedgerAccountData(
+                account_id=account_id,
+                bech32=account.address.to_bech32(),
+                ledger_address_index=ledger_address_index,
+            )
+        )
         return account.address
 
     @classmethod
@@ -170,5 +184,5 @@ class AccountsManager:
         Synchronise the nonces of all the account by calling the
         MultiversX proxy.
         """
-        for account_name in cls._accounts:
-            cls.sync_account(account_name)
+        for account_bech32 in cls._accounts:
+            cls.sync_account(account_bech32)
