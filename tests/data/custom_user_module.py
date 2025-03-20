@@ -20,5 +20,5 @@ def set_contract_value(contract_id: str, value_key: str, value: Any):
     :rtype: Any
     """
     scenario_data = ScenarioData.get()
-    scenario_data.set_contract_value(contract_id, value_key, value)
+    scenario_data.set_account_value(contract_id, value_key, value)
     return value

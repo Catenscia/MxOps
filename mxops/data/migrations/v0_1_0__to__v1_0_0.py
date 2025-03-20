@@ -154,7 +154,8 @@ def convert_scenario(source_data: dict) -> tuple[dict, dict[Address, dict]]:
     abis = {}
     dest_data = deepcopy(source_data)
     new_contracts_data = {}
-    for contract_id, contract_data in dest_data["contracts_data"].items():
+    for contract_id, contract_data in dest_data.pop("contracts_data").items():
+        contract_data["account_id"] = contract_data.pop("contract_id")
         contract_bech32 = contract_data.pop("address")
         contract_data["bech32"] = contract_bech32
         serializer_data = contract_data.pop("serializer", None)
@@ -162,8 +163,15 @@ def convert_scenario(source_data: dict) -> tuple[dict, dict[Address, dict]]:
             abis[contract_bech32] = reconstruct_abi_from_serializer_dict(
                 contract_id, serializer_data
             )
+        is_external = contract_data.pop("is_external")
+        if is_external == "true":
+            contract_data["__class__"] = "ExternalContractData"
+        else:
+            contract_data["__class__"] = "InternalContractData"
         new_contracts_data[contract_bech32] = contract_data
-    dest_data["contracts_data"] = new_contracts_data
+    dest_data["accounts_data"] = new_contracts_data
+    for token_data in dest_data["tokens_data"].values():
+        token_data["__class__"] = "TokenData"
     return dest_data, abis
 
 

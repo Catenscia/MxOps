@@ -49,7 +49,7 @@ def test_scenario_loading(scenario_path: Path):
     # Then
     assert scenario.network == NetworkEnum.DEV
     assert scenario.name == "___test_mxops_tutorial_first_scene"
-    assert scenario.contracts_data == {
+    assert scenario.accounts_data == {
         "erd1qqqqqqqqqqqqqpgq0048vv3uk6l6cdreezpallvduy4qnfv2plcq74464k": InternalContractData(  # noqa
             account_id="egld-ping-pong",
             bech32="erd1qqqqqqqqqqqqqpgq0048vv3uk6l6cdreezpallvduy4qnfv2plcq74464k",
@@ -63,6 +63,17 @@ def test_scenario_loading(scenario_path: Path):
     }
 
 
+def test_scenario_loading_current_migration_version():
+    """
+    Test that contract data is correctly loaded and that both environment syntax are
+    handeld
+    """
+    # Given
+    scenario_path = Path("tests/data/migrations/v1_0_0.json")
+    # When
+    _ = _ScenarioData.load_from_path(scenario_path)
+
+
 def test_contract_add(scenario_data: _ScenarioData):
     # Given
     contract_bech32 = "erd1qqqqqqqqqqqqqpgqtccau7hl9djzdtwfe4354u0egp0x2c3futhse96haz"
@@ -73,17 +84,17 @@ def test_contract_add(scenario_data: _ScenarioData):
         saved_values={},
     )
     # When
-    scenario_data.add_contract_data(contract_data)
-    address_fetched = scenario_data.get_contract_address(contract_id)
-    contract_id_fetched = scenario_data.get_contract_value(
+    scenario_data.add_account_data(contract_data)
+    address_fetched = scenario_data.get_account_address(contract_id)
+    contract_id_fetched = scenario_data.get_account_value(
         contract_bech32, "contract_id"
     )
 
     # Then
     assert address_fetched.to_bech32() == contract_bech32
     assert contract_id_fetched == contract_id
-    assert contract_bech32 in scenario_data.contracts_data
-    assert contract_id not in scenario_data.contracts_data
+    assert contract_bech32 in scenario_data.accounts_data
+    assert contract_id not in scenario_data.accounts_data
 
 
 def test_key_path_fetch():

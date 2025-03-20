@@ -3,15 +3,15 @@
     "network": "devnet",
     "creation_time": 1677134890,
     "last_update_time": 1677134896,
-    "contracts_data": {
+    "accounts_data": {
         "erd1qqqqqqqqqqqqqpgq0048vv3uk6l6cdreezpallvduy4qnfv2plcq74464k": {
-            "contract_id": "egld-ping-pong",
+            "__class__": "InternalContractData",
+            "account_id": "egld-ping-pong",
             "bech32": "erd1qqqqqqqqqqqqqpgq0048vv3uk6l6cdreezpallvduy4qnfv2plcq74464k",
             "saved_values": {},
             "wasm_hash": "5ce403a4f73701481cc15b2378cdc5bce3e35fa215815aa5eb9104d9f7ab2451",
             "deploy_time": 1677134892,
-            "last_upgrade_time": 1677134892,
-            "is_external": false
+            "last_upgrade_time": 1677134892
         }
     }
 }

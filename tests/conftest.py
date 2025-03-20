@@ -56,9 +56,9 @@ def scenario_data(network):  # must be executed after the network fixture
     address = "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t"
     wasm_hash = "5ce403a4f73701481cc15b2378cdc5bce3e35fa215815aa5eb9104d9f7ab2451"
     scenario_data = ScenarioData.get()
-    scenario_data.add_contract_data(
+    scenario_data.add_account_data(
         InternalContractData(
-            contract_id=contract_id,
+            account_id=contract_id,
             bech32=address,
             wasm_hash=wasm_hash,
             deploy_time=1,
@@ -66,7 +66,7 @@ def scenario_data(network):  # must be executed after the network fixture
             saved_values={"query_result_1": [0, 1, {2: "abc"}]},
         )
     )
-    scenario_data.add_contract_data(
+    scenario_data.add_account_data(
         ExternalContractData(
             "piggy-bank",
             "erd1qqqqqqqqqqqqqpgqxt0y7s830gh5r38ypsslt9hrd2zxn98rv5ys0jd2mg",
