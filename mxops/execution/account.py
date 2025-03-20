@@ -140,11 +140,15 @@ class AccountsManager:
                     f"{account_designation}.address"
                 )
             except errors.WrongDataKeyPath as err:
-                raise errors.UnknownAccount(account_designation) from err
+                raise errors.UnknownAccount(
+                    ScenarioData.get().name, account_designation
+                ) from err
         try:
             return cls._accounts[account_bech32]
         except KeyError as err:
-            raise errors.UnknownAccount(account_designation) from err
+            raise errors.UnknownAccount(
+                ScenarioData.get().name, account_designation
+            ) from err
 
     @classmethod
     def sync_account(cls, account_designation: str | Address):

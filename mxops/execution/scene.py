@@ -136,8 +136,8 @@ def execute_scene(scene_path: Path):
                 AccountsManager.load_register_pem_account(**account)
             )
 
-    for account_name in loaded_accounts_addresses:
-        AccountsManager.sync_account(account_name)
+    for account_address in loaded_accounts_addresses:
+        AccountsManager.sync_account(account_address)
 
     # load external contracts addresses
     for contract_id, contract_data in scene.external_contracts.items():
@@ -149,12 +149,12 @@ def execute_scene(scene_path: Path):
                 Address.new_from_bech32(bech32), Path(contract_data["abi_path"])
             )
         try:
-            scenario_data.set_contract_value(contract_id, "bech32", bech32)
-        except errors.UnknownContract:
+            scenario_data.set_account_value(contract_id, "bech32", bech32)
+        except errors.UnknownAccount:
             # otherwise create the contract data
-            scenario_data.add_contract_data(
+            scenario_data.add_account_data(
                 ExternalContractData(
-                    contract_id=contract_id,
+                    account_id=contract_id,
                     bech32=bech32,
                     saved_values={},
                 )

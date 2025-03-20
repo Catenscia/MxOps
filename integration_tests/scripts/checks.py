@@ -46,7 +46,7 @@ def check_storage(contract_id: str, expected_data_str: str) -> bool:
     scenario_data = ScenarioData.get()
     expected_data = json_loads(expected_data_str)
     for key, value in expected_data.items():
-        saved_value = scenario_data.get_contract_value(contract_id, key)
+        saved_value = scenario_data.get_account_value(contract_id, key)
         if not check_storage_elements(saved_value, value):
             raise ValueError(
                 f"Expected {value} but found {saved_value} for the key {key}"
