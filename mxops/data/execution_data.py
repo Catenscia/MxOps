@@ -344,7 +344,7 @@ class TokenData(SavedValuesData):
         :return: dictionary representing this instance
         :rtype: dict
         """
-        self_dict = asdict(self)
+        self_dict = super().to_dict()
         self_dict["type"] = self.type.value
         return self_dict
 
@@ -359,7 +359,7 @@ class TokenData(SavedValuesData):
         :rtype: TokenData
         """
         formated_data = {"type": mxops_enums.parse_token_type_enum(data["type"])}
-        return cls(**{**data, **formated_data})
+        return super().from_dict({**data, **formated_data})
 
 
 @dataclass
