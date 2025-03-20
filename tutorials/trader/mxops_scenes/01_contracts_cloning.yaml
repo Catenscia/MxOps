@@ -6,8 +6,6 @@ external_contracts:
   jex_wegld_jexchange_pair:
     address: erd1qqqqqqqqqqqqqpgq7u4y0qle773mcelvnkapjv36pn2whzy36avs2qccja
     abi_path: ./data/jex-sc-dex-pair.abi.json
-  
-
 
 steps:
 
@@ -32,23 +30,3 @@ steps:
     print_results: true
     results_save_keys:
       - jex_identifier
-  
-  - type: GenerateWallets
-    save_folder: ./wallets
-    wallets:
-        - owner
-        - bot
-    shard: 1
-
-  - type: ChainSimulatorFaucet
-    amount: 10000000000000000000  # 10 EGLD
-    targets:
-      - owner
-      - bot
-  
-  - type: ContractCall
-    sender: owner
-    contract: egld_wrapper_shard_1
-    endpoint: wrapEgld
-    gas_limit: 5000000
-    value: 1000000000000000000  # 1 EGLD

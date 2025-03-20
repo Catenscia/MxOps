@@ -1,5 +1,3 @@
-
-
 steps:
   - type: ContractDeploy
     sender: owner
