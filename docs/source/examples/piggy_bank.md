@@ -85,9 +85,9 @@ allowed_scenario:
   - "piggy_bank.*"
 
 accounts:
-  - account_name: owner
+  - account_id: owner
     pem_path: ./wallets/bob.pem
-  - account_name: user
+  - account_id: user
     pem_path: ./wallets/alice.pem
 ```
 
@@ -103,9 +103,9 @@ allowed_scenario:
   - "piggy_bank.*"
 
 accounts:
-  - account_name: owner
+  - account_id: owner
     pem_path: ./wallets/devnet_owner.pem
-  - account_name: user
+  - account_id: user
     pem_path: ./devnet_user.pem
 ```
 

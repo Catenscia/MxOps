@@ -15,7 +15,7 @@ allowed_networks:
     - devnet
 
 accounts:
-  - account_name: owner
+  - account_id: owner
     pem_path: ./wallets/my_devnet_wallet.pem
 ```
 
@@ -30,12 +30,12 @@ allowed_networks:
     - localnet
 
 accounts:
-  - account_name: owner
+  - account_id: owner
     pem_path: ./wallets/bob.pem  # one of the default public account with funds on the localnet
 ```
 
 One detail to notice:
-The wallets my_devnet_wallet.pem and bob.pem have been defined with the same `account_name`: in later `Scenes`, we only have to refer to the `account_name` "owner" and it will work both the `devnet` and the `localnet`.
+The wallets my_devnet_wallet.pem and bob.pem have been defined with the same `account_id`: in later `Scenes`, we only have to refer to the `account_id` "owner" and it will work both the `devnet` and the `localnet`.
 
 ## Deploy Scene
 

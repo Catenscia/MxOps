@@ -24,7 +24,7 @@ Here, MxOps is used to issue a fungible token, assign mint and burn roles to the
 
 ```yaml
 accounts:  # define the accounts to use
-  - account_name: alice
+  - account_id: alice
     pem_path: ./wallets/alice.pem
 
 steps:
@@ -174,7 +174,7 @@ Here is the above `Scene`, but this time with the MxOps syntax:
     - deploy_stake_withdraw
 
   accounts:
-    - account_name: owner
+    - account_id: owner
       pem_path: ./wallets/my_devnet_wallet.pem
 
   steps:

@@ -11,7 +11,7 @@ external_contracts:
     abi_path: tests/data/abis/adder.abi.json
 
 accounts:
-  - account_name: owner
+  - account_id: owner
     pem_path: wallets/local_owner.pem
 
 steps:

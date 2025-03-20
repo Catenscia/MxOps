@@ -31,7 +31,7 @@ allowed_scenario:
   - "wrapping.*"
 
 accounts:
-  - account_name: user
+  - account_id: user
     pem_path: ./wallets/devnet_user.pem
 
 external_contracts:

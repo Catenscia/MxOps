@@ -109,7 +109,7 @@ The first element we will specify in our `Scene` is the wallet that we want to u
 
 ```yaml
 accounts:
-  - account_name: owner
+  - account_id: owner
     pem_path: ./wallets/my_devnet_wallet.pem
 ```
 
@@ -188,7 +188,7 @@ With this, we finished our first scene and your file `first_scene.yaml` should n
 
 ```yaml
 accounts:
-  - account_name: owner
+  - account_id: owner
     pem_path: ./wallets/my_devnet_wallet.pem
 
 steps:

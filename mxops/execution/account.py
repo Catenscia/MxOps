@@ -49,9 +49,7 @@ class AccountsManager:
             file_path = Path(folder_path) / file_name
             if file_path.suffix == ".pem":
                 loaded_account_addresses.append(
-                    cls.load_register_pem_account(
-                        file_path, account_name=file_path.stem
-                    )
+                    cls.load_register_pem_account(file_path, account_id=file_path.stem)
                 )
                 loaded_accounts_names.append(file_path.stem)
         scenario_data = ScenarioData.get()
@@ -60,15 +58,15 @@ class AccountsManager:
 
     @classmethod
     def load_register_pem_account(
-        cls, pem_path: str | Path, account_name: str | None = None
+        cls, pem_path: str | Path, account_id: str | None = None
     ) -> Address:
         """
         Load a pem account and register it
 
         :param pem_path: path to the PEM file
         :type pem_path: str | Path
-        :param account_name: name of the account for easier reference, defaults to None
-        :type account_name: str | None
+        :param account_id: id of the account for easier reference, defaults to None
+        :type account_id: str | None
         :return: address of the loaded account
         :rtype: Address
         """
@@ -80,15 +78,15 @@ class AccountsManager:
 
     @classmethod
     def load_register_ledger_account(
-        cls, ledger_address_index: int, account_name: str | None = None
+        cls, ledger_address_index: int, account_id: str | None = None
     ) -> str:
         """
         Load a Ledger account and register it
 
         :param ledger_address_index: index of the ledger address
         :type ledger_address_index: int
-        :param account_name: name of the account for easier reference, defaults to None
-        :type account_name: str | None
+        :param account_id: id of the account for easier reference, defaults to None
+        :type account_id: str | None
         :return: address of the loaded account
         :rtype: Address
         """
@@ -98,21 +96,21 @@ class AccountsManager:
 
     @classmethod
     def register_account(
-        cls, account: Account | LedgerAccount, account_name: str | None = None
+        cls, account: Account | LedgerAccount, account_id: str | None = None
     ):
         """
         Register an account in the accounts manager using its bech32 address
 
         :param account: account to register
         :type account: Account | LedgerAccount
-        :param account_name: name of the account for easier reference, defaults to None
-        :type account_name: str | None
+        :param account_id: id of the account for easier reference, defaults to None
+        :type account_id: str | None
         """
         account_address = account.address.to_bech32()
         cls._accounts[account_address] = account
-        if account_name is not None and account_name != account_address:
+        if account_id is not None and account_id != account_address:
             scenario_data = ScenarioData.get()
-            scenario_data.set_value(f"{account_name}.address", account_address)
+            scenario_data.set_value(f"{account_id}.address", account_address)
 
     @classmethod
     def get_account(cls, account_designation: str | Address) -> Account | LedgerAccount:

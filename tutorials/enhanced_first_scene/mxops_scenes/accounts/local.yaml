@@ -2,5 +2,5 @@ allowed_networks:
     - localnet
 
 accounts:
-  - account_name: owner
+  - account_id: owner
     pem_path: ./wallets/bob.pem

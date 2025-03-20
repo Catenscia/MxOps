@@ -51,7 +51,7 @@ def test_scenario_loading(scenario_path: Path):
     assert scenario.name == "___test_mxops_tutorial_first_scene"
     assert scenario.contracts_data == {
         "erd1qqqqqqqqqqqqqpgq0048vv3uk6l6cdreezpallvduy4qnfv2plcq74464k": InternalContractData(  # noqa
-            contract_id="egld-ping-pong",
+            account_id="egld-ping-pong",
             bech32="erd1qqqqqqqqqqqqqpgq0048vv3uk6l6cdreezpallvduy4qnfv2plcq74464k",
             saved_values={},
             wasm_hash=(

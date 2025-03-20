@@ -102,8 +102,8 @@ See examples in the [Loop Step section](loop_step_target).
 ### Account Address
 
 When MxOps knows that the provided value should be converted to an address, for example to specify the receiver of a transaction, the user can simply write the name of the account and MxOps will automatically translate it.
-However, there are some ambiguous cases where an argument provided by a user could be a raw string (ex: "account_name") or the address represented by this string (ex: "erd...").
-To avoid these confusions, a user can force MxOps to fetch the address of an account by using the syntax `%account_name.address`.
+However, there are some ambiguous cases where an argument provided by a user could be a raw string (ex: "account_id") or the address represented by this string (ex: "erd...").
+To avoid these confusions, a user can force MxOps to fetch the address of an account by using the syntax `%account_id.address`.
 
 
 ## Composability

@@ -9,7 +9,7 @@ At execution time, the user will designate the `Scenario` in which the actions w
 
 - `allowed_network`: a list of the networks onto which the `Scene` is allowed to be run. Allowed values are: [`mainnet`, `devnet`, `testnet`, `localnet`, `chain-simulator`]. By default all networks except the mainnet are allowed.
 - `allowed_scenario`: a list of the scenario into which the `Scene` is allowed to be run. Regex can be used here. By default all scenario are allowed.
-- `accounts`: a list of the accounts details. This can be defined only once per execution (so in only one file in the case where several files were submitted). Each account will be designated by its `account_name` in the `Steps`.
+- `accounts`: a list of the accounts details. This can be defined only once per execution (so in only one file in the case where several files were submitted). Each account will be designated by its `account_id` in the `Steps`.
 - `external_contracts`: a dictionary of external contract addresses. The keys will be used as contract ids by MxOps. This can be defined only once per scenario.
 - `steps`: a list the `Steps` to execute sequentially.
 
@@ -34,10 +34,10 @@ allowed_scenario:
 # if you execute a folder of scenes for example, you only need to define the accounts in the first executed scene.
 # Names have to be unique or they will override each other
 accounts:
-  - account_name: bob
+  - account_id: bob
     pem_path: path/to/bom_pem
 
-  - account_name: alice
+  - account_id: alice
     ledger_address_index: 2
 
   - name: user_wallets

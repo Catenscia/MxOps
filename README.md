@@ -32,7 +32,7 @@ Here are some basic uses cases to illustrate how MxOps works.
 
 ```yaml
 accounts:  # define the accounts to use
-  - account_name: alice
+  - account_id: alice
     pem_path: ./wallets/alice.pem
 
 steps:
