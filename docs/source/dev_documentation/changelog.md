@@ -53,6 +53,7 @@
 - 🚨 BREAKING CHANGE 🚨 ABIS are now stored using a contract bech32
 - 🚨 BREAKING CHANGE 🚨 Contracts are now handled using contract bech32 by the Scenario Data
 - 🚨 BREAKING CHANGE 🚨 All accounts (user, contracts, internal, external) are now defined under the same "accounts" key in scenes
+- use uv for package build
 
 
 
