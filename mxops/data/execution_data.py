@@ -48,6 +48,24 @@ def parse_value_key(path) -> list[int | str]:
     return [int(index) if index else key for key, index in tokens]
 
 
+def parse_raw_saved_values_data_data(raw_data: dict) -> SavedValuesData:
+    """
+    Parse raw data into a SavedValuesData or one of its subclasses
+
+    :param raw_data: data to parse
+    :type raw_data: dict
+    :return: instance
+    :rtype: SavedValuesData
+    """
+    data_copy = deepcopy(raw_data)
+    class_name = data_copy.pop("__class__")
+    current_module = sys.modules[__name__]
+    class_type = getattr(current_module, class_name)
+    if not issubclass(class_type, SavedValuesData):
+        raise ValueError(f"Exepted a SavedValuesData class, got {class_type}")
+    return class_type.from_dict(data_copy)
+
+
 @dataclass(kw_only=True)
 class SavedValuesData:
     """
@@ -219,19 +237,15 @@ class SavedValuesData:
         self_dict["__class__"] = self.__class__.__name__
         return self_dict
 
-    @staticmethod
-    def from_dict(data: dict) -> SavedValuesData:
+    @classmethod
+    def from_dict(cls, data: dict) -> SavedValuesData:
         """
         Transform data into an instance of this class or subclass
 
         :return: instance of this class of subclass
         :rtype: SavedValuesData
         """
-        data_copy = deepcopy(data)
-        class_name = data_copy.pop("__class__")
-        current_module = sys.modules[__name__]
-        class_type = getattr(current_module, class_name)
-        return class_type(**data_copy)
+        return cls(**data)
 
     def __eq__(self, other: Any) -> bool:
         """
@@ -279,8 +293,8 @@ class ContractData(AccountData):
     It is supposed to be inherited from and not use directly
     """
 
-    @staticmethod
-    def from_dict(data: dict) -> SavedValuesData:
+    @classmethod
+    def from_dict(cls, data: dict) -> ContractData:
         """
         Transform data into an instance of this class or subclass
 
@@ -290,7 +304,7 @@ class ContractData(AccountData):
         data_copy = deepcopy(data)
         if "contract_id" in data:
             data_copy["account_id"] = data_copy.pop("contract_id")
-        return super().from_dict(data)
+        return super().from_dict(data_copy)
 
     def get_value(self, value_key_path: str) -> Any:
         """
@@ -734,11 +748,13 @@ class _ScenarioData(SavedValuesData):
         """
         accounts_data = data.get("accounts_data", {})
         accounts_data = {
-            k: SavedValuesData.from_dict(v) for k, v in accounts_data.items()
+            k: parse_raw_saved_values_data_data(v) for k, v in accounts_data.items()
         }
 
         tokens_data = data.get("tokens_data", {})
-        tokens_data = {k: TokenData.from_dict(v) for k, v in tokens_data.items()}
+        tokens_data = {
+            k: parse_raw_saved_values_data_data(v) for k, v in tokens_data.items()
+        }
 
         formated_data = {
             "accounts_data": accounts_data,
