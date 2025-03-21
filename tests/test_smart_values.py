@@ -503,27 +503,27 @@ def test_smart_path():
         (
             ["WEGLD-abcdef"],
             Token("WEGLD-abcdef"),
-            ("TODO"),
+            "WEGLD-abcdef (['WEGLD-abcdef'])",
         ),
         (
             ["NFT-abcdef", 5],
             Token("NFT-abcdef", 5),
-            ("TODO"),
+            "NFT-abcdef-05 (['NFT-abcdef', 5])",
         ),
         (
             {"identifier": "WEGLD-abcdef"},
             Token("WEGLD-abcdef"),
-            ("TODO"),
+            "WEGLD-abcdef ({'identifier': 'WEGLD-abcdef'})",
         ),
         (
             {"identifier": "NFT-abcdef", "nonce": 5},
             Token("NFT-abcdef", 5),
-            ("TODO"),
+            "NFT-abcdef-05 ({'identifier': 'NFT-abcdef', 'nonce': 5})",
         ),
         (
             {"token_identifier": "NFT-abcdef", "token_nonce": 5},
             Token("NFT-abcdef", 5),
-            ("TODO"),
+            "NFT-abcdef-05 ({'token_identifier': 'NFT-abcdef', 'token_nonce': 5})",
         ),
     ],
 )
@@ -539,7 +539,7 @@ def test_smart_token(raw_value: Any, expected_result: Token, expected_str: str):
     evaluated_token = smart_value.get_evaluated_value()
     assert evaluated_token.identifier == expected_result.identifier
     assert evaluated_token.nonce == expected_result.nonce
-    # assert smart_value.get_evaluation_string() == expected_str  # TODO wait for sdk
+    assert smart_value.get_evaluation_string() == expected_str
 
 
 def test_smart_on_chain_transfers():
