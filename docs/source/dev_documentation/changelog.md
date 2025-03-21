@@ -6,6 +6,7 @@
 
 - Inconsistent data path due the snap packages
 - Remove deprecated help description files and use direct descriptors
+- ReadTheDocs build with uv
 
 ### Added
 
