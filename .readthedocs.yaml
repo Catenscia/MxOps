@@ -19,7 +19,7 @@ build:
     # Sync dependencies
     - $HOME/.local/bin/uv sync --group dev
     # add sphinx build
-    - sphinx-build -b html docs/source docs/build
+    - .venv/bin/sphinx-build -b html docs/source $READTHEDOCS_OUTPUT/html
 
 sphinx:
    configuration: docs/source/conf.py
