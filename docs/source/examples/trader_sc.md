@@ -494,6 +494,12 @@ mxops execute -n chain-simulator -s trader_sc_tutorial mxops_scenes/04_buy_sell.
 
 If you inspect the different links in the logs of your console, you will be inspect that your contract indeed interacted well with the jex-pair contract from Jexchange, mission accomplished! 🚀
 
+```{figure} ../_images/trader_sc_transactions.png
+:alt: success transaction for the trader-sc contract
+:align: center
+:target: ../_images/trader_sc_transactions.png
+```
+
 ### 3.C More testing
 
 This is were this simple tutorial ends as we used a really simple contract for our trader. However you could add some conditions, more pools, more complex behavior and test of all this. You could also completely unbalance the Jexchange pool, or pause it and check that you contract handle this well.
