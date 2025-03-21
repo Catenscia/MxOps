@@ -28,6 +28,7 @@
 - `AccountCloneStep`
 - a file cache system per network
 - account cloning now use the cache system
+- id can now be given to any account
 
 
 ### Changed
@@ -49,6 +50,7 @@
 - 🚨 BREAKING CHANGE 🚨 Accounts are now saved by bech32, the name to bech32 translation is done using the storage
 - 🚨 BREAKING CHANGE 🚨 ABIS are now stored using a contract bech32
 - 🚨 BREAKING CHANGE 🚨 Contracts are now handled using contract bech32 by the Scenario Data
+- 🚨 BREAKING CHANGE 🚨 All accounts (user, contracts, internal, external) are now defined under the same "accounts" key in scenes
 
 
 
