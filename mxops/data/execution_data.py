@@ -13,6 +13,7 @@ import os
 from pathlib import Path
 import re
 import shutil
+import sys
 import time
 from typing import Any
 
@@ -47,6 +48,24 @@ def parse_value_key(path) -> list[int | str]:
     return [int(index) if index else key for key, index in tokens]
 
 
+def parse_raw_saved_values_data_data(raw_data: dict) -> SavedValuesData:
+    """
+    Parse raw data into a SavedValuesData or one of its subclasses
+
+    :param raw_data: data to parse
+    :type raw_data: dict
+    :return: instance
+    :rtype: SavedValuesData
+    """
+    data_copy = deepcopy(raw_data)
+    class_name = data_copy.pop("__class__")
+    current_module = sys.modules[__name__]
+    class_type = getattr(current_module, class_name)
+    if not issubclass(class_type, SavedValuesData):
+        raise ValueError(f"Exepted a SavedValuesData class, got {class_type}")
+    return class_type.from_dict(data_copy)
+
+
 @dataclass(kw_only=True)
 class SavedValuesData:
     """
@@ -55,9 +74,9 @@ class SavedValuesData:
 
     saved_values: dict[str, Any] = field(default_factory=dict)
 
-    def _get_element_value_from_single_key(self, element: Any, key: str | int) -> Any:
+    def _get_element_value_from_key(self, element: Any, key: str | int) -> Any:
         """
-        Fetch the value of the element using a single key
+        Fetch the value of the element using a key
 
         :param element: element to explore
         :type element: Any
@@ -88,43 +107,56 @@ class SavedValuesData:
             f"Element must be a dict, a list or a tuple, got {type(element)}"
         )
 
-    def _get_element(self, parsed_value_key: list[str | int]) -> Any:
+    def _get_element(self, parsed_value_key_path: list[str | int]) -> Any:
         """
-        Get the value saved under the specified value key.
+        Get the value saved under the specified value key path.
 
 
-        :param parsed_value_key: parsed elements of a value key
-        :type parsed_value_key: list[str | int]
-        :return: element saved under the value key
+        :param parsed_value_key_path: parsed elements of a value key path
+        :type parsed_value_key_path: list[str | int]
+        :return: element saved under the value key path
         :rtype: Any
         """
-        if len(parsed_value_key) == 0:
+        if len(parsed_value_key_path) == 0:
             raise errors.WrongDataKeyPath("Key path is empty")
+
+        # check if the wanted element is an attribute of the instance
+        if len(parsed_value_key_path) == 1:
+            value_key = parsed_value_key_path[0]
+            if isinstance(value_key, str) and hasattr(self, value_key):
+                return getattr(self, value_key)
+
+        # other fetch it from the saved values
         element = self.saved_values
-        for key in parsed_value_key:
+        for key in parsed_value_key_path:
             try:
-                element = self._get_element_value_from_single_key(element, key)
+                element = self._get_element_value_from_key(element, key)
             except (KeyError, IndexError, ValueError) as err:
                 raise errors.WrongDataKeyPath(
-                    f"Wrong key {repr(key)} from keys {parsed_value_key} for "
+                    f"Wrong key {repr(key)} from keys {parsed_value_key_path} for "
                     f"data element {element}"
                 ) from err
         return element
 
-    def set_value(self, value_key: str, value: Any):
+    def set_value(self, value_key_path: str, value: Any):
         """
-        Set the a value under a specified value key
+        Set the a value under a specified value key path
 
-        :param value_key: value key of the value to fetch
-        :type value_key: str
+        :param value_key_path: value key of the value to fetch
+        :type value_key_path: str
         :param value: value to save
         :type value: Any
         """
-        parsed_value_key = parse_value_key(value_key)
+        parsed_value_key = parse_value_key(value_key_path)
         element = self.saved_values
 
+        if len(parsed_value_key) == 0:
+            raise errors.WrongDataKeyPath("Key path is empty")
+
         # verify the path and create it if necessary
-        if len(parsed_value_key) > 1:
+        if len(parsed_value_key) == 1:
+            next_key = parsed_value_key[0]
+        else:
             for key, next_key in zip(parsed_value_key[:-1], parsed_value_key[1:]):
                 if isinstance(key, int):
                     if isinstance(element, list):
@@ -154,10 +186,6 @@ class SavedValuesData:
                         raise errors.WrongDataKeyPath(
                             f"Expected a dict but found {element}"
                         )
-        elif len(parsed_value_key) == 0:
-            raise errors.WrongDataKeyPath("Key path is empty")
-        else:
-            next_key = parsed_value_key[0]
 
         # set the value
         value_copy = deepcopy(value)  # in case the value is a complex type
@@ -182,72 +210,42 @@ class SavedValuesData:
             else:
                 raise errors.WrongDataKeyPath(f"Expected a dict but found {element}")
 
-    def get_value(self, value_key: str) -> Any:
+    def get_value(self, value_key_path: str) -> Any:
         """
         Fetch a value from the attribute of the class or from the saved value
 
-        :param value_key: key for the value
-        :type value_key: str
+        :param value_key_path: key path for the value
+        :type value_key_path: str
         :return: value saved under the attribute or the value key provided
         :rtype: Any
         """
         try:
-            return getattr(self, value_key)
+            return getattr(self, value_key_path)
         except AttributeError:
             pass
-        parsed_value_key = parse_value_key(value_key)
+        parsed_value_key = parse_value_key(value_key_path)
         return self._get_element(parsed_value_key)
-
-
-@dataclass
-class ContractData(SavedValuesData):
-    """
-    Dataclass representing the data that can be locally saved for a contract
-    """
-
-    contract_id: str
-    bech32: str
-
-    def set_value(self, value_key: str, value: Any):
-        """
-        Set the a value under a specified key
-
-        :param value_key: key to save the value
-        :type value_key: str
-        :param value: value to save
-        :type value: Any
-        """
-        if value_key in ("address", "bech32"):
-            setattr(self, "bech32", value)
-        else:
-            super().set_value(value_key, value)
-
-    def get_value(self, value_key: str) -> Any:
-        """
-        Fetch a value from the attribute of the class or from the saved value
-
-        :param value_key: key for the value
-        :type value_key: str
-        :return: value saved under the attribute or the value key provided
-        :rtype: Any
-        """
-        if value_key in ("address", "bech32"):
-            return self.bech32
-        if value_key == "contract_id":
-            return self.contract_id
-        return super().get_value(value_key)
 
     def to_dict(self) -> dict:
         """
-        Convert this instance to a dictionary
+        Transform this instance to a dictionnary
 
-        :return: this instance as a dictionary
+        :return: dictionary representing this instance
         :rtype: dict
         """
         self_dict = asdict(self)
-        # add attribute to indicate internal/external
-        self_dict["is_external"] = isinstance(self, ExternalContractData)
+        self_dict["__class__"] = self.__class__.__name__
         return self_dict
+
+    @classmethod
+    def from_dict(cls, data: dict) -> SavedValuesData:
+        """
+        Transform data into an instance of this class or subclass
+
+        :return: instance of this class of subclass
+        :rtype: SavedValuesData
+        """
+        return cls(**data)
 
     def __eq__(self, other: Any) -> bool:
         """
@@ -258,9 +256,68 @@ class ContractData(SavedValuesData):
         :return: if the instance is equal to the other object
         :rtype: bool
         """
-        if not isinstance(other, ContractData):
-            raise ValueError(f"Can not compare ContractData with {type(other)}")
+        if not isinstance(other, SavedValuesData):
+            raise ValueError(f"Can not compare {type(self)} with {type(other)}")
         return self.to_dict() == other.to_dict()
+
+
+@dataclass
+class AccountData(SavedValuesData):
+    """
+    Dataclass representing the data that can be locally saved for an account
+    """
+
+    account_id: str
+    bech32: str
+
+    def get_value(self, value_key_path: str) -> Any:
+        """
+        Fetch a value from the attribute of the class or from the saved value
+
+        :param value_key_path: key path for the value
+        :type value_key_path: str
+        :return: value saved under the attribute or the value key provided
+        :rtype: Any
+        """
+        if value_key_path == "address":
+            value_key_path = "bech32"
+        elif value_key_path == "contract_id":
+            value_key_path = "account_id"
+        return super().get_value(value_key_path)
+
+
+@dataclass
+class ContractData(AccountData):
+    """
+    Dataclass representing the data that can be locally saved for a contract
+    It is supposed to be inherited from and not use directly
+    """
+
+    @classmethod
+    def from_dict(cls, data: dict) -> ContractData:
+        """
+        Transform data into an instance of this class or subclass
+
+        :return: instance of this class of subclass
+        :rtype:
+        """
+        data_copy = deepcopy(data)
+        if "contract_id" in data:
+            data_copy["account_id"] = data_copy.pop("contract_id")
+        return super().from_dict(data_copy)
+
+    def get_value(self, value_key_path: str) -> Any:
+        """
+        Fetch a value from the attribute of the class or from the saved value
+
+        :param value_key_path: key path for the value
+        :type value_key_path: str
+        :return: value saved under the attribute or the value key provided
+        :rtype: Any
+        """
+        if value_key_path == "contract_id":
+            value_key_path = "account_id"
+        return super().get_value(value_key_path)
 
 
 @dataclass
@@ -274,33 +331,6 @@ class InternalContractData(ContractData):
     deploy_time: int
     last_upgrade_time: int
 
-    def set_value(self, value_key: str, value: Any):
-        """
-        Set the a value under a specified key
-
-        :param value_key: key to save the value
-        :type value_key: str
-        :param value: value to save
-        :type value: Any
-        """
-        if value_key == "last_upgrade_time":
-            self.last_upgrade_time = value
-        else:
-            super().set_value(value_key, value)
-
-    def __eq__(self, other: Any) -> bool:
-        """
-        Define the equal operator
-
-        :param other: object to compare this instance with
-        :type other: Any
-        :return: if the instance is equal to the other object
-        :rtype: bool
-        """
-        if not isinstance(other, ContractData):
-            raise ValueError(f"Can not compare ContractData with {type(other)}")
-        return self.to_dict() == other.to_dict()
-
 
 @dataclass
 class ExternalContractData(ContractData):
@@ -308,19 +338,6 @@ class ExternalContractData(ContractData):
     Dataclass representing the data that can be locally saved for a contract
     not managed by MxOps
     """
-
-    def __eq__(self, other: Any) -> bool:
-        """
-        Define the equal operator
-
-        :param other: object to compare this instance with
-        :type other: Any
-        :return: if the instance is equal to the other object
-        :rtype: bool
-        """
-        if not isinstance(other, ContractData):
-            raise ValueError(f"Can not compare ContractData with {type(other)}")
-        return self.to_dict() == other.to_dict()
 
 
 @dataclass
@@ -341,7 +358,7 @@ class TokenData(SavedValuesData):
         :return: dictionary representing this instance
         :rtype: dict
         """
-        self_dict = asdict(self)
+        self_dict = super().to_dict()
         self_dict["type"] = self.type.value
         return self_dict
 
@@ -356,7 +373,25 @@ class TokenData(SavedValuesData):
         :rtype: TokenData
         """
         formated_data = {"type": mxops_enums.parse_token_type_enum(data["type"])}
-        return cls(**{**data, **formated_data})
+        return super().from_dict({**data, **formated_data})
+
+
+@dataclass
+class PemAccountData(AccountData):
+    """
+    Defines the data of a user account defined with a PEM
+    """
+
+    pem_path: str
+
+
+@dataclass
+class LedgerAccountData(AccountData):
+    """
+    Defines the data of a user account defined with a ledger
+    """
+
+    ledger_address_index: int
 
 
 @dataclass
@@ -369,13 +404,12 @@ class _ScenarioData(SavedValuesData):
     network: mxops_enums.NetworkEnum
     creation_time: int
     last_update_time: int
-    contracts_data: dict[str, ContractData] = field(default_factory=dict)
-    contract_id_to_bech32: dict[str, str] = field(default_factory=dict)
-    contract_bech32_to_id: dict[str, str] = field(default_factory=dict)
+    accounts_data: dict[str, AccountData] = field(default_factory=dict)
+    account_id_to_bech32: dict[str, str] = field(default_factory=dict)
     tokens_data: dict[str, TokenData] = field(default_factory=dict)
     _abi_cache: dict[str, dict] = field(default_factory=dict, init=False)
 
-    def get_contract_address(self, designation: str | Address) -> Address:
+    def get_account_address(self, designation: str | Address) -> Address:
         """
         Using the stored contracts, return a contract address from a contract id,
         a bech32
@@ -392,14 +426,14 @@ class _ScenarioData(SavedValuesData):
         except BadAddressError:
             pass
         try:
-            bech32 = self.contract_id_to_bech32[designation]
+            bech32 = self.account_id_to_bech32[designation]
             return Address.new_from_bech32(bech32)
         except (KeyError, BadAddressError):
-            raise errors.UnknownContract(self.name, designation)
+            raise errors.UnknownAccount(self.name, designation)
 
-    def get_contract_value(self, designation: Address | str, value_key: str) -> Any:
+    def get_account_value(self, designation: Address | str, value_key: str) -> Any:
         """
-        Return the value of a contract for a given key
+        Return the value of an account for a given key
 
         :param designation: address or id of the contract in the scenario
         :type designation: Address | str
@@ -408,12 +442,12 @@ class _ScenarioData(SavedValuesData):
         :return: value saved under the given key
         :rtype: Any
         """
-        contract_bech32 = self.get_contract_address(designation).to_bech32()
+        account_bech32 = self.get_account_address(designation).to_bech32()
         try:
-            contract = self.contracts_data[contract_bech32]
+            account = self.accounts_data[account_bech32]
         except KeyError as err:
-            raise errors.UnknownContract(self.name, designation) from err
-        return contract.get_value(value_key)
+            raise errors.UnknownAccount(self.name, designation) from err
+        return account.get_value(value_key)
 
     def get_contract_raw_abi(
         self, designation: Address | str, use_cache: bool = True
@@ -430,7 +464,7 @@ class _ScenarioData(SavedValuesData):
         :return: abi of the contract as a json
         :rtype: dict
         """
-        contract_address = self.get_contract_address(designation)
+        contract_address = self.get_account_address(designation)
         contract_bech32 = contract_address.to_bech32()
         if use_cache:
             try:
@@ -480,52 +514,55 @@ class _ScenarioData(SavedValuesData):
         :return: abi of the contract as a json
         :rtype: dict
         """
-        contract_address = self.get_contract_address(contract_designation)
+        contract_address = self.get_account_address(contract_designation)
         file_path = data_path.get_contract_abi_file_path(self.name, contract_address)
         file_path.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(abi_path, file_path)
         _ = self.get_contract_raw_abi(contract_address, use_cache=False)  # update cache
 
-    def set_contract_value(
-        self, contract_designation: Address | str, value_key: str, value: Any
+    def set_account_value(
+        self, account_designation: Address | str, value_key_path: str, value: Any
     ):
         """
-        Set the value of a contract for a given key
+        Set the value of an account for a given key path
 
         :param contract_address: address or id of the contract in the scenario
         :type contract_address: Address | str
-        :param value_key: key for the value to set
-        :type value_key: str
+        :param value_key_path: key path for the value to set
+        :type value_key_path: str
         """
-        contract_address = self.get_contract_address(contract_designation)
-        contract_bech32 = contract_address.to_bech32()
+        account_address = self.get_account_address(account_designation)
+        account_bech32 = account_address.to_bech32()
         try:
-            contract = self.contracts_data[contract_bech32]
+            account = self.accounts_data[account_bech32]
         except KeyError as err:
-            raise errors.UnknownContract(self.name, contract_address) from err
-        contract.set_value(value_key, value)
+            raise errors.UnknownAccount(self.name, account_address) from err
+        account.set_value(value_key_path, value)
         self._set_update_time()
         self.save()
 
-    def add_contract_data(self, contract_data: ContractData):
+    def add_account_data(self, account_data: AccountData):
         """
-        Add a contract data to the scenario
+        Add the data of an account to the scenario
 
-        :param contract_data: data to add to the scenario
-        :type contract_data: ContractData
+        :param account_data: data to add to the scenario
+        :type account_data: AccountData
         """
-
-        if contract_data.contract_id in self.contract_id_to_bech32:
-            raise errors.ContractIdAlreadyExists(contract_data.contract_id)
-        if contract_data.bech32 in self.contract_bech32_to_id:
-            raise errors.ContractAlreadyHasId(
-                contract_data.bech32,
-                self.contract_bech32_to_id[contract_data.bech32],
-                contract_data.contract_id,
+        existing_bech32 = self.account_id_to_bech32.get(account_data.account_id, None)
+        if existing_bech32 is not None and existing_bech32 != account_data.bech32:
+            raise errors.AccoundIdAlreadyhasBech32(
+                account_data.account_id, existing_bech32, account_data.bech32
             )
-        self.contract_id_to_bech32[contract_data.contract_id] = contract_data.bech32
-        self.contract_bech32_to_id[contract_data.bech32] = contract_data.contract_id
-        self.contracts_data[contract_data.bech32] = contract_data
+        if account_data.bech32 in self.accounts_data:
+            existing_id = self.accounts_data[account_data.bech32].account_id
+            if existing_id != account_data.account_id:
+                raise errors.AccountAlreadyHasId(
+                    account_data.bech32,
+                    self.accounts_data[account_data.bech32].account_id,
+                    account_data.account_id,
+                )
+        self.account_id_to_bech32[account_data.account_id] = account_data.bech32
+        self.accounts_data[account_data.bech32] = account_data
         self._set_update_time()
         self.save()
 
@@ -546,21 +583,21 @@ class _ScenarioData(SavedValuesData):
             raise errors.UnknownToken(self.name, token_name) from err
         return token_data.get_value(value_key)
 
-    def set_token_value(self, token_name: str, value_key: str, value: Any):
+    def set_token_value(self, token_name: str, value_key_path: str, value: Any):
         """
         Set the value of a contract for a given key
 
         :param token_name: unique name of the token in the scenario
         :type token_name: str
-        :param value_key: key for the value to set
-        :type value_key: str
+        :param value_key_path: key path for the value to set
+        :type value_key_path: str
         """
         self._set_update_time()
         try:
             token_data = self.tokens_data[token_name]
         except KeyError as err:
             raise errors.UnknownToken(self.name, token_name) from err
-        token_data.set_value(value_key, value)
+        token_data.set_value(value_key_path, value)
         self.save()
 
     def add_token_data(self, token_data: TokenData):
@@ -575,52 +612,52 @@ class _ScenarioData(SavedValuesData):
             raise errors.TokenNameAlreadyExists(token_data.name)
         self.tokens_data[token_data.name] = token_data
 
-    def get_value(self, value_key: str) -> Any:
+    def get_value(self, value_key_path: str) -> Any:
         """
         Search within tokens data, contracts data and scenario saved values,
         the value saved under the provided key
 
-        :param value_key: key under which the value is savedd
-        :type value_key: str
+        :param value_key_path: key path under which the value is savedd
+        :type value_key_path: str
         :return: value saved
         :rtype: Any
         """
-        parsed_value_key = parse_value_key(value_key)
+        parsed_value_key = parse_value_key(value_key_path)
         if len(parsed_value_key) > 1:
             root_name = parsed_value_key[0]
-            value_sub_key = value_key[len(root_name) + 1 :]  # remove also the dot
+            value_sub_key = value_key_path[len(root_name) + 1 :]  # remove also the dot
             try:
-                return self.get_contract_value(root_name, value_sub_key)
-            except errors.UnknownContract:
+                return self.get_account_value(root_name, value_sub_key)
+            except errors.UnknownAccount:
                 pass
             try:
                 return self.get_token_value(root_name, value_sub_key)
             except errors.UnknownToken:
                 pass
-        return super().get_value(value_key)
+        return super().get_value(value_key_path)
 
-    def set_value(self, value_key: str, value: Any):
+    def set_value(self, value_key_path: str, value: Any):
         """
-        Set the a value under a specified value key
+        Set the a value under a specified value key path
 
-        :param value_key: value key of the value to fetch
-        :type value_key: str
+        :param value_key_path: value key path of the value to fetch
+        :type value_key_path: str
         :param value: value to save
         :type value: Any
         """
-        parsed_value_key = parse_value_key(value_key)
+        parsed_value_key = parse_value_key(value_key_path)
         if len(parsed_value_key) > 1:
             root_name = parsed_value_key[0]
-            value_sub_key = value_key[len(root_name) + 1 :]  # remove also the dot
+            value_sub_key = value_key_path[len(root_name) + 1 :]  # remove also the dot
             try:
-                return self.set_contract_value(root_name, value_sub_key, value)
-            except errors.UnknownContract:
+                return self.set_account_value(root_name, value_sub_key, value)
+            except errors.UnknownAccount:
                 pass
             try:
                 return self.set_token_value(root_name, value_sub_key, value)
             except errors.UnknownToken:
                 pass
-        return super().set_value(value_key, value)
+        return super().set_value(value_key_path, value)
 
     def save(self):
         """
@@ -709,27 +746,18 @@ class _ScenarioData(SavedValuesData):
         :return: _ScenarioData instance corresponding to the provided data
         :rtype: ScenarioData
         """
-        contracts_data = {}
-        for contract_bech32, contract_data in data["contracts_data"].items():
-            if isinstance(contract_data, dict):
-                try:
-                    is_external = contract_data.pop("is_external")
-                except KeyError:
-                    is_external = False
-                if is_external:
-                    contracts_data[contract_bech32] = ExternalContractData(
-                        **contract_data
-                    )
-                else:
-                    contracts_data[contract_bech32] = InternalContractData(
-                        **contract_data
-                    )
+        accounts_data = data.get("accounts_data", {})
+        accounts_data = {
+            k: parse_raw_saved_values_data_data(v) for k, v in accounts_data.items()
+        }
 
         tokens_data = data.get("tokens_data", {})
-        tokens_data = {k: TokenData.from_dict(v) for k, v in tokens_data.items()}
+        tokens_data = {
+            k: parse_raw_saved_values_data_data(v) for k, v in tokens_data.items()
+        }
 
         formated_data = {
-            "contracts_data": contracts_data,
+            "accounts_data": accounts_data,
             "tokens_data": tokens_data,
             "network": mxops_enums.parse_network_enum(data["network"]),
         }

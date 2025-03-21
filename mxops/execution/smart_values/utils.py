@@ -17,7 +17,6 @@ from simpleeval import EvalWithCompoundTypes
 from mxops import errors
 from mxops.config.config import Config
 from mxops.data.execution_data import ScenarioData
-from mxops.execution.account import AccountsManager
 
 
 def replace_escaped_characters(s: str) -> str:
@@ -207,17 +206,10 @@ def get_address_instance(raw_address: str) -> Address:
 
     # else try to see if it is a valid contract id or account name
     try:
-        evaluated_address_str = retrieve_value_from_string(f"%{raw_address}.address")
-        return Address.from_bech32(evaluated_address_str)
-    except (BadAddressError, errors.WrongDataKeyPath):
-        pass
-
-    # finally try to see if it designates a defined account
-    try:
-        account = AccountsManager.get_account(raw_address)
-        return account.address
+        return ScenarioData.get().get_account_address(raw_address)
     except errors.UnknownAccount:
         pass
+
     raise errors.ParsingError(raw_address, "address_str address")
 
 

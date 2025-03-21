@@ -112,17 +112,15 @@ class UnloadedScenario(Exception):
         super().__init__(message)
 
 
-class UnknownContract(Exception):
+class UnknownAccount(Exception):
     """
-    To be raised when a specified contract is not found in a scenario
+    To be raised when a specified account is not found in a scenario
     """
 
-    def __init__(self, scenario_name: str, contract_designation: str | Address) -> None:
-        if isinstance(contract_designation, Address):
-            contract_designation = contract_designation.to_bech32()
-        message = (
-            f"Contract {contract_designation} is unkown in scenario {scenario_name}"
-        )
+    def __init__(self, scenario_name: str, account_designation: str | Address) -> None:
+        if isinstance(account_designation, Address):
+            account_designation = account_designation.to_bech32()
+        message = f"Account {account_designation} is unkown in scenario {scenario_name}"
         super().__init__(message)
 
 
@@ -139,34 +137,37 @@ class UnknownAbiContract(Exception):
         super().__init__(message)
 
 
-class UnknownAccount(Exception):
+class AccoundIdAlreadyExists(Exception):
     """
-    To be raised when a specified account is not found in a scene
+    To be raised when trying to assign a new id that already exist
     """
 
-    def __init__(self, account_name: str) -> None:
-        message = f"Account {account_name} is unkown in the current scene"
+    def __init__(self, account_id: str) -> None:
+        message = f"Account id {account_id} already exists"
         super().__init__(message)
 
 
-class ContractIdAlreadyExists(Exception):
+class AccoundIdAlreadyhasBech32(Exception):
     """
-    To be raised when there is a conflict with contract id
+    To be raised when there is a conflict with an account id
     """
 
-    def __init__(self, contract_id: str) -> None:
-        message = f"Contract id {contract_id} already exists"
+    def __init__(self, account_id: str, existing_bech32: str, new_bech32: str) -> None:
+        message = (
+            f"Account id {account_id} already had the address {existing_bech32}"
+            f"when trying to set it to the address {new_bech32}"
+        )
         super().__init__(message)
 
 
-class ContractAlreadyHasId(Exception):
+class AccountAlreadyHasId(Exception):
     """
-    To be raised when there is a conflict with contract bech32
+    To be raised when there is a conflict with an account bech32
     """
 
     def __init__(self, contract_bech32: str, existing_id: str, new_id: str) -> None:
         message = (
-            f"Contract {contract_bech32} already had the id {existing_id}"
+            f"Account {contract_bech32} already had the id {existing_id}"
             f" when trying to set the id {new_id}"
         )
         super().__init__(message)
@@ -457,6 +458,12 @@ class InvalidCheckDefinition(Exception):
 class InvalidQueryResultsDefinition(Exception):
     """
     to be raise when the results types of a query are not correctly defined
+    """
+
+
+class InvalidSceneDefinition(Exception):
+    """
+    to be raise when a scene is not correctly defined
     """
 
 

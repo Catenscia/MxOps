@@ -16,7 +16,7 @@ from multiversx_sdk.core.errors import BadAddressError
 
 from mxops import errors
 from mxops.common.providers import MyProxyNetworkProvider
-from mxops.data.execution_data import ScenarioData
+from mxops.data.execution_data import LedgerAccountData, PemAccountData, ScenarioData
 
 
 class AccountsManager:
@@ -49,9 +49,7 @@ class AccountsManager:
             file_path = Path(folder_path) / file_name
             if file_path.suffix == ".pem":
                 loaded_account_addresses.append(
-                    cls.load_register_pem_account(
-                        file_path, account_name=file_path.stem
-                    )
+                    cls.load_register_pem_account(file_path, account_id=file_path.stem)
                 )
                 loaded_accounts_names.append(file_path.stem)
         scenario_data = ScenarioData.get()
@@ -60,59 +58,74 @@ class AccountsManager:
 
     @classmethod
     def load_register_pem_account(
-        cls, pem_path: str | Path, account_name: str | None = None
+        cls, pem_path: str | Path, account_id: str | None = None
     ) -> Address:
         """
         Load a pem account and register it
 
         :param pem_path: path to the PEM file
         :type pem_path: str | Path
-        :param account_name: name of the account for easier reference, defaults to None
-        :type account_name: str | None
+        :param account_id: id of the account for easier reference, defaults to None
+        :type account_id: str | None
         :return: address of the loaded account
         :rtype: Address
         """
         if isinstance(pem_path, str):
             pem_path = Path(pem_path)
         account = Account.new_from_pem(pem_path)
-        cls.register_account(account, account_name)
+        cls.register_account(account, account_id)
+        ScenarioData.get().add_account_data(
+            PemAccountData(
+                account_id=account_id,
+                bech32=account.address.to_bech32(),
+                pem_path=pem_path.as_posix(),
+            )
+        )
         return account.address
 
     @classmethod
     def load_register_ledger_account(
-        cls, ledger_address_index: int, account_name: str | None = None
-    ) -> str:
+        cls, ledger_address_index: int, account_id: str | None = None
+    ) -> Address:
         """
         Load a Ledger account and register it
 
         :param ledger_address_index: index of the ledger address
         :type ledger_address_index: int
-        :param account_name: name of the account for easier reference, defaults to None
-        :type account_name: str | None
+        :param account_id: id of the account for easier reference, defaults to None
+        :type account_id: str | None
         :return: address of the loaded account
         :rtype: Address
         """
         account = LedgerAccount(ledger_address_index)
-        cls.register_account(account, account_name)
+        cls.register_account(account, account_id)
+        ScenarioData.get().add_account_data(
+            LedgerAccountData(
+                account_id=account_id,
+                bech32=account.address.to_bech32(),
+                ledger_address_index=ledger_address_index,
+            )
+        )
         return account.address
 
     @classmethod
     def register_account(
-        cls, account: Account | LedgerAccount, account_name: str | None = None
+        cls, account: Account | LedgerAccount, account_id: str | None = None
     ):
         """
         Register an account in the accounts manager using its bech32 address
 
         :param account: account to register
         :type account: Account | LedgerAccount
-        :param account_name: name of the account for easier reference, defaults to None
-        :type account_name: str | None
+        :param account_id: id of the account for easier reference, defaults to None
+        :type account_id: str | None
         """
-        account_address = account.address.to_bech32()
-        cls._accounts[account_address] = account
-        if account_name is not None and account_name != account_address:
+        account_bech32 = account.address.to_bech32()
+        cls._accounts[account_bech32] = account
+        if account_id is not None and account_id != account_bech32:
             scenario_data = ScenarioData.get()
-            scenario_data.set_value(f"{account_name}.address", account_address)
+            scenario_data.set_value(f"{account_id}.address", account_bech32)
+        cls.sync_account(account.address)
 
     @classmethod
     def get_account(cls, account_designation: str | Address) -> Account | LedgerAccount:
@@ -134,7 +147,7 @@ class AccountsManager:
                 account_address = None
 
         if account_address is not None:
-            account_bech32 = account_designation.bech32()
+            account_bech32 = account_address.bech32()
         else:
             scenario_data = ScenarioData.get()
             try:
@@ -142,11 +155,15 @@ class AccountsManager:
                     f"{account_designation}.address"
                 )
             except errors.WrongDataKeyPath as err:
-                raise errors.UnknownAccount(account_designation) from err
+                raise errors.UnknownAccount(
+                    ScenarioData.get().name, account_designation
+                ) from err
         try:
             return cls._accounts[account_bech32]
         except KeyError as err:
-            raise errors.UnknownAccount(account_designation) from err
+            raise errors.UnknownAccount(
+                ScenarioData.get().name, account_designation
+            ) from err
 
     @classmethod
     def sync_account(cls, account_designation: str | Address):
@@ -168,5 +185,5 @@ class AccountsManager:
         Synchronise the nonces of all the account by calling the
         MultiversX proxy.
         """
-        for account_name in cls._accounts:
-            cls.sync_account(account_name)
+        for account_bech32 in cls._accounts:
+            cls.sync_account(account_bech32)

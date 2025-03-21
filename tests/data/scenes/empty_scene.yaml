@@ -5,8 +5,8 @@ allowed_networks:
 allowed_scenario:
   - ".*"
 
-external_contracts:
-  adder:
+accounts:
+  - account_id: adder
     address: erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc
     abi_path: tests/data/abis/adder.abi.json
 

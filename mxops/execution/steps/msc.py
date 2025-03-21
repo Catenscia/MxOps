@@ -173,7 +173,6 @@ class PythonStep(Step):
         spec = spec_from_file_location(module_name, module_path.as_posix())
         user_module = module_from_spec(spec)
         spec.loader.exec_module(user_module)
-        function = utils.retrieve_value_from_string(function)
         user_function = getattr(user_module, function)
 
         # transform args and kwargs and execute

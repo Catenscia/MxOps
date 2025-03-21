@@ -18,7 +18,7 @@ allowed_scenario:
   - ".*"
 
 accounts:
-  - account_name: alice  
+  - account_id: alice  
     pem_path: ./wallets/alice.pem
 
 steps:
@@ -119,7 +119,7 @@ allowed_scenario:
   - ".*"
 
 accounts:
-  - account_name: alice  
+  - account_id: alice  
     pem_path: ./wallets/alice.pem
 
 steps:

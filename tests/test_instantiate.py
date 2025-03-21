@@ -73,7 +73,12 @@ def test_deploy_scene_instantiation(test_data_folder_path: Path):
 
     assert expected_steps == loaded_steps
     assert scene.accounts == [
-        {"account_name": "owner", "pem_path": "wallets/local_owner.pem"}
+        {"account_id": "owner", "pem_path": "wallets/local_owner.pem"},
+        {
+            "abi_path": "tests/data/abis/adder.abi.json",
+            "account_id": "adder",
+            "address": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc",
+        },
     ]
     assert scene.allowed_networks == ["localnet"]
     assert scene.allowed_scenario == [".*"]
@@ -106,7 +111,6 @@ def test_default_loading(test_data_folder_path: Path):
     # Then
     assert len(scene.steps) == 0
     assert len(scene.accounts) == 0
-    assert len(scene.external_contracts) == 0
     assert scene.allowed_networks == [
         "devnet",
         "testnet",

@@ -24,7 +24,7 @@ Here, MxOps is used to issue a fungible token, assign mint and burn roles to the
 
 ```yaml
 accounts:  # define the accounts to use
-  - account_name: alice
+  - account_id: alice
     pem_path: ./wallets/alice.pem
 
 steps:
@@ -59,8 +59,8 @@ MxOps is used below to fetch information from the [live Onedex contract](https:/
 allowed_networks:
     - mainnet
 
-external_contracts:
-  onedex-swap: 
+accounts:
+  - account_id: onedex-swap
     address: erd1qqqqqqqqqqqqqpgqqz6vp9y50ep867vnr296mqf3dduh6guvmvlsu3sujc
     abi_path: ./abis/onedex-sc.abi.json
 
@@ -174,7 +174,7 @@ Here is the above `Scene`, but this time with the MxOps syntax:
     - deploy_stake_withdraw
 
   accounts:
-    - account_name: owner
+    - account_id: owner
       pem_path: ./wallets/my_devnet_wallet.pem
 
   steps:

@@ -70,9 +70,9 @@ class ContractDeployStep(TransactionStep):
         # check that the id of the contract is free
         contract_id = self.contract_id.get_evaluated_value()
         try:
-            scenario_data.get_contract_value(contract_id, "address")
-            raise errors.ContractIdAlreadyExists(contract_id)
-        except errors.UnknownContract:
+            scenario_data.get_account_value(contract_id, "address")
+            raise errors.AccoundIdAlreadyExists(contract_id)
+        except errors.UnknownAccount:
             pass
 
         if self.abi_path is not None:
@@ -126,14 +126,14 @@ class ContractDeployStep(TransactionStep):
         # register the new contract
         file_hash = get_file_hash(self.wasm_path.get_evaluated_value())
         contract_data = InternalContractData(
-            contract_id=contract_id,
+            account_id=contract_id,
             bech32=contract_address.to_bech32(),
             saved_values={},
             wasm_hash=file_hash,
             deploy_time=on_chain_tx.timestamp,
             last_upgrade_time=on_chain_tx.timestamp,
         )
-        scenario_data.add_contract_data(contract_data)
+        scenario_data.add_account_data(contract_data)
 
         # save the abi
         scenario_data.set_contract_abi_from_source(
@@ -204,10 +204,10 @@ class ContractUpgradeStep(TransactionStep):
             contract_address, self.abi_path.get_evaluated_value()
         )
         try:
-            scenario_data.set_contract_value(
+            scenario_data.set_account_value(
                 contract_address, "last_upgrade_time", on_chain_tx.timestamp
             )
-        except errors.UnknownContract:  # any contract can be upgraded
+        except errors.UnknownAccount:  # any contract can be upgraded
             pass
 
 
@@ -299,7 +299,7 @@ class ContractCallStep(TransactionStep):
             to_save = results_save_keys.parse_data_to_save(self.returned_data_parts)
             for save_key, value in to_save.items():
                 if save_key is not None:
-                    scenario_data.set_contract_value(contract_address, save_key, value)
+                    scenario_data.set_account_value(contract_address, save_key, value)
                     self.saved_results[save_key] = value
 
         if self.print_results:
@@ -342,7 +342,7 @@ class ContractQueryStep(Step):
         to_save = results_save_keys.parse_data_to_save(self.returned_data_parts)
         for save_key, value in to_save.items():
             if save_key is not None:
-                scenario_data.set_contract_value(
+                scenario_data.set_account_value(
                     self.contract.get_evaluated_value(), save_key, value
                 )
                 self.saved_results[save_key] = value
@@ -581,7 +581,7 @@ class FileFuzzerStep(Step):
             return
 
         scenario_data = ScenarioData.get()
-        results = scenario_data.get_contract_value(contract_address, save_key)
+        results = scenario_data.get_account_value(contract_address, save_key)
         if results != execution_parameters.expected_outputs.get_evaluated_value():
             raise errors.FuzzTestFailed(
                 f"Outputs are different from expected: found {results} but wanted "
@@ -612,7 +612,7 @@ class FileFuzzerStep(Step):
             return
 
         scenario_data = ScenarioData.get()
-        results = scenario_data.get_contract_value(contract_address, save_key)
+        results = scenario_data.get_account_value(contract_address, save_key)
         if results != execution_parameters.expected_outputs.get_evaluated_value():
             raise errors.FuzzTestFailed(
                 f"Outputs are different from expected: found {results} but wanted "

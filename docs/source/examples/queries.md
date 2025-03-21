@@ -14,8 +14,9 @@ allowed_networks:
 allowed_scenario:
     - .*
 
-external_contracts:
-  xexchange-wegld-usdc: erd1qqqqqqqqqqqqqpgqeel2kumf0r8ffyhth7pqdujjat9nx0862jpsg2pqaq
+accounts:
+  - account_id: xexchange-wegld-usdc
+    address: erd1qqqqqqqqqqqqqpgqeel2kumf0r8ffyhth7pqdujjat9nx0862jpsg2pqaq
 
 steps:
 
@@ -57,8 +58,8 @@ allowed_networks:
 allowed_scenario:
     - .*
 
-external_contracts:
-  onedex-swap: 
+accounts:
+  - account_id: onedex-swap
     address: erd1qqqqqqqqqqqqqpgqqz6vp9y50ep867vnr296mqf3dduh6guvmvlsu3sujc
     abi_path: ./abis/onedex-sc.abi.json
 
@@ -107,8 +108,9 @@ allowed_networks:
 allowed_scenario:
     - .*
 
-external_contracts:
-  xexchange-wegld-usdc: erd1qqqqqqqqqqqqqpgqeel2kumf0r8ffyhth7pqdujjat9nx0862jpsg2pqaq
+accounts:
+  - account_id: xexchange-wegld-usdc
+    address: erd1qqqqqqqqqqqqqpgqeel2kumf0r8ffyhth7pqdujjat9nx0862jpsg2pqaq
 
 steps:
 

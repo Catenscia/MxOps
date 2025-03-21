@@ -309,10 +309,10 @@ def test_python_step():
 
     # When
     step_1.execute()
-    value_1 = scenario_data.get_contract_value("my_test_contract", "my_test_key")
+    value_1 = scenario_data.get_account_value("my_test_contract", "my_test_key")
     scenario_value_1 = scenario_data.get_value("result_1")
     step_2.execute()
-    value_2 = scenario_data.get_contract_value("my_test_contract", "my_test_key")
+    value_2 = scenario_data.get_account_value("my_test_contract", "my_test_key")
     scenario_value_2 = scenario_data.get_value("result_2")
 
     # Then
