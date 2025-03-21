@@ -409,14 +409,30 @@ class _ScenarioData(SavedValuesData):
     tokens_data: dict[str, TokenData] = field(default_factory=dict)
     _abi_cache: dict[str, dict] = field(default_factory=dict, init=False)
 
-    def get_account_address(self, designation: str | Address) -> Address:
+    def get_account_data(self, designation: str | Address) -> AccountData:
         """
-        Using the stored contracts, return a contract address from a contract id,
-        a bech32
+        Using the stored contracts, return a contract from a contract id,
+        a bech32 or an address
 
         :param designation: designation of the contract
         :type designation: str | Address
-        :return: address of the contract
+        :return: data of the account
+        :rtype: AddrAccountDataess
+        """
+        account_address = self.get_account_address(designation)
+        try:
+            return self.accounts_data[account_address.to_bech32()]
+        except KeyError as err:
+            raise errors.UnknownAccount(self.name, designation) from err
+
+    def get_account_address(self, designation: str | Address) -> Address:
+        """
+        Using the stored account, return an account address from a contract id,
+        a bech32 or an address
+
+        :param designation: designation of the contract
+        :type designation: str | Address
+        :return: address of the account
         :rtype: Address
         """
         if isinstance(designation, Address):
