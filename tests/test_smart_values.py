@@ -74,6 +74,16 @@ from mxops.execution.smart_values.factory import extract_first_smart_value_class
         (r"={dict(a=156)}", {"a": 156}, "{'a': 156} (={dict(a=156)})"),
         (r"={\{'a': 156\}}", {"a": 156}, "{'a': 156} (={{'a': 156}})"),
         (r"={{'a': 156}}", {"a": 156}, "{'a': 156} (={{'a': 156}})"),
+        (
+            "%alice.address",
+            "erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3",
+            "erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3 (%alice.address)",  # noqa
+        ),
+        (
+            "%alice.bech32",
+            "erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3",
+            "erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3 (%alice.bech32)",  # noqa
+        ),
     ],
 )
 def test_smart_value(raw_value: Any, expected_result: Any, expected_str: str):
