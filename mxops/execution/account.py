@@ -12,11 +12,14 @@ from multiversx_sdk import (
     Address,
     LedgerAccount,
 )
-from multiversx_sdk.core.errors import BadAddressError
 
 from mxops import errors
 from mxops.common.providers import MyProxyNetworkProvider
 from mxops.data.execution_data import LedgerAccountData, PemAccountData, ScenarioData
+from mxops.utils.logger import get_logger
+
+
+LOGGER = get_logger("execution accounts")
 
 
 class AccountsManager:
@@ -73,7 +76,6 @@ class AccountsManager:
         if isinstance(pem_path, str):
             pem_path = Path(pem_path)
         account = Account.new_from_pem(pem_path)
-        cls.register_account(account, account_id)
         ScenarioData.get().add_account_data(
             PemAccountData(
                 account_id=account_id,
@@ -81,6 +83,7 @@ class AccountsManager:
                 pem_path=pem_path.as_posix(),
             )
         )
+        cls._register_account(account)
         return account.address
 
     @classmethod
@@ -98,7 +101,6 @@ class AccountsManager:
         :rtype: Address
         """
         account = LedgerAccount(ledger_address_index)
-        cls.register_account(account, account_id)
         ScenarioData.get().add_account_data(
             LedgerAccountData(
                 account_id=account_id,
@@ -106,25 +108,19 @@ class AccountsManager:
                 ledger_address_index=ledger_address_index,
             )
         )
+        cls._register_account(account)
         return account.address
 
     @classmethod
-    def register_account(
-        cls, account: Account | LedgerAccount, account_id: str | None = None
-    ):
+    def _register_account(cls, account: Account | LedgerAccount):
         """
         Register an account in the accounts manager using its bech32 address
 
         :param account: account to register
         :type account: Account | LedgerAccount
-        :param account_id: id of the account for easier reference, defaults to None
-        :type account_id: str | None
         """
         account_bech32 = account.address.to_bech32()
         cls._accounts[account_bech32] = account
-        if account_id is not None and account_id != account_bech32:
-            scenario_data = ScenarioData.get()
-            scenario_data.set_value(f"{account_id}.address", account_bech32)
         cls.sync_account(account.address)
 
     @classmethod
@@ -138,28 +134,27 @@ class AccountsManager:
         :return: account under the provided name
         :rtype: Account | LedgerAccount
         """
-        if isinstance(account_designation, Address):
-            account_address = account_designation
-        else:
-            try:
-                account_address = Address.new_from_bech32(account_designation)
-            except BadAddressError:
-                account_address = None
-
-        if account_address is not None:
-            account_bech32 = account_address.bech32()
-        else:
-            scenario_data = ScenarioData.get()
-            try:
-                account_bech32 = scenario_data.get_value(
-                    f"{account_designation}.address"
+        scenario_data = ScenarioData.get()
+        account_data = scenario_data.get_account_data(account_designation)
+        if account_data.bech32 not in cls._accounts:
+            LOGGER.info(
+                f"account {account_designation} is missing, reloading from "
+                "scenario data"
+            )
+            if isinstance(account_data, PemAccountData):
+                cls.load_register_pem_account(
+                    account_data.pem_path, account_data.account_id
                 )
-            except errors.WrongDataKeyPath as err:
-                raise errors.UnknownAccount(
-                    ScenarioData.get().name, account_designation
-                ) from err
+            elif isinstance(account_data, LedgerAccountData):
+                cls.load_register_ledger_account(
+                    account_data.ledger_address_index, account_data.account_id
+                )
+            else:
+                raise ValueError(
+                    f"Account data of type {type(account_data)} is not handled"
+                )
         try:
-            return cls._accounts[account_bech32]
+            return cls._accounts[account_data.bech32]
         except KeyError as err:
             raise errors.UnknownAccount(
                 ScenarioData.get().name, account_designation

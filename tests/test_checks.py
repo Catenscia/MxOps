@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 import re
 
-from multiversx_sdk import Account, Address, Token
+from multiversx_sdk import Address, Token
 from multiversx_sdk.network_providers.http_resources import (
     transaction_from_proxy_response,
 )
@@ -10,7 +10,6 @@ import pytest
 
 from mxops.data.execution_data import InternalContractData, ScenarioData
 from mxops.errors import CheckFailed
-from mxops.execution.account import AccountsManager
 from mxops.execution.checks import SuccessCheck, TransfersCheck
 from mxops.execution.msc import OnChainTokenTransfer
 from mxops.execution.smart_values import SmartOnChainTokenTransfer
@@ -18,10 +17,6 @@ from mxops.execution.smart_values import SmartOnChainTokenTransfer
 
 def test_onchain_and_expected_transfer_equality():
     # Given
-    AccountsManager.register_account(
-        account=Account.new_from_pem(Path("./tests/data/wallets_folder/alice.pem")),
-        account_id="owner",
-    )
     scenario = ScenarioData.get()
     contract_data = InternalContractData(
         account_id="egld-ping-pong",
@@ -35,7 +30,7 @@ def test_onchain_and_expected_transfer_equality():
 
     expected_transfer = SmartOnChainTokenTransfer(
         {
-            "sender": "%owner.address",
+            "sender": "alice",
             "receiver": "%egld-ping-pong.address",
             "token_identifier": "EGLD",
             "amount": "%egld-ping-pong.PingAmount",

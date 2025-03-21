@@ -74,6 +74,16 @@ from mxops.execution.smart_values.factory import extract_first_smart_value_class
         (r"={dict(a=156)}", {"a": 156}, "{'a': 156} (={dict(a=156)})"),
         (r"={\{'a': 156\}}", {"a": 156}, "{'a': 156} (={{'a': 156}})"),
         (r"={{'a': 156}}", {"a": 156}, "{'a': 156} (={{'a': 156}})"),
+        (
+            "%alice.address",
+            "erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3",
+            "erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3 (%alice.address)",  # noqa
+        ),
+        (
+            "%alice.bech32",
+            "erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3",
+            "erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3 (%alice.bech32)",  # noqa
+        ),
     ],
 )
 def test_smart_value(raw_value: Any, expected_result: Any, expected_str: str):
@@ -503,27 +513,27 @@ def test_smart_path():
         (
             ["WEGLD-abcdef"],
             Token("WEGLD-abcdef"),
-            ("TODO"),
+            "WEGLD-abcdef (['WEGLD-abcdef'])",
         ),
         (
             ["NFT-abcdef", 5],
             Token("NFT-abcdef", 5),
-            ("TODO"),
+            "NFT-abcdef-05 (['NFT-abcdef', 5])",
         ),
         (
             {"identifier": "WEGLD-abcdef"},
             Token("WEGLD-abcdef"),
-            ("TODO"),
+            "WEGLD-abcdef ({'identifier': 'WEGLD-abcdef'})",
         ),
         (
             {"identifier": "NFT-abcdef", "nonce": 5},
             Token("NFT-abcdef", 5),
-            ("TODO"),
+            "NFT-abcdef-05 ({'identifier': 'NFT-abcdef', 'nonce': 5})",
         ),
         (
             {"token_identifier": "NFT-abcdef", "token_nonce": 5},
             Token("NFT-abcdef", 5),
-            ("TODO"),
+            "NFT-abcdef-05 ({'token_identifier': 'NFT-abcdef', 'token_nonce': 5})",
         ),
     ],
 )
@@ -539,7 +549,7 @@ def test_smart_token(raw_value: Any, expected_result: Token, expected_str: str):
     evaluated_token = smart_value.get_evaluated_value()
     assert evaluated_token.identifier == expected_result.identifier
     assert evaluated_token.nonce == expected_result.nonce
-    # assert smart_value.get_evaluation_string() == expected_str  # TODO wait for sdk
+    assert smart_value.get_evaluation_string() == expected_str
 
 
 def test_smart_on_chain_transfers():

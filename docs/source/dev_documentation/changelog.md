@@ -29,6 +29,7 @@
 - a file cache system per network
 - account cloning now use the cache system
 - id can now be given to any account
+- user accounts are now auto reloaded from scenario data (no need to supply them at each execution)
 
 
 ### Changed
