@@ -266,12 +266,18 @@ def test_token_data_loading():
     }
 
 
-def test_io_unicity():
+@pytest.mark.parametrize(
+    "scenario_path",
+    [
+        Path("tests/data/scenarios/scenario_D.json"),
+        Path("tests/data/scenarios/scenario_E.json"),
+    ],
+)
+def test_io_unicity(scenario_path: Path):
     """
     Test the loading and writing are consistent
     """
     # Given
-    scenario_path = Path("tests/data/scenarios/scenario_D.json")
     with open(scenario_path.as_posix(), encoding="utf-8") as file:
         raw_data = json.load(file)
 
