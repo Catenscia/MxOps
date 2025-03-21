@@ -8,11 +8,16 @@ build:
   tools:
     python: "3.10"
   commands:
-    - curl -LsSf https://astral.sh/uv/install.sh | sh && export PATH="$HOME/.cargo/bin:$PATH"
-    - $HOME/.cargo/bin/uv --version
-    - $HOME/.cargo/bin/uv venv
+    # Install uv and update PATH to the correct location
+    - curl -LsSf https://astral.sh/uv/install.sh | sh && export PATH="$HOME/.local/bin:$PATH"
+    # Verify uv is installed
+    - $HOME/.local/bin/uv --version
+    # Create virtual env
+    - $HOME/.local/bin/uv venv
+    # Activate it with the dot operator
     - . .venv/bin/activate
-    - $HOME/.cargo/bin/uv sync --group dev
+    # Sync dependencies
+    - $HOME/.local/bin/uv sync --group dev
 
 sphinx:
    configuration: docs/source/conf.py
