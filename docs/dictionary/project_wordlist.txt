@@ -46,6 +46,7 @@ pylint
 QuoteToken
 runtime
 ScenarioData
+SceneStep
 SuccessCheck
 TransfersCheck
 uint
