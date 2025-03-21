@@ -139,11 +139,24 @@ class UnknownAbiContract(Exception):
 
 class AccoundIdAlreadyExists(Exception):
     """
-    To be raised when there is a conflict with an account id
+    To be raised when trying to assign a new id that already exist
     """
 
     def __init__(self, account_id: str) -> None:
         message = f"Account id {account_id} already exists"
+        super().__init__(message)
+
+
+class AccoundIdAlreadyhasBech32(Exception):
+    """
+    To be raised when there is a conflict with an account id
+    """
+
+    def __init__(self, account_id: str, existing_bech32: str, new_bech32: str) -> None:
+        message = (
+            f"Account id {account_id} already had the address {existing_bech32}"
+            f"when trying to set it to the address {new_bech32}"
+        )
         super().__init__(message)
 
 

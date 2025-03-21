@@ -1,10 +1,13 @@
 import os
 from pathlib import Path
+from multiversx_sdk import AccountOnNetwork, Address
 import pytest
 from unittest.mock import patch
 
 from multiversx_sdk.network_providers.resources import NetworkConfig
+import pytest_mock
 
+from mxops.common.providers import MyProxyNetworkProvider
 from mxops.config.config import Config
 from mxops.data.execution_data import (
     ExternalContractData,
@@ -92,8 +95,21 @@ def scenario_data(network):  # must be executed after the network fixture
     delete_scenario_data("pytest_scenario", ask_confirmation=False)
 
 
-@pytest.fixture(scope="session", autouse=True)
-def accounts_manager(scenario_data):  # scenario data must be initialized
+def mocked_get_account(address: Address) -> AccountOnNetwork:
+    return AccountOnNetwork(
+        raw={}, address=address, nonce=0, balance=0, is_guarded=False
+    )
+
+
+@pytest.fixture(autouse=True)
+def mock_account_requests(mocker: pytest_mock.MockerFixture):
+    proxy_provider = MyProxyNetworkProvider()
+    proxy_provider.get_account
+    mocker.patch.object(proxy_provider, "get_account", side_effect=mocked_get_account)
+
+
+@pytest.fixture(autouse=True)
+def accounts_manager(mock_account_requests):  # needs to be execute after
     accounts_manager = AccountsManager()
     accounts_manager.load_register_pem_account(
         pem_path=Path("./tests/data/test_user_A.pem"),

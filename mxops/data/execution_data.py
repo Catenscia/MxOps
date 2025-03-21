@@ -534,15 +534,19 @@ class _ScenarioData(SavedValuesData):
         :param account_data: data to add to the scenario
         :type account_data: AccountData
         """
-
-        if account_data.account_id in self.account_id_to_bech32:
-            raise errors.AccoundIdAlreadyExists(account_data.account_id)
-        if account_data.bech32 in self.accounts_data:
-            raise errors.AccountAlreadyHasId(
-                account_data.bech32,
-                self.accounts_data[account_data.bech32].account_id,
-                account_data.account_id,
+        existing_bech32 = self.account_id_to_bech32.get(account_data.account_id, None)
+        if existing_bech32 is not None and existing_bech32 != account_data.bech32:
+            raise errors.AccoundIdAlreadyhasBech32(
+                account_data.account_id, existing_bech32, account_data.bech32
             )
+        if account_data.bech32 in self.accounts_data:
+            existing_id = self.accounts_data[account_data.bech32].account_id
+            if existing_id != account_data.account_id:
+                raise errors.AccountAlreadyHasId(
+                    account_data.bech32,
+                    self.accounts_data[account_data.bech32].account_id,
+                    account_data.account_id,
+                )
         self.account_id_to_bech32[account_data.account_id] = account_data.bech32
         self.accounts_data[account_data.bech32] = account_data
         self._set_update_time()
