@@ -120,11 +120,12 @@ class AccountsManager:
         :param account_id: id of the account for easier reference, defaults to None
         :type account_id: str | None
         """
-        account_address = account.address.to_bech32()
-        cls._accounts[account_address] = account
-        if account_id is not None and account_id != account_address:
+        account_bech32 = account.address.to_bech32()
+        cls._accounts[account_bech32] = account
+        if account_id is not None and account_id != account_bech32:
             scenario_data = ScenarioData.get()
-            scenario_data.set_value(f"{account_id}.address", account_address)
+            scenario_data.set_value(f"{account_id}.address", account_bech32)
+        cls.sync_account(account.address)
 
     @classmethod
     def get_account(cls, account_designation: str | Address) -> Account | LedgerAccount:
@@ -146,7 +147,7 @@ class AccountsManager:
                 account_address = None
 
         if account_address is not None:
-            account_bech32 = account_designation.bech32()
+            account_bech32 = account_address.bech32()
         else:
             scenario_data = ScenarioData.get()
             try:

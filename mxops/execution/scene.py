@@ -13,7 +13,12 @@ from multiversx_sdk import Address
 import yaml
 
 from mxops.config.config import Config
-from mxops.data.execution_data import _ScenarioData, ExternalContractData, ScenarioData
+from mxops.data.execution_data import (
+    _ScenarioData,
+    AccountData,
+    ExternalContractData,
+    ScenarioData,
+)
 from mxops.execution.account import AccountsManager
 from mxops import errors
 from mxops.execution.steps import LoopStep, SceneStep
@@ -56,7 +61,6 @@ class Scene:
     allowed_scenario: list[str] = field(default_factory=get_default_allowed_scenarios)
     accounts: list[dict] = field(default_factory=list)
     steps: list[Step] = field(default_factory=list)
-    external_contracts: dict[str, str | dict[str, str]] = field(default_factory=dict)
 
     def __post_init__(self):
         """
@@ -84,6 +88,56 @@ def load_scene(path: Path) -> Scene:
         raw_scene = {}
 
     return Scene(**raw_scene)
+
+
+def parse_load_account(account: dict):
+    """
+    Parse and load account data provided by the user in a scene.
+    The account will either be passed to the Scenario data or to the account manager
+    depending on the account type
+
+    :param account: account data of a scene
+    :type account: dict
+    """
+    # first, load signing accounts
+    if "folder_path" in account:
+        AccountsManager.load_register_pem_from_folder(**account)
+        return
+    elif "ledger" in account:
+        AccountsManager.load_register_ledger_account(**account)
+        return
+    elif "pem" in account:
+        AccountsManager.load_register_pem_account(**account)
+        return
+
+    # now handle user and external accounts
+    # account id and bech32 parameters mush be provided
+    if "account_id" in account:
+        account_id = account["account_id"]
+    elif "contract_id" in account:
+        account_id = account["contract_id"]
+    else:
+        raise errors.InvalidSceneDefinition(
+            f"Account {account} is missing the `account_id` parameter"
+        )
+    if "bech32" in account:
+        bech32 = account["bech32"]
+    elif "address" in account:
+        bech32 = account["address"]
+    else:
+        raise errors.InvalidSceneDefinition(
+            f"Account {account} is missing the `address` or `bech32` parameter"
+        )
+    address = Address.new_from_bech32(bech32)
+    scenario_data = ScenarioData.get()
+    if address.is_smart_contract():
+        scenario_data.add_account_data(ExternalContractData(account_id, bech32))
+        if "abi_path" in account:
+            scenario_data.set_contract_abi_from_source(
+                Address.new_from_bech32(bech32), Path(account["abi_path"])
+            )
+    else:
+        scenario_data.add_account_data(AccountData(account_id, bech32))
 
 
 def execute_scene(scene_path: Path):
@@ -121,44 +175,8 @@ def execute_scene(scene_path: Path):
         )
 
     # load accounts
-    loaded_accounts_addresses = []
     for account in scene.accounts:
-        if "folder_path" in account:
-            loaded_accounts_addresses.extend(
-                AccountsManager.load_register_pem_from_folder(**account)
-            )
-        elif "ledger" in account:
-            loaded_accounts_addresses.append(
-                AccountsManager.load_register_ledger_account(**account)
-            )
-        elif "pem" in account:
-            loaded_accounts_addresses.append(
-                AccountsManager.load_register_pem_account(**account)
-            )
-
-    for account_address in loaded_accounts_addresses:
-        AccountsManager.sync_account(account_address)
-
-    # load external contracts addresses
-    for contract_id, contract_data in scene.external_contracts.items():
-        if isinstance(contract_data, str):
-            contract_data = {"address": contract_data}
-        bech32 = contract_data["address"]
-        if "abi_path" in contract_data:
-            scenario_data.set_contract_abi_from_source(
-                Address.new_from_bech32(bech32), Path(contract_data["abi_path"])
-            )
-        try:
-            scenario_data.set_account_value(contract_id, "bech32", bech32)
-        except errors.UnknownAccount:
-            # otherwise create the contract data
-            scenario_data.add_account_data(
-                ExternalContractData(
-                    account_id=contract_id,
-                    bech32=bech32,
-                    saved_values={},
-                )
-            )
+        parse_load_account(account)
 
     # execute steps
     for step in scene.steps:

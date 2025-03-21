@@ -448,6 +448,12 @@ class InvalidQueryResultsDefinition(Exception):
     """
 
 
+class InvalidSceneDefinition(Exception):
+    """
+    to be raise when a scene is not correctly defined
+    """
+
+
 class InvalidDataFormat(Exception):
     """
     to be raise when the data format is invalid

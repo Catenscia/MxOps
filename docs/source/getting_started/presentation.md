@@ -59,8 +59,8 @@ MxOps is used below to fetch information from the [live Onedex contract](https:/
 allowed_networks:
     - mainnet
 
-external_contracts:
-  onedex-swap: 
+accounts:
+  - account_id: onedex-swap
     address: erd1qqqqqqqqqqqqqpgqqz6vp9y50ep867vnr296mqf3dduh6guvmvlsu3sujc
     abi_path: ./abis/onedex-sc.abi.json
 
