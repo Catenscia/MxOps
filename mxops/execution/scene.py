@@ -181,6 +181,25 @@ def execute_scene(path: Path):
         execute_step(step, scenario_data)
 
 
+def execute_scene_step(step: SceneStep):
+    """
+    Execute the scene step according to its parameters
+
+
+    :param step: step describing a scene execution
+    :type step: SceneStep
+    """
+    step.evaluate_smart_values()
+    for _ in range(step.repeat.get_evaluated_value()):
+        # reevaluate in the loop in case the scene modify its own values
+        step.evaluate_smart_values()
+        path = step.path.get_evaluated_value()
+        if path.is_file():
+            execute_scene(path)
+        else:
+            execute_directory(path)
+
+
 def execute_step(step: Step, scenario_data: _ScenarioData):
     """
     Execute a step
@@ -191,8 +210,7 @@ def execute_step(step: Step, scenario_data: _ScenarioData):
     :type scenario_data: _ScenarioData
     """
     if isinstance(step, SceneStep):
-        step.evaluate_smart_values()
-        execute_scene(Path(step.path.get_evaluated_value()))
+        execute_scene_step(step)
     elif isinstance(step, LoopStep):
         for sub_step in step.generate_steps():
             execute_step(sub_step, scenario_data)

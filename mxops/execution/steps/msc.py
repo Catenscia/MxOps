@@ -199,6 +199,7 @@ class SceneStep(Step):
     """
 
     path: SmartPath
+    repeat: SmartInt = 1
 
     def _execute(self):
         """

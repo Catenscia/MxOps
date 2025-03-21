@@ -8,6 +8,7 @@ from unittest.mock import patch
 
 from mxops import errors
 from mxops.data.execution_data import ScenarioData
+from mxops.execution.scene import execute_step
 from mxops.execution.steps.base import Step
 from mxops.execution.steps import LoopStep, PythonStep, SetVarsStep, WaitStep
 from mxops.execution.smart_values import (
@@ -24,6 +25,7 @@ from mxops.execution.smart_values import (
     SmartValue,
 )
 from mxops.execution.steps.factory import SmartStep, SmartSteps
+from mxops.execution.steps.msc import SceneStep
 
 
 @dataclass
@@ -399,3 +401,31 @@ def test_loop_step_from_scenario_data_list():
 
     # Then
     assert scenario_data.get_value("register_list") == [1, 2, 4]
+
+
+def test_scene_repeat_step():
+    # Given
+    scenario_data = ScenarioData.get()
+    scenario_data.set_value("scene_counter", 0)
+    step = SceneStep(path=Path("tests/data/scenes/increment_scene.yaml"), repeat=10)
+
+    # When
+    execute_step(step, scenario_data)
+
+    # Then
+    assert scenario_data.get_value("scene_counter") == 10
+
+
+def test_scene_folder_repeat_step():
+    # Given
+    scenario_data = ScenarioData.get()
+    scenario_data.set_value("scene_counter", 0)
+    step = SceneStep(
+        path=Path("tests/data/scenes/multiple_scenes_increment"), repeat=10
+    )
+
+    # When
+    execute_step(step, scenario_data)
+
+    # Then
+    assert scenario_data.get_value("scene_counter") == 20
