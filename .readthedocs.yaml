@@ -9,7 +9,7 @@ build:
     python: "3.10"
   commands:
     - curl -LsSf https://astral.sh/uv/install.sh | sh
-    - export PATH="$HOME/.cargo/bin:$PATH"
+    - source $HOME/.local/bin/env
     - uv venv
     - source .venv/bin/activate
     - uv sync --group dev
