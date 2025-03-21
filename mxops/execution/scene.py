@@ -140,15 +140,15 @@ def parse_load_account(account: dict):
         scenario_data.add_account_data(AccountData(account_id, bech32))
 
 
-def execute_scene(scene_path: Path):
+def execute_scene(path: Path):
     """
     Load and execute a scene
 
-    :param scene_path: path to the scene file
-    :type scene_path: Path
+    :param path: path to the scene file
+    :type path: Path
     """
-    LOGGER.info(f"Executing scene {scene_path}")
-    scene = load_scene(scene_path)
+    LOGGER.info(f"Executing scene {path}")
+    scene = load_scene(path)
     scenario_data = ScenarioData.get()
 
     config = Config.get_config()
@@ -159,9 +159,7 @@ def execute_scene(scene_path: Path):
         network.name not in scene.allowed_networks
         and network.value not in scene.allowed_networks
     ):
-        raise errors.ForbiddenSceneNetwork(
-            scene_path, network.value, scene.allowed_networks
-        )
+        raise errors.ForbiddenSceneNetwork(path, network.value, scene.allowed_networks)
 
     # check scenario authorizations
     match_found = False
@@ -171,7 +169,7 @@ def execute_scene(scene_path: Path):
             break
     if not match_found:
         raise errors.ForbiddenSceneScenario(
-            scene_path, scenario_data.name, scene.allowed_scenario
+            path, scenario_data.name, scene.allowed_scenario
         )
 
     # load accounts
@@ -194,7 +192,7 @@ def execute_step(step: Step, scenario_data: _ScenarioData):
     """
     if isinstance(step, SceneStep):
         step.evaluate_smart_values()
-        execute_scene(Path(step.scene_path.get_evaluated_value()))
+        execute_scene(Path(step.path.get_evaluated_value()))
     elif isinstance(step, LoopStep):
         for sub_step in step.generate_steps():
             execute_step(sub_step, scenario_data)

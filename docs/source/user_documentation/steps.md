@@ -709,7 +709,7 @@ This step simply runs a `Scene`. It can be used either to organize different exe
 
 ```yaml
 type: Scene
-scene_path: ./integration_tests/setup_scenes/sub_scenes/send_egld.yaml
+path: ./integration_tests/setup_scenes/sub_scenes/send_egld.yaml
 ```
 
 For example, let's say you have several transactions to make to assign a given role in your organization to a wallet and you also want to assign this role to several wallets. This can be done elegantly with the scene below:
@@ -721,7 +721,7 @@ steps:
     var_list: [françois, jacques, jean]
     steps:
       - type: Scene
-        scene_path: assign_role.yaml
+        path: assign_role.yaml
 ```
 
 Then, all of the `Steps` is the `Scene` `assign_role.yaml` should be written while using `%USER_FOR_ROLE` instead of the address of the wallet you want to assign the role to.
