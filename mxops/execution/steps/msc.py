@@ -198,7 +198,8 @@ class SceneStep(Step):
     with the path of the scene. The actual action is operated at the `Scene` level.
     """
 
-    scene_path: SmartPath
+    path: SmartPath
+    repeat: SmartInt = 1
 
     def _execute(self):
         """

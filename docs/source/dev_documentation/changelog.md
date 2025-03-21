@@ -31,6 +31,8 @@
 - account cloning now use the cache system
 - id can now be given to any account
 - user accounts are now auto reloaded from scenario data (no need to supply them at each execution)
+- SceneStep can now be repeated
+- SceneStep can now target a folder of scenes
 
 
 ### Changed
@@ -54,6 +56,7 @@
 - 🚨 BREAKING CHANGE 🚨 Contracts are now handled using contract bech32 by the Scenario Data
 - 🚨 BREAKING CHANGE 🚨 All accounts (user, contracts, internal, external) are now defined under the same "accounts" key in scenes
 - use uv for package build
+- 🚨 BREAKING CHANGE 🚨 scene_path attribute of SceneStep has been renamed path
 
 
 

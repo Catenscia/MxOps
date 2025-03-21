@@ -234,10 +234,10 @@ class ForbiddenSceneNetwork(Exception):
     """
 
     def __init__(
-        self, scene_path: Path, network_name: str, allowed_networks: list[str]
+        self, path: Path, network_name: str, allowed_networks: list[str]
     ) -> None:
         message = (
-            f"Scene {scene_path} not allowed to be executed "
+            f"Scene {path} not allowed to be executed "
             f"in the network {network_name}.\n"
             f"Allowed networks: {allowed_networks}"
         )
@@ -251,10 +251,10 @@ class ForbiddenSceneScenario(Exception):
     """
 
     def __init__(
-        self, scene_path: Path, scenario_name: str, allowed_scenario: list[str]
+        self, path: Path, scenario_name: str, allowed_scenario: list[str]
     ) -> None:
         message = (
-            f"Scene {scene_path} not allowed to be executed "
+            f"Scene {path} not allowed to be executed "
             f"in the scenario {scenario_name}.\n"
             f"Allowed scenario: {allowed_scenario}"
         )
