@@ -8,7 +8,7 @@ build:
   tools:
     python: "3.10"
   commands:
-    - - curl -LsSf https://astral.sh/uv/install.sh | sh && export PATH="$HOME/.cargo/bin:$PATH"
+    - curl -LsSf https://astral.sh/uv/install.sh | sh && export PATH="$HOME/.cargo/bin:$PATH"
     - $HOME/.cargo/bin/uv --version
     - $HOME/.cargo/bin/uv venv
     - . .venv/bin/activate
