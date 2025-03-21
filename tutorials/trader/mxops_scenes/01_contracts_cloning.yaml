@@ -1,9 +1,9 @@
-external_contracts:
-  egld_wrapper_shard_1:
+accounts:
+  - account_id: egld_wrapper_shard_1
     address: erd1qqqqqqqqqqqqqpgqhe8t5jewej70zupmh44jurgn29psua5l2jps3ntjj3
     abi_path: ./data/multiversx-wegld-swap-sc.abi.json
 
-  jex_wegld_jexchange_pair:
+  - account_id: jex_wegld_jexchange_pair
     address: erd1qqqqqqqqqqqqqpgq7u4y0qle773mcelvnkapjv36pn2whzy36avs2qccja
     abi_path: ./data/jex-sc-dex-pair.abi.json
 
