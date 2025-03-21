@@ -54,8 +54,7 @@ This program comes with ABSOLUTELY NO WARRANTY
             "saved_values": {},
             "wasm_hash": "5ce403a4f73701481cc15b2378cdc5bce3e35fa215815aa5eb9104d9f7ab2451",
             "deploy_time": 1677134892,
-            "last_upgrade_time": 1677134892,
-            "is_external": false
+            "last_upgrade_time": 1677134892
         }
     },
     "tokens_data": {}

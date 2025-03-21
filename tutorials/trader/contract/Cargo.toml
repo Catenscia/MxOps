@@ -1,0 +1,24 @@
+[package]
+name = "trader-sc"
+version = "0.0.0"
+publish = false
+edition = "2021"
+authors = ["you"]
+
+[lib]
+path = "src/trader_sc.rs"
+
+[dependencies.multiversx-sc]
+version = "0.54.3"
+
+[dev-dependencies]
+num-bigint = "0.4"
+
+[dev-dependencies.multiversx-sc-scenario]
+version = "0.54.3"
+
+[workspace]
+members = [
+    ".",
+    "meta",
+]

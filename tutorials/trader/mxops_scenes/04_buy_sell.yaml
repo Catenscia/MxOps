@@ -1,0 +1,25 @@
+
+
+steps:
+  
+  - type: ContractCall
+    sender: bot
+    contract: trader-sc
+    endpoint: executeTrade
+    arguments:
+      - true  # buy
+      - 500000000000000000 # 0.5 WEGLD to spend to buy JEX
+    gas_limit: 20000000
+    results_save_keys:
+      - received_jex_amount
+  
+  - type: ContractCall
+    sender: bot
+    contract: trader-sc
+    endpoint: executeTrade
+    arguments:
+      - false  # sell
+      - "={%{trader-sc.received_jex_amount} // 2}" # resell half of what we have received
+    gas_limit: 20000000
+    results_save_keys:
+      - received_wegld_amount

@@ -109,7 +109,7 @@ def start_chain_simulator():
             "Error: chain simulator process ended with return code "
             f"{process.returncode}"
         )
-    return
+        return
 
     # generate the first epoch
     proxy = MyProxyNetworkProvider()
@@ -120,7 +120,10 @@ def start_chain_simulator():
             break
         except GenericError:  # node not ready yet
             time.sleep(1)
-    LOGGER.info("chain simulator successfully started")
+    explorer_url = Config.get_config().get("EXPLORER_URL")
+    LOGGER.info(
+        f"chain simulator successfully started, check the explorer: {explorer_url}"
+    )
 
 
 def stop_chain_simulator():

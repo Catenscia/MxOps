@@ -1,0 +1,652 @@
+{
+    "buildInfo": {
+        "rustc": {
+            "version": "1.71.0-nightly",
+            "commitHash": "7f94b314cead7059a71a265a8b64905ef2511796",
+            "commitDate": "2023-04-23",
+            "channel": "Nightly",
+            "short": "rustc 1.71.0-nightly (7f94b314c 2023-04-23)"
+        },
+        "contractCrate": {
+            "name": "jex-sc-dex-pair",
+            "version": "0.0.0"
+        },
+        "framework": {
+            "name": "multiversx-sc",
+            "version": "0.41.0"
+        }
+    },
+    "name": "JexScPairContract",
+    "constructor": {
+        "inputs": [
+            {
+                "name": "first_token",
+                "type": "TokenIdentifier"
+            },
+            {
+                "name": "second_token",
+                "type": "TokenIdentifier"
+            }
+        ],
+        "outputs": []
+    },
+    "endpoints": [
+        {
+            "name": "issueLpToken",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "payableInTokens": [
+                "EGLD"
+            ],
+            "inputs": [
+                {
+                    "name": "lp_token_display_name",
+                    "type": "bytes"
+                },
+                {
+                    "name": "lp_token_ticker",
+                    "type": "bytes"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "enableMintBurn",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "addInitialLiquidity",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "Configure liquidity providers swap fees",
+                "100 = 1%"
+            ],
+            "name": "configureLiqProvidersFees",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "fees",
+                    "type": "u32"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "Configure platform swap fees",
+                "100 = 1%"
+            ],
+            "name": "configurePlatformFees",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "fees",
+                    "type": "u32"
+                },
+                {
+                    "name": "receiver",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "pause",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "unpause",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "Add liquidity is both tokens",
+                "Note: liquidity can be added if SC is paused"
+            ],
+            "name": "addLiquidity",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "min_second_token_amount",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "Add liquidity by providing only 1 of the 2 tokens",
+                "Provided liquidity is added to the reserves and corresponding LP tokens are sent to caller.",
+                "payment = token to deposit",
+                "Note: unlike classic liquidity addition, SC must not be paused"
+            ],
+            "name": "addLiquiditySingle",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "min_first_token_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "min_second_token_amount",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "Remove liquidity in both tokens",
+                "Note: liquidity can be removed if SC is paused"
+            ],
+            "name": "removeLiquidity",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "min_first_token_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "min_second_token_amount",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "Remove liquidity and swap one half to desired token in 1 transaction",
+                "Note: unlike classic liquidity removal, SC must not be paused"
+            ],
+            "name": "removeLiquiditySingle",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "token_out",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "min_first_token_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "min_second_token_amount",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "swapTokensFixedInput",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "min_amount_out",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "swapTokensFixedOutput",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "exact_amount_out",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "estimateAmountIn",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "token_out",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "amount_out",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "EstimateAmountIn"
+                }
+            ]
+        },
+        {
+            "name": "estimateAmountOut",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "token_in",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "amount_in",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "EstimateAmountOut"
+                }
+            ]
+        },
+        {
+            "name": "estimateAddLiquiditySingle",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "token_in",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "amount_in",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "EstimateAddLiquidityOut"
+                }
+            ]
+        },
+        {
+            "name": "estimateRemoveLiquidity",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "lp_amount",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "EstimateRemoveLiquidityOut"
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Estimate liquidity removal to one token",
+                "(liquidity removal + swap of one half to desired token)"
+            ],
+            "name": "estimateRemoveLiquiditySingle",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "lp_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "token_out",
+                    "type": "TokenIdentifier"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "EstimateRemoveLiquidityOut"
+                }
+            ]
+        },
+        {
+            "name": "getFirstToken",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
+                }
+            ]
+        },
+        {
+            "name": "getSecondToken",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
+                }
+            ]
+        },
+        {
+            "name": "getStatus",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "PairStatus"
+                }
+            ]
+        },
+        {
+            "name": "getAnalyticsForLastEpochs",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "countback",
+                    "type": "u64"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "variadic<AnalyticsForEpoch>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "getLpFees",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "epoch",
+                    "type": "u64"
+                },
+                {
+                    "name": "token",
+                    "type": "TokenIdentifier"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getTradingVolume",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "epoch",
+                    "type": "u64"
+                },
+                {
+                    "name": "token",
+                    "type": "TokenIdentifier"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getLiqProvidersFees",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u32"
+                }
+            ]
+        },
+        {
+            "name": "getPlatformFees",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u32"
+                }
+            ]
+        },
+        {
+            "name": "getPlatformFeesReceiver",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "Address"
+                }
+            ]
+        },
+        {
+            "name": "getFirstTokenReserve",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getSecondTokenReserve",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getLpToken",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
+                }
+            ]
+        },
+        {
+            "name": "getLpTokenSupply",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "isPaused",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "bool"
+                }
+            ]
+        }
+    ],
+    "events": [],
+    "hasCallback": true,
+    "types": {
+        "AnalyticsForEpoch": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "epoch",
+                    "type": "u64"
+                },
+                {
+                    "name": "volume_first_token",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "volume_second_token",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "lp_fees_first_token",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "lp_fees_second_token",
+                    "type": "BigUint"
+                }
+            ]
+        },
+        "EstimateAddLiquidityOut": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "lp_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "lp_supply",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "eq_first_tokens",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "eq_second_tokens",
+                    "type": "BigUint"
+                }
+            ]
+        },
+        "EstimateAmountIn": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "amount_in",
+                    "type": "BigUint"
+                }
+            ]
+        },
+        "EstimateAmountOut": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "net_amount_out",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "amount_out",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "liq_providers_fee",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "platform_fee",
+                    "type": "BigUint"
+                }
+            ]
+        },
+        "EstimateRemoveLiquidityOut": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "eq_first_tokens",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "eq_second_tokens",
+                    "type": "BigUint"
+                }
+            ]
+        },
+        "PairStatus": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "paused",
+                    "type": "bool"
+                },
+                {
+                    "name": "first_token_identifier",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "first_token_reserve",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "second_token_identifier",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "second_token_reserve",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "lp_token_identifier",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "lp_token_supply",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "owner",
+                    "type": "Address"
+                },
+                {
+                    "name": "lp_fees",
+                    "type": "u32"
+                },
+                {
+                    "name": "platform_fees",
+                    "type": "u32"
+                },
+                {
+                    "name": "platform_fees_receiver",
+                    "type": "Option<Address>"
+                },
+                {
+                    "name": "volume_prev_epoch",
+                    "type": "array2<BigUint>"
+                },
+                {
+                    "name": "fees_prev_epoch",
+                    "type": "array2<BigUint>"
+                },
+                {
+                    "name": "fees_last_7_epochs",
+                    "type": "array2<BigUint>"
+                }
+            ]
+        }
+    }
+}

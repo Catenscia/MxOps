@@ -173,8 +173,7 @@ We have the following contract data in the MxOps Scenario:
         "serializer": null,
         "wasm_hash": "5ce403a4f73701481cc15b2378cdc5bce3e35fa215815aa5eb9104d9f7ab2451",
         "deploy_time": 1,
-        "last_upgrade_time": 1,
-        "is_external": false
+        "last_upgrade_time": 1
     }
 }
 ```

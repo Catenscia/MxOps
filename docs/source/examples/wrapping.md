@@ -34,7 +34,6 @@ accounts:
   - account_id: user
     pem_path: ./wallets/devnet_user.pem
 
-accounts:
   - account_id: egld_wrapper_shard_1
     address: erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp
 

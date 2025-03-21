@@ -16,6 +16,7 @@ Dev
 devnet
 EnumWithEverything
 EsdtMinter
+ExecuteTrade
 FileFuzzerStep
 françois
 Freepik
