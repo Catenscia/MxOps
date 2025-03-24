@@ -204,10 +204,12 @@ class ContractUpgradeStep(TransactionStep):
         scenario_data.set_contract_abi_from_source(
             contract_address, self.abi_path.get_evaluated_value()
         )
+        file_hash = get_file_hash(self.wasm_path.get_evaluated_value())
         try:
             scenario_data.set_account_value(
                 contract_address, "last_upgrade_time", on_chain_tx.timestamp
             )
+            scenario_data.set_account_value(contract_address, "wasm_hash", file_hash)
         except errors.UnknownAccount:  # any contract can be upgraded
             pass
 
