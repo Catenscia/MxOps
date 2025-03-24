@@ -8,7 +8,7 @@ from dataclasses import dataclass
 import importlib
 from typing import Any
 from mxops import errors
-from mxops.execution.smart_values import SmartValue
+from mxops.smart_values import SmartValue
 from mxops.execution.steps.base import Step
 
 

@@ -9,9 +9,9 @@ from typing import Any
 
 from multiversx_sdk import Token
 from mxops.execution.msc import OnChainTokenTransfer, ResultsSaveKeys
-from mxops.execution.smart_values.base import SmartValue
-from mxops.execution.smart_values.mx_sdk import SmartAddress
-from mxops.execution.smart_values.native import SmartInt, SmartStr
+from mxops.smart_values.base import SmartValue
+from mxops.smart_values.mx_sdk import SmartAddress
+from mxops.smart_values.native import SmartInt, SmartStr
 
 
 @dataclass

@@ -8,9 +8,9 @@ from dataclasses import dataclass
 from typing import Any
 from multiversx_sdk import Address, Token, TokenTransfer
 
-from mxops.execution.smart_values.base import SmartValue
-from mxops.execution.smart_values.native import SmartInt, SmartStr
-from mxops.execution.smart_values.utils import get_address_instance
+from mxops.smart_values.base import SmartValue
+from mxops.smart_values.native import SmartInt, SmartStr
+from mxops.smart_values.utils import get_address_instance
 
 
 @dataclass

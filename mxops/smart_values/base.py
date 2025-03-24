@@ -7,7 +7,7 @@ This module contains base smart values that are used to construct other smart va
 from dataclasses import dataclass, field
 from typing import Any
 from mxops import errors
-from mxops.execution.smart_values.utils import (
+from mxops.smart_values.utils import (
     force_str,
     replace_escaped_characters,
     retrieve_value_from_any,

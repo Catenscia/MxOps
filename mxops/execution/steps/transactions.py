@@ -13,7 +13,7 @@ from multiversx_sdk import (
 )
 
 from mxops.config.config import Config
-from mxops.execution.smart_values import SmartAddress, SmartInt, SmartTokenTransfers
+from mxops.smart_values import SmartAddress, SmartInt, SmartTokenTransfers
 from mxops.execution.steps.base import TransactionStep
 from mxops.utils.logger import get_logger
 

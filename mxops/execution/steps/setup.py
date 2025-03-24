@@ -26,9 +26,9 @@ from mxops.data.execution_data import ScenarioData
 from mxops.enums import NetworkEnum, parse_network_enum
 from mxops.execution import utils
 from mxops.execution.account import AccountsManager
-from mxops.execution.smart_values import SmartInt, SmartPath, SmartValue
-from mxops.execution.smart_values.mx_sdk import SmartAddress, SmartAddresses
-from mxops.execution.smart_values.native import SmartBool, SmartDatetime, SmartStr
+from mxops.smart_values import SmartInt, SmartPath, SmartValue
+from mxops.smart_values.mx_sdk import SmartAddress, SmartAddresses
+from mxops.smart_values.native import SmartBool, SmartDatetime, SmartStr
 from mxops.execution.steps.base import Step
 from mxops.execution.steps.transactions import TransferStep
 from mxops.utils.account_storage import separate_esdt_related_storage

@@ -10,8 +10,8 @@ from dataclasses import dataclass
 from multiversx_sdk import TransactionOnNetwork
 
 from mxops import errors
-from mxops.execution.smart_values import SmartValue
-from mxops.execution.smart_values.factory import extract_first_smart_value_class
+from mxops.smart_values import SmartValue
+from mxops.smart_values.factory import extract_first_smart_value_class
 
 
 @dataclass

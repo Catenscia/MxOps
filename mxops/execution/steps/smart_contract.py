@@ -24,7 +24,7 @@ from mxops.common.providers import MyProxyNetworkProvider
 from mxops.config.config import Config
 from mxops.data.execution_data import InternalContractData, ScenarioData
 from mxops.data.utils import convert_mx_data_to_vanilla, json_dumps
-from mxops.execution.smart_values import (
+from mxops.smart_values import (
     SmartBool,
     SmartInt,
     SmartList,
@@ -33,7 +33,7 @@ from mxops.execution.smart_values import (
     SmartStr,
     SmartTokenTransfers,
 )
-from mxops.execution.smart_values.mx_sdk import SmartAddress
+from mxops.smart_values.mx_sdk import SmartAddress
 from mxops.execution.steps.base import Step, TransactionStep
 from mxops.utils.logger import get_logger
 from mxops.utils.msc import get_file_hash
