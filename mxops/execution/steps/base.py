@@ -13,7 +13,8 @@ from multiversx_sdk import Transaction, TransactionOnNetwork
 from mxops import errors
 from mxops.common.providers import MyProxyNetworkProvider
 from mxops.config.config import Config
-from mxops.enums import NetworkEnum
+from mxops.data.execution_data import ScenarioData
+from mxops.enums import LogGroupEnum, NetworkEnum
 from mxops.execution.account import AccountsManager
 from mxops.execution.checks.factory import SmartChecks
 from mxops.execution.checks import SuccessCheck
@@ -21,10 +22,7 @@ from mxops.execution.network import send, send_and_wait_for_result
 from mxops.smart_values import SmartValue
 from mxops.smart_values.factory import extract_first_smart_value_class
 from mxops.smart_values.mx_sdk import SmartAddress
-from mxops.utils.logger import get_logger
 from mxops.utils.msc import get_tx_link
-
-LOGGER = get_logger("base steps")
 
 
 @dataclass
@@ -146,6 +144,7 @@ class TransactionStep(Step):
         Execute the workflow for a transaction Step: build, send, check
         and post execute
         """
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
         tx = self.build_unsigned_transaction()
         self.set_nonce_and_sign_transaction(tx)
 
@@ -154,12 +153,12 @@ class TransactionStep(Step):
             on_chain_tx = send_and_wait_for_result(tx)
             for check in checks:
                 check.raise_on_failure(on_chain_tx)
-            LOGGER.info(
+            logger.info(
                 f"Transaction successful: {get_tx_link(on_chain_tx.hash.hex())}"
             )
         else:
             on_chain_tx = None
             send(tx)
-            LOGGER.info("Transaction sent")
+            logger.info("Transaction sent")
 
         self._post_transaction_execution(on_chain_tx)

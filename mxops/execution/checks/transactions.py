@@ -8,13 +8,11 @@ from dataclasses import dataclass, field
 
 from multiversx_sdk import TransactionOnNetwork
 
+from mxops.data.execution_data import ScenarioData
+from mxops.enums import LogGroupEnum
 from mxops.execution.checks.base import Check
 from mxops.execution.network import get_on_chain_transfers, raise_on_errors
 from mxops.smart_values import SmartBool, SmartOnChainTokenTransfers, SmartStr
-from mxops.utils.logger import get_logger
-
-
-LOGGER = get_logger("transactions checks")
 
 
 @dataclass
@@ -55,6 +53,7 @@ class TransfersCheck(Check):
         :return: true if correct transfers were found
         :rtype: bool
         """
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
         condition = self.condition.get_evaluated_value()
         if condition not in ["included", "exact"]:
             raise ValueError(
@@ -68,7 +67,7 @@ class TransfersCheck(Check):
             try:
                 i_tr = onchain_transfers.index(expected_transfer)
             except ValueError:
-                LOGGER.error(
+                logger.error(
                     (
                         f"Expected transfer found no match:\n{expected_transfer} "
                         f"Remaining on-chain transfers:\n{onchain_transfers}"
@@ -78,7 +77,7 @@ class TransfersCheck(Check):
             onchain_transfers.pop(i_tr)
 
         if condition == "exact" and len(onchain_transfers) > 0:
-            LOGGER.error(
+            logger.error(
                 (
                     f"Found {len(onchain_transfers)} more transfers than expected:"
                     f"\n {onchain_transfers}"

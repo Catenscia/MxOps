@@ -19,15 +19,12 @@ from mxops.data.execution_data import (
     ExternalContractData,
     ScenarioData,
 )
+from mxops.enums import LogGroupEnum
 from mxops.execution.account import AccountsManager
 from mxops import errors
 from mxops.execution.steps import LoopStep, SceneStep
 from mxops.execution.steps.base import Step
 from mxops.execution.steps.factory import instanciate_steps
-from mxops.utils.logger import get_logger
-
-
-LOGGER = get_logger("scene")
 
 
 def get_default_allowed_networks() -> list[str]:
@@ -147,7 +144,8 @@ def execute_scene(path: Path):
     :param path: path to the scene file
     :type path: Path
     """
-    LOGGER.info(f"Executing scene {path}")
+    logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
+    logger.info(f"Executing scene {path}")
     scene = load_scene(path)
     scenario_data = ScenarioData.get()
 

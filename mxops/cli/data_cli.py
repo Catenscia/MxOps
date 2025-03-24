@@ -27,10 +27,6 @@ from mxops.data.execution_data import (
 from mxops.data.utils import json_dumps
 from mxops.enums import parse_network_enum
 from mxops.smart_values.utils import retrieve_value_from_string
-from mxops.utils.logger import get_logger
-
-
-LOGGER = get_logger("data cli")
 
 
 def add_subparser(subparsers_action: _SubParsersAction):

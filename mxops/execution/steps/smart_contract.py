@@ -24,6 +24,7 @@ from mxops.common.providers import MyProxyNetworkProvider
 from mxops.config.config import Config
 from mxops.data.execution_data import InternalContractData, ScenarioData
 from mxops.data.utils import convert_mx_data_to_vanilla, json_dumps
+from mxops.enums import LogGroupEnum
 from mxops.smart_values import (
     SmartBool,
     SmartInt,
@@ -35,10 +36,7 @@ from mxops.smart_values import (
 )
 from mxops.smart_values.mx_sdk import SmartAddress
 from mxops.execution.steps.base import Step, TransactionStep
-from mxops.utils.logger import get_logger
 from mxops.utils.msc import get_file_hash
-
-LOGGER = get_logger("smart contract steps")
 
 
 @dataclass
@@ -64,7 +62,8 @@ class ContractDeployStep(TransactionStep):
         :return: transaction built
         :rtype: Transaction
         """
-        LOGGER.info(f"Deploying contract {self.contract_id.get_evaluation_string()}")
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
+        logger.info(f"Deploying contract {self.contract_id.get_evaluation_string()}")
         scenario_data = ScenarioData.get()
 
         # check that the id of the contract is free
@@ -102,6 +101,7 @@ class ContractDeployStep(TransactionStep):
         :param on_chain_tx: successful deployment transaction
         :type on_chain_tx: TransactionOnNetwork | None
         """
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
         if not isinstance(on_chain_tx, TransactionOnNetwork):
             raise ValueError("On chain transaction is None")
         scenario_data = ScenarioData.get()
@@ -118,7 +118,7 @@ class ContractDeployStep(TransactionStep):
                 parsed_outcome, "contract deployment address"
             ) from err
 
-        LOGGER.info(
+        logger.info(
             f"The address of the deployed contract {contract_id} is "
             f"{contract_address.to_bech32()}"
         )
@@ -164,7 +164,8 @@ class ContractUpgradeStep(TransactionStep):
         :return: transaction built
         :rtype: Transaction
         """
-        LOGGER.info(f"Upgrading contract {self.contract.get_evaluation_string()}")
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
+        logger.info(f"Upgrading contract {self.contract.get_evaluation_string()}")
 
         if self.abi_path is not None:
             abi = Abi.load(self.abi_path.get_evaluated_value())
@@ -237,8 +238,9 @@ class ContractCallStep(TransactionStep):
         :return: transaction built
         :rtype: Transaction
         """
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
         endpoint = self.endpoint.get_evaluated_value()
-        LOGGER.info(f"Calling {endpoint} on {self.contract.get_evaluation_string()} ")
+        logger.info(f"Calling {endpoint} on {self.contract.get_evaluation_string()} ")
         scenario_data = ScenarioData.get()
 
         arguments = self.arguments.get_evaluated_value()
@@ -328,6 +330,7 @@ class ContractQueryStep(Step):
         Save the results the query. This method replace the old way that was using
         expected_results
         """
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
         scenario_data = ScenarioData.get()
         if self.results_save_keys is None:
             return
@@ -336,7 +339,7 @@ class ContractQueryStep(Step):
         if self.returned_data_parts is None:
             raise ValueError("No data to save")
 
-        LOGGER.info("Saving query results")
+        logger.info("Saving query results")
 
         self.saved_results = {}
         to_save = results_save_keys.parse_data_to_save(self.returned_data_parts)
@@ -351,8 +354,9 @@ class ContractQueryStep(Step):
         """
         Execute a query and optionally save the result
         """
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
         endpoint = self.endpoint.get_evaluated_value()
-        LOGGER.info(f"Query {endpoint} on {self.contract.get_evaluation_string()}")
+        logger.info(f"Query {endpoint} on {self.contract.get_evaluation_string()}")
         scenario_data = ScenarioData.get()
         arguments = self.arguments.get_evaluated_value()
         contract_address = self.contract.get_evaluated_value()
@@ -381,7 +385,7 @@ class ContractQueryStep(Step):
             else:
                 print("empty result")
 
-        LOGGER.info("Query successful")
+        logger.info("Query successful")
 
 
 @dataclass
@@ -512,6 +516,7 @@ class FileFuzzerStep(Step):
         Execute fuzz testing on the given contract using the parameters
         from the provided file
         """
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
         contract_address = self.contract.get_evaluated_value()
         scenario_data = ScenarioData.get()
         try:
@@ -520,20 +525,20 @@ class FileFuzzerStep(Step):
             raise errors.WrongFuzzTestFile(
                 "ABI file must be provided for fuzz testing"
             ) from err
-        LOGGER.info(
+        logger.info(
             f"Executing fuzz testing from file {self.file_path.get_evaluation_string()}"
         )
         exec_parameters = self.load_executions_parameters()
         n_tests = len(exec_parameters)
-        LOGGER.info(f"Found {n_tests} tests")
+        logger.info(f"Found {n_tests} tests")
         for i, params in enumerate(exec_parameters):
             params.evaluate_smart_values()
-            LOGGER.info(
+            logger.info(
                 f"Executing fuzz test n°{i + 1}/{n_tests} ({i / n_tests:.0%}): "
                 f"{params.description.get_evaluated_value()}"
             )
             self._execute_fuzz(contract_abi, params)
-        LOGGER.info("Fuzzing execution complete (100%)")
+        logger.info("Fuzzing execution complete (100%)")
 
     def _execute_fuzz(
         self, contract_abi: dict, execution_parameters: FuzzExecutionParameters

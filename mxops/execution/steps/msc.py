@@ -15,7 +15,7 @@ from mxops.common.providers import MyProxyNetworkProvider
 from mxops.config.config import Config
 from mxops.data.execution_data import ScenarioData
 from mxops.data.utils import json_dumps
-from mxops.enums import NetworkEnum
+from mxops.enums import LogGroupEnum, NetworkEnum
 from mxops.execution import utils
 from mxops.smart_values import (
     SmartBool,
@@ -29,9 +29,6 @@ from mxops.smart_values import (
 )
 from mxops.execution.steps.base import Step
 from mxops.execution.steps.factory import SmartSteps
-from mxops.utils.logger import get_logger
-
-LOGGER = get_logger("msc steps")
 
 
 @dataclass
@@ -89,7 +86,8 @@ class LoopStep(Step):
         Does nothing and should not be called as the step does nothing in itself
         it is only a shell for other Steps
         """
-        LOGGER.warning("The execute function of a LoopStep was called")
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
+        logger.warning("The execute function of a LoopStep was called")
 
 
 @dataclass
@@ -104,10 +102,11 @@ class SetVarsStep(Step):
         """
         Parse the values to be assigned to the given variables
         """
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
         scenario_data = ScenarioData.get()
 
         for key, value in self.variables.get_evaluated_value().items():
-            LOGGER.info(f"Setting variable `{key}` with the value `{value}`")
+            logger.info(f"Setting variable `{key}` with the value `{value}`")
             scenario_data.set_value(key, value)
 
 
@@ -125,16 +124,17 @@ class WaitStep(Step):
         """
         Wait until the specified condition is met
         """
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
         if self.for_seconds is not None:
             for_seconds = self.for_seconds.get_evaluated_value()
-            LOGGER.info(f"Waiting for {for_seconds} seconds")
+            logger.info(f"Waiting for {for_seconds} seconds")
             time.sleep(for_seconds)
             return
         if self.for_blocks is not None:
             for_blocks = self.for_blocks.get_evaluated_value()
             network = Config.get_config().get_network()
             shard = self.shard.get_evaluated_value()
-            LOGGER.info(f"Waiting for {for_blocks} blocks on shard {shard}")
+            logger.info(f"Waiting for {for_blocks} blocks on shard {shard}")
             if network == NetworkEnum.CHAIN_SIMULATOR:
                 MyProxyNetworkProvider().generate_blocks(for_blocks)
             else:
@@ -162,10 +162,11 @@ class PythonStep(Step):
         """
         Execute the specified function
         """
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
         module_path = self.module_path.get_evaluated_value()
         module_name = module_path.stem
         function = self.function.get_evaluated_value()
-        LOGGER.info(
+        logger.info(
             f"Executing python function {function} from user module {module_name}"
         )
 
@@ -184,11 +185,11 @@ class PythonStep(Step):
             result_save_key = self.result_save_key.get_evaluated_value()
             scenario_data = ScenarioData.get()
             scenario_data.set_value(result_save_key, result)
-            LOGGER.info(
+            logger.info(
                 f"Saving function result at {result_save_key}: {json_dumps(result)}"
             )
         elif self.print_result.get_evaluated_value():
-            LOGGER.info(f"Function result: {json_dumps(result)}")
+            logger.info(f"Function result: {json_dumps(result)}")
 
 
 @dataclass
@@ -205,4 +206,5 @@ class SceneStep(Step):
         """
         Does nothing and should not be called
         """
-        LOGGER.warning("The execute function of a SceneStep was called")
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
+        logger.warning("The execute function of a SceneStep was called")
