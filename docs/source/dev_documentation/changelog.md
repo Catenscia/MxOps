@@ -9,6 +9,8 @@
 - ReadTheDocs build with uv
 - Untracked permissions for executable file in the git repository
 - Remove non-output prints
+- use blake2b for wasm code hash
+- missing code hash update when upgrading a contract
 
 ### Added
 
