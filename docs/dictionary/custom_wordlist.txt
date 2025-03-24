@@ -54,6 +54,7 @@ StackOverflow
 stackoverflow
 td
 th
+Untracked
 uv
 VScode
 wasm
