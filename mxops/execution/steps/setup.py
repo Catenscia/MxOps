@@ -368,7 +368,7 @@ class AccountCloneStep(Step):
         else:
             esdt_seen = set()
 
-        if len(esdt_seen):
+        if len(esdt_seen) > 0:
             esdt_module_state = self.get_esdt_module_clone_data(esdt_seen)
             proxy.set_state([esdt_module_state])
 
