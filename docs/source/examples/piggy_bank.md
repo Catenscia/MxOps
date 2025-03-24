@@ -572,7 +572,7 @@ This program comes with ABSOLUTELY NO WARRANTY
         "abc-esdt-minter": {
             "contract_id": "abc-esdt-minter",
             "address": "erd1qqqqqqqqqqqqqpgqam5fmdvqqta307y4xe6elhqj4z58leduhzdq8jytfw",
-            "wasm_hash": "c8280fa4f2f173940f3ba9e0b294867e3fad910ae0744628a90a0b73452c12cd",
+            "code_hash": "c8280fa4f2f173940f3ba9e0b294867e3fad910ae0744628a90a0b73452c12cd",
             "deploy_time": 1674592008,
             "last_upgrade_time": 1674592008,
             "saved_values": {
@@ -582,7 +582,7 @@ This program comes with ABSOLUTELY NO WARRANTY
         "abc-piggy-bank": {
             "contract_id": "abc-piggy-bank",
             "address": "erd1qqqqqqqqqqqqqpgqn7jctdfnem2n2zk8atus7ep9r64jy80whzdqp3wmyu",
-            "wasm_hash": "ea2a4cf5e924d01b3e43541edce4180e5972e46d50c10fa4db62b3b11c0d8699",
+            "code_hash": "ea2a4cf5e924d01b3e43541edce4180e5972e46d50c10fa4db62b3b11c0d8699",
             "deploy_time": 1674592050,
             "last_upgrade_time": 1674592050,
             "saved_values": {}

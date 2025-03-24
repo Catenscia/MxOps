@@ -321,7 +321,7 @@ This program comes with ABSOLUTELY NO WARRANTY
             "saved_values": {
                 "PingAmount": 1000000000000000000
             },
-            "wasm_hash": "1383133d22b8be01c4dc6dfda448dbf0b70ba1acb348a50dd3224b9c8bb21757",
+            "code_hash": "1383133d22b8be01c4dc6dfda448dbf0b70ba1acb348a50dd3224b9c8bb21757",
             "deploy_time": 1677219672,
             "last_upgrade_time": 1677219672
         }

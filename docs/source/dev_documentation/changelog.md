@@ -9,6 +9,8 @@
 - ReadTheDocs build with uv
 - Untracked permissions for executable file in the git repository
 - Remove non-output prints
+- use blake2b for wasm code hash
+- missing code hash update when upgrading a contract
 
 ### Added
 
@@ -62,6 +64,7 @@
 - 🚨 BREAKING CHANGE 🚨 scene_path attribute of SceneStep has been renamed path
 - 🚨 BREAKING CHANGE 🚨 cli and smart-values have been moved into dedicated sub-packages
 - 🚨 BREAKING CHANGE 🚨 step argument `print_results` was changed to `log_results` and is set to True by default
+- 🚨 BREAKING CHANGE 🚨 renamed `wasm_hash` to `code_hash`
 
 
 
