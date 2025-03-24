@@ -7,7 +7,7 @@ import pytest
 from mxops import errors
 from mxops.data.execution_data import ScenarioData
 from mxops.execution.msc import OnChainTokenTransfer
-from mxops.execution.smart_values import (
+from mxops.smart_values import (
     SmartAddress,
     SmartBech32,
     SmartBool,
@@ -20,8 +20,8 @@ from mxops.execution.smart_values import (
     SmartTokenTransfers,
     SmartValue,
 )
-from mxops.execution.smart_values.custom import SmartOnChainTokenTransfers
-from mxops.execution.smart_values.factory import extract_first_smart_value_class
+from mxops.smart_values.custom import SmartOnChainTokenTransfers
+from mxops.smart_values.factory import extract_first_smart_value_class
 
 
 @pytest.mark.parametrize(

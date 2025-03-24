@@ -12,7 +12,7 @@ from mxops.data.execution_data import InternalContractData, ScenarioData
 from mxops.errors import CheckFailed
 from mxops.execution.checks import SuccessCheck, TransfersCheck
 from mxops.execution.msc import OnChainTokenTransfer
-from mxops.execution.smart_values import SmartOnChainTokenTransfer
+from mxops.smart_values import SmartOnChainTokenTransfer
 
 
 def test_onchain_and_expected_transfer_equality():

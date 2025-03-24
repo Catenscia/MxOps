@@ -6,7 +6,7 @@ This module contains some utilities functions for the execution sub package
 
 import time
 from mxops.common.providers import MyProxyNetworkProvider
-from mxops.execution.smart_values.utils import retrieve_value_from_any
+from mxops.smart_values.utils import retrieve_value_from_any
 
 
 def wait_for_n_blocks(shard: int, n_blocks: int, cooldown: float = 0.2) -> int:

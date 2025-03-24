@@ -12,7 +12,7 @@ from typing import Any
 import dateparser
 
 from mxops import errors
-from mxops.execution.smart_values.base import SmartValue
+from mxops.smart_values.base import SmartValue
 
 
 @dataclass

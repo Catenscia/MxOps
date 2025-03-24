@@ -58,6 +58,7 @@
 - 🚨 BREAKING CHANGE 🚨 All accounts (user, contracts, internal, external) are now defined under the same "accounts" key in scenes
 - use uv for package build
 - 🚨 BREAKING CHANGE 🚨 scene_path attribute of SceneStep has been renamed path
+- 🚨 BREAKING CHANGE 🚨 cli and smart-values have been moved into dedicated sub-packages
 
 
 

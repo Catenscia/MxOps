@@ -17,7 +17,7 @@ from mxops.data.execution_data import ScenarioData
 from mxops.data.utils import json_dumps
 from mxops.enums import NetworkEnum
 from mxops.execution import utils
-from mxops.execution.smart_values import (
+from mxops.smart_values import (
     SmartBool,
     SmartDict,
     SmartFloat,

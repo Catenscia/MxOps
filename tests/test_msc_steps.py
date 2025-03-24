@@ -11,7 +11,7 @@ from mxops.data.execution_data import ScenarioData
 from mxops.execution.scene import execute_step
 from mxops.execution.steps.base import Step
 from mxops.execution.steps import LoopStep, PythonStep, SetVarsStep, WaitStep
-from mxops.execution.smart_values import (
+from mxops.smart_values import (
     SmartAddress,
     SmartBech32,
     SmartBool,

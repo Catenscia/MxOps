@@ -4,13 +4,13 @@ author: Etienne Wallet
 This subpackage contains all the smart values that can be used with MxOps
 """
 
-from mxops.execution.smart_values.base import SmartValue
-from mxops.execution.smart_values.custom import (
+from mxops.smart_values.base import SmartValue
+from mxops.smart_values.custom import (
     SmartOnChainTokenTransfer,
     SmartOnChainTokenTransfers,
     SmartResultsSaveKeys,
 )
-from mxops.execution.smart_values.mx_sdk import (
+from mxops.smart_values.mx_sdk import (
     SmartAddress,
     SmartAddresses,
     SmartBech32,
@@ -18,7 +18,7 @@ from mxops.execution.smart_values.mx_sdk import (
     SmartTokenTransfer,
     SmartTokenTransfers,
 )
-from mxops.execution.smart_values.native import (
+from mxops.smart_values.native import (
     SmartBytes,
     SmartInt,
     SmartFloat,

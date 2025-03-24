@@ -9,7 +9,7 @@ import importlib
 from typing import Any
 from mxops import errors
 from mxops.execution.checks.base import Check
-from mxops.execution.smart_values import SmartValue
+from mxops.smart_values import SmartValue
 
 
 @dataclass

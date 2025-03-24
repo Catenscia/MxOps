@@ -7,13 +7,13 @@ import importlib
 from types import UnionType
 from typing import Type, Union, get_args, get_origin
 
-from mxops.execution.smart_values.base import SmartValue
+from mxops.smart_values.base import SmartValue
 from mxops.utils.logger import get_logger
 
 LOGGER = get_logger("smart value factory")
 
 MODULES_WITH_SMART_VALUES = [
-    "mxops.execution.smart_values",
+    "mxops.smart_values",
     "mxops.execution.checks.factory",
     "mxops.execution.steps.factory",
 ]

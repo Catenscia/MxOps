@@ -10,7 +10,7 @@ from multiversx_sdk import TransactionOnNetwork
 
 from mxops.execution.checks.base import Check
 from mxops.execution.network import get_on_chain_transfers, raise_on_errors
-from mxops.execution.smart_values import SmartBool, SmartOnChainTokenTransfers, SmartStr
+from mxops.smart_values import SmartBool, SmartOnChainTokenTransfers, SmartStr
 from mxops.utils.logger import get_logger
 
 

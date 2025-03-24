@@ -18,9 +18,9 @@ from mxops.execution.account import AccountsManager
 from mxops.execution.checks.factory import SmartChecks
 from mxops.execution.checks import SuccessCheck
 from mxops.execution.network import send, send_and_wait_for_result
-from mxops.execution.smart_values import SmartValue
-from mxops.execution.smart_values.factory import extract_first_smart_value_class
-from mxops.execution.smart_values.mx_sdk import SmartAddress
+from mxops.smart_values import SmartValue
+from mxops.smart_values.factory import extract_first_smart_value_class
+from mxops.smart_values.mx_sdk import SmartAddress
 from mxops.utils.logger import get_logger
 from mxops.utils.msc import get_tx_link
 

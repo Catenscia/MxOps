@@ -20,8 +20,8 @@ from multiversx_sdk import (
 from mxops.config.config import Config
 from mxops.data.execution_data import ScenarioData, TokenData
 from mxops.enums import TokenTypeEnum
-from mxops.execution.smart_values.mx_sdk import SmartAddress
-from mxops.execution.smart_values.native import (
+from mxops.smart_values.mx_sdk import SmartAddress
+from mxops.smart_values.native import (
     SmartBool,
     SmartBytes,
     SmartInt,
