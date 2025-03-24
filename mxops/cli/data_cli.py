@@ -26,6 +26,7 @@ from mxops.data.execution_data import (
 )
 from mxops.data.utils import json_dumps
 from mxops.enums import parse_network_enum
+from mxops.smart_values.utils import retrieve_value_from_string
 from mxops.utils.logger import get_logger
 
 
@@ -85,6 +86,13 @@ def add_subparser(subparsers_action: _SubParsersAction):
             "Name of the checkpoint of the scenario to inspect,"
             "default leads to current data"
         ),
+    )
+
+    get_parser.add_argument(
+        "expression",
+        nargs="?",
+        default=None,
+        help="Optional expression to evaluate in the given scenario context",
     )
 
     # add delete command
@@ -204,7 +212,11 @@ def execute_cli(args: Namespace):  # pylint: disable=R0912
     if sub_command == "get":
         if args.scenario:
             ScenarioData.load_scenario(args.scenario, args.checkpoint)
-            print(json_dumps(ScenarioData.get().to_dict()))
+            if args.expression is not None:
+                result = retrieve_value_from_string(args.expression)
+            else:
+                result = json_dumps(ScenarioData.get().to_dict())
+            print(result)
         elif args.list:
             scenarios_names = data_path.get_all_scenarios_names()
             data = {"names": sorted(scenarios_names)}

@@ -34,7 +34,7 @@
 - user accounts are now auto reloaded from scenario data (no need to supply them at each execution)
 - SceneStep can now be repeated
 - SceneStep can now target a folder of scenes
-
+- User can now evaluate an expression with the data CLI
 
 ### Changed
 

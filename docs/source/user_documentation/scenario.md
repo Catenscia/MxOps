@@ -51,12 +51,28 @@ To print out all the existing `Scenario` on a specified network:
 mxops data get -n <network> -l
 ```
 
-### Scenario Data
+### Full Scenario Data
 
 To print out all the existing data for a `Scenario` on a specified network:
 
 ```bash
 mxops data get -n <network> -s <scenario>
+```
+
+### Expression evaluation
+
+You can ask Mxops to evaluate an expression in the context of a given scenario.
+
+```bash
+mxops data get -n <network> -s <scenario> <expression>
+```
+
+The expression can take full advantage of all the features of the [smart-values](smart_values_target).
+
+For example, If you want to retrieve the address of the contract you just deployed with the contract id `my-contract` on the devnet in the scenario `my-scenario`, use the command below:
+
+```bash
+mxops data get -n devnet -s my-scenario "%my-contract.address"
 ```
 
 ### Delete Scenario
