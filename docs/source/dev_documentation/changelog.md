@@ -7,6 +7,7 @@
 - Inconsistent data path due the snap packages
 - Remove deprecated help description files and use direct descriptors
 - ReadTheDocs build with uv
+- Untracked permissions for executable file in the git repository
 
 ### Added
 
