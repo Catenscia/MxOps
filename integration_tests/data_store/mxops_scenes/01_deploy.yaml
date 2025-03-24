@@ -27,7 +27,6 @@ steps:
     contract: data-store
     endpoint: get_init_params
     arguments: []
-    print_results: true
     results_save_keys: init_params
 
   - type: Python
@@ -41,7 +40,6 @@ steps:
     contract: data-store
     endpoint: get_init_params
     arguments: []
-    print_results: true
     results_save_keys: 
       init_params_2:
           - a

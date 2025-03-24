@@ -112,7 +112,7 @@ endpoint: getEsdtIdentifier
 arguments: []  # optional, if the view needs any arguments
 results_save_keys: # optional, key(s) under which save the results of the query
   - EsdtIdentifier
-print_results: true # optional, if the query results should be printed in the console
+log_results: true # optional, if the query results should be printed in the console, default to true
 ```
 
 If you have provided an ABI with the contract, MxOps will be able to automatically encode the arguments for your query, even if they are complex structures. For more details on that, please head to the {doc}`serialization` section.

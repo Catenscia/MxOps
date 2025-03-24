@@ -230,7 +230,6 @@ type: ContractQuery
 contract: "abc-esdt-minter"
 endpoint: getEsdtIdentifier
 arguments: []
-print_results: true
 results_save_keys:
   - EsdtIdentifier
 ```
@@ -277,7 +276,6 @@ steps:
     contract: "abc-esdt-minter"
     endpoint: getEsdtIdentifier
     arguments: []
-    print_results: true
     results_save_keys:
       - EsdtIdentifier
 ```

@@ -56,7 +56,6 @@ def test_deploy_scene_instantiation(test_data_folder_path: Path):
             contract="SEGLD-minter",
             arguments=[],
             results_save_keys=["TokenIdentifier"],
-            print_results=True,
         ),
         ContractUpgradeStep(
             sender="owner",

@@ -13,4 +13,3 @@ steps:
     endpoint: viewPair
     arguments:
       - 10
-    print_results: true

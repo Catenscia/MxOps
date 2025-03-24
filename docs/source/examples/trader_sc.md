@@ -237,7 +237,6 @@ steps:
   - type: ContractQuery
     contract: egld_wrapper_shard_1
     endpoint: getWrappedEgldTokenId
-    print_results: true
     results_save_keys:
       - wegld_identifier
 
@@ -248,7 +247,6 @@ steps:
   - type: ContractQuery
     contract: jex_wegld_jexchange_pair
     endpoint: getFirstToken
-    print_results: true
     results_save_keys:
       - jex_identifier
 ```
@@ -271,7 +269,6 @@ Later on, when we will interact with the WEGLD token, we could directly write it
 - type: ContractQuery
   contract: egld_wrapper_shard_1
   endpoint: getWrappedEgldTokenId
-  print_results: true
   results_save_keys:
     - wegld_identifier
 ```
@@ -286,7 +283,6 @@ We then repeat repeat these two steps for the `jex-pair`:
 - type: ContractQuery
   contract: jex_wegld_jexchange_pair
   endpoint: getFirstToken
-  print_results: true
   results_save_keys:
     - jex_identifier
 ```

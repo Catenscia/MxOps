@@ -26,7 +26,6 @@ steps:
     contract: data-store
     endpoint: get_upgrade_params
     arguments: []
-    print_results: true
     results_save_keys: 
       - upgrade_params
 

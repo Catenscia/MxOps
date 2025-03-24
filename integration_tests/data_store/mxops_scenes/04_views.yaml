@@ -27,7 +27,6 @@ steps:
         - 0
         - 789484
         - 485
-    print_results: true
     results_save_keys: view_test_1_returns
 
   - type: Python
@@ -66,7 +65,6 @@ steps:
         - - MEX-abcdef
           - 0
           - 184791484
-    print_results: true
     results_save_keys: view_test_2_returns
 
   - type: Python

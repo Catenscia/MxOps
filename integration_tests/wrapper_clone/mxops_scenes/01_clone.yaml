@@ -12,6 +12,5 @@ steps:
   - type: ContractQuery
     contract: egld_wrapper_shard_1
     endpoint: getWrappedEgldTokenId
-    print_results: true
     results_save_keys:
       - wegld_identifier
