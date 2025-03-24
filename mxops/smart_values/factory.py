@@ -62,7 +62,7 @@ def parse_field_type_from_str(field_type_str: str) -> Type | UnionType | None:
 
     if len(actual_types) > 1:
         return Union[tuple(actual_types)]
-    elif actual_types:
+    if actual_types:
         return actual_types[0]
     return None
 

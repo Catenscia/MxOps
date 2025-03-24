@@ -29,10 +29,8 @@ class TransferStep(TransactionStep):
     """
 
     receiver: SmartAddress
-    value: SmartInt = field(default_factory=lambda: SmartInt(0))
-    transfers: SmartTokenTransfers = field(
-        default_factory=lambda: SmartTokenTransfers([])
-    )
+    value: SmartInt = 0
+    transfers: SmartTokenTransfers = field(default_factory=list)
 
     def build_unsigned_transaction(self) -> Transaction:
         """

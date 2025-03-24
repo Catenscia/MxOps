@@ -118,7 +118,7 @@ class WaitStep(Step):
 
     for_seconds: SmartFloat | None = field(default=None)
     for_blocks: SmartInt | None = field(default=None)
-    shard: SmartInt = field(default_factory=lambda: SmartInt(METACHAIN_ID))
+    shard: SmartInt = METACHAIN_ID
 
     def _execute(self):
         """
@@ -155,7 +155,7 @@ class PythonStep(Step):
     function: SmartStr
     arguments: SmartList = field(default_factory=lambda: SmartList([]))
     keyword_arguments: SmartDict = field(default_factory=lambda: SmartDict({}))
-    print_result: SmartBool = field(default_factory=lambda: SmartBool(True))
+    print_result: SmartBool = True
     result_save_key: SmartStr | None = None
 
     def _execute(self):

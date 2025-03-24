@@ -5,7 +5,7 @@ This module contains Steps used to setup environnement, chain or workflow
 """
 
 from copy import deepcopy
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 import os
 from typing import ClassVar
 
@@ -44,7 +44,7 @@ class GenerateWalletsStep(Step):
 
     save_folder: SmartPath
     wallets: SmartValue
-    shard: SmartInt | None = field(default=None)
+    shard: SmartInt | None = None
 
     def _execute(self):
         """
@@ -368,7 +368,7 @@ class AccountCloneStep(Step):
         else:
             esdt_seen = set()
 
-        if len(esdt_seen):
+        if len(esdt_seen) > 0:
             esdt_module_state = self.get_esdt_module_clone_data(esdt_seen)
             proxy.set_state([esdt_module_state])
 

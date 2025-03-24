@@ -5,8 +5,9 @@ This module contains some utils functions and classes
 """
 
 import os
-from importlib_resources import files
 from pathlib import Path
+
+from importlib_resources import files
 
 from mxops.enums import LogGroupEnum
 from mxops.utils.logger import get_logger

@@ -49,11 +49,11 @@ class ContractDeployStep(TransactionStep):
     contract_id: SmartStr
     gas_limit: SmartInt
     abi_path: SmartPath | None = None
-    upgradeable: SmartBool = field(default_factory=lambda: SmartBool(True))
-    readable: SmartBool = field(default_factory=lambda: SmartBool(True))
-    payable: SmartBool = field(default_factory=lambda: SmartBool(False))
-    payable_by_sc: SmartBool = field(default_factory=lambda: SmartBool(False))
-    arguments: SmartList = field(default_factory=lambda: SmartList([]))
+    upgradeable: SmartBool = True
+    readable: SmartBool = True
+    payable: SmartBool = False
+    payable_by_sc: SmartBool = False
+    arguments: SmartList = field(default_factory=list)
 
     def build_unsigned_transaction(self) -> Transaction:
         """
@@ -151,11 +151,11 @@ class ContractUpgradeStep(TransactionStep):
     wasm_path: SmartPath
     gas_limit: SmartInt
     abi_path: SmartPath | None = None
-    upgradeable: SmartBool = field(default_factory=lambda: SmartBool(True))
-    readable: SmartBool = field(default_factory=lambda: SmartBool(True))
-    payable: SmartBool = field(default_factory=lambda: SmartBool(False))
-    payable_by_sc: SmartBool = field(default_factory=lambda: SmartBool(False))
-    arguments: SmartList = field(default_factory=lambda: SmartList([]))
+    upgradeable: SmartBool = True
+    readable: SmartBool = True
+    payable: SmartBool = False
+    payable_by_sc: SmartBool = False
+    arguments: SmartList = field(default_factory=list)
 
     def build_unsigned_transaction(self) -> Transaction:
         """
@@ -223,13 +223,11 @@ class ContractCallStep(TransactionStep):
     contract: SmartAddress
     endpoint: SmartStr
     gas_limit: SmartInt
-    arguments: SmartList = field(default_factory=lambda: SmartList([]))
-    value: SmartInt = field(default_factory=lambda: SmartInt(0))
-    esdt_transfers: SmartTokenTransfers = field(
-        default_factory=lambda: SmartTokenTransfers([])
-    )
-    log_results: SmartBool = field(default_factory=lambda: SmartBool(True))
-    results_save_keys: SmartResultsSaveKeys | None = field(default=None)
+    arguments: SmartList = field(default_factory=list)
+    value: SmartInt = 0
+    esdt_transfers: SmartTokenTransfers = field(default_factory=list)
+    log_results: SmartBool = True
+    results_save_keys: SmartResultsSaveKeys | None = None
     returned_data_parts: list | None = field(init=False, default=None)
     saved_results: dict | None = field(init=False, default=None)
 
@@ -327,9 +325,9 @@ class ContractQueryStep(Step):
 
     contract: SmartAddress
     endpoint: SmartStr
-    arguments: SmartList = field(default_factory=lambda: SmartList([]))
-    log_results: SmartBool = field(default_factory=lambda: SmartBool(True))
-    results_save_keys: SmartResultsSaveKeys | None = field(default=None)
+    arguments: SmartList = field(default_factory=list)
+    log_results: SmartBool = True
+    results_save_keys: SmartResultsSaveKeys | None = None
     returned_data_parts: list | None = field(init=False, default=None)
     saved_results: dict | None = field(init=False, default=None)
 

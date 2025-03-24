@@ -450,8 +450,8 @@ class _ScenarioData(SavedValuesData):
         try:
             bech32 = self.account_id_to_bech32[designation]
             return Address.new_from_bech32(bech32)
-        except (KeyError, BadAddressError):
-            raise errors.UnknownAccount(self.name, designation)
+        except (KeyError, BadAddressError) as err:
+            raise errors.UnknownAccount(self.name, designation) from err
 
     def get_account_value(self, designation: Address | str, value_key: str) -> Any:
         """
