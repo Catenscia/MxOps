@@ -9,6 +9,7 @@ from __future__ import annotations
 from copy import deepcopy
 from dataclasses import asdict, dataclass, field, is_dataclass
 import json
+import logging
 import os
 from pathlib import Path
 import re
@@ -23,13 +24,18 @@ from multiversx_sdk.core.errors import BadAddressError
 
 from mxops.config.config import Config
 from mxops.data import data_path
-from mxops import enums as mxops_enums
+from mxops.enums import (
+    LogGroupEnum,
+    NetworkEnum,
+    TokenTypeEnum,
+    parse_network_enum,
+    parse_token_type_enum,
+)
 from mxops import errors
 from mxops.data.utils import json_dump, json_load
 from mxops.utils.logger import get_logger
 
-
-LOGGER = get_logger("data")
+LOGGER = get_logger(LogGroupEnum.DATA)
 
 
 def parse_value_key(path) -> list[int | str]:
@@ -349,7 +355,7 @@ class TokenData(SavedValuesData):
     name: str
     ticker: str
     identifier: str
-    type: mxops_enums.TokenTypeEnum
+    type: TokenTypeEnum
 
     def to_dict(self) -> dict:
         """
@@ -372,7 +378,7 @@ class TokenData(SavedValuesData):
         :return: instance from the input dictionary
         :rtype: TokenData
         """
-        formated_data = {"type": mxops_enums.parse_token_type_enum(data["type"])}
+        formated_data = {"type": parse_token_type_enum(data["type"])}
         return super().from_dict({**data, **formated_data})
 
 
@@ -401,7 +407,7 @@ class _ScenarioData(SavedValuesData):
     """
 
     name: str
-    network: mxops_enums.NetworkEnum
+    network: NetworkEnum
     creation_time: int
     last_update_time: int
     accounts_data: dict[str, AccountData] = field(default_factory=dict)
@@ -775,7 +781,7 @@ class _ScenarioData(SavedValuesData):
         formated_data = {
             "accounts_data": accounts_data,
             "tokens_data": tokens_data,
-            "network": mxops_enums.parse_network_enum(data["network"]),
+            "network": parse_network_enum(data["network"]),
         }
 
         return cls(**{**data, **formated_data})
@@ -853,6 +859,22 @@ class ScenarioData:  # pylint: disable=too-few-public-methods
             scenario_name, network, current_timestamp, current_timestamp, {}
         )
         LOGGER.info((f"Scenario {scenario_name} created for network {network.value}"))
+
+    @classmethod
+    def get_scenario_logger(cls, logger_group: LogGroupEnum) -> logging.Logger:
+        """
+        Return a logger dedicated to a logging group in the current scenario
+        if no current scenario is defined, raise an error
+
+        :return: logger
+        :rtype: logging.Logger
+        """
+        if cls._instance is None:
+            raise errors.UnloadedScenario
+        return get_logger(
+            logger_group,
+            data_path.get_scenario_logs_folder(cls._instance.name) / "scenario.log",
+        )
 
 
 def delete_scenario_data(

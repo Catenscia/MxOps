@@ -9,10 +9,11 @@ import pkgutil
 
 from mxops.data import path_versions
 from mxops.data.path_versions.msc import version_name_to_version_path_name
+from mxops.enums import LogGroupEnum
 from mxops.utils.logger import get_logger
 
 
-LOGGER = get_logger("migration")
+LOGGER = get_logger(LogGroupEnum.DATA)
 
 
 def get_all_versions() -> list[str]:

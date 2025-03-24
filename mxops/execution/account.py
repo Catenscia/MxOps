@@ -16,10 +16,7 @@ from multiversx_sdk import (
 from mxops import errors
 from mxops.common.providers import MyProxyNetworkProvider
 from mxops.data.execution_data import LedgerAccountData, PemAccountData, ScenarioData
-from mxops.utils.logger import get_logger
-
-
-LOGGER = get_logger("execution accounts")
+from mxops.enums import LogGroupEnum
 
 
 class AccountsManager:
@@ -135,9 +132,10 @@ class AccountsManager:
         :rtype: Account | LedgerAccount
         """
         scenario_data = ScenarioData.get()
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
         account_data = scenario_data.get_account_data(account_designation)
         if account_data.bech32 not in cls._accounts:
-            LOGGER.info(
+            logger.info(
                 f"account {account_designation} is missing, reloading from "
                 "scenario data"
             )

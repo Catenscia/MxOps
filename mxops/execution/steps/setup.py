@@ -23,7 +23,7 @@ from mxops.data.data_cache import (
     try_load_account_storage_data,
 )
 from mxops.data.execution_data import ScenarioData
-from mxops.enums import NetworkEnum, parse_network_enum
+from mxops.enums import LogGroupEnum, NetworkEnum, parse_network_enum
 from mxops.execution import utils
 from mxops.execution.account import AccountsManager
 from mxops.smart_values import SmartInt, SmartPath, SmartValue
@@ -32,11 +32,7 @@ from mxops.smart_values.native import SmartBool, SmartDatetime, SmartStr
 from mxops.execution.steps.base import Step
 from mxops.execution.steps.transactions import TransferStep
 from mxops.utils.account_storage import separate_esdt_related_storage
-from mxops.utils.logger import get_logger
 from mxops.utils.wallets import generate_pem_wallet
-
-
-LOGGER = get_logger("setup steps")
 
 
 @dataclass
@@ -55,6 +51,7 @@ class GenerateWalletsStep(Step):
         Create the wanted wallets at the designated location
 
         """
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
         save_folder = self.save_folder.get_evaluated_value()
         save_folder.mkdir(parents=True, exist_ok=True)
         wallets = self.wallets.get_evaluated_value()
@@ -83,7 +80,7 @@ class GenerateWalletsStep(Step):
 
             pem_wallet.save(wallet_path)
             account_manager.load_register_pem_account(wallet_path, wallet_name)
-            LOGGER.info(
+            logger.info(
                 f"Wallet n°{i + 1}/{n_wallets} generated with address "
                 f"{wallet_address.to_bech32()} at {wallet_path}"
             )
@@ -123,6 +120,7 @@ class R3D4FaucetStep(Step):
         Seach for the r3d4 token id of EGLD in the current network and
         ask for EGLD from the faucet
         """
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
         scenario_data = ScenarioData.get()
         if scenario_data.network not in self.ALLOWED_NETWORKS:
             raise errors.WrongNetworkForStep(
@@ -131,7 +129,7 @@ class R3D4FaucetStep(Step):
         egld_details = self.get_egld_details()
         request_amount = float(egld_details["max"])
         for target in self.targets.get_evaluated_value():
-            LOGGER.info(
+            logger.info(
                 f"Requesting {request_amount} {egld_details['identifier']}"
                 f" from r3d4 faucet for {target.to_bech32()}"
             )
@@ -150,6 +148,7 @@ class R3D4FaucetStep(Step):
         :param amount: amount of token to receive, with decimal
         :type amount: str
         """
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
         config = Config.get_config()
         url = f"{config.get('R3D4_API')}/faucet/list"
         headers = {
@@ -168,7 +167,7 @@ class R3D4FaucetStep(Step):
         return_data = response.json()
         if "error" in return_data:
             raise errors.FaucetFailed(return_data["error"])
-        LOGGER.info(f"Response from faucet: {return_data['success']}")
+        logger.info(f"Response from faucet: {return_data['success']}")
 
 
 @dataclass
@@ -229,6 +228,7 @@ class AccountCloneStep(Step):
         :return: raw data to clone and set in the current network
         :rtype: dict
         """
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
         scenario_data = ScenarioData.get()
         if scenario_data.network not in self.ALLOWED_NETWORKS:
             raise errors.WrongNetworkForStep(
@@ -242,7 +242,7 @@ class AccountCloneStep(Step):
             source_network, address, self.caching_period.get_evaluated_value()
         )
         if source_account is None:
-            LOGGER.debug(
+            logger.debug(
                 f"Fetchting account of {address.to_bech32()} on {source_network.value}"
             )
             source_proxy = ProxyNetworkProvider(
@@ -273,6 +273,7 @@ class AccountCloneStep(Step):
         :return: raw storage data to clone and seen esdt in the storage to clone
         :rtype: tuple[dict, set[str]]
         """
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
         source_network = parse_network_enum(self.source_network.get_evaluated_value())
         address = self.address.get_evaluated_value()
 
@@ -281,7 +282,7 @@ class AccountCloneStep(Step):
             source_network, address, self.caching_period.get_evaluated_value()
         )
         if source_storage is None:
-            LOGGER.debug(
+            logger.debug(
                 f"Fetchting storage of {address.to_bech32()} on {source_network.value}"
             )
             source_proxy = ProxyNetworkProvider(
@@ -350,8 +351,9 @@ class AccountCloneStep(Step):
         Retrieve the source  account and its storage
         and set this state to the current network
         """
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
         source_network = parse_network_enum(self.source_network.get_evaluated_value())
-        LOGGER.info(
+        logger.info(
             f"Cloning account {self.address.get_evaluation_string()} from "
             f"{source_network.value}"
         )

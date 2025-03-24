@@ -17,10 +17,10 @@ from multiversx_sdk.network_providers.proxy_network_provider import (
 )
 
 from mxops.data import data_path
-from mxops.enums import NetworkEnum
+from mxops.enums import NetworkEnum, LogGroupEnum
 from mxops.utils.logger import get_logger
 
-LOGGER = get_logger("data cache")
+LOGGER = get_logger(LogGroupEnum.DATA)
 
 ACCOUNT_PREFIX = "ACCOUNT"
 ACCOUNT_STORAGE_PREFIX = "ACCOUNT_STORAGE"

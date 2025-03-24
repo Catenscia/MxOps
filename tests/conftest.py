@@ -23,7 +23,6 @@ from mxops.execution.account import AccountsManager
 @pytest.fixture(scope="session", autouse=True)
 def network():
     Config.set_network(NetworkEnum.LOCAL)
-    Config.get_config().set_option("DATA_PATH", "./tests/.mxops_data")
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -54,6 +53,7 @@ def test_data_folder_path():
 
 @pytest.fixture(scope="session", autouse=True)
 def scenario_data(network):  # must be executed after the network fixture
+    delete_scenario_data("pytest_scenario", ask_confirmation=False)
     ScenarioData.create_scenario("pytest_scenario", overwrite=True)
     contract_id = "my_test_contract"
     address = "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t"
@@ -91,8 +91,7 @@ def scenario_data(network):  # must be executed after the network fixture
 
     os.environ["OWNER_NAME"] = "bob"
 
-    yield scenario_data
-    delete_scenario_data("pytest_scenario", ask_confirmation=False)
+    return scenario_data
 
 
 def mocked_get_account(address: Address) -> AccountOnNetwork:

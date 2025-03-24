@@ -19,7 +19,7 @@ from multiversx_sdk import (
 
 from mxops.config.config import Config
 from mxops.data.execution_data import ScenarioData, TokenData
-from mxops.enums import TokenTypeEnum
+from mxops.enums import LogGroupEnum, TokenTypeEnum
 from mxops.smart_values.mx_sdk import SmartAddress
 from mxops.smart_values.native import (
     SmartBool,
@@ -31,7 +31,7 @@ from mxops.smart_values.native import (
 from mxops.execution.steps.base import TransactionStep
 from mxops.utils.logger import get_logger
 
-LOGGER = get_logger("token management steps")
+LOGGER = get_logger(LogGroupEnum.EXEC)
 
 
 @dataclass

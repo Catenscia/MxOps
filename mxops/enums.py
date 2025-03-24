@@ -31,6 +31,19 @@ class TokenTypeEnum(Enum):
     META = "meta"
 
 
+class LogGroupEnum(Enum):
+    """
+    Define the different groups of logging
+    Useful to define log level per group
+    """
+
+    GNL = "general"
+    CONFIG = "configuration"
+    EXEC = "execution"
+    DATA = "data"
+    MSC = "miscellanious"
+
+
 def parse_enum(value: str, enum_class: Type[Enum]) -> Enum:
     """
     Try to match a string to the name or the value of an instance of an Enum class

@@ -204,6 +204,16 @@ def get_checkpoint_contract_abi_file_path(
     return folder_path / f"{contract_address.to_bech32()}.abi.json"
 
 
+def get_mxops_logs_folders() -> Path:
+    """
+    Return the folder path where to save all the logs of MxOps
+
+    :return: logs folder path
+    :rtype: Path
+    """
+    return get_mxops_data_path() / "logs"
+
+
 def get_scenario_logs_folder(scenario_name: str) -> Path:
     """
     Return the folder path where to save all execution logs

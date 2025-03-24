@@ -13,12 +13,13 @@ from multiversx_sdk import (
 )
 
 from mxops.config.config import Config
+from mxops.enums import LogGroupEnum
 from mxops.smart_values import SmartAddress, SmartInt, SmartTokenTransfers
 from mxops.execution.steps.base import TransactionStep
 from mxops.utils.logger import get_logger
 
 
-LOGGER = get_logger("transactions steps")
+LOGGER = get_logger(LogGroupEnum.EXEC)
 
 
 @dataclass
