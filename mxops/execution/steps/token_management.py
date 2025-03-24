@@ -44,12 +44,12 @@ class FungibleIssueStep(TransactionStep):
     token_ticker: SmartStr
     initial_supply: SmartInt
     num_decimals: SmartInt
-    can_freeze: SmartBool = field(default_factory=lambda: SmartBool(False))
-    can_wipe: SmartBool = field(default_factory=lambda: SmartBool(False))
-    can_pause: SmartBool = field(default_factory=lambda: SmartBool(False))
-    can_change_owner: SmartBool = field(default_factory=lambda: SmartBool(False))
-    can_upgrade: SmartBool = field(default_factory=lambda: SmartBool(False))
-    can_add_special_roles: SmartBool = field(default_factory=lambda: SmartBool(False))
+    can_freeze: SmartBool = False
+    can_wipe: SmartBool = False
+    can_pause: SmartBool = False
+    can_change_owner: SmartBool = False
+    can_upgrade: SmartBool = False
+    can_add_special_roles: SmartBool = False
 
     def build_unsigned_transaction(self) -> Transaction:
         """
@@ -112,15 +112,13 @@ class NonFungibleIssueStep(TransactionStep):
 
     token_name: SmartStr
     token_ticker: SmartStr
-    can_freeze: SmartBool = field(default_factory=lambda: SmartBool(False))
-    can_wipe: SmartBool = field(default_factory=lambda: SmartBool(False))
-    can_pause: SmartBool = field(default_factory=lambda: SmartBool(False))
-    can_change_owner: SmartBool = field(default_factory=lambda: SmartBool(False))
-    can_upgrade: SmartBool = field(default_factory=lambda: SmartBool(False))
-    can_add_special_roles: SmartBool = field(default_factory=lambda: SmartBool(False))
-    can_transfer_nft_create_role: SmartBool = field(
-        default_factory=lambda: SmartBool(False)
-    )
+    can_freeze: SmartBool = False
+    can_wipe: SmartBool = False
+    can_pause: SmartBool = False
+    can_change_owner: SmartBool = False
+    can_upgrade: SmartBool = False
+    can_add_special_roles: SmartBool = False
+    can_transfer_nft_create_role: SmartBool = False
 
     def build_unsigned_transaction(self) -> Transaction:
         """
@@ -187,15 +185,13 @@ class SemiFungibleIssueStep(TransactionStep):
 
     token_name: SmartStr
     token_ticker: SmartStr
-    can_freeze: SmartBool = field(default_factory=lambda: SmartBool(False))
-    can_wipe: SmartBool = field(default_factory=lambda: SmartBool(False))
-    can_pause: SmartBool = field(default_factory=lambda: SmartBool(False))
-    can_change_owner: SmartBool = field(default_factory=lambda: SmartBool(False))
-    can_upgrade: SmartBool = field(default_factory=lambda: SmartBool(False))
-    can_add_special_roles: SmartBool = field(default_factory=lambda: SmartBool(False))
-    can_transfer_nft_create_role: SmartBool = field(
-        default_factory=lambda: SmartBool(False)
-    )
+    can_freeze: SmartBool = False
+    can_wipe: SmartBool = False
+    can_pause: SmartBool = False
+    can_change_owner: SmartBool = False
+    can_upgrade: SmartBool = False
+    can_add_special_roles: SmartBool = False
+    can_transfer_nft_create_role: SmartBool = False
 
     def build_unsigned_transaction(self) -> Transaction:
         """
@@ -263,15 +259,13 @@ class MetaIssueStep(TransactionStep):
     token_name: SmartStr
     token_ticker: SmartStr
     num_decimals: SmartInt
-    can_freeze: SmartBool = field(default_factory=lambda: SmartBool(False))
-    can_wipe: SmartBool = field(default_factory=lambda: SmartBool(False))
-    can_pause: SmartBool = field(default_factory=lambda: SmartBool(False))
-    can_change_owner: SmartBool = field(default_factory=lambda: SmartBool(False))
-    can_upgrade: SmartBool = field(default_factory=lambda: SmartBool(False))
-    can_add_special_roles: SmartBool = field(default_factory=lambda: SmartBool(False))
-    can_transfer_nft_create_role: SmartBool = field(
-        default_factory=lambda: SmartBool(False)
-    )
+    can_freeze: SmartBool = False
+    can_wipe: SmartBool = False
+    can_pause: SmartBool = False
+    can_change_owner: SmartBool = False
+    can_upgrade: SmartBool = False
+    can_add_special_roles: SmartBool = False
+    can_transfer_nft_create_role: SmartBool = False
 
     def build_unsigned_transaction(self) -> Transaction:
         """
@@ -562,11 +556,11 @@ class NonFungibleMintStep(TransactionStep):
 
     token_identifier: SmartStr
     amount: SmartInt
-    name: SmartStr = field(default_factory=lambda: SmartStr(""))
-    royalties: SmartInt = field(default_factory=lambda: SmartInt(0))
-    hash: SmartStr = field(default_factory=lambda: SmartStr(""))
-    attributes: SmartBytes = field(default_factory=lambda: SmartBytes(""))
-    uris: SmartList = field(default_factory=lambda: SmartList([]))
+    name: SmartStr = ""
+    royalties: SmartInt = 0
+    hash: SmartStr = ""
+    attributes: SmartBytes = b""
+    uris: SmartList = field(default_factory=list)
 
     def build_unsigned_transaction(self) -> Transaction:
         """

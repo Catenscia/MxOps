@@ -42,7 +42,7 @@ class TransfersCheck(Check):
 
     expected_transfers: SmartOnChainTokenTransfers
     condition: SmartStr = field(default_factory=lambda: SmartStr("exact"))
-    include_gas_refund: SmartBool = field(default_factory=lambda: SmartBool(False))
+    include_gas_refund: SmartBool = False
 
     def _get_check_status(self, onchain_tx: TransactionOnNetwork) -> bool:
         """

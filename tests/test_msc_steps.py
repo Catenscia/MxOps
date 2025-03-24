@@ -50,7 +50,7 @@ class DummyStep(Step):
 @dataclass
 class DummyUnionStep(Step):
     smart_value: SmartValue = field(default_factory=lambda: SmartValue(""))
-    smart_int: SmartInt | None = field(default_factory=lambda: SmartInt(0))
+    smart_int: SmartInt | None = 0
     smart_path: SmartPath | None = None
 
     def _execute(self):
