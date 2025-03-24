@@ -14,7 +14,7 @@ import requests
 from multiversx_sdk.network_providers.errors import GenericError
 
 from mxops.config.config import Config
-from mxops.data.cli import data_path
+from mxops.data import data_path
 from mxops.utils.logger import get_logger
 from mxops.enums import NetworkEnum
 from mxops.common.providers import MyProxyNetworkProvider
