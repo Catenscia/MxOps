@@ -13,8 +13,6 @@ steps:
     contract: egld_wrapper_shard_1
     endpoint: getWrappedEgldTokenId
     arguments: []
-    results_types:
-      - type: TokenIdentifier
     results_save_keys:
       - WrappedTokenIdentifier
 

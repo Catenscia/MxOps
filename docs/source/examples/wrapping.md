@@ -36,8 +36,11 @@ accounts:
 
   - account_id: egld_wrapper_shard_1
     address: erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp
+    abi_path: ./data/multiversx-wegld-swap-sc.abi.json
 
 ```
+
+You can find the abi of the wrapper contract [here](https://github.com/Catenscia/MxOps/blob/main/integration_tests/wrapper_clone/data/multiversx-wegld-swap-sc.abi.json).
 
 ## Scene
 
@@ -49,8 +52,6 @@ is to make a query to the wrapper contract and save the token identifier in the 
     contract: egld_wrapper_shard_1
     endpoint: getWrappedEgldTokenId
     arguments: []
-    results_types:
-      - type: TokenIdentifier
     results_save_keys:
       - WrappedTokenIdentifier
 ```
@@ -126,8 +127,6 @@ steps:
     contract: egld_wrapper_shard_1
     endpoint: getWrappedEgldTokenId
     arguments: []
-    results_types:
-      - type: TokenIdentifier
     results_save_keys:
       - WrappedTokenIdentifier
 
