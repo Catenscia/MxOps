@@ -129,7 +129,7 @@ class ContractDeployStep(TransactionStep):
             account_id=contract_id,
             bech32=contract_address.to_bech32(),
             saved_values={},
-            wasm_hash=file_hash,
+            code_hash=file_hash,
             deploy_time=on_chain_tx.timestamp,
             last_upgrade_time=on_chain_tx.timestamp,
         )
@@ -209,7 +209,7 @@ class ContractUpgradeStep(TransactionStep):
             scenario_data.set_account_value(
                 contract_address, "last_upgrade_time", on_chain_tx.timestamp
             )
-            scenario_data.set_account_value(contract_address, "wasm_hash", file_hash)
+            scenario_data.set_account_value(contract_address, "code_hash", file_hash)
         except errors.UnknownAccount:  # any contract can be upgraded
             pass
 

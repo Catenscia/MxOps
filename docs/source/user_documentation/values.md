@@ -171,7 +171,7 @@ We have the following contract data in the MxOps Scenario:
         "contract_id": "my_test_contract",
         "address": "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t",
         "serializer": null,
-        "wasm_hash": "5ce403a4f73701481cc15b2378cdc5bce3e35fa215815aa5eb9104d9f7ab2451",
+        "code_hash": "5ce403a4f73701481cc15b2378cdc5bce3e35fa215815aa5eb9104d9f7ab2451",
         "deploy_time": 1,
         "last_upgrade_time": 1
     }

@@ -57,13 +57,13 @@ def scenario_data(network):  # must be executed after the network fixture
     ScenarioData.create_scenario("pytest_scenario", overwrite=True)
     contract_id = "my_test_contract"
     address = "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t"
-    wasm_hash = "5ce403a4f73701481cc15b2378cdc5bce3e35fa215815aa5eb9104d9f7ab2451"
+    code_hash = "5ce403a4f73701481cc15b2378cdc5bce3e35fa215815aa5eb9104d9f7ab2451"
     scenario_data = ScenarioData.get()
     scenario_data.add_account_data(
         InternalContractData(
             account_id=contract_id,
             bech32=address,
-            wasm_hash=wasm_hash,
+            code_hash=code_hash,
             deploy_time=1,
             last_upgrade_time=1,
             saved_values={"query_result_1": [0, 1, {2: "abc"}]},

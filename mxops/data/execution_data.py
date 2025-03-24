@@ -333,7 +333,7 @@ class InternalContractData(ContractData):
     managed by MxOps
     """
 
-    wasm_hash: str
+    code_hash: str
     deploy_time: int
     last_upgrade_time: int
 

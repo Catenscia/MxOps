@@ -54,7 +54,7 @@ def test_scenario_loading(scenario_path: Path):
             account_id="egld-ping-pong",
             bech32="erd1qqqqqqqqqqqqqpgq0048vv3uk6l6cdreezpallvduy4qnfv2plcq74464k",
             saved_values={},
-            wasm_hash=(
+            code_hash=(
                 "5ce403a4f73701481cc15b2378cdc5bce3e35fa215815aa5eb9104d9f7ab2451"
             ),
             deploy_time=1677134892,
