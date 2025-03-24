@@ -58,21 +58,15 @@ def get_tx_link(tx_hash: str) -> str:
 
 def get_file_hash(file_path: Path) -> str:
     """
-    Compute the sha256 hash of a file a return it
+    Compute the blake2b hash of a file a return it
 
     :param file_path: path to the file to compute the hash from
     :type file_path: Path
     :return: hash of the file
     :rtype: str
     """
-    block_size = 65536
-    file_hash = hashlib.sha256()
-    with open(file_path.as_posix(), "rb") as file:
-        file_block = file.read(block_size)
-        while len(file_block) > 0:
-            file_hash.update(file_block)
-            file_block = file.read(block_size)
-    return file_hash.hexdigest()
+    file_content = file_path.read_bytes()
+    return hashlib.blake2b(file_content, digest_size=32).hexdigest()
 
 
 def int_to_pair_hex(number: int) -> str:
