@@ -47,7 +47,6 @@ def decode_bytes(data: Any) -> Any:
     :return: decoded or raw data
     :rtype: Any
     """
-    print(data)
     if isinstance(data, str) and data.startswith("bytes:"):
         base64_encoded = data[6:]  # Remove 'bytes:' prefix
         return base64.b64decode(base64_encoded)
