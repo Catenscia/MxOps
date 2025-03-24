@@ -187,18 +187,3 @@ class Config:
             config_path = cls.find_config_path()
             cls.__instance = _Config(cls.__network, config_path)
         return cls.__instance
-
-
-def dump_default_config():
-    """
-    Take the default config and dump it in the working directory as mxops_config.ini
-    """
-    dump_path = Path("./mxops_config.ini")
-    if os.path.exists(dump_path.as_posix()):
-        raise RuntimeError("A config file already exists in the working directory")
-
-    default_config = files("mxops.resources").joinpath("default_config.ini")
-
-    with open(dump_path.as_posix(), "w+", encoding="utf-8") as dump_file:
-        dump_file.write(default_config.read_text())
-    print(f"Copy of the default config dumped at {dump_path.absolute()}")

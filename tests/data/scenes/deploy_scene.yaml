@@ -54,7 +54,6 @@ steps:
     arguments: []
     results_save_keys:
       - TokenIdentifier
-    print_results: true
 
   - type: ContractUpgrade
     sender: owner

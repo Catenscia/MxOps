@@ -16,7 +16,6 @@ steps:
     arguments:
       - 123987
       - null
-    print_results: true
     results_save_keys: test_1_results
 
   - type: Python
@@ -30,7 +29,6 @@ steps:
     contract: data-store
     endpoint: my_option_biguint
     arguments: []
-    print_results: true
     results_save_keys: 
       - my_option_biguint
 
@@ -45,7 +43,6 @@ steps:
     contract: data-store
     endpoint: my_token_identifier
     arguments: []
-    print_results: true
     results_save_keys: 
       - my_token_identifier
 
@@ -64,7 +61,6 @@ steps:
     arguments:
       - erd1qqqqqqqqqqqqqpgqf48ydzn8shr8mnmrvydq2fn9v2afzd3c4fvsk4wglm
       - WEGLD-abcdef
-    print_results: true
     results_save_keys: test_2_results
 
   - type: Python
@@ -78,7 +74,6 @@ steps:
     contract: data-store
     endpoint: get_test_2_params
     arguments: []
-    print_results: true
     results_save_keys: 
       - test_2_params
 
@@ -102,7 +97,6 @@ steps:
         - 3
         - 4
         - 5
-    print_results: true
     results_save_keys: test_3_results
 
   - type: Python
@@ -117,7 +111,6 @@ steps:
     contract: data-store
     endpoint: get_test_3_params
     arguments: []
-    print_results: true
     results_save_keys: test_3_params
 
   - type: Python
@@ -134,7 +127,6 @@ steps:
     gas_limit: 60000000
     arguments:
       - [0, 1, 2, 3, 4, 5, 6]
-    print_results: true
     results_save_keys: test_4_results
 
   - type: Python
@@ -148,7 +140,6 @@ steps:
     contract: data-store
     endpoint: my_vec_biguint
     arguments: []
-    print_results: true
     results_save_keys: my_vec_biguint
 
   - type: Python
@@ -162,7 +153,6 @@ steps:
     contract: data-store
     endpoint: get_test_4_params
     arguments: []
-    print_results: true
     results_save_keys: 
     - test_4_params
 

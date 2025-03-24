@@ -226,7 +226,7 @@ class ContractCallStep(TransactionStep):
     esdt_transfers: SmartTokenTransfers = field(
         default_factory=lambda: SmartTokenTransfers([])
     )
-    print_results: SmartBool = field(default_factory=lambda: SmartBool(False))
+    log_results: SmartBool = field(default_factory=lambda: SmartBool(True))
     results_save_keys: SmartResultsSaveKeys | None = field(default=None)
     returned_data_parts: list | None = field(init=False, default=None)
     saved_results: dict | None = field(init=False, default=None)
@@ -273,6 +273,7 @@ class ContractCallStep(TransactionStep):
         :param on_chain_tx: successful transaction
         :type on_chain_tx: TransactionOnNetwork | None
         """
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
         scenario_data = ScenarioData.get()
         if self.results_save_keys is None:
             return
@@ -304,11 +305,16 @@ class ContractCallStep(TransactionStep):
                     scenario_data.set_account_value(contract_address, save_key, value)
                     self.saved_results[save_key] = value
 
-        if self.print_results:
+        if self.log_results:
             if self.saved_results is not None:
-                print(json_dumps(self.saved_results))
+                resultr_str = json_dumps(self.saved_results)
             elif self.returned_data_parts is not None:
-                print(json_dumps(self.returned_data_parts))
+                resultr_str = json_dumps(self.returned_data_parts)
+            else:
+                resultr_str = "<no results to display>"
+            logger.info(f"Call results: {resultr_str}")
+        else:
+            logger.info("Call successful")
 
 
 @dataclass
@@ -320,7 +326,7 @@ class ContractQueryStep(Step):
     contract: SmartAddress
     endpoint: SmartStr
     arguments: SmartList = field(default_factory=lambda: SmartList([]))
-    print_results: SmartBool = field(default_factory=lambda: SmartBool(False))
+    log_results: SmartBool = field(default_factory=lambda: SmartBool(True))
     results_save_keys: SmartResultsSaveKeys | None = field(default=None)
     returned_data_parts: list | None = field(init=False, default=None)
     saved_results: dict | None = field(init=False, default=None)
@@ -330,7 +336,6 @@ class ContractQueryStep(Step):
         Save the results the query. This method replace the old way that was using
         expected_results
         """
-        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
         scenario_data = ScenarioData.get()
         if self.results_save_keys is None:
             return
@@ -338,8 +343,6 @@ class ContractQueryStep(Step):
         results_save_keys = self.results_save_keys.get_evaluated_value()
         if self.returned_data_parts is None:
             raise ValueError("No data to save")
-
-        logger.info("Saving query results")
 
         self.saved_results = {}
         to_save = results_save_keys.parse_data_to_save(self.returned_data_parts)
@@ -377,15 +380,16 @@ class ContractQueryStep(Step):
 
         self.save_results()
 
-        if self.print_results:
+        if self.log_results:
             if self.saved_results is not None:
-                print(json_dumps(self.saved_results))
+                resultr_str = json_dumps(self.saved_results)
             elif self.returned_data_parts is not None:
-                print(json_dumps(self.returned_data_parts))
+                resultr_str = json_dumps(self.returned_data_parts)
             else:
-                print("empty result")
-
-        logger.info("Query successful")
+                resultr_str = "<empty result>"
+            logger.info(f"Query results: {resultr_str}")
+        else:
+            logger.info("Query successful")
 
 
 @dataclass

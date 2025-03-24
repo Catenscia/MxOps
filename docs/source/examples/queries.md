@@ -23,7 +23,6 @@ steps:
   - type: ContractQuery
     contract: xexchange-wegld-usdc
     endpoint: getReservesAndTotalSupply
-    print_results: true
 ```
 
 Printed results:
@@ -70,7 +69,6 @@ steps:
     endpoint: viewPair
     arguments:
       - 10
-    print_results: true
 ```
 
 Printed results:
@@ -117,7 +115,6 @@ steps:
   - type: ContractQuery
     contract: xexchange-wegld-usdc
     endpoint: getReservesAndTotalSupply
-    print_results: true
     results_types:
       - type: BigUint
       - type: BigUint

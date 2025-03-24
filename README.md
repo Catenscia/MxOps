@@ -78,7 +78,6 @@ steps:
     endpoint: viewPair
     arguments:
       - 10  # id of the pair to get the details of
-    print_results: true
 ```
 
 ```bash

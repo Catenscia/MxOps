@@ -8,6 +8,7 @@
 - Remove deprecated help description files and use direct descriptors
 - ReadTheDocs build with uv
 - Untracked permissions for executable file in the git repository
+- Remove non-output prints
 
 ### Added
 
@@ -60,6 +61,7 @@
 - use uv for package build
 - 🚨 BREAKING CHANGE 🚨 scene_path attribute of SceneStep has been renamed path
 - 🚨 BREAKING CHANGE 🚨 cli and smart-values have been moved into dedicated sub-packages
+- 🚨 BREAKING CHANGE 🚨 step argument `print_results` was changed to `log_results` and is set to True by default
 
 
 

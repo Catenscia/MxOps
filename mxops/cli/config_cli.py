@@ -5,10 +5,11 @@ This module contains the cli for the config subpackage
 """
 
 from argparse import _SubParsersAction, Namespace, RawDescriptionHelpFormatter
+from mxops.config.utils import dump_default_config
 from mxops.data.utils import json_dumps
 
 from mxops.enums import parse_network_enum
-from mxops.config.config import Config, dump_default_config
+from mxops.config.config import Config
 
 
 def add_subparser(subparsers_action: _SubParsersAction):

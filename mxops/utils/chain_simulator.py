@@ -7,7 +7,6 @@ This module contains utils functions to interact with the chain-simulator
 from argparse import _SubParsersAction, ArgumentParser, Namespace
 from pathlib import Path
 import subprocess  # nosec
-import sys
 import time
 
 import requests
@@ -100,14 +99,13 @@ def start_chain_simulator():
     )
 
     for line in iter(process.stderr.readline, ""):
-        print(line, end="", file=sys.stderr)
+        LOGGER.info(line.rstrip("\n"))
 
     process.wait()
 
     if process.returncode != 0:
-        print(
-            "Error: chain simulator process ended with return code "
-            f"{process.returncode}"
+        LOGGER.error(
+            f"Chain simulator process ended with return code {process.returncode}"
         )
         return
 
@@ -141,14 +139,13 @@ def stop_chain_simulator():
     )
 
     for line in iter(process.stderr.readline, ""):
-        print(line, end="", file=sys.stderr)
+        LOGGER.info(line.rstrip("\n"))
 
     process.wait()
 
     if process.returncode != 0:
-        print(
-            "Error: chain simulator process ended with return code "
-            f"{process.returncode}"
+        LOGGER.error(
+            f"Chain simulator process ended with return code {process.returncode}"
         )
     else:
         LOGGER.info("chain simulator successfully stopped")

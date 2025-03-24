@@ -13,4 +13,3 @@ steps:
   - type: ContractQuery
     contract: xexchange-wegld-usdc
     endpoint: getReservesAndTotalSupply
-    print_results: true

@@ -10,7 +10,9 @@ from importlib import metadata
 
 from mxops.cli import config_cli, data_cli, execution_cli
 from mxops.data.migrations.run import check_migrate_data
+from mxops.enums import LogGroupEnum
 from mxops.utils import chain_simulator
+from mxops.utils.logger import get_logger
 
 
 def parse_args() -> Namespace:
@@ -59,10 +61,10 @@ def cli_main():
     """
     args = parse_args()
     check_migrate_data()
-
-    print(
-        "MxOps  Copyright (C) 2023  Catenscia",
-        "\nThis program comes with ABSOLUTELY NO WARRANTY",
+    logger = get_logger(LogGroupEnum.GNL)
+    logger.info(
+        "MxOps  Copyright (C) 2023  Catenscia"
+        "\nThis program comes with ABSOLUTELY NO WARRANTY"
     )
 
     if args.command == "config":
