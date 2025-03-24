@@ -42,5 +42,21 @@ exclude_patterns = []
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = "sphinx_rtd_theme"
+html_theme = "sphinx_material"
 html_static_path = ["_static"]
+
+html_theme_options = {
+    "nav_title": "MxOps",
+    "color_primary": "teal",
+    "color_accent": "light-blue",
+    "theme_color": "0D7377",
+    "repo_url": "https://github.com/Catenscia/MxOps",
+    "repo_name": "MxOps",
+}
+
+
+html_sidebars = {
+    "**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]
+}
+
+html_logo = "_images/catenscia_logo.png"
