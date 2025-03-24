@@ -401,11 +401,15 @@ class FuzzExecutionParameters:
 
     sender: SmartStr
     endpoint: SmartStr
-    value: SmartInt = 0
-    esdt_transfers: SmartTokenTransfers = field(default_factory=list)
-    arguments: SmartList = field(default_factory=list)
-    expected_outputs: SmartList | None = None
-    description: SmartStr = ""
+    value: SmartInt = field(default_factory=lambda: SmartInt(0))
+    esdt_transfers: SmartTokenTransfers = field(
+        default_factory=lambda: SmartTokenTransfers([])
+    )
+    arguments: SmartList = field(default_factory=lambda: SmartList([]))
+    expected_outputs: SmartList | None = field(
+        default=None
+    )  # TODO Replace with checks (success, transfers and results)
+    description: SmartStr = field(default_factory=lambda: SmartStr(""))
     gas_limit: SmartInt | None = field(default=None)
 
     def evaluate_smart_values(self):
