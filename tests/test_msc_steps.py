@@ -99,12 +99,10 @@ def test_step_smart_values_auto_conversion():
     ]
     assert step.smart_list.get_evaluated_value() == []
     assert step.smart_dict.get_evaluated_value() == {}
-    assert step.smart_step.get_evaluated_value() == SetVarsStep(
-        variables={"counter": 0}
-    )
-    assert step.smart_steps.get_evaluated_value() == [
-        SetVarsStep(variables={"counter": 0})
-    ]
+    expected_set_vars_step = SetVarsStep(variables={"counter": 0})
+    expected_set_vars_step.evaluate_smart_values()
+    assert step.smart_step.get_evaluated_value() == expected_set_vars_step
+    assert step.smart_steps.get_evaluated_value() == [expected_set_vars_step]
 
 
 def test_step_smart_values_normal_instantiation():
@@ -149,12 +147,10 @@ def test_step_smart_values_normal_instantiation():
     ]
     assert step.smart_list.get_evaluated_value() == []
     assert step.smart_dict.get_evaluated_value() == {}
-    assert step.smart_step.get_evaluated_value() == SetVarsStep(
-        variables={"counter": 0}
-    )
-    assert step.smart_steps.get_evaluated_value() == [
-        SetVarsStep(variables={"counter": 0})
-    ]
+    expected_set_vars_step = SetVarsStep(variables={"counter": 0})
+    expected_set_vars_step.evaluate_smart_values()
+    assert step.smart_step.get_evaluated_value() == expected_set_vars_step
+    assert step.smart_steps.get_evaluated_value() == [expected_set_vars_step]
 
 
 def test_smart_values_with_default_instantiation_1():
@@ -187,7 +183,7 @@ def test_loop_step_with_range():
     # Given
     step = LoopStep(
         [
-            {"type": "Loop", "var_name": "loop_var_2", "steps": [], "var_list": []},
+            {"type": "Loop", "var_name": "loop_var_2", "steps": [], "var_list": [1, 2]},
             {"type": "SetVars", "variables": {"counter": 0}},
         ],
         "loop_var",
@@ -197,12 +193,17 @@ def test_loop_step_with_range():
     scenario_data = ScenarioData.get()
 
     # When / Then
+    expected_loop_step = LoopStep(steps=[], var_name="loop_var_2", var_list=[1, 2])
+    expected_loop_step.evaluate_smart_values()
+    expected_set_vars_step = SetVarsStep(variables={"counter": 0})
+    expected_set_vars_step.evaluate_smart_values()
+
     for i, step in enumerate(step.generate_steps()):
         assert scenario_data.get_value("loop_var") == i // 2
         if i % 2 == 0:
-            assert step == LoopStep(steps=[], var_name="loop_var_2", var_list=[])
+            assert step == expected_loop_step
         else:
-            assert step == SetVarsStep(variables={"counter": 0})
+            assert step == expected_set_vars_step
     assert i == 3  # (2 - 0) * 2
 
 
@@ -211,7 +212,7 @@ def test_loop_step_with_list():
     var_list = ["hey", 42]
     step = LoopStep(
         [
-            {"type": "Loop", "var_name": "loop_var_2", "steps": [], "var_list": []},
+            {"type": "Loop", "var_name": "loop_var_2", "steps": [], "var_list": [1, 2]},
             {"type": "SetVars", "variables": {"counter": 0}},
         ],
         "loop_var",
@@ -220,12 +221,17 @@ def test_loop_step_with_list():
     scenario_data = ScenarioData.get()
 
     # When / Then
+    expected_loop_step = LoopStep(steps=[], var_name="loop_var_2", var_list=[1, 2])
+    expected_loop_step.evaluate_smart_values()
+    expected_set_vars_step = SetVarsStep(variables={"counter": 0})
+    expected_set_vars_step.evaluate_smart_values()
+
     for i, step in enumerate(step.generate_steps()):
         assert scenario_data.get_value("loop_var") == var_list[i // 2]
         if i % 2 == 0:
-            assert step == LoopStep(steps=[], var_name="loop_var_2", var_list=[])
+            assert step == expected_loop_step
         else:
-            assert step == SetVarsStep(variables={"counter": 0})
+            assert step == expected_set_vars_step
     assert i == 3  # (2 - 0) * 2
 
 
@@ -429,3 +435,22 @@ def test_scene_folder_repeat_step():
 
     # Then
     assert scenario_data.get_value("scene_counter") == 20
+
+
+def test_nested_loop_composition():
+    # Given
+    scenario_data = ScenarioData.get()
+    step = SceneStep(
+        path=Path("tests/data/scenes/nested_loop_composition.yaml"), repeat=10
+    )
+
+    # When
+    execute_step(step, scenario_data)
+
+    # Then
+    for counter_1 in range(0, 10):
+        for counter_2 in range(0, 10):
+            assert (
+                scenario_data.get_value(f"pair_{counter_1}_{counter_2}")
+                == counter_1 * counter_2
+            )

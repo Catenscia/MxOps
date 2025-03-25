@@ -7,7 +7,7 @@ This module contains miscelanious Steps
 from dataclasses import dataclass, field
 from importlib.util import spec_from_file_location, module_from_spec
 import time
-from typing import Iterator
+from typing import Any, Iterable
 
 from multiversx_sdk.core.constants import METACHAIN_ID
 
@@ -43,25 +43,14 @@ class LoopStep(Step):
     var_end: SmartInt | None = None
     var_list: SmartValue | None = None
 
-    def _initiate_var(self):
+    def _get_evaluated_iterable(self) -> Iterable[Any]:
         """
-        initiate the loop variable with a value to avoid pre-evaluation
-        error when a sub steps is defined using the loop variable
-        """
-        self.var_name.evaluate()
-        scenario_data = ScenarioData.get()
-        scenario_data.set_value(self.var_name.get_evaluated_value(), 0)
+        From the evaluated smart values, return the iterable that this loop
+        should use
 
-    def generate_steps(self) -> Iterator[Step]:
+        :return: iterable
+        :rtype: Iterable[Any]
         """
-        Generate the steps that sould be executed
-
-        :yield: steps to be executed
-        :rtype: Iterator[Step]
-        """
-        self._initiate_var()
-        self.evaluate_smart_values()
-        var_name = self.var_name.get_evaluated_value()
         var_start = (
             None if self.var_start is None else self.var_start.get_evaluated_value()
         )
@@ -70,13 +59,43 @@ class LoopStep(Step):
             None if self.var_list is None else self.var_list.get_evaluated_value()
         )
         if var_start is not None and var_end is not None:
-            iterator = range(var_start, var_end)
-        elif var_list is not None:
-            iterator = var_list
-        else:
-            raise ValueError("Loop iteration is not correctly defined")
+            return range(var_start, var_end)
+        if var_list is not None:
+            return var_list
+        raise ValueError("Loop iteration is not correctly defined")
+
+    def _initialize(self):
+        """
+        initiate the loop variable with a value to avoid pre-evaluation
+        error when a sub steps is defined using the loop variable
+        """
+        self.var_name.evaluate()
+        if self.var_start is not None:
+            self.var_start.evaluate()
+        if self.var_end is not None:
+            self.var_end.evaluate()
+        if self.var_list is not None:
+            self.var_list.evaluate()
+        iterable = self._get_evaluated_iterable()
+        try:
+            first_value = next(iter(iterable))
+        except StopIteration as err:
+            raise ValueError("Loop iteration is not correctly defined") from err
         scenario_data = ScenarioData.get()
-        for var in iterator:
+        scenario_data.set_value(self.var_name.get_evaluated_value(), first_value)
+
+    def generate_steps(self) -> Iterable[Step]:
+        """
+        Generate the steps that sould be executed
+
+        :yield: steps to be executed
+        :rtype: iterable[Step]
+        """
+        self.evaluate_smart_values()
+        var_name = self.var_name.get_evaluated_value()
+        iterable = self._get_evaluated_iterable()
+        scenario_data = ScenarioData.get()
+        for var in iterable:
             scenario_data.set_value(var_name, var)
             self.steps.evaluate()
             yield from self.steps.get_evaluated_value()
