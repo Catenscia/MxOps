@@ -10,6 +10,7 @@ from typing import Any
 from mxops import errors
 from mxops.smart_values import SmartValue
 from mxops.execution.steps.base import Step
+from mxops.smart_values.native import SmartStr
 
 
 @dataclass
@@ -31,8 +32,40 @@ class SmartStep(SmartValue):
         if isinstance(value, Step):
             return value
         if isinstance(value, dict):
-            return instanciate_steps([value])[0]
-        raise ValueError(f"Cannot create a step from type {type(value)} ({value})")
+            step = instanciate_steps([value])[0]
+        else:
+            raise ValueError(f"Cannot create a step from type {type(value)} ({value})")
+        step.evaluate_smart_values()
+        return step
+
+    def evaluate(self):
+        """
+        Evaluate the raw value and save the intermediary values until a
+        dict is reached. The keys of this dictionnary are fully evaluated as
+        SmartString as they should be the kwargs of a Step.
+        The responsibility of the evaluation of the value of the kwargs is left to the
+        Step class
+        """
+
+        def result_is_not_dict_or_step(
+            _previous_value: Any, current_value: Any
+        ) -> bool:
+            return not isinstance(current_value, (dict, Step))
+
+        self._conditional_evaluation(result_is_not_dict_or_step)
+
+        current_value = self.get_evaluated_value()
+        if isinstance(current_value, dict):
+            current_value_as_tuple = [
+                (SmartStr(k), v) for k, v in current_value.items()
+            ]
+            [k.evaluate() for k, _v in current_value_as_tuple]
+            current_value = {
+                k.get_evaluated_value(): v for k, v in current_value_as_tuple
+            }
+            if current_value != self.get_evaluated_value():
+                self.evaluated_values.append(current_value)
+        self._enforce_add_value()
 
     def get_evaluated_value(self) -> Step:
         """
@@ -75,6 +108,19 @@ class SmartSteps(SmartValue):
         :rtype: list[Step]
         """
         return super().get_evaluated_value()
+
+    def evaluate(self):
+        """
+        Evaluate the raw value and save the intermediary values until a
+        list is reached. The evaluation of the element of the list is a
+        responsibility left to the SmartStep class
+        """
+
+        def result_is_not_list_or_set(_previous_value: Any, current_value: Any) -> bool:
+            return not isinstance(current_value, (list, set))
+
+        self._conditional_evaluation(result_is_not_list_or_set)
+        self._enforce_add_value()
 
 
 def instanciate_steps(raw_steps: list[dict]) -> list[Step]:

@@ -5,7 +5,7 @@ This module contains base smart values that are used to construct other smart va
 """
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Callable
 from mxops import errors
 from mxops.smart_values.utils import (
     force_str,
@@ -62,30 +62,55 @@ class SmartValue:
             evaluation_str += f" ({values_str})"
         return evaluation_str
 
-    def evaluate(self):
+    def _conditional_evaluation(self, func: Callable[[Any, Any], bool]):
         """
-        Evaluate the raw value and save the intermediary values until the
-        final value is reached
+        Evaluate the raw value and save the intermediary values while the provided
+        function returns True
+
+        :param func: function that take as input the previous evaluated value and the
+            current evaluated value and return if the evaluation should keep going
+        :type func: Callable[[Any, Any], bool]
         """
         k = 0
         self.evaluated_values = []
-        last_value = None
-        result = self.raw_value
-        while result != last_value:
-            last_value = result
-            result = retrieve_value_from_any(last_value)
-            self.evaluated_values.append(result)
+        previous_value = None
+        current_value = self.raw_value
+        while func(previous_value, current_value):
+            previous_value = current_value
+            current_value = retrieve_value_from_any(previous_value)
+            self.evaluated_values.append(current_value)
             k += 1
             if k > 1000:
                 raise errors.MaxIterationError(
                     f"Unable to evaluated raw value {self.raw_value}"
                 )
-        enforced_type_value = self.type_enforce_value(last_value)
+        if len(self.evaluated_values) == 0:
+            self.evaluated_values.append(self.raw_value)
+
+    def _enforce_add_value(self):
+        """
+        Enforce type on the current value and add it to the evaluated values if
+        it differs
+        """
+        current_value = self.get_evaluated_value()
+        enforced_type_value = self.type_enforce_value(current_value)
         if (
-            type(enforced_type_value) is not type(last_value)
-            or enforced_type_value != last_value
+            type(enforced_type_value) is not type(current_value)
+            or enforced_type_value != current_value
         ):
             self.evaluated_values.append(enforced_type_value)
+
+    def evaluate(self):
+        """
+        Evaluate the raw value and save the intermediary values until the
+        final value is reached (no more modification)
+        """
+
+        def result_is_different(previous_value: Any, current_value: Any) -> bool:
+            return previous_value != current_value
+
+        self._conditional_evaluation(result_is_different)
+        self._enforce_add_value()
 
     @staticmethod
     def type_enforce_value(value: Any) -> Any:

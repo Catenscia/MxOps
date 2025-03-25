@@ -1,0 +1,20 @@
+steps:
+
+  - type: SetVars
+    variables:
+      batch_size: 10
+
+  - type: Loop
+    var_name: counter_1
+    var_start: 0  
+    var_end: 10
+    steps:
+
+      - type: Loop
+        var_name: counter_2
+        var_start: 0
+        var_end: "%batch_size"
+        steps:
+          - type: SetVars
+            variables:
+              "pair_%{counter_1}_%{counter_2}": "={%{counter_1} * %{counter_2}}"
