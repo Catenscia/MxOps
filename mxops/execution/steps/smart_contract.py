@@ -305,7 +305,7 @@ class ContractCallStep(TransactionStep):
                     scenario_data.set_account_value(contract_address, save_key, value)
                     self.saved_results[save_key] = value
 
-        if self.log_results:
+        if self.log_results.get_evaluated_value():
             if self.saved_results is not None:
                 resultr_str = json_dumps(self.saved_results)
             elif self.returned_data_parts is not None:
@@ -380,7 +380,7 @@ class ContractQueryStep(Step):
 
         self.save_results()
 
-        if self.log_results:
+        if self.log_results.get_evaluated_value():
             if self.saved_results is not None:
                 resultr_str = json_dumps(self.saved_results)
             elif self.returned_data_parts is not None:
