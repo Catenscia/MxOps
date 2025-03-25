@@ -35,7 +35,6 @@ class SmartStep(SmartValue):
             step = instanciate_steps([value])[0]
         else:
             raise ValueError(f"Cannot create a step from type {type(value)} ({value})")
-        step.evaluate_smart_values()
         return step
 
     def evaluate(self):
