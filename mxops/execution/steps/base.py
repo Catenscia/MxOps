@@ -71,10 +71,17 @@ class Step(ABC):
         """
         self._auto_convert_smart_values_attributes()
 
+    def _initialize(self):
+        """
+        Function called just before smart values evaluation.
+        Does nothing by default
+        """
+
     def evaluate_smart_values(self):
         """
         Trigger the evaluation method of all smart values fields
         """
+        self._initialize()
         # pylint: disable=no-member
         for attr_name in self.__dataclass_fields__:
             attr_value = getattr(self, attr_name)
