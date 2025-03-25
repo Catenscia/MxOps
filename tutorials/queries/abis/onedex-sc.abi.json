@@ -543,6 +543,10 @@
                 {
                     "name": "second_token_id",
                     "type": "TokenIdentifier"
+                },
+                {
+                    "name": "fee_type",
+                    "type": "u8"
                 }
             ],
             "outputs": []
@@ -843,6 +847,26 @@
             "name": "viewPairs",
             "mutability": "readonly",
             "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<Pair>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "viewPairsPaginated",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "from",
+                    "type": "u32"
+                },
+                {
+                    "name": "size",
+                    "type": "u32"
+                }
+            ],
             "outputs": [
                 {
                     "type": "variadic<Pair>",
@@ -1275,6 +1299,14 @@
                 {
                     "name": "lp_token_roles_are_set",
                     "type": "bool"
+                },
+                {
+                    "name": "unkown",
+                    "type": "u32"
+                },
+                {
+                    "name": "fees",
+                    "type": "u32"
                 }
             ]
         },

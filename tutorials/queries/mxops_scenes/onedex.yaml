@@ -12,4 +12,4 @@ steps:
     contract: onedex-swap
     endpoint: viewPair
     arguments:
-      - 10
+      - 9
