@@ -448,3 +448,26 @@ def test_nested_loop_composition():
                 scenario_data.get_value(f"pair_{counter_1}_{counter_2}")
                 == counter_1 * counter_2
             )
+
+
+def test_loop_dependant_set_vars():
+    # Given
+    step = LoopStep(
+        [
+            {"type": "SetVars", "variables": {"myvar123456": "heyheyhey%{loop_var}"}},
+            {"type": "SetVars", "variables": {"%{myvar123456}": 156}},
+        ],
+        "loop_var",
+        var_start=0,
+        var_end=2,
+    )
+    scenario_data = ScenarioData.get()
+
+    # When
+    for step in step.generate_steps():
+        step.execute()
+
+    # Then
+    assert scenario_data.get_value("myvar123456") == "heyheyhey1"
+    assert scenario_data.get_value("heyheyhey0") == 156
+    assert scenario_data.get_value("heyheyhey1") == 156
