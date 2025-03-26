@@ -25,7 +25,7 @@ fi
 # launch flake8 on the repository and the tests
 # it is mandatory to obtain valid check
 printf "${BLUE}##########\n# Flake8\n##########${NC}\n"
-OUTPUT=$(flake8 mxops integration_tests tests tutorials)
+OUTPUT=$(flake8 mxops integration_tests tests examples)
 if [ ! -z "${OUTPUT}" ]
 then
     echo "${OUTPUT}"
