@@ -9,35 +9,9 @@ import hashlib
 from pathlib import Path
 import time
 
+from multiversx_sdk import Address
+
 from mxops.config.config import Config
-
-
-def get_explorer_tx_link(tx_hash: str) -> str:
-    """
-    Return the link to a transaction using the explorer in the config
-
-    :param tx_hash: hash of the transaction
-    :type tx_hash: str
-    :return: link to the transaction
-    :rtype: str
-    """
-    config = Config.get_config()
-    explorer_url = config.get("EXPLORER_URL")
-    return f"{explorer_url}/transactions/{tx_hash}"
-
-
-def get_proxy_tx_link(tx_hash: str) -> str:
-    """
-    Return the link to a transaction using the proxy in the config
-
-    :param tx_hash: hash of the transaction
-    :type tx_hash: str
-    :return: link to the transaction
-    :rtype: str
-    """
-    config = Config.get_config()
-    proxy = config.get("PROXY")
-    return f"{proxy}/transaction/{tx_hash}"
 
 
 def get_tx_link(tx_hash: str) -> str:
@@ -50,10 +24,34 @@ def get_tx_link(tx_hash: str) -> str:
     :return: link to the transaction
     :rtype: str
     """
+    config = Config.get_config()
     try:
-        return get_explorer_tx_link(tx_hash)
+        base_url = config.get("EXPLORER_URL")
     except NoOptionError:
-        return get_proxy_tx_link(tx_hash)
+        base_url = config.get("PROXY")
+    return f"{base_url}/transaction/{tx_hash}"
+
+
+def get_account_link(address: str | Address) -> str:
+    """
+    Return the link to an account.
+    The link will point towards the explorer if it exists, otherwise to the proxy
+
+    :param bech32: hash of the transaction
+    :type bech32: str
+    :return: link to the transaction
+    :rtype: str
+    """
+    config = Config.get_config()
+    if isinstance(address, Address):
+        bech32 = address.to_bech32()
+    else:
+        bech32 = address
+    try:
+        base_url = config.get("EXPLORER_URL")
+    except NoOptionError:
+        base_url = config.get("PROXY")
+    return f"{base_url}/accounts/{bech32}"
 
 
 def get_file_hash(file_path: Path) -> str:

@@ -32,6 +32,7 @@ from mxops.smart_values.native import SmartBool, SmartDatetime, SmartStr
 from mxops.execution.steps.base import Step
 from mxops.execution.steps.transactions import TransferStep
 from mxops.utils.account_storage import separate_esdt_related_storage
+from mxops.utils.msc import get_account_link
 from mxops.utils.wallets import generate_pem_wallet
 
 
@@ -135,6 +136,9 @@ class R3D4FaucetStep(Step):
             )
             self.request_faucet(
                 target.to_bech32(), egld_details["id"], str(request_amount)
+            )
+            logger.info(
+                f"Check the account for funds arrival: {get_account_link(target)}"
             )
 
     def request_faucet(self, bech32: str, token_id: str, amount: str):
