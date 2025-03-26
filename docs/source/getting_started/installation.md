@@ -9,9 +9,9 @@ MxOps heavily relies on the [multiversx-py-sdk](https://github.com/multiversx/mx
 As the MultiversX team has a very high release rate, we strongly recommend to have a dedicated environment for MxOps to avoid any dependencies conflicting with your own projects.
 
 
-### Recommendend installation with UV
+### Recommended installation with UV
 
-We recommend to install MxOps with [uv](https://docs.astral.sh/uv/), as an independent tool: this will create a dedicated environment for MxOps and MxOps will be callable from anywhere in your system
+We recommend to install MxOps with [uv](https://docs.astral.sh/uv/), and to install it as an independent tool: this will create a dedicated environment for MxOps and MxOps will be callable from anywhere in your system
 
 Install uv:
 
@@ -40,7 +40,7 @@ You can also install MxOps in a dedicated environnement with [pipx](https://gith
 pipx install mxops
 ```
 
-### Installation in an conda environnement
+### Installation in a conda environnement
 
 If you prefer to create your self an environnement, you can do this with [Anaconda](https://www.anaconda.com/download)
 
