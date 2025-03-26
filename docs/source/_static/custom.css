@@ -37,3 +37,9 @@
     width: 1em !important;
     height: 1em !important;
 }
+
+
+/* Add space above caption items */
+.md-nav__link.caption {
+    margin-top: 1.5rem;
+}
