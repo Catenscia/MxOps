@@ -1,13 +1,13 @@
-# First Scene
+# First Scenes
 
-Finally, let's get into it! In this chapter, you will learn how to write your first very simple scene. Our goal is to achieve the following with MxOps:
+Finally, let's get into it! In this chapter, you will learn how to write your first very simple scenes. Our goal is to achieve the following with MxOps:
 
 - create a new wallet on shard 1
 - claim some devnet EGLD for our new wallet
 - wrap some EGLD to obtain WEGLD
 - unwrap the obtained WEGLD
 
-These are very simple actions, but as they a very often needed, they are perfect for our first MxOps scene 😁
+These are very simple actions, but as they a very often needed, they are perfect for our first MxOps scenes 😁
 
 ## Setup
 
