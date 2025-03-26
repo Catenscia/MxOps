@@ -31,9 +31,7 @@ version = version_string
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = [
-    "myst_parser",
-]
+extensions = ["myst_parser", "sphinx_material", "sphinx_design"]
 
 templates_path = ["_templates"]
 exclude_patterns = []
