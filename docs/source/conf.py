@@ -58,3 +58,5 @@ html_sidebars = {
 }
 
 html_logo = "_images/catenscia_logo.png"
+
+html_css_files = ["custom.css"]
