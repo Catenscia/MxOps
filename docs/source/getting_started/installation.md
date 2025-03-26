@@ -85,4 +85,4 @@ If you are planning on using the chain-simulator, you will also need docker. Ple
 
 ## Next Step
 
-You can now heads up to the {doc}`next section <first_scene>` to learn how to write your first scene! 💪
+You can now heads up to the {doc}`next chapter <first_scene>` to learn how to write your first scene! 💪

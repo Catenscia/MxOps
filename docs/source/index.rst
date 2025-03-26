@@ -18,16 +18,21 @@ If you are new here, we recommend going first to the :doc:`getting_started/prese
 
    getting_started/presentation
    getting_started/installation
-   getting_started/first_scene
-   getting_started/about_scenarios
-   getting_started/enhanced_first_scene
+   getting_started/first_scenes
    getting_started/conclusion
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Tutorials and Examples
+
+   tutorials/presentation
+   tutorials/trader_sc
 
 .. toctree::
    :maxdepth: 1
    :caption: User Documentation
 
+   user_documentation/introduction
    user_documentation/scenario
    user_documentation/scenes
    user_documentation/steps
@@ -36,17 +41,6 @@ If you are new here, we recommend going first to the :doc:`getting_started/prese
    user_documentation/serialization
    user_documentation/execution
    user_documentation/config
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Examples
-
-   examples/presentation
-   examples/piggy_bank
-   examples/wrapping
-   examples/queries
-   examples/python_steps
-   examples/trader_sc
 
 .. toctree::
    :maxdepth: 1
