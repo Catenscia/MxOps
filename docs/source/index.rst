@@ -10,13 +10,13 @@ Welcome to MxOps |version| !
    :alt: MxOps Logo
 
 You are in the MxOps documentation. Use the left-side panel or the menu below to navigate where you want to go.
-If you are new here, we recommend going first to the :doc:`getting_started/presentation` section.
+If you are new here, we recommend going first to the :doc:`Getting Started section <getting_started/introduction>`.
 
 .. toctree::
    :maxdepth: 1
    :caption: Getting Started
 
-   getting_started/presentation
+   getting_started/introduction
    getting_started/installation
    getting_started/first_scenes
    getting_started/conclusion
@@ -25,7 +25,7 @@ If you are new here, we recommend going first to the :doc:`getting_started/prese
    :maxdepth: 1
    :caption: Tutorials and Examples
 
-   tutorials/presentation
+   tutorials/introduction
    tutorials/trader_sc
 
 .. toctree::

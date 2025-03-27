@@ -5,7 +5,7 @@ Congrats if you have made it here in one piece! 💪💯
 This tutorial gave you a basic understanding of how MxOps works and how you can use it to interact with MultiversX.
 We hope to have shown how MxOps can help you build more easily, safely and consistently. In any case, we will really appreciate any feedback you have on this tool or documentation, so don't hesitate to [contact us](../others/contact_us).
 
-This said, there is still much to be discovered! A lot of features and useful tricks have not been covered by this introduction, so you have two options to learn about them: You can either inspect the [Tutorials and Examples chapter](../tutorials/presentation) which highlights some use-cases or you can read the complete [User Documentation chapter](../user_documentation/introduction). Of course you can do both of them to become a complete expert 😉
+This said, there is still much to be discovered! A lot of features and useful tricks have not been covered by this introduction, so you have two options to learn about them: You can either inspect the [Tutorials and Examples chapter](../tutorials/introduction) which highlights some use-cases or you can read the complete [User Documentation chapter](../user_documentation/introduction). Of course you can do both of them to become a complete expert 😉
 
 Among other features, you can learn:
 
