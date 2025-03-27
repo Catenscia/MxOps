@@ -16,7 +16,7 @@ The main idea behind scenarios is to allow you to easily switch context at anyti
 
 ## Example
 
-On the devnet you create two scenarios, in which you do the following:
+On devnet you create two scenarios, in which you do the following:
 
 Scenario A:
 
@@ -66,7 +66,7 @@ By default, scenarios data is saved locally in the app folder of your computer (
 
 A good practice is to be descriptive in your scenario names: prefer `my_project_deployment` instead of something too generic like `deployment`.
 
-You can also create a custom MxOps config for each of your project to separate the data (you may want to version track with git the mainnet data for example). Refer to the [config chapter](config) for this.
+You can also create a custom MxOps config for each of your project to separate the data (you may want to version track with git mainnet data for example). Refer to the [config chapter](config) for this.
 
 ## Commands
 
@@ -99,7 +99,7 @@ mxops data get -n <network> -s <scenario> <expression>
 
 The expression can take full advantage of all the features of the [smart-values](smart_values_target).
 
-For example, If you want to retrieve the address of the contract you just deployed with the contract id `my-contract` on the devnet in the scenario `my-scenario`, use the command below:
+For example, If you want to retrieve the address of the contract you just deployed with the contract id `my-contract` on devnet in the scenario `my-scenario`, use the command below:
 
 ```bash
 mxops data get -n devnet -s my-scenario "%my-contract.address"
