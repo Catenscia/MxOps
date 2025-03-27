@@ -1,14 +1,14 @@
 # Steps
 
-In MxOps, any action to be executed is called a `Step`.
-In other words, a `Scene` contains a series of `Steps` that tell what MxOps should do.
+In MxOps, any action to be executed is called a step.
+In other words, a scene contains a list of steps that tell what MxOps should do.
 
-Several type of `Steps` exists, to allow users to easily construct complex `Scenes`.
+Several type of steps exists, to allow users to easily construct complex scenes.
 If you feel something is missing, please make a suggestion in the [github](https://github.com/Catenscia/MxOps/discussions/categories/ideas)!
 
 ## Transfer Step
 
-The same step is used to describe any king of transfer: native token, simple esdt, nft, multi-transfers, ...
+This step is used to describe any king of transfer: native token, simple esdt, nft, ...
 
 ```yaml
 type: Transfer
@@ -23,12 +23,43 @@ transfers:  # optional, any ESDT, NFT, SFT, MEta-ESDT transfers
     amount: 14894651698498  
 ```
 
+```{note}
+As of now, EGLD can not be sent at the same time as ESDTs, you have to choose between the two.
+```
+
+Egld transfer example:
+
+```yaml
+type: Transfer
+sender: bob
+receiver: alice
+value: 1000000000000000000 # 1 EGLD
+```
+
+Multi ESDT transfer example:
+
+```yaml
+type: Transfer
+sender: bob
+receiver: alice
+transfers:
+  - identifier: "MYNFT-a123ec"
+    nonce: 156
+    amount: 1  
+  - identifier: "WEGLD-abcdef"
+    amount: 1000000000000000000  # 1 WEGLD  
+```
+
+```{tip}
+If you are tired of writing token amounts with a lot of zeros, you can also write it like this: `amount: =10**18`. This will be parsed as a formula by MxOps and will be equivalent to 1 EGLD in our case. (Be careful with tokens that have a different number of decimals). See [smart-values](values) for more details.
+```
+
 ## Contract Steps
 
 ### Contract Deploy Step
 
-This `Step` is used to deploy a contract. The address of the new contract will be
-saved in the `Scenario` (specified at execution time) under the provided id to allow future interactions.
+This step is used to deploy a contract. The address of the new contract will be
+saved in the scenario (specified at execution time) under the provided id to allow future interactions.
 
 ```yaml
 type: ContractDeploy
@@ -37,7 +68,7 @@ wasm_path: "path/to/wasm"
 abi_path: "path/to/abi"  # optional but strongly recommended
 contract_id: my_first_sc
 gas_limit: 1584000
-arguments: # optional, if any args must be submitted
+arguments: # optional, if any args must be submitted to the init function
   - 100
 upgradeable: true
 readable: false
@@ -45,11 +76,11 @@ payable: false
 payable_by_sc: true
 ```
 
-We strongly recommended to provide an ABI with the contract as this will allow MxOps to do the data encoding and decoding during queries and calls for you, even if the data is some complex and custom `Struct`.
+We strongly recommended to provide an ABI with the contract as this will allow MxOps to do the data encoding and decoding during queries and calls for you, even if the data is some complex or custom structure.
 
 ### Contract Upgrade Step
 
-This `Step` is used to upgrade a contract.
+This step is used to upgrade a contract.
 
 ```yaml
 type: ContractUpgrade
@@ -58,7 +89,7 @@ wasm_path: "path/to/upgraded_wasm"
 abi_path: "path/to/abi"  # optional but strongly recommended
 contract: my_first_sc
 gas_limit: 1584000
-arguments: # optional, if any args must be submitted
+arguments: # optional, if any args must be submitted to the upgrade function
   - 100
 upgradeable: true
 readable: false
@@ -66,15 +97,16 @@ payable: false
 payable_by_sc: true
 ```
 
-```{note}
+```{warning}
 Be mindful of the difference in the argument name between the deploy and the update steps.
 
 `contract_id` can only refer to a contract managed by MxOps whereas `contract` can be any contract. This means that you can upgrade a contract that has not been deployed by MxOps.
 ```
 
+(contract_call_target)=
 ### Contract Call Step
 
-This `Step` is used to call the endpoint of a deployed contract.
+This step is used to call the endpoint of a deployed contract.
 
 ```yaml
 type: ContractCall
@@ -88,22 +120,188 @@ value: 0 # optional, integer amount of eGLD to send
 esdt_transfers: # optional, ESDTs to send
   - token_identifier: ALICE-123456
     amount: 58411548
-    nonce: 0 # 0 for fungible ESDT
   - token_identifier: LKMEX-e45d41
     amount: 848491898
     nonce: 721
+results_save_keys: # optional, key(s) under which save the results of the call
+  - call_result
+log_results: true # optional, if the calls results should be printed in the console, default to true
 checks: # optional, by default it will contain a transaction success check
   - type: Success
 ```
 
-To get more information on the `checks` attribute, heads to the {doc}`checks` section.
-If you have provided an ABI with the contract, MxOps will be able to automatically encode the arguments for your endpoint call, even if they are complex structures. For more details on that, please head to the {doc}`serialization` section.
+If you have provided an ABI with the contract, MxOps will be able to automatically encode the arguments for your call, even if they are complex structures. For more details on that, please head to the {doc}`serialization` section.
+MxOps will also automatically decode the response of the call so that if you save the data, you can easily use it again by reference (see [smart values chapter](values)).
+
+
+To get more information on the `checks` attribute, heads to the [transaction checks chapter](checks).
+If you have provided an ABI with the contract, MxOps will be able to automatically encode the arguments for your endpoint call, even if they are complex structures. For more details on that, please head to the [serialization chapter](serialization).
+
+(result_save_keys_target)=
+#### About `results_save_keys`
+
+There are several accepted types for `results_save_keys` which will indicated how you want to save the data. You can provided either a master key or some sub-keys or both. The master keys will point to the entire query response whereas sub-keys points to individual result of the queries.
+You will find some examples below:
+
+##### Results Save Keys Example 1
+
+Query return type: `(BigUint, BigInt)`
+
+Decoded query response: `[[123456, -7891011]]`
+
+```{list-table}
+:header-rows: 1
+
+* - results_save_keys
+  - Data saved within the scenario
+* - ```yaml
+    results_save_keys: master_key
+    ```
+  - ```json
+    {
+      "master_key": [[123456, -7891011]]
+    }
+    ```
+* - ```yaml
+    results_save_keys:
+      master_key:
+        - sub_key_1
+    ```
+  - ```json
+    {
+      "master_key": {
+        "sub_key_1": [123456, -7891011]
+      }
+    }
+    ```
+* - ```yaml
+    results_save_keys:
+      - sub_key_1
+    ```
+  - ```json
+    {
+      "sub_key_1": [123456, -7891011]
+    }
+    ```
+```
+
+
+
+##### Results Save Keys Example 2
+
+Query return type: `MultiValue2<u32, i8>`
+
+Decoded query response: `[12, -1]`
+
+```{list-table}
+:header-rows: 1
+
+* - results_save_keys
+  - Data saved within the scenario
+* - ```yaml
+    results_save_keys: master_key
+    ```
+  - ```json
+    {
+      "master_key": [12, -1]
+    }
+    ```
+* - ```yaml
+    results_save_keys:
+      master_key:
+        - sub_key_1
+        - sub_key_2
+    ```
+  - ```json
+    {
+      "master_key": {
+        "sub_key_1": 12,
+        "sub_key_2": -1
+      }
+    }
+    ```
+* - ```yaml
+    results_save_keys:
+      - sub_key_1
+      - sub_key_2
+    ```
+  - ```json
+    {
+      "sub_key_1": 12,
+      "sub_key_2": -1
+    }
+    ```
+```
+
+
+##### Results Save Keys Example 3
+
+Query return type: `MultiValue2<u8, MyStruct<Self::Api>>`
+
+Decoded query response: `[234, {"attribute_1": "WEGLD-abcdef", "attribute_2": 123456}]`
+
+
+```{warning}
+If you provide sub-keys, the number of sub-keys must exactly match the number of elements returned by the query response.
+```
+
+```{list-table}
+:header-rows: 1
+
+* - results_save_keys
+  - Data saved within the scenario
+* - ```yaml
+    results_save_keys: master_key
+    ```
+  - ```json
+    {
+      "master_key": [
+        234,
+        {
+            "attribute_1": "WEGLD_abcdef",
+            "attribute_2": 123456
+        }
+      ]
+    }
+    ```
+* - ```yaml
+    results_save_keys:
+      master_key:
+        - sub_key_1
+        - sub_key_2
+    ```
+  - ```json
+    {
+      "master_key": {
+        "sub_key_1": 234,
+        "sub_key_2": {
+          "attribute_1": "WEGLD_abcdef",
+          "attribute_2": 123456
+        }
+      }
+    }
+    ```
+* - ```yaml
+    results_save_keys:
+      - sub_key_1
+      - sub_key_2
+    ```
+  - ```json
+    {
+      "sub_key_1": 234,
+      "sub_key_2": {
+        "attribute_1": "WEGLD_abcdef",
+        "attribute_2": 123456
+      }
+    }
+    ```
+```
 
 (contract_query_target)=
 ### Contract Query Step
 
-This `Step` is used to fetch some data from a contract and save it locally for later use in the `Scenario` (specified at execution time).
-For example to fetch the identifier of a token created by a contract and stored in a `FungibleTokenMapper` with a view set up as `getEsdtIdentifier`.
+This step is used to fetch some data from a contract by calling one of its view.
+In the example below, we want to fetch the identifier of a token created by a contract and stored in a `FungibleTokenMapper` with a view set up as `getEsdtIdentifier`.
 
 ```yaml
 type: ContractQuery
@@ -116,231 +314,16 @@ log_results: true # optional, if the query results should be printed in the cons
 ```
 
 If you have provided an ABI with the contract, MxOps will be able to automatically encode the arguments for your query, even if they are complex structures. For more details on that, please head to the {doc}`serialization` section.
-MxOps will also automatically decode the response of the query so that if you save the data, you can easily use it again by reference (see {doc}`values`).
+MxOps will also automatically decode the response of the query so that if you save the data, you can easily use it again by reference (see [smart values chapter](values)).
 
 #### About `results_save_keys`
 
-There are several accepted types for `results_save_keys` which will indicated how you want to save the data. You can provided either a master key or some sub-keys or both. The master keys will point to the entire query response whereas sub-keys points to individual result of the queries.
-You will find some examples below:
-
-
-
-##### Results Save Keys Example 1
-
-Query return type: `(BigUint, BigInt)`
-
-Decoded query response: `[[123456, -7891011]]`
-
-<table style="border: 1px solid black; border-collapse: collapse;">
-<tr>
-<th style="border: 1px solid black; background-color: #f2f2f2; padding: 8px;">results_save_keys</th>
-<th style="border: 1px solid black; background-color: #f2f2f2; padding: 8px;">Data saved within the Scenario</th>
-</tr>
-<tr>
-<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
-<pre style="margin: 0;">
-results_save_keys: master_key
-</pre>
-</td>
-<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
-<pre style="margin: 0;">
-{
-  "master_key": [[123456, -7891011]]
-}
-</pre>
-</td>
-</tr>
-<tr>
-<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
-<pre style="margin: 0;">
-results_save_keys:
-  master_key:
-    - sub_key_1
-</pre>
-</td>
-<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
-<pre style="margin: 0;">
-{
-  "master_key": {
-    "sub_key_1": [123456, -7891011]
-  }
-}
-</pre>
-</td>
-</tr>
-<tr>
-<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
-<pre style="margin: 0;">
-results_save_keys:
-  - sub_key_1
-</pre>
-</td>
-<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
-<pre style="margin: 0;">
-{
-  "sub_key_1": [123456, -7891011]
-}
-</pre>
-</td>
-</tr>
-</table>
-<p></p>
-
-
-
-##### Results Save Keys Example 2
-
-Query return type: `MultiValue2<u32, i8>`
-
-Decoded query response: `[12, -1]`
-
-<table style="border: 1px solid black; border-collapse: collapse;">
-<tr>
-<th style="border: 1px solid black; background-color: #f2f2f2; padding: 8px;">results_save_keys</th>
-<th style="border: 1px solid black; background-color: #f2f2f2; padding: 8px;">Data saved within the Scenario</th>
-</tr>
-<tr>
-<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
-<pre style="margin: 0;">
-results_save_keys: master_key
-</pre>
-</td>
-<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
-<pre style="margin: 0;">
-{
-  "master_key": [12, -1]
-}
-</pre>
-</td>
-</tr>
-<tr>
-<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
-<pre style="margin: 0;">
-results_save_keys:
-  master_key:
-    - sub_key_1
-    - sub_key_2
-</pre>
-</td>
-<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
-<pre style="margin: 0;">
-{
-  "master_key": {
-    "sub_key_1": 12,
-    "sub_key_2": -1
-  }
-}
-</pre>
-</td>
-</tr>
-<tr>
-<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
-<pre style="margin: 0;">
-results_save_keys:
-  - sub_key_1
-  - sub_key_2
-</pre>
-</td>
-<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
-<pre style="margin: 0;">
-{
-  "sub_key_1": 12,
-  "sub_key_2": -1
-}
-</pre>
-</td>
-</tr>
-</table>
-<p></p>
-
-
-
-##### Results Save Keys Example 3
-
-Query return type: `MultiValue2<u8, MyStruct<Self::Api>>`
-
-Decoded query response: `[234, {"attribute_1": "WEGLD-abcdef", "attribute_2": 123456}]`
-
-<table style="border: 1px solid black; border-collapse: collapse;">
-<tr>
-<th style="border: 1px solid black; background-color: #f2f2f2; padding: 8px;">results_save_keys</th>
-<th style="border: 1px solid black; background-color: #f2f2f2; padding: 8px;">Data saved within the Scenario</th>
-</tr>
-<tr>
-<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
-<pre style="margin: 0;">
-results_save_keys: master_key
-</pre>
-</td>
-<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
-<pre style="margin: 0;">
-{
-  "master_key": [
-   234,
-   {
-      "attribute_1": "WEGLD_abcdef",
-      "attribute_2": 123456
-   }
-  ]
-}
-</pre>
-</td>
-</tr>
-<tr>
-<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
-<pre style="margin: 0;">
-results_save_keys:
-  master_key:
-    - sub_key_1
-    - sub_key_2
-</pre>
-</td>
-<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
-<pre style="margin: 0;">
-{
-  "master_key": {
-    "sub_key_1": 234,
-    "sub_key_2": {
-      "attribute_1": "WEGLD_abcdef",
-      "attribute_2": 123456
-    }
-  }
-}
-</pre>
-</td>
-</tr>
-<tr>
-<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
-<pre style="margin: 0;">
-results_save_keys:
-  - sub_key_1
-  - sub_key_2
-</pre>
-</td>
-<td style="border: 1px solid black; background-color: #fff; padding: 8px; font-size: 12px;">
-<pre style="margin: 0;">
-{
-  "sub_key_1": 234,
-  "sub_key_2": {
-    "attribute_1": "WEGLD_abcdef",
-    "attribute_2": 123456
-  }
-
-}
-</pre>
-</td>
-</tr>
-</table>
-<p></p>
-
-```{warning}
-If you provide sub-keys, the number of sub-keys must exactly match the number of elements returned by the query response.
-```
+refer to the [previous section](result_save_keys_target).
 
 (file_fuzzer_target)=
 ### File Fuzzer Step
 
-This `Step` is used to execute some fuzz testing. The parameters for the tests (queries or calls) are taken from a file.
+This step is used to execute some fuzz testing. The parameters for the tests (queries or calls) are taken from a file.
 At the moment, only yaml format is supported.
 
 ```yaml
@@ -386,7 +369,7 @@ At the moment, this step is a work in progress.
 
 #### Issuance Step
 
-This `Step` is used to issue a new fungible token, a initial supply of tokens will be sent to the issuer.
+This step is used to issue a new fungible token, and an initial supply of tokens will be sent to the issuer.
 
 ```yaml
 type: FungibleIssue
@@ -403,15 +386,15 @@ can_upgrade: false # optional, defaults to false
 can_add_special_roles: false # optional, defaults to false
 ```
 
-The results of the transaction will be saved. You can make a reference to this token in later `Steps` using its name, for example to retrieve the token identifier: `%MyToken.identifier`.
+You can make a reference to this token in later steps using its name, for example to refer to the token identifier, just use `%MyToken.identifier`.
 
 ```{warning}
-To avoid data collision within MxOps, `token_name` should be unique within a `Scenario` and should not have a name identical to a `contract_id` in the same `Scenario`.
+To avoid data collision within MxOps, `token_name` should be unique within a scenario and should not have a name identical to a `contract_id` in the same scenario.
 ```
 
 #### Role Management Step
 
-This `Step` is used to set or unset roles for an address on a fungible token.
+This step is used to set or unset roles for an address on a fungible token.
 
 ```yaml
 type: ManageFungibleTokenRoles
@@ -429,7 +412,7 @@ Details on the roles can be found [here](https://docs.multiversx.com/tokens/esdt
 
 #### Mint Step
 
-This `Step` is used to mint an additional supply for an already existing fungible token.
+This step is used to mint an additional supply for an already existing fungible token.
 
 ```yaml
 type: FungibleMint
@@ -440,11 +423,11 @@ amount: 100000000
 
 ### NFT, SFT and Meta Token Steps
 
-Aside from the issuance `Steps`, NFT, SFT and Meta tokens share common methods. The associated steps are listed here.
+Aside from the issuance steps, NFT, SFT and Meta tokens share common methods. The associated steps are listed here.
 
 #### NFT Issuance Step
 
-This `Step` is used to issue a new non fungible token (NFT).
+This step is used to issue a new non fungible token (NFT).
 
 ```yaml
 type: NonFungibleIssue
@@ -460,15 +443,15 @@ can_add_special_roles: false # optional, defaults to false
 can_transfer_nft_create_role: false # optional, defaults to false
 ```
 
-The results of the transaction will be saved. You can make a reference to this token in later `Steps` using its name, for example to retrieve the token identifier: `%MyToken.identifier`.
+You can make a reference to this token in later steps using its name, for example to refer to the token identifier, just use `%MyToken.identifier`.
 
 ```{warning}
-To avoid data collision within MxOps, `token_name` should be unique within a `Scenario` and should not have a name identical to a `contract_id` in the same `Scenario`.
+To avoid data collision within MxOps, `token_name` should be unique within a scenario and should not have a name identical to a `contract_id` in the same scenario.
 ```
 
 #### SFT Issuance Step
 
-This `Step` is used to issue a new semi fungible token (NFT).
+This step is used to issue a new semi fungible token (NFT).
 
 ```yaml
 type: SemiFungibleIssue
@@ -484,15 +467,15 @@ can_add_special_roles: false # optional, defaults to false
 can_transfer_nft_create_role: false # optional, defaults to false
 ```
 
-The results of the transaction will be saved. You can make a reference to this token in later `Steps` using its name, for example to retrieve the token identifier: `%MyToken.identifier`.
+You can make a reference to this token in later steps using its name, for example to refer to the token identifier, just use `%MyToken.identifier`.
 
 ```{warning}
-To avoid data collision within MxOps, `token_name` should be unique within a `Scenario` and should not have a name identical to a `contract_id` in the same `Scenario`.
+To avoid data collision within MxOps, `token_name` should be unique within a scenario and should not have a name identical to a `contract_id` in the same scenario.
 ```
 
 #### Meta Issuance Step
 
-This `Step` is used to issue a new non fungible token (NFT).
+This step is used to issue a new non fungible token (NFT).
 
 ```yaml
 type: MetaIssue
@@ -509,15 +492,15 @@ can_add_special_roles: false # optional, defaults to false
 can_transfer_nft_create_role: false # optional, defaults to false
 ```
 
-The results of the transaction will be saved. You can make a reference to this token in later `Steps` using its name, for example to retrieve the token identifier: `%MyToken.identifier`.
+You can make a reference to this token in later steps using its name, for example to refer to the token identifier, just use `%MyToken.identifier`.
 
 ```{warning}
-To avoid data collision within MxOps, `token_name` should be unique within a `Scenario` and should not have a name identical to a `contract_id` in the same `Scenario`.
+To avoid data collision within MxOps, `token_name` should be unique within a scenario and should not have a name identical to a `contract_id` in the same scenario.
 ```
 
 #### NFT Role Management Step
 
-This `Step` is used to set or unset roles for an address on a non fungible token.
+This step is used to set or unset roles for an address on a non fungible token.
 
 ```yaml
 type: ManageNonFungibleTokenRoles
@@ -543,7 +526,7 @@ Details on the roles can be found [here](https://docs.multiversx.com/tokens/nft-
 
 #### SFT Role Management Step
 
-This `Step` is used to set or unset roles for an address on a semi fungible token.
+This step is used to set or unset roles for an address on a semi fungible token.
 
 ```yaml
 type: ManageSemiFungibleTokenRoles
@@ -567,7 +550,7 @@ Details on the roles can be found [here](https://docs.multiversx.com/tokens/nft-
 
 #### Meta Role Management Step
 
-This `Step` is used to set or unset roles for an address on a meta token.
+This step is used to set or unset roles for an address on a meta token.
 
 ```yaml
 type: ManageMetaTokenRoles
@@ -591,7 +574,7 @@ Details on the roles can be found [here](https://docs.multiversx.com/tokens/nft-
 
 #### Non Fungible Mint Step
 
-This `Step` is used to mint a new nonce for an already existing non fungible token.
+This step is used to mint a new nonce for an already existing non fungible token.
 It can be used for NFTs, SFTs and Meta tokens.
 
 ```yaml
@@ -616,7 +599,7 @@ You can find more information in the MultiversX documentation about [non fungibl
 ### Loop Step
 
 This step allows to run a set of steps for a given number of times.
-A loop variable is created and can be used as an arguments for the steps inside the loop.
+A loop variable is created and can be used as an argument for the steps inside the loop.
 
 ```yaml
 # This loop step retrieves the sft tokens that have a nonce between 1 and 100.
@@ -645,7 +628,7 @@ steps:
     arguments:
       - TokenIdentifier4
       - "%LOOP_VAR" # nonce
-      - "%my_first_sc.TokenIdentifier4Amount" # result of the query
+      - "%my_first_sc.TokenIdentifier4Amount" # result of the previous query
 ```
 
 Instead of using `var_start` and `var_end` for the loop variable, a custom list of values can be provided with the keyword `var_list` like below.
@@ -658,12 +641,12 @@ steps: [...]
 ```
 
 You will notice that some symbols are used in the arguments of the above `ContractCall`. These are here to dynamically fetch values from different sources.
-Heads up to the {doc}`values` section for more information.
+Heads up to the [smart values chapter](values) for more information.
 
 (python_step_target)=
 ### Python Step
 
-This step allows to execute a custom python function. You can execute whatever you want in the python function. This `Step` is here to give you maximum flexibility, making MxOps suitable for all the needs of you project. Here are some basic use case for the python `Step`:
+This step allows to execute a custom python function. You can execute whatever you want in the python function. This step is here to give you maximum flexibility, making MxOps suitable for all the needs of you project. Here are some basic use case for the python step:
   - complex calculation (results can be saved as MxOps or environment values)
   - complex query parsing
   - randomness generation
@@ -687,26 +670,26 @@ keyword_arguments:  # optional
   key_1: value_1
   key_2: "$VALUE"  # using os env var
 print_result: True  # optional
-result_save_key: "my_result"  # optional, key under which save the function result, here it will be accessible as "%my_result"
+result_save_key: "my_result"  # optional, key under which save the function result
 ```
 
-The above `Step` will execute the function `my_function`, located at `./folder/my_module.py` that would look like this:
+The above step will execute the function `my_function`, located at `./folder/my_module.py` that would look like this:
 ```python
 def my_function(arg_1, arg2, key_1, key_2):
     # execute anything here
     return result
 ```
 
-You can find examples of python `Steps` in this {doc}`section<../examples/python_steps>`.
+You can find examples of python steps in the [tutorial and example section](../tutorials/introduction).
 
 ```{warning}
-MxOps is completely permissive and lets you do anything you want in the python `Step`, including changing the behavior of MxOps itself. Test everything you do on localnet and devnet before taking any action on mainnet.
+MxOps is completely permissive and lets you do anything you want in the python step, including changing the behavior of MxOps itself. Test everything you do on chain-simulator, localnet and/or devnet before taking any action on mainnet.
 ```
 
 ### Scene Step
 
-This step simply runs a `Scene` or a folder of `Scenes`. It can be used either to organize different executions or more importantly, to avoid copy pasting `Steps`.
-It is especially powerful if you combine it with [smart-values](smart_values_target).
+This step simply runs a scene or a folder of scenes. It can be used either to organize different executions or more importantly, to avoid copy pasting steps.
+It is especially powerful if you combine it with [smart-values](values).
 
 ```yaml
 type: Scene
@@ -726,13 +709,13 @@ steps:
         path: assign_role.yaml
 ```
 
-Then, all of the `Steps` is the `Scene` `assign_role.yaml` should be written while using `%USER_FOR_ROLE` instead of the address of the wallet you want to assign the role to.
-This will apply all the `Steps` to françois, jacques and jean without having to copy/paste the `Steps` for each one of them.
+Then, all of the steps is the scene `assign_role.yaml` should be written while using `%USER_FOR_ROLE` instead of the address of the wallet you want to assign the role to.
+This will apply all the steps to françois, jacques and jean without having to copy/paste the steps for each one of them.
 
 (set_vars_step_target)=
 ### Set Vars Step
 
-This `Step` allows you to directly set some variables within the Scenario data. This will be useful if you need to set some values for generic `Scenes` or if you need to backup some variables
+This step allows you to directly set some variables within the Scenario data. This will be useful if you need to set some values for generic scenes or if you need to backup some variables
 so that they are not overwritten.
 
 ```yaml
@@ -741,14 +724,15 @@ variables:
   MyVar: 12312424
   result-backup: "%previously-registered-value"
   nested_values: ["$CONF_VAR", 12421, "%var", {"%account.address": "%saved-value"}]
+  "%dynamic_key": "%dynamic_value"
 ```
 
-The above example will saves three variables within the `Scenario` data: `MyVar`, `result-backup` and `nested_values`. Their values (or nested values) will be accessible with the `%` symbol (refer to the {doc}`values` section for more details of the value system of MxOps).
+The above example will saves three variables within the scenario data: `MyVar`, `result-backup` and `nested_values`. Their values (or nested values) will be accessible with the `%` symbol (refer to the [smart values chapter](values) for more details of the value system of MxOps).
 
 (generate_wallets_target)=
 ### Generate Wallets Step
 
-This `Step` allows you to generate new wallets. For now, only PEM wallets can be generated
+This step allows you to generate new wallets. For now, only PEM wallets can be generated
 
 ```yaml
 type: GenerateWallets
@@ -762,7 +746,7 @@ If you prefer to names you wallets, you can provide a list of names instead.
 ```yaml
 type: GenerateWallets
 save_folder: ./my/wallets  # folder where to save the generated wallets
-wallets: ["alice", "bob"]  # generate two wallets names alice and bob
+wallets: ["alice", "bob"]  # generate two wallets named alice and bob
 shard: 0  # optional, to force the shard of the generated wallets
 ```
 
@@ -770,8 +754,8 @@ shard: 0  # optional, to force the shard of the generated wallets
 (r3d4_faucet_target)=
 ### r3d4 Faucet Step
 
-This `Step` allows you use the devnet and testnet faucet [r3d4](https://r3d4.fr/faucet).
-This is a third party tool that is not managed by `Catenscia`, so the compatibility might break.
+This step allows you use devnet and testnet faucet [r3d4](https://r3d4.fr/faucet).
+This is a third party tool that is not managed by Catenscia, so the compatibility might break.
 
 Some things to keep in mind:
 - Respect the limits from r3d4 (1 claim per token per address per day)
@@ -780,6 +764,7 @@ Some things to keep in mind:
 - If you have to much funds, send them back to the faucet so that they can be reused
 - The faucet only works for devnet and testnet
 
+Example:
 
 ```yaml
 type: R3D4Faucet
@@ -788,13 +773,13 @@ targets:
   - erd1y3296u7m2v5653pddey3p7l5zacqmsgqc7vsu3w74p9jm2qp3tqqz950yl  # or direct bech32
 ```
 
-For each address, the maximum amount of EGLD (1 EGLD as of December 2024) will be requested.
+Here, for each address, the maximum amount of EGLD (1 EGLD as of December 2024) will be requested.
 
 
 (chain_simulator_faucet_target)=
 ### Chain Simulator Faucet Step
 
-This `Step` allows you to request EGLD on the chain-simulator.
+This step allows you to request EGLD on the chain-simulator. Unless you use tremendous amount of EGLD, you shouldn't run into any limit here.
 
 ```yaml
 type: ChainSimulatorFaucet
@@ -805,10 +790,10 @@ targets:
 ```
 
 (account_clone_target)=
-### Account clone step
+### Account Clone Step
 
 Exclusive to the chain simulator.
-This `Step` allows you to clone an account from another network (ex mainnet) and to import it to the chain simulator.
+This step allows you to clone an account from another network (ex mainnet) and to import it to the chain simulator.
 You can choose to clone, the code, the balance, the storage and the tokens of an account.
 
 When cloning tokens, MxOps makes sure that the tokens are well defined in the network and you will be able to use them as if they were natively generated on the chain-simulator in the first place.
@@ -827,13 +812,13 @@ caching_period: "10 days"  # optional, default to 10 days
 ```
 
 Account cloning can lead to huge data requests. If you are using the public proxy, please use a high caching period.
-Currently, some clones will even fail because the storage of the account is too big. This will be fixed in the [bernard release](https://github.com/multiversx/mx-chain-go/pull/6547) by the core team.
+Currently, some clones will even fail because the storage of the account is too big. This will be fixed on the MultiversX side in the [bernard release](https://github.com/multiversx/mx-chain-go/pull/6547) by the core team.
 
 
 (wait_target)=
 ### Wait Step
 
-This `Step` allows you to wait for either a certain amount of time or for a certain amount of block production.
+This step allows you to wait for either a certain amount of time or for a certain amount of block production.
 
 To wait for 10.5 seconds:
 
