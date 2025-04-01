@@ -100,17 +100,17 @@ pub struct MyStruct<M: ManagedTypeApi> {
   contract: my_contract
   endpoint: my_query_endpoint
   arguments:
-    # MyStruct provided as a list of element using yaml syntax
+    # MyStruct provided as a list of elements using yaml syntax
     - - 8          
       - [9, 45]
       - 0
       - 789484
       - 485
     
-    # MyStruct provided as a list of element using a list syntax
+    # MyStruct provided as a list of elements using a list syntax
     - [8, [9, 45], 0, 789484, 485] 
 
-    # MyStruct provided as a list of element using the field names
+    # MyStruct provided as a dictionnary of elements using the field names
     - int: 8
       seq: [9, 45]
       another_byte: 0
@@ -237,7 +237,7 @@ fn my_query_endpoint(&self, my_isize: isize, biguints: MultiValueEncoded<BigUint
 
 ## OptionalValue
 
-The sdk from the core team impose to provide all values, even when they are optional. MxOps is forced to apply this constraint as well: Optional value must be provided. In case you want to specify that you send no value, write `null`.
+The sdk from the core team imposes to provide all values, even when they are optional. MxOps is forced to apply this constraint as well: Optional value must be provided. In case you want to specify that you send no value, write `null`.
 
 ```rust
 #[view]
@@ -254,5 +254,31 @@ fn my_query_endpoint(
   endpoint: my_query_endpoint
   arguments:
     - 123987
+    - null
+```
+
+## Option Value
+
+For option values, just write a value of the expected type or `null`.
+
+```rust
+#[view]
+fn my_query_endpoint(
+    &self,
+    my_option_biguint: Option<BigUint>,
+)
+```
+
+```yaml
+- type: ContractQuery
+  contract: my_contract
+  endpoint: my_query_endpoint
+  arguments:
+    - 123987
+
+- type: ContractQuery
+  contract: my_contract
+  endpoint: my_query_endpoint
+  arguments:
     - null
 ```
