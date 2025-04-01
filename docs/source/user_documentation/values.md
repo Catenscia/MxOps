@@ -24,7 +24,7 @@ The symbol is there to indicate to MxOps which data source to use.
 |--------|-----------------------------|
 | &      | MxOps configuration file    |
 | $      | Environment variable        |
-| %      | MxOps Scenario data         |
+| %      | MxOps scenario data         |
 
 ### Value Key
 
@@ -37,7 +37,7 @@ For the configuration and the environment variables, the value key is simply the
 The values saved within a scenario can be more complex and in particular they can have an infinite nested length, allowing you to store complex data
 while keeping things clean. To access the value, you simply write the full path of the value with a `.<key_name>` or `[<index>]` depending if the current element is a dictionary of a list.
 
-For example, given the data below
+For example, given the scenario data below
 
 ```json
 {
@@ -50,22 +50,22 @@ For example, given the data below
     },
     "key_4": "value_4",
     "key_5": {
-        "key_6": ["alice", "bob"]
+        "key_6": ["value_5", "value_6"]
     }
 }
 ```
 
 we can access the different values like this:
 
-| value key             | value fetched    |
-|-----------------------|------------------|
-| "key_1.key_2[0].data" | "value_1"        |
-| "key_1.key_2[1]"      | "value_2"        |
-| "key_1.key_3"         | "value_3"        |
-| "key_4"               | "value_4"        |
-| "key_5.key6"          | ["alice", "bob"] |
+| value key             | value fetched          |
+|-----------------------|------------------------|
+| "key_1.key_2[0].data" | "value_1"              |
+| "key_1.key_2[1]"      | "value_2"              |
+| "key_1.key_3"         | "value_3"              |
+| "key_4"               | "value_4"              |
+| "key_5.key6"          | ["value_5", "value_6"] |
 
-Data saved within a scenario are split into three categories: contract data, token data and everything else. A value attached to a contract or a token will always have its value key begins by the `contract_id` or the `token_name`. In addition, when you deploy a contract or a token, some values will already be available in the `Scenario data`.
+Data saved within a scenario are split into three categories: account data, token data and everything else. A value attached to an account (user or smart-contract) or attached to a token will always have its value key begins by the account id or the token name. In addition, when you deploy a contract or a token, some values will already be available in the scenario data.
 
 Some examples of value key for data saved under a token or a contract:
 
@@ -87,14 +87,14 @@ See examples in the [Loop Step section](loop_step_target).
 
 #### Account Address
 
-When MxOps knows that the provided value should be converted to an address, for example to specify the receiver of a transaction, the user can simply write the name of the account and MxOps will automatically translate it.
+When MxOps expects to receive an address, for example to specify the receiver of a transaction, the user can simply write the id of the account and MxOps will automatically translate it to the address of this account.
 However, there are some ambiguous cases where an argument provided by a user could be a raw string (ex: "account_id") or the address represented by this string (ex: "erd...").
-To avoid these confusions, a user can force MxOps to fetch the address of an account by using the syntax `%account_id.address`.
+To avoid these confusions, a user can force MxOps to fetch the address of an account by using the syntax `%account_id.address` or `%account_id.bech32`.
 
 
 ## Formula
 
-Another symbol available with MxOps is the `=` symbol:
+Another symbol available with MxOps is the `=` symbol, which is used to make MxOps evaluate python expressions:
 
 `"=<expression>"`
 
@@ -156,7 +156,7 @@ Or if you want to add two values saved within MxOps, you could use `={%{value_1}
 
 ### Examples
 
-This section exposes many examples, to give you an idea on what is possible with composition, but basically you can go pretty cray on variable composition. The only limits is that you have to respect the symbols and brackets syntax. 
+This section exposes many examples, to give you an idea on what is possible with composition, but basically you can go pretty crazy on variable composition. The only limits is that you have to respect the symbols and brackets syntax. 
 
 #### Context
 
@@ -190,11 +190,11 @@ We have the following token data in the MxOps Scenario:
 }
 ```
 
-We have the following contract data in the MxOps Scenario:
+We have the following accounts data in the MxOps Scenario:
 
 ```json
-"contracts_data": {
-    "my_test_contract": {
+"accounts_data": {
+    "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t": {
         "saved_values": {
             "query_result_1": [
                 0,
@@ -206,8 +206,8 @@ We have the following contract data in the MxOps Scenario:
             "my_key": 7458,
             "my_test_key": 4582
         },
-        "contract_id": "my_test_contract",
-        "address": "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t",
+        "account_id": "my_test_contract",
+        "bech32": "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t",
         "serializer": null,
         "code_hash": "5ce403a4f73701481cc15b2378cdc5bce3e35fa215815aa5eb9104d9f7ab2451",
         "deploy_time": 1,
