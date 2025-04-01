@@ -79,6 +79,16 @@ def scenario_data(network):  # must be executed after the network fixture
     scenario_data.set_contract_abi_from_source(
         "piggy-bank", Path("./tests/data/abis/piggy-bank.abi.json")
     )
+    scenario_data.add_account_data(
+        ExternalContractData(
+            "dummy",
+            "erd1qqqqqqqqqqqqqpgqwtt3pune4g0ayaykvmg6nvr4ls045lr7gm9s2fj2al",
+            saved_values={},
+        )
+    )
+    scenario_data.set_contract_abi_from_source(
+        "dummy", Path("./tests/data/abis/dummy.abi.json")
+    )
     scenario_data.add_token_data(
         token_data=TokenData("bob_token", "BOBT", "BOBT-123456", TokenTypeEnum.FUNGIBLE)
     )
