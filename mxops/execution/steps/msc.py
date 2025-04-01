@@ -222,7 +222,7 @@ class PythonStep(Step):
 class SceneStep(Step):
     """
     This Step does nothing asside holding a variable
-    with the path of the scene. The actual action is operated at the `Scene` level.
+    with the path of the scene. The actual action is operated at the scene level.
     """
 
     path: SmartPath
