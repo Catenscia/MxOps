@@ -1,4 +1,3 @@
-(installation_target)=
 # Installation
 
 ## MxOps

@@ -1,4 +1,3 @@
-(serialization_target)=
 # Serialization
 
 When interacting with the blockchain, a very important aspect to keep in mind is the data format, in particular when dealing with smart-contracts and when the data has a complex representation such as custom structures with nested elements. To make things easy for the user, MxOps will use ABI definitions to:
