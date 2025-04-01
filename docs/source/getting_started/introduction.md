@@ -40,7 +40,7 @@ Here, MxOps is used to issue a fungible token from an account named by the user 
 
 ### Contract Query
 
-MxOps is used below to fetch information from the [live Onedex contract](https://explorer.multiversx.com/accounts/erd1qqqqqqqqqqqqqpgqqz6vp9y50ep867vnr296mqf3dduh6guvmvlsu3sujc) on the mainnet. We specifically query the state of the pool n°9, which is the pool ONE/WEGLD.
+MxOps is used below to fetch information from the [live Onedex contract](https://explorer.multiversx.com/accounts/erd1qqqqqqqqqqqqqpgqqz6vp9y50ep867vnr296mqf3dduh6guvmvlsu3sujc) on mainnet. We specifically query the state of the pool n°9, which is the pool ONE/WEGLD.
 
 ```yaml
   - type: ContractQuery
@@ -88,10 +88,10 @@ Here, MxOps is used to call a contract while sending tokens. This example shows 
   contract: pair-contract
   endpoint: addLiquidity
   esdt_transfers:
-    - token_identifier: TOKENA-abcdef
+    - identifier: TOKENA-abcdef
       amount: 894916519846515
       nonce: 0
-    - token_identifier: TOKENB-abcdef
+    - identifier: TOKENB-abcdef
       amount: 710549841216484
       nonce: 0
   gas_limit: 12000000
@@ -99,7 +99,7 @@ Here, MxOps is used to call a contract while sending tokens. This example shows 
 
 ### Account cloning
 
-Let's say the contract you are developping in dependent of a third party contract for which you don't have the code. MxOps allows you to simply copy entirely this contract, including its code, its storage values and its tokens, so that you can run your tests in the mainnet condition but locally on your machine.
+Let's say the contract you are developping in dependent of a third party contract for which you don't have the code. MxOps allows you to simply copy entirely this contract, including its code, its storage values and its tokens, so that you can run your tests in mainnet condition but locally on your machine.
 
 ```yaml
 - type: AccountClone

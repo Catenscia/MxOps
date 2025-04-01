@@ -1,4 +1,4 @@
-# Tutorial Conclusion
+# Conclusion
 
 Congrats if you have made it here in one piece! 💪💯
 
@@ -11,7 +11,7 @@ Among other features, you can learn:
 
 - [how to save complex data from queries and how to reuse it](contract_query_target)
 - [how to issue and manage tokens](token_management_target)
-- [use composition and formulas in your variables](smart_values_target)
+- [use composition and formulas in your variables](../user_documentation/values)
 - [how to communicate with any external tools during an MxOps execution](python_step_target)
 - [how to clone mainnet contracts and use them for your tests](../tutorials/trader_sc)
 - and much more!

@@ -118,9 +118,9 @@ arguments: # optional, args of the endpoint
   - arg1
 value: 0 # optional, integer amount of eGLD to send
 esdt_transfers: # optional, ESDTs to send
-  - token_identifier: ALICE-123456
+  - identifier: ALICE-123456
     amount: 58411548
-  - token_identifier: LKMEX-e45d41
+  - identifier: LKMEX-e45d41
     amount: 848491898
     nonce: 721
 results_save_keys: # optional, key(s) under which save the results of the call
@@ -134,7 +134,7 @@ If you have provided an ABI with the contract, MxOps will be able to automatical
 MxOps will also automatically decode the response of the call so that if you save the data, you can easily use it again by reference (see [smart values chapter](values)).
 
 
-To get more information on the `checks` attribute, heads to the [transaction checks chapter](checks).
+To get more information on the checks attribute, heads to the [transaction checks chapter](checks).
 If you have provided an ABI with the contract, MxOps will be able to automatically encode the arguments for your endpoint call, even if they are complex structures. For more details on that, please head to the [serialization chapter](serialization).
 
 (result_save_keys_target)=
@@ -341,7 +341,7 @@ parameters:
     gas_limit: 89984  # optional, only for calls
     value: 0  # optional, if any EGLD is to be sent with the call
     esdt_transfers:  # optional, if any esdt are to be sent with the call
-      - token_identifier: TOKEN-abcdef
+      - identifier: TOKEN-abcdef
         amount: 120924
         nonce: 0  # optional, default to 0
     arguments:  # optional, argument to pass to the query/call as usual in MxOps

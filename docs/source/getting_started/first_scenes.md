@@ -73,7 +73,7 @@ This new wallet will automatically be assigned the account id `user`, so we can 
 
 #### Faucet
 
-To get funds for our new wallet, we will use the [R3d4 faucet step](r3d4_faucet_target), which is a community faucet on the devnet and on the testnet.
+To get funds for our new wallet, we will use the [R3d4 faucet step](r3d4_faucet_target), which is a community faucet on devnet and on testnet.
 
 ```yaml
   - type: R3D4Faucet
@@ -232,7 +232,7 @@ This program comes with ABSOLUTELY NO WARRANTY [general in main_cli.py:65]
 
 By default, MxOps will wait for confirmation after each transaction is sent. If the transaction fails, MxOps will stop the execution and display the faulty transaction. 
 
-Click on the transactions links in the logs to observe what happened on the devnet when you executed the scene!
+Click on the transactions links in the logs to observe what happened on devnet when you executed the scene!
 
 ## About Scenario
 

@@ -97,7 +97,7 @@ You can ask Mxops to evaluate an expression in the context of a given scenario.
 mxops data get -n <network> -s <scenario> <expression>
 ```
 
-The expression can take full advantage of all the features of the [smart-values](smart_values_target).
+The expression can take full advantage of all the features of the [smart-values](values).
 
 For example, If you want to retrieve the address of the contract you just deployed with the contract id `my-contract` on devnet in the scenario `my-scenario`, use the command below:
 
