@@ -63,7 +63,7 @@ def cli_main():
     check_migrate_data()
     logger = get_logger(LogGroupEnum.GNL)
     logger.info(
-        "MxOps  Copyright (C) 2023  Catenscia"
+        "MxOps  Copyright (C) 2025  Catenscia"
         "\nThis program comes with ABSOLUTELY NO WARRANTY"
     )
 
