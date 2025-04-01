@@ -31,11 +31,11 @@ steps:
         expected_transfers:
           - sender: "%françois.address"
             receiver: "%egld_wrapper_shard_1.address"
-            token_identifier: EGLD
+            identifier: EGLD
             amount: 10000
           - sender: "%egld_wrapper_shard_1.address"
             receiver: "%françois.address"
-            token_identifier: "%egld_wrapper_shard_1.WrappedTokenIdentifier"
+            identifier: "%egld_wrapper_shard_1.WrappedTokenIdentifier"
             amount: 10000
 
   - type: ContractCall
@@ -44,7 +44,7 @@ steps:
     endpoint: unwrapEgld
     gas_limit: 3000000
     esdt_transfers:
-      - token_identifier: "%egld_wrapper_shard_1.WrappedTokenIdentifier"
+      - identifier: "%egld_wrapper_shard_1.WrappedTokenIdentifier"
         amount: 10000
         nonce: 0
     checks:
@@ -56,9 +56,9 @@ steps:
         expected_transfers:
           - sender: "%françois.address"
             receiver: "%egld_wrapper_shard_1.address"
-            token_identifier: "%egld_wrapper_shard_1.WrappedTokenIdentifier"
+            identifier: "%egld_wrapper_shard_1.WrappedTokenIdentifier"
             amount: 10000
           - sender: "%egld_wrapper_shard_1.address"
             receiver: "%françois.address"
-            token_identifier: EGLD
+            identifier: EGLD
             amount: 10000

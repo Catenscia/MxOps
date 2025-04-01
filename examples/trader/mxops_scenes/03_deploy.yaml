@@ -21,6 +21,6 @@ steps:
     endpoint: deposit
     gas_limit: 60000000
     esdt_transfers:
-      - token_identifier: "%egld_wrapper_shard_1.wegld_identifier"
+      - identifier: "%egld_wrapper_shard_1.wegld_identifier"
         nonce: 0
         amount: 1000000000000000000  # 1 WEGLD

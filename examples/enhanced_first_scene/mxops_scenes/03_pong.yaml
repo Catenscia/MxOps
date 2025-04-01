@@ -13,5 +13,5 @@ steps:
         expected_transfers:
           - sender: "%egld-ping-pong.address"
             receiver: "%owner.address"
-            token_identifier: EGLD
+            identifier: EGLD
             amount: "%egld-ping-pong.PingAmount"

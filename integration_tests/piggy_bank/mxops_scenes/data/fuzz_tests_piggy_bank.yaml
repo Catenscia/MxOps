@@ -5,7 +5,7 @@ parameters:
     gas_limit: 8000000
     description: "depositing esdt"
     esdt_transfers:
-      - token_identifier: "%abc-esdt-minter.EsdtIdentifier"
+      - identifier: "%abc-esdt-minter.EsdtIdentifier"
         amount: 1247741982740
         nonce: 0
 
@@ -14,7 +14,7 @@ parameters:
     gas_limit: 8000000
     description: "depositing esdt"
     esdt_transfers:
-      - token_identifier: "%abc-esdt-minter.EsdtIdentifier"
+      - identifier: "%abc-esdt-minter.EsdtIdentifier"
         amount: 213
         nonce: 0
 
@@ -23,7 +23,7 @@ parameters:
     gas_limit: 8000000
     description: "depositing esdt"
     esdt_transfers:
-      - token_identifier: "%abc-esdt-minter.EsdtIdentifier"
+      - identifier: "%abc-esdt-minter.EsdtIdentifier"
         amount: 41496879
         nonce: 0
 
