@@ -105,6 +105,13 @@ For example, If you want to retrieve the address of the contract you just deploy
 mxops data get -n devnet -s my-scenario "%my-contract.address"
 ```
 
+The output of this command is printed, meaning that you can reuse it in your bash scripts for example:
+
+```bash
+SC_ADDRESS=$(mxops data get -n devnet -s my-scenario "%my-contract.address")
+echo "result: $SC_ADRESS"
+```
+
 ### Delete Scenario
 
 To delete all the data from a scenario
