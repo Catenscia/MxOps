@@ -26,6 +26,7 @@ If you are new here, we recommend going first to the :doc:`Getting Started secti
    :caption: Tutorials and Examples
 
    tutorials/introduction
+   tutorials/queries
    tutorials/trader_sc
 
 .. toctree::

@@ -1,10 +1,10 @@
 allowed_networks:
-    - mainnet
+  - mainnet
 
 accounts:
   - account_id: onedex-swap
     address: erd1qqqqqqqqqqqqqpgqqz6vp9y50ep867vnr296mqf3dduh6guvmvlsu3sujc
-    abi_path: ./abis/onedex-sc.abi.json
+    abi_path: ./data/onedex-sc.abi.json
 
 steps:
 
@@ -13,3 +13,5 @@ steps:
     endpoint: viewPair
     arguments:
       - 9
+    results_save_keys:
+      - pair_9

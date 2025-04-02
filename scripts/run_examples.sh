@@ -9,13 +9,8 @@ source ${ENV_NAME}/bin/activate
 # install project
 uv pip install .
 
-# launch first scene example
-cd examples/first_scene
-bash scripts/build_contract.sh
-bash scripts/execute_first_scene.sh
-
-# launch enhanced first scene example
-cd ../enhanced_first_scene
+# launch ping_pong example
+cd examples/enhanced_first_scene
 bash scripts/build_contract.sh
 bash scripts/execute_deploy_scene.sh
 bash scripts/execute_ping_scene.sh
@@ -23,7 +18,12 @@ bash scripts/execute_pong_scene.sh
 
 # launch queries tutorial
 cd ../queries
-bash scripts/execute_onedex.sh
+bash scripts/execute_queries.sh
+
+# launch trader tutorial
+cd ../trader
+bash scripts/run.sh
+
 
 # remove env
 cd ../..

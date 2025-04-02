@@ -1,0 +1,55 @@
+allowed_networks:
+  - mainnet
+
+steps:
+
+  - type: ContractQuery
+    contract: onedex-swap
+    endpoint: getLastPairId
+    results_save_keys:
+      - last_pair_id
+  
+  - type: SetVars
+    variables:
+      batch_size: 50
+      n_queries: ={ceil(%{onedex-swap.last_pair_id} / %{batch_size})}
+      valid_onedex_pair_ids: []
+  
+  - type: Loop
+    var_name: i_queries
+    var_start: 0
+    var_end: "%n_queries"
+    steps:
+      # fetch the pairs batch
+      - type: ContractQuery
+        contract: onedex-swap
+        endpoint: viewPairsPaginated
+        arguments:
+          - "={%{batch_size} * %{i_queries}}"   # from
+          - "%batch_size"                       # size
+        log_results: False
+        results_save_keys:
+          - batch_results
+
+      # assign each pair data to a key related to the pair id
+      - type: Loop
+        var_name: pair_data
+        var_list: "%onedex-swap.batch_results"
+        steps:
+          - type: SetVars
+            variables:
+              "onedex_pair_%{pair_data.pair_id}": "%pair_data"
+              "valid_onedex_pair_ids[={len(%{valid_onedex_pair_ids})}]": "%pair_data.pair_id"
+      
+      # Wait a little to avoid hitting rate limits on mainnet proxy
+      - type: Wait
+        for_seconds: 0.5
+      
+  # set names to all pools
+  - type: Loop
+    var_name: pair_id
+    var_list: "%valid_onedex_pair_ids"
+    steps: 
+      - type: SetVars
+        variables:
+          "onedex_pair_%{pair_id}.pair_name": "%{onedex_pair_%{pair_id}.first_token_id}/%{onedex_pair_%{pair_id}.second_token_id}"

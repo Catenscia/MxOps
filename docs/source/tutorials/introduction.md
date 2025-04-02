@@ -3,13 +3,16 @@
 This chapter regroups several tutorials and examples on MxOps. Each of them focuses on one or several key topics. You will find them listed below, with the estimated complexity (easy, medium, advanced) and the addressed topics. If you see any error or if you have suggestion, please [contact us](../others/contact_us).
 
 All the source code of these tutorials and examples can be find in the MxOps [github](https://github.com/Catenscia/MxOps/tree/main/examples).
+The difference between tutorials and examples is that tutorials are more guided wherehas the examples are just given as they are.
 
 ## Tutorials
 
 
-| Tutorial                               | Complexity | Topics                                               |
-|----------------------------------------|------------|------------------------------------------------------|
-| [ trader smart-contract ]( trader_sc ) | advanced   | chain-simulator<br>account cloning<br>smart-contract |
+| Tutorial                               | Complexity | Topics                                                  |
+|----------------------------------------|------------|---------------------------------------------------------|
+| [queries](queries)                     | medium     | loop<br>queries<br>scenario data<br>smart-values        |
+| [ trader smart-contract ]( trader_sc ) | advanced   | account<br>chain-simulator<br>cloning<br>smart-contract |
+
 
 
 ## Examples
@@ -19,6 +22,10 @@ All the source code of these tutorials and examples can be find in the MxOps [gi
 
 | Topic           | Tutorials and Examples                     |
 |-----------------|--------------------------------------------|
-| chain-simulator | [  trader smart-contract  ](  trader_sc  ) |
-| smart-contract  | [  trader smart-contract  ](  trader_sc  ) |
 | account cloning | [  trader smart-contract  ](  trader_sc  ) |
+| chain-simulator | [  trader smart-contract  ](  trader_sc  ) |
+| loop            | [queries](queries)                         |
+| query           | [queries](queries)                         |
+| scenario data   | [queries](queries)                         |
+| smart-contract  | [  trader smart-contract  ](  trader_sc  ) |
+| smart-values    | [queries](queries)                         |
