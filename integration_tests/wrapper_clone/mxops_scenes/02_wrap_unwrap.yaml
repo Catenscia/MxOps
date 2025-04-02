@@ -12,7 +12,7 @@ steps:
         expected_transfers: 
           - sender: egld_wrapper_shard_1
             receiver: paul
-            token_identifier: "%{egld_wrapper_shard_1.wegld_identifier}"
+            identifier: "%{egld_wrapper_shard_1.wegld_identifier}"
             amount: 1000000000000000000
   
   - type: ContractCall
@@ -22,7 +22,7 @@ steps:
     gas_limit: 5000000
     value: 0
     esdt_transfers:
-      - token_identifier: "%{egld_wrapper_shard_1.wegld_identifier}"
+      - identifier: "%{egld_wrapper_shard_1.wegld_identifier}"
         nonce: 0
         amount: 1000000000000000000  # 1 WEGLD
     checks:
@@ -32,5 +32,5 @@ steps:
         expected_transfers: 
           - sender: egld_wrapper_shard_1
             receiver: paul
-            token_identifier: EGLD
+            identifier: EGLD
             amount: 1000000000000000000

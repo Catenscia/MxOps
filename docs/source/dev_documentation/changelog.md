@@ -11,14 +11,14 @@
 - Remove non-output prints
 - use blake2b for wasm code hash
 - missing code hash update when upgrading a contract
-- wrapping integration test on the devnet
+- wrapping integration test on devnet
 
 ### Added
 
 - the data save path of `MxOps` is now configurable through the config var `DATA_PATH`
 - chain-simulator network and adapted transaction schema (forward chain until transaction completion)
 - `FileFuzzerStep`
-- Account's addresses are now saved within the `Scenario` data at load time. They can be referenced to with "%account_id.address"
+- Account's addresses are now saved within the scenario data at load time. They can be referenced to with "%account_id.address"
 - `SetVarsStep`
 - `GenerateWalletsStep`
 - `R3D4FaucetStep`
@@ -46,7 +46,7 @@
 - 🚨 BREAKING CHANGE 🚨 loop variables from `LoopStep` are now saved and accessed with the symbol `%` instead of `$`
 - 🚨 BREAKING CHANGE 🚨 function result are now saved and accessed with the symbol `%` instead of `$`, and the save key is provided by the user
 - 🚨 BREAKING CHANGE 🚨 account's addresses can no longer be accessed with "[<account_id>]"
-- `Scenes` have now default values for allowed scenarios and allowed networks
+- scenes have now default values for allowed scenarios and allowed networks
 - 🚨 BREAKING CHANGE 🚨 removed analyze feature from MxOps
 - 🚨 BREAKING CHANGE 🚨 rework the data save structure and introduce versioned data structure
 - 🚨 BREAKING CHANGE 🚨 upgrade to the new multiversx-sdk-py 1.0.0 and removal of MxPySerializer
@@ -73,7 +73,7 @@
 
 ### Added
 
-- `Scenario` clone command
+- scenario clone command
 - Allowed `TransfersCheck` to dynamically evaluate sender and receiver by name
 
 ### Fixed
@@ -103,18 +103,18 @@
 
 ### Added
 
-- Checkpoints for `Scenario`
+- Checkpoints for scenario
 - `ContractUpgradeStep`
 - Auto retry for empty query results
 - python step class
-- Value key can now of any depth for `Scenario` data
+- Value key can now of any depth for scenario data
 - `SceneStep`
 - `analyze` module
 
 ### Changed
 
 - 🚨 BREAKING CHANGE 🚨 `checks` attribute has been given for all `TransactionStep`, sometimes replacing `check_success`
-- 🚨 BREAKING CHANGE 🚨 `.` and `[]` are used instead of `%` to specify a `Scenario` value key
+- 🚨 BREAKING CHANGE 🚨 `.` and `[]` are used instead of `%` to specify a scenario value key
 - 🚨 BREAKING CHANGE 🚨 `data.data.py` renamed into `data.execution_data.py`
 - Upgrade MultiversX python libraries
 - `int` is preferred over `number` for query return type
@@ -128,9 +128,9 @@
 
 ### Added
 
-- CLI options to clean/delete `Scenario` data before or after execution
-- `Steps` for token transfers (eGLD, fungible & non fungible)
-- `Steps` for token issuance, roles management and minting (fungible & non fungible)
+- CLI options to clean/delete scenario data before or after execution
+- steps for token transfers (eGLD, fungible & non fungible)
+- steps for token issuance, roles management and minting (fungible & non fungible)
 - `TransfersCheck` to verify the transfers of a `ContractCallStep`
 - Networks enumerations can be parsed by their short or full names
 
@@ -141,7 +141,7 @@
 
 ### Fixed
 
-- Error when providing absolute path for `Scenes`
+- Error when providing absolute path for scenes
 - Commit change when auto bumping changelog version
 - Make the pylint test fail if a pylint error is detected
 

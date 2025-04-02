@@ -1,7 +1,7 @@
 """
 author: Etienne Wallet
 
-This module contains Steps used to setup environnement, chain or workflow
+This module contains Steps used to setup environment, chain or workflow
 """
 
 from copy import deepcopy

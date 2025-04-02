@@ -4,6 +4,7 @@ AppDir
 AppFolder
 arg
 backend
+bitwise
 blake
 blockchain
 blockchains
@@ -21,6 +22,7 @@ customization
 customizations
 decrypt
 DevOps
+dropdown
 env
 environ
 Etienne
@@ -45,6 +47,7 @@ str
 upgradeable
 utils
 Flaticon
+randint
 README
 ReadTheDocs
 reusability
@@ -56,6 +59,8 @@ stackoverflow
 td
 th
 Untracked
+url
 uv
 VScode
+VSCode
 wasm

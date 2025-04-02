@@ -117,3 +117,17 @@ def test_default_loading(test_data_folder_path: Path):
         "chain-simulator",
     ]
     assert scene.allowed_scenario == [".*"]
+
+
+def test_bytes_loading_and_conversion(test_data_folder_path: Path):
+    # Given
+    scene_path = test_data_folder_path / "scenes" / "bytes_scene.yaml"
+    scene = load_scene(scene_path)
+
+    # When
+    for step in scene.steps:
+        step.evaluate_smart_values()
+        if not isinstance(step, ContractCallStep):
+            raise ValueError(f"Wrong type loaded: {type(step)}")
+        tx = step.build_unsigned_transaction()
+        assert tx.data == b"endpoint_1@01020408"

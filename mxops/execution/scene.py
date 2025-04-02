@@ -63,7 +63,7 @@ class Scene:
         """
         After the initialisation of an instance, if the inner steps are
         found to be dict, will try to convert them to Steps instances.
-        Usefull for easy loading from yaml files
+        useful for easy loading from yaml files
         """
         if len(self.steps) > 0 and isinstance(self.steps[0], dict):
             self.steps = instanciate_steps(self.steps)

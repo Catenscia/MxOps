@@ -14,7 +14,7 @@ When you execute MxOps, it will look for a configuration file by executing the f
 
 You can find the default configuration in the [github](https://github.com/Catenscia/MxOps/blob/main/mxops/resources/default_config.ini).
 
-All values in the configuration are accessible in `Scene` by using the "&" symbol. For example:
+All values in the configuration are accessible in scene by using the "&" symbol. For example:
 
 ```yaml
 steps:

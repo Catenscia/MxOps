@@ -32,7 +32,7 @@ def get_logger_level(name: str) -> str:
 
 
 def get_logger(
-    logger_group: LogGroupEnum, additionnal_log_file_path: Path | None = None
+    logger_group: LogGroupEnum, additional_log_file_path: Path | None = None
 ) -> logging.Logger:
     """
     Generate a logger for a given group
@@ -40,8 +40,8 @@ def get_logger(
 
     :param logger_group: group of the logger
     :type logger_group: LogGroupEnum
-    :param logger_group: additionnal file path where to save the logs, default to None
-    :type additionnal_log_file_path: Path | None
+    :param logger_group: additional file path where to save the logs, default to None
+    :type additional_log_file_path: Path | None
     :return: logger
     :rtype: logging.Logger
     """
@@ -84,23 +84,23 @@ def get_logger(
         general_file_handler.setFormatter(general_file_formatter)
         logger.addHandler(general_file_handler)
 
-    # Add a file handler if it does not exist and if additionnal path is defined
-    if additionnal_log_file_path is not None:
-        additionnal_file_handlers = [
+    # Add a file handler if it does not exist and if additional path is defined
+    if additional_log_file_path is not None:
+        additional_file_handlers = [
             h
             for h in logger.handlers
             if isinstance(h, RotatingFileHandler)
             and h.baseFilename != absolute_str_path
         ]
-        if len(additionnal_file_handlers) == 0:
-            additionnal_file_formatter = logging.Formatter(log_format)
-            additionnal_log_file_path.parent.mkdir(parents=True, exist_ok=True)
-            additionnal_file_handler = RotatingFileHandler(
-                filename=additionnal_log_file_path.as_posix(),
+        if len(additional_file_handlers) == 0:
+            additional_file_formatter = logging.Formatter(log_format)
+            additional_log_file_path.parent.mkdir(parents=True, exist_ok=True)
+            additional_file_handler = RotatingFileHandler(
+                filename=additional_log_file_path.as_posix(),
                 maxBytes=1_048_576,  # 1MB
                 backupCount=100,
             )
-            additionnal_file_handler.setFormatter(additionnal_file_formatter)
-            logger.addHandler(additionnal_file_handler)
+            additional_file_handler.setFormatter(additional_file_formatter)
+            logger.addHandler(additional_file_handler)
 
     return logger

@@ -10,6 +10,7 @@ devnet
 DEX
 egld
 eGLD
+EGLD
 EgldOrEsdtTokenIdentifier
 Elrond
 elrond
@@ -21,7 +22,9 @@ esdt
 ESDT
 ESDTmapper
 EsdtTransfer
+eStandard
 fn
+Hatom
 init
 JEX
 jex
@@ -43,6 +46,8 @@ NestedDecode
 NestedEncode
 nft
 Onedex
+OneDex
+onedex
 PartialEq
 py
 NFT

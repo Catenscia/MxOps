@@ -84,6 +84,10 @@ from mxops.smart_values.factory import extract_first_smart_value_class
             "erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3",
             "erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3 (%alice.bech32)",  # noqa
         ),
+        ("=10**18", 10**18, "1000000000000000000 (=10**18)"),
+        ("=10**6*10**3", 10**9, "1000000000 (=10**6*10**3)"),
+        ("=10**6 * 10**3", 10**9, "1000000000 (=10**6 * 10**3)"),
+        ("=10**(6+3)", 10**9, "1000000000 (=10**(6+3))"),
     ],
 )
 def test_smart_value(raw_value: Any, expected_result: Any, expected_str: str):

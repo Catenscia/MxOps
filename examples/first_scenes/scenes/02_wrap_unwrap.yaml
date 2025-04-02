@@ -1,0 +1,17 @@
+steps:
+  
+  - type: ContractCall
+    sender: user
+    contract: egld_wrapper
+    endpoint: wrapEgld
+    gas_limit: 6000000
+    value: 100000000000000000  # 0.1 EGLD
+  
+  - type: ContractCall
+    sender: user
+    contract: egld_wrapper
+    endpoint: unwrapEgld
+    gas_limit: 6000000
+    esdt_transfers: 
+      - identifier: WEGLD-a28c59
+        amount: 100000000000000000  # 0.1 WEGLD

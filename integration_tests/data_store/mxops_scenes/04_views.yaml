@@ -35,6 +35,33 @@ steps:
     arguments:
       - data-store
       - '{"view_test_1_returns": [{"__name__": "Monday", "__discriminant__": 0}, {"__name__": "Sunday", "__discriminant__": 6}, {"__name__": "Default", "__discriminant__": 0}, {"__name__": "Today", "__discriminant__": 1, "0": {"__name__": "Tuesday", "__discriminant__": 1}}, {"__name__": "Write", "__discriminant__": 2, "0": "bytes:AQIECA==", "1": 14}, {"__name__": "Struct", "__discriminant__": 3, "int": 8, "seq": "bytes:CS0=", "another_byte": 0, "uint_32": 789484, "uint_64": 485}]}'
+  
+  - type: ContractQuery
+    contract: data-store
+    endpoint: view_test_1
+    arguments:
+      - __name__: Monday
+      - __name__: Sunday
+      - __name__: Default
+      - __name__: Today
+        "0": Tuesday
+      - __name__: Write
+        "0": [1, 2, 4, 8]
+        "1": 14
+      - __name__: Struct
+        int: 8
+        seq: [9, 45]
+        another_byte: 0
+        uint_32: 789484
+        uint_64: 485
+    results_save_keys: view_test_1_returns
+
+  - type: Python
+    module_path: ./integration_tests/scripts/checks.py
+    function: check_storage
+    arguments:
+      - data-store
+      - '{"view_test_1_returns": [{"__name__": "Monday", "__discriminant__": 0}, {"__name__": "Sunday", "__discriminant__": 6}, {"__name__": "Default", "__discriminant__": 0}, {"__name__": "Today", "__discriminant__": 1, "0": {"__name__": "Tuesday", "__discriminant__": 1}}, {"__name__": "Write", "__discriminant__": 2, "0": "bytes:AQIECA==", "1": 14}, {"__name__": "Struct", "__discriminant__": 3, "int": 8, "seq": "bytes:CS0=", "another_byte": 0, "uint_32": 789484, "uint_64": 485}]}'
 
   - type: ContractQuery  # check data access by launching an identical query
     contract: data-store
