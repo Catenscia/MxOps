@@ -26,7 +26,7 @@ from mxops.data.execution_data import (
 )
 from mxops.data.utils import json_dumps
 from mxops.enums import parse_network_enum
-from mxops.smart_values.utils import retrieve_value_from_string
+from mxops.smart_values.base import SmartValue
 
 
 def add_subparser(subparsers_action: _SubParsersAction):
@@ -209,7 +209,9 @@ def execute_cli(args: Namespace):  # pylint: disable=R0912
         if args.scenario:
             ScenarioData.load_scenario(args.scenario, args.checkpoint)
             if args.expression is not None:
-                result = retrieve_value_from_string(args.expression)
+                value = SmartValue(args.expression)
+                value.evaluate()
+                result = value.get_evaluated_value()
             else:
                 result = json_dumps(ScenarioData.get().to_dict())
             print(result)
