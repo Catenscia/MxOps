@@ -471,3 +471,16 @@ def test_loop_dependant_set_vars():
     assert scenario_data.get_value("myvar123456") == "heyheyhey1"
     assert scenario_data.get_value("heyheyhey0") == 156
     assert scenario_data.get_value("heyheyhey1") == 156
+
+
+def test_set_vars_sequentially_dependent_variables():
+    # Given
+    step = SetVarsStep({"a": 10, "b": "={%{a} + 2}"})
+    scenario_data = ScenarioData.get()
+
+    # When
+    step.execute()
+
+    # Then
+    assert scenario_data.get_value("%a") == 10
+    assert scenario_data.get_value("%b") == 12

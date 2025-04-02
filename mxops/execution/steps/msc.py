@@ -29,6 +29,7 @@ from mxops.smart_values import (
 )
 from mxops.execution.steps.base import Step
 from mxops.execution.steps.factory import SmartSteps
+from mxops.smart_values.native import SmartRawDict
 
 
 @dataclass
@@ -115,7 +116,7 @@ class SetVarsStep(Step):
     Represents a step to set variables within the Scenario
     """
 
-    variables: SmartDict
+    variables: SmartRawDict
 
     def _execute(self):
         """
@@ -124,7 +125,13 @@ class SetVarsStep(Step):
         logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
         scenario_data = ScenarioData.get()
 
-        for key, value in self.variables.get_evaluated_value().items():
+        for raw_key, raw_value in self.variables.get_evaluated_value().items():
+            smart_key = SmartStr(raw_key)
+            smart_key.evaluate()
+            smart_value = SmartValue(raw_value)
+            smart_value.evaluate()
+            key = smart_key.get_evaluated_value()
+            value = smart_value.get_evaluated_value()
             logger.info(f"Setting variable `{key}` with the value `{value}`")
             scenario_data.set_value(key, value)
 
