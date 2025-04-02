@@ -1,4 +1,3 @@
-(trader_sc_target)=
 # Trader smart-contract
 
 This tutorial will showcase the following notions:
