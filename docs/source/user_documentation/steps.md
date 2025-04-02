@@ -598,48 +598,42 @@ You can find more information in the MultiversX documentation about [non fungibl
 (loop_step_target)=
 ### Loop Step
 
-This step allows to run a set of steps for a given number of times.
+This step allows to run a set of steps in a loop.
 A loop variable is created and can be used as an argument for the steps inside the loop.
 
 ```yaml
-# This loop step retrieves the sft tokens that have a nonce between 1 and 100.
-# The loop variable is used to check and retrieve the amount of each nonce.
 type: Loop
-var_name: LOOP_VAR
+var_name: nonce
 var_start: 1
 var_end: 100
 steps:
+
+  # <do someting>
+
+  # use the loop variable nonce to get the amount of SFT in a smart-contract
+  # and save the amount under the key my_sft_bank.<token_identifier>_<nonce>_amount
   - type: ContractQuery
-    contract: my_first_sc
+    contract: my_sft_bank
     endpoint: getSftAmount
     arguments:
-      - TokenIdentifier4
-      - "%LOOP_VAR" # nonce
+      - "%sft_identifier"
+      - "%nonce"
     results_save_keys:
-      - TokenIdentifier4Amount
+      - "%{sft_identifier}_%{nonce}_amount"
 
-  - type: ContractCall
-    sender: alice
-    contract: my_first_sc
-    endpoint: RetrieveSft
-    gas_limit: 60000000
-    arguments:
-      - TokenIdentifier4
-      - "%LOOP_VAR" # nonce
-      - "%my_first_sc.TokenIdentifier4Amount" # result of the previous query
+  # <do something else>
 ```
 
 Instead of using `var_start` and `var_end` for the loop variable, a custom list of values can be provided with the keyword `var_list` like below.
 
 ```yaml
 type: Loop
-var_name: LOOP_VAR
+var_name: i
 var_list: [1, 5, 78, 1566]
 steps: [...]
 ```
 
-You will notice that some symbols are used in the arguments of the above `ContractCall`. These are here to dynamically fetch values from different sources.
-Heads up to the [smart values chapter](values) for more information.
+You will notice that the symbol `%` is used in the arguments of the above `ContractQuery` step. It is here to dynamically fetch the value of the loop variable from the scenario data. Heads up to the [smart values chapter](values) for more information.
 
 (python_step_target)=
 ### Python Step
