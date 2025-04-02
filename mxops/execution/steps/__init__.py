@@ -7,9 +7,10 @@ This subpackage contains all the steps that can be used with MxOps
 from mxops.execution.steps.msc import (
     LoopStep,
     PythonStep,
+    SceneStep,
+    SetSeedStep,
     SetVarsStep,
     WaitStep,
-    SceneStep,
 )
 from mxops.execution.steps.setup import (
     AccountCloneStep,
@@ -61,6 +62,7 @@ __all__ = [
     "R3D4FaucetStep",
     "SceneStep",
     "SemiFungibleIssueStep",
+    "SetSeedStep",
     "SetVarsStep",
     "TransferStep",
     "WaitStep",

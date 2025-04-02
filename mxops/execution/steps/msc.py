@@ -10,6 +10,7 @@ import time
 from typing import Any, Iterable
 
 from multiversx_sdk.core.constants import METACHAIN_ID
+import numpy as np
 
 from mxops.common.providers import MyProxyNetworkProvider
 from mxops.config.config import Config
@@ -234,3 +235,18 @@ class SceneStep(Step):
         """
         logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
         logger.warning("The execute function of a SceneStep was called")
+
+
+@dataclass
+class SetSeedStep(Step):
+    """
+    Represents a step to set the random seed
+    """
+
+    seed: SmartInt
+
+    def _execute(self):
+        """
+        set the random seed
+        """
+        np.random.seed(self.seed.get_evaluated_value())

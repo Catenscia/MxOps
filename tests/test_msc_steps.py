@@ -25,7 +25,7 @@ from mxops.smart_values import (
     SmartValue,
 )
 from mxops.execution.steps.factory import SmartStep, SmartSteps
-from mxops.execution.steps.msc import SceneStep
+from mxops.execution.steps.msc import SceneStep, SetSeedStep
 
 
 @dataclass
@@ -484,3 +484,22 @@ def test_set_vars_sequentially_dependent_variables():
     # Then
     assert scenario_data.get_value("%a") == 10
     assert scenario_data.get_value("%b") == 12
+
+
+def test_set_seed_randomness():
+    # Given
+    value_a = SmartValue("=randint(0,10**18)")
+    value_b = SmartValue("=randint(0,10**18)")
+    value_c = SmartValue("=randint(0,10**18)")
+    step = SetSeedStep(42)
+
+    # When
+    step.execute()
+    value_a.evaluate()
+    value_b.evaluate()
+    step.execute()
+    value_c.evaluate()
+
+    # Then
+    assert value_a.get_evaluated_value() != value_b.get_evaluated_value()
+    assert value_a.get_evaluated_value() == value_c.get_evaluated_value()

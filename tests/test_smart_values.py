@@ -646,3 +646,16 @@ def test_all_extraction():
     for name in names:
         extracted_type = extract_first_smart_value_class(name)
         assert issubclass(extracted_type, SmartValue)
+
+
+def test_randomness():
+    # Given
+    value_a = SmartValue("=randint(0,10**18)")
+    value_b = SmartValue("=randint(0,10**18)")
+
+    # When
+    value_a.evaluate()
+    value_b.evaluate()
+
+    # Then
+    assert value_a.get_evaluated_value() != value_b.get_evaluated_value()
