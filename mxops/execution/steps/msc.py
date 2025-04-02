@@ -80,8 +80,8 @@ class LoopStep(Step):
         iterable = self._get_evaluated_iterable()
         try:
             first_value = next(iter(iterable))
-        except StopIteration as err:
-            raise ValueError("Loop iteration is not correctly defined") from err
+        except StopIteration:
+            first_value = None
         scenario_data = ScenarioData.get()
         scenario_data.set_value(self.var_name.get_evaluated_value(), first_value)
 
