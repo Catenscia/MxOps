@@ -249,4 +249,7 @@ class SetSeedStep(Step):
         """
         set the random seed
         """
-        np.random.seed(self.seed.get_evaluated_value())
+        seed = self.seed.get_evaluated_value()
+        np.random.seed(seed)
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
+        logger.info(f"Random seed has been set to {seed}")
