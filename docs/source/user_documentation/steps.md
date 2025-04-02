@@ -615,8 +615,6 @@ steps:
     arguments:
       - TokenIdentifier4
       - "%LOOP_VAR" # nonce
-    results_types:
-      - type: BigUint
     results_save_keys:
       - TokenIdentifier4Amount
 
