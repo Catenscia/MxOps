@@ -5,6 +5,7 @@ This module contains utils functions for smart values
 """
 
 import base64
+import math
 import os
 import re
 from typing import Any
@@ -54,6 +55,8 @@ def evaluate_formula(formula_str: str) -> Any:
             "rand": np.random.rand,
             "randint": np.random.randint,
             "choice": np.random.choice,
+            "ceil": math.ceil,
+            "len": len,
         }
     ).eval(formula_str)
 
