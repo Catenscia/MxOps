@@ -830,3 +830,26 @@ shard: 0  # optional, default is metachain
 ```{note}
 Waiting for blocks on the chain-simulator network will trigger a call to the chain-simulator to generate the required number of blocks
 ```
+
+(set_seed_target)=
+### Set Seed
+
+Computer generated numbers are pseudo-random, meaning that we can reproduce the random production if we know the seed (a number) used. This is particularly useful when you want to be able to reproduce a given execution that use random values. This step is here to allow you to set the random seed:
+
+```yaml
+type: SetSeed
+seed: 42
+```
+
+If you don't want to have the exact same random number every time but still want to have a sens of reproducibility, we recommend doing the following:
+
+```yaml
+type: SetSeed
+seed: "=randint(0,2**32)"  # 2**32-1 is the maximum allowed value for a seed
+```
+
+This will generate a random seed and grant you randomness between executions, but if a problem arise, you will be able to inspect the logs to find which seed was used. You may then try to reproduce the error by forcing the seed found in the logs.
+
+```{warning}
+Keep in mind that the seed is only set for the current execution of MxOps, meaning that if you execute twice a command with `mxops execute ...` and the seed is set only in the first execution, it will have no impact one the random values generated during the second execution.
+```
