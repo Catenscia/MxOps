@@ -138,9 +138,12 @@ class SavedValuesData:
             try:
                 element = self._get_element_value_from_key(element, key)
             except (KeyError, IndexError, ValueError) as err:
+                element_str = str(element)
+                if len(element_str) > 1000:
+                    element_str = element_str[:500] + "..." + element_str[-500:]
                 raise errors.WrongDataKeyPath(
                     f"Wrong key {repr(key)} from keys {parsed_value_key_path} for "
-                    f"data element {element}"
+                    f"data element {element_str}"
                 ) from err
         return element
 
