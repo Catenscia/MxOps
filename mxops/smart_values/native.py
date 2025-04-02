@@ -156,6 +156,48 @@ class SmartDict(SmartValue):
 
 
 @dataclass
+class SmartRawDict(SmartValue):
+    """
+    Represent a smart value that should result in a dict without evaluating
+    the smart values that may be present in the dict
+    """
+
+    @staticmethod
+    def type_enforce_value(value: Any) -> dict:
+        """
+        Convert a value to the expected evaluated type
+
+        :param value: value to convert
+        :type value: Any
+        :return: converted value
+        :rtype: dict
+        """
+        return dict(value)
+
+    def get_evaluated_value(self) -> dict:
+        """
+        Return the evaluated value
+
+        :return: evaluated value
+        :rtype: dict
+        """
+        return super().get_evaluated_value()
+
+    def evaluate(self):
+        """
+        Evaluate the raw value and save the intermediary values until a
+        dict is reached. The evaluation of the element of the dict is a
+        responsibility left to caller
+        """
+
+        def result_is_not_dict(_previous_value: Any, current_value: Any) -> bool:
+            return not isinstance(current_value, dict)
+
+        self._conditional_evaluation(result_is_not_dict)
+        self._enforce_add_value()
+
+
+@dataclass
 class SmartList(SmartValue):
     """
     Represent a smart value that should result in a list
