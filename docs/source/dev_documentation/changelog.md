@@ -40,6 +40,7 @@
 - SceneStep can now target a folder of scenes
 - User can now evaluate an expression with the data CLI
 - logs are now saved to the MxOps data folder and scenario folders
+- `SetSeedStep`
 
 ### Changed
 

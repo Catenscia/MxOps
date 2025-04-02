@@ -593,6 +593,93 @@ uris: # optional
 
 You can find more information in the MultiversX documentation about [non fungible creation](https://docs.multiversx.com/tokens/nft-tokens#creation-of-an-nft) and [non fungible attributes](https://docs.multiversx.com/tokens/nft-tokens#nftsft-fields).
 
+## Setup Steps
+
+(generate_wallets_target)=
+### Generate Wallets Step
+
+This step allows you to generate new wallets. For now, only PEM wallets can be generated
+
+```yaml
+type: GenerateWallets
+save_folder: ./my/wallets  # folder where to save the generated wallets
+wallets: 10  # number of wallets to generate
+shard: 1  # optional, to force the shard of the generated wallets
+```
+
+If you prefer to names you wallets, you can provide a list of names instead.
+
+```yaml
+type: GenerateWallets
+save_folder: ./my/wallets  # folder where to save the generated wallets
+wallets: ["alice", "bob"]  # generate two wallets named alice and bob
+shard: 0  # optional, to force the shard of the generated wallets
+```
+
+
+(r3d4_faucet_target)=
+### r3d4 Faucet Step
+
+This step allows you use devnet and testnet faucet [r3d4](https://r3d4.fr/faucet).
+This is a third party tool that is not managed by Catenscia, so the compatibility might break.
+
+Some things to keep in mind:
+- Respect the limits from r3d4 (1 claim per token per address per day)
+- There may be some delays before you receive the funds
+- Please don't abuse the faucet, it's a tool useful for a lot of people
+- If you have to much funds, send them back to the faucet so that they can be reused
+- The faucet only works for devnet and testnet
+
+Example:
+
+```yaml
+type: R3D4Faucet
+targets:
+  - alice  # account name handeld by MxOps
+  - erd1y3296u7m2v5653pddey3p7l5zacqmsgqc7vsu3w74p9jm2qp3tqqz950yl  # or direct bech32
+```
+
+Here, for each address, the maximum amount of EGLD (1 EGLD as of December 2024) will be requested.
+
+
+(chain_simulator_faucet_target)=
+### Chain Simulator Faucet Step
+
+This step allows you to request EGLD on the chain-simulator. Unless you use tremendous amount of EGLD, you shouldn't run into any limit here.
+
+```yaml
+type: ChainSimulatorFaucet
+amount: 1000000000000000000  # 1.0 EGLD
+targets:
+  - alice  # account name handeld by MxOps
+  - erd1y3296u7m2v5653pddey3p7l5zacqmsgqc7vsu3w74p9jm2qp3tqqz950yl  # or direct bech32
+```
+
+(account_clone_target)=
+### Account Clone Step
+
+Exclusive to the chain simulator.
+This step allows you to clone an account from another network (ex mainnet) and to import it to the chain simulator.
+You can choose to clone, the code, the balance, the storage and the tokens of an account.
+
+When cloning tokens, MxOps makes sure that the tokens are well defined in the network and you will be able to use them as if they were natively generated on the chain-simulator in the first place.
+
+```yaml
+type: AccountClone
+address: my_mainnet_contract
+source_network: mainnet
+clone_balance: true  # optional, default to true
+clone_code: true  # optional, default to true
+clone_storage: true  # optional, default to true
+clone_esdts: true  # optional, default to true
+overwrite: true  # optional, default to true
+overwrite: true  # optional, default to true
+caching_period: "10 days"  # optional, default to 10 days
+```
+
+Account cloning can lead to huge data requests. If you are using the public proxy, please use a high caching period.
+Currently, some clones will even fail because the storage of the account is too big. This will be fixed on the MultiversX side in the [bernard release](https://github.com/multiversx/mx-chain-go/pull/6547) by the core team.
+
 ## Miscellaneous Steps
 
 (loop_step_target)=
@@ -721,91 +808,6 @@ variables:
 
 The above example will saves three variables within the scenario data: `MyVar`, `result-backup` and `nested_values`. Their values (or nested values) will be accessible with the `%` symbol (refer to the [smart values chapter](values) for more details of the value system of MxOps).
 
-(generate_wallets_target)=
-### Generate Wallets Step
-
-This step allows you to generate new wallets. For now, only PEM wallets can be generated
-
-```yaml
-type: GenerateWallets
-save_folder: ./my/wallets  # folder where to save the generated wallets
-wallets: 10  # number of wallets to generate
-shard: 1  # optional, to force the shard of the generated wallets
-```
-
-If you prefer to names you wallets, you can provide a list of names instead.
-
-```yaml
-type: GenerateWallets
-save_folder: ./my/wallets  # folder where to save the generated wallets
-wallets: ["alice", "bob"]  # generate two wallets named alice and bob
-shard: 0  # optional, to force the shard of the generated wallets
-```
-
-
-(r3d4_faucet_target)=
-### r3d4 Faucet Step
-
-This step allows you use devnet and testnet faucet [r3d4](https://r3d4.fr/faucet).
-This is a third party tool that is not managed by Catenscia, so the compatibility might break.
-
-Some things to keep in mind:
-- Respect the limits from r3d4 (1 claim per token per address per day)
-- There may be some delays before you receive the funds
-- Please don't abuse the faucet, it's a tool useful for a lot of people
-- If you have to much funds, send them back to the faucet so that they can be reused
-- The faucet only works for devnet and testnet
-
-Example:
-
-```yaml
-type: R3D4Faucet
-targets:
-  - alice  # account name handeld by MxOps
-  - erd1y3296u7m2v5653pddey3p7l5zacqmsgqc7vsu3w74p9jm2qp3tqqz950yl  # or direct bech32
-```
-
-Here, for each address, the maximum amount of EGLD (1 EGLD as of December 2024) will be requested.
-
-
-(chain_simulator_faucet_target)=
-### Chain Simulator Faucet Step
-
-This step allows you to request EGLD on the chain-simulator. Unless you use tremendous amount of EGLD, you shouldn't run into any limit here.
-
-```yaml
-type: ChainSimulatorFaucet
-amount: 1000000000000000000  # 1.0 EGLD
-targets:
-  - alice  # account name handeld by MxOps
-  - erd1y3296u7m2v5653pddey3p7l5zacqmsgqc7vsu3w74p9jm2qp3tqqz950yl  # or direct bech32
-```
-
-(account_clone_target)=
-### Account Clone Step
-
-Exclusive to the chain simulator.
-This step allows you to clone an account from another network (ex mainnet) and to import it to the chain simulator.
-You can choose to clone, the code, the balance, the storage and the tokens of an account.
-
-When cloning tokens, MxOps makes sure that the tokens are well defined in the network and you will be able to use them as if they were natively generated on the chain-simulator in the first place.
-
-```yaml
-type: AccountClone
-address: my_mainnet_contract
-source_network: mainnet
-clone_balance: true  # optional, default to true
-clone_code: true  # optional, default to true
-clone_storage: true  # optional, default to true
-clone_esdts: true  # optional, default to true
-overwrite: true  # optional, default to true
-overwrite: true  # optional, default to true
-caching_period: "10 days"  # optional, default to 10 days
-```
-
-Account cloning can lead to huge data requests. If you are using the public proxy, please use a high caching period.
-Currently, some clones will even fail because the storage of the account is too big. This will be fixed on the MultiversX side in the [bernard release](https://github.com/multiversx/mx-chain-go/pull/6547) by the core team.
-
 
 (wait_target)=
 ### Wait Step
@@ -829,4 +831,27 @@ shard: 0  # optional, default is metachain
 
 ```{note}
 Waiting for blocks on the chain-simulator network will trigger a call to the chain-simulator to generate the required number of blocks
+```
+
+(set_seed_target)=
+### Set Seed
+
+Computer generated numbers are pseudo-random, meaning that we can reproduce the random production if we know the seed (a number) used. This is particularly useful when you want to be able to reproduce a given execution that use random values. This step is here to allow you to set the random seed:
+
+```yaml
+type: SetSeed
+seed: 42
+```
+
+If you don't want to have the exact same random number every time but still want to have a sens of reproducibility, we recommend doing the following:
+
+```yaml
+type: SetSeed
+seed: "=randint(0,2**32)"  # 2**32-1 is the maximum allowed value for a seed
+```
+
+This will generate a random seed and grant you randomness between executions, but if a problem arise, you will be able to inspect the logs to find which seed was used. You may then try to reproduce the error by forcing the seed found in the logs.
+
+```{warning}
+Keep in mind that the seed is only set for the current execution of MxOps, meaning that if you execute twice a command with `mxops execute ...` and the seed is set only in the first execution, it will have no impact one the random values generated during the second execution.
 ```
