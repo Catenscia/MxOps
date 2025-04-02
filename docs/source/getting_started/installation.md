@@ -24,7 +24,7 @@ Install MxOps as a tool
 uv tool install mxops
 ```
 
-Chech that MxOps was installed successfuly:
+Check that MxOps was installed successfully:
 
 ```bash
 mxops version
@@ -33,15 +33,15 @@ mxops version
 ### Installation with pipx
 
 
-You can also install MxOps in a dedicated environnement with [pipx](https://github.com/pypa/pipx)
+You can also install MxOps in a dedicated environment with [pipx](https://github.com/pypa/pipx)
 
 ```bash
 pipx install mxops
 ```
 
-### Installation in a conda environnement
+### Installation in a conda environment
 
-If you prefer to create your self an environnement, you can do this with [Anaconda](https://www.anaconda.com/download)
+If you prefer to create your self an environment, you can do this with [Anaconda](https://www.anaconda.com/download)
 
 ```bash
 conda create -n mxops_env python=3.11 -y
@@ -49,9 +49,9 @@ conda activate mxops_env
 pip install -U mxops
 ```
 
-### Installation in a virtual environnement
+### Installation in a virtual environment
 
-Or in a virtual environnement with uv:
+Or in a virtual environment with uv:
 
 ```bash
 uv venv .venv --python 3.11

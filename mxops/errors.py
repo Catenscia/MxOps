@@ -23,7 +23,7 @@ from mxops.utils.msc import get_tx_link
 
 class ParsingError(Exception):
     """
-    To be raised when some data could not be parsed successfuly
+    To be raised when some data could not be parsed successfully
     """
 
     def __init__(

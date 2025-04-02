@@ -29,7 +29,7 @@ touch scenes/01_setup.yaml
 
 This first element to write in our setup scene will be to declare the wrapper contract that we are going to use. We will choose the [wrapper contract on the shard 1 of devnet](https://devnet-explorer.multiversx.com/accounts/erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp), and we will give it an easier designation than its address: let's name it egld_wrapper.
 
-For MxOps, egld_wrapper will become the account id of the wrapper contract erd1qq...0rp and we can use the address or the account id interchangeably.
+For MxOps, egld_wrapper will become the account id of the wrapper contract `erd1qq...0rp` and we can use the address or the account id interchangeably.
 
 ```yaml
 accounts:
@@ -164,11 +164,11 @@ steps:
     value: 100000000000000000  # 0.1 EGLD
 ```
 
-With this step, we are saying to MxOps to make a transaction from our user account, to the eglg_wrapper contract. It will call the endpoint wrapEgld, while sending 0.1 EGLD. The EGLD amount has to be provided in the full integer form: as EGLD has 18 decimals, this gives 100000000000000000.
+With this step, we are saying to MxOps to make a transaction from our user account, to the egld_wrapper contract. It will call the endpoint wrapEgld, while sending 0.1 EGLD. The EGLD amount has to be provided in the full integer form: as EGLD has 18 decimals, this gives 100000000000000000.
 
 ### Unwrapping
 
-The same [ContractCall step](contract_call_target) will be used to unwrap the tokens, except that this time we are not going to send EGLD but WEGLD. This changes things a little because WEGLD is an ESDT (eStandard Digital Token) while ELGD is the native token of MultiversX. To send WEGLD, we will provide its devnet identifier (WEGLD-a28c59) and the amount we want to send (0.1 WEGLD so 100000000000000000 in full integer form).
+The same [ContractCall step](contract_call_target) will be used to unwrap the tokens, except that this time we are not going to send EGLD but WEGLD. This changes things a little because WEGLD is an ESDT (eStandard Digital Token) while EGLD is the native token of MultiversX. To send WEGLD, we will provide its devnet identifier (WEGLD-a28c59) and the amount we want to send (0.1 WEGLD so 100000000000000000 in full integer form).
 
 ```yaml
   - type: ContractCall
@@ -236,7 +236,7 @@ Click on the transactions links in the logs to observe what happened on devnet w
 
 ## About Scenario
 
-You may have asked youself some questions when executing the MxOps commands or when looking at the logs:
+You may have asked yourself some questions when executing the MxOps commands or when looking at the logs:
 
 
 >Why didn't we specify the user or the contract id again in the second scene?
@@ -252,7 +252,7 @@ When executing the first scene, you told MxOps to save the account ids (user and
 
 So when you executed the second scene in the same scenario, MxOps already had all the information he needed to get access to the wallet and to know who where behind the ids egld_wrapper and user.
 
-Scenario are a vast topic and one of the key strengh of MxOps. Don't hesitate to look at the [chapter dedicated to scenario](../user_documentation/scenario) later on.
+Scenario are a vast topic and one of the key strength of MxOps. Don't hesitate to look at the [chapter dedicated to scenario](../user_documentation/scenario) later on.
 
 But for, now, let's head to the 👉 [conclusion of this introduction to MxOps](conclusion) 🏁
 

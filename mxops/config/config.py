@@ -78,7 +78,7 @@ class _Config:
     def get(self, option: str, network: NetworkEnum | None = None) -> str:
         """
         return the specified option for the current environment
-        or a specified environnement
+        or a specified environment
 
         :param option: option to get from the config file
         :type option: str

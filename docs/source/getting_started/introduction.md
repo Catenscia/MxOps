@@ -99,7 +99,7 @@ Here, MxOps is used to call a contract while sending tokens. This example shows 
 
 ### Account cloning
 
-Let's say the contract you are developping in dependent of a third party contract for which you don't have the code. MxOps allows you to simply copy entirely this contract, including its code, its storage values and its tokens, so that you can run your tests in mainnet condition but locally on your machine.
+Let's say the contract you are developing in dependent of a third party contract for which you don't have the code. MxOps allows you to simply copy entirely this contract, including its code, its storage values and its tokens, so that you can run your tests in mainnet condition but locally on your machine.
 
 ```yaml
 - type: AccountClone
@@ -113,7 +113,7 @@ Cloning accounts necessits to directly write arbitrary values to the blockchain 
 
 ## User Flow
 
-The snippets showed you a very limited scope of what MxOps can achieve. But for now, let's go back to the main overview, we will dwelve into the details at a later stage.
+The snippets showed you a very limited scope of what MxOps can achieve. But for now, let's go back to the main overview, we will delve into the details at a later stage.
 
 As said previously, MxOps works with simple yaml files called scenes that look like the examples shown above. In these scenes you will simply describe successively the different elements that will be used to interact with the blockchain.
 During execution, MxOps will save some data locally on your computer, for example:
@@ -202,15 +202,15 @@ A lot of information is written here, but you don't have to worry about the deta
 
 By creating scenes, simple yaml files, where you tell MxOps what to do on the blockchain, and you can accomplish quite easily many things:
 
-- deploy and initialize in a repeteable, testable and robust manner your smart-contracts
+- deploy and initialize in a repeatable, testable and robust manner your smart-contracts
 - tests your smart-contracts on-chain with third party smart-contracts
-- Interact directly with mainnet smart-contracts without having to rely on a front-end (for example, easily claim all your rewards in one go accross all protocols)
+- Interact directly with mainnet smart-contracts without having to rely on a front-end (for example, easily claim all your rewards in one go across all protocols)
 - Create and run fast and robust integration tests for your smart-contracts
 - Manage your smart-contracts
 - create and manage tokens  
 - Automate transactions sequence (example loop borrowing on Hatom)
 
-MxOps was done with flexibility in mind: in addition to all the existing features, you can easily customize it or create additionnal features tailored to your specific use case!
+MxOps was done with flexibility in mind: in addition to all the existing features, you can easily customize it or create additional features tailored to your specific use case!
 
 ## Next step
 

@@ -34,7 +34,7 @@ Example:
 However, if you really need to pass pure bytes data, then you must use one of the following syntax:   
 
 - `bytes:<b64_encoded_data>`, where `b64_encoded_data` is your bytes data in the b64 format.
-- `"<hex_encoded_data>"`, where `hex_encoded_data` is your bytes data in the hex format, prodided as a string.
+- `"<hex_encoded_data>"`, where `hex_encoded_data` is your bytes data in the hex format, provided as a string.
 
 
 ```yaml

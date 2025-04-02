@@ -10,7 +10,7 @@ The entire source code can be find in the MxOps [github](https://github.com/Cate
 
 ## Context
 
-Let's say that we want to fetch some data from a smart-contract, either for informative purposes or because we will reuse it later on in. To do that we will execute queries, which will call read-only functions (also called views) on the targeted smart-contracts. It is always recommended to use the ABI of the contract you are going to interact with, as the ABI provided the definition of what views are avaiable, how to use them and how the process the resulting data.
+Let's say that we want to fetch some data from a smart-contract, either for informative purposes or because we will reuse it later on in. To do that we will execute queries, which will call read-only functions (also called views) on the targeted smart-contracts. It is always recommended to use the ABI of the contract you are going to interact with, as the ABI provided the definition of what views are available, how to use them and how the process the resulting data.
 
 For our tutorial, we will take a look at the [mainnet swap contract of OneDex](https://explorer.multiversx.com/accounts/erd1qqqqqqqqqqqqqpgqqz6vp9y50ep867vnr296mqf3dduh6guvmvlsu3sujc), we will call it `onedex-swap` and we will try to get information on the current states of some pair pools (ex ONE/WEGLD).
 
@@ -45,7 +45,7 @@ curl https://raw.githubusercontent.com/Catenscia/MxOps/refs/heads/${MXOPS_SOURCE
 
 ## Simple State Query
 
-First, we are going to query the state of a single pool, for example the poole ONE/WEGLD which has the id 9.
+First, we are going to query the state of a single pool, for example the pool ONE/WEGLD which has the id 9.
 Create a new scene file:
 
 ```bash
@@ -281,7 +281,7 @@ This number will be accessible with `%onedex-swap.last-pair-id`.
 We will define three variables:
 
 - batch_size: the number of pairs to get per query
-- n_queries: the number of queries requiered to cover all the pairs ids, this is computed using the last pair id and the batch size.
+- n_queries: the number of queries required to cover all the pairs ids, this is computed using the last pair id and the batch size.
 - valid_onedex_pair_ids: this is a list in which we will put the valid pairs ids that we fetched successfully. Indeed, some onedex pairs are invalid and the endpoint `viewPairsPaginated` doesn't return them.
 
 

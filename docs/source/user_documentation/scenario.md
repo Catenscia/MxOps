@@ -1,6 +1,6 @@
 # Scenario
 
-A scenario is a virtual data context, saved locally on your computer, in which MxOps save values that are usefull for MxOps execution. The data saved consist mainly of:
+A scenario is a virtual data context, saved locally on your computer, in which MxOps save values that are useful for MxOps execution. The data saved consist mainly of:
 
 - accounts id
 - accounts access method (pem, ledger, ...)
@@ -28,7 +28,7 @@ Scenario B:
 - assign the account id `user` to the wallet bob.pem
 
 
-The account id `user` does not cause any conflic because the scenarios are completely separated. Each account id `user` refer to a different account.
+The account id `user` does not cause any conflict because the scenarios are completely separated. Each account id `user` refer to a different account.
 This allows you to create generic scenes, but to apply them differently depending on the scenario in which you execute them.
 
 ```{figure} ../_images/scenario_independence.png

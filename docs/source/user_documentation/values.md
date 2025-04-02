@@ -173,7 +173,7 @@ We have the following environment variables:
 
 ```
 "OWNER_NAME": "bob"
-"TOKEN_DECIMAL": "18" # (don't forget that environnement variables are strings)
+"TOKEN_DECIMAL": "18" # (don't forget that environment variables are strings)
 ```
 
 We have the following token data in the MxOps Scenario:
