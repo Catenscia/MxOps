@@ -803,10 +803,28 @@ variables:
   MyVar: 12312424
   result-backup: "%previously-registered-value"
   nested_values: ["$CONF_VAR", 12421, "%var", {"%account.address": "%saved-value"}]
-  "%dynamic_key": "%dynamic_value"
 ```
 
 The above example will saves three variables within the scenario data: `MyVar`, `result-backup` and `nested_values`. Their values (or nested values) will be accessible with the `%` symbol (refer to the [smart values chapter](values) for more details of the value system of MxOps).
+
+Note that you can also use [smart-values](values) to create the name of the variable:
+
+```yaml
+type: SetVars
+variables:
+  "%dynamic_name": "%dynamic_value"
+  "prefix_%{dynamic_name}_suffix": "%dynamic_value"
+```
+
+Lastly, to add clarity, you can also use temporary variables to build what you want step by step:
+
+```yaml
+type: SetVars
+variables:
+  amount_1: "%my_contract.token_1_amount"
+  amount_2: "%my_contract.token_2_amount"
+  k_factor: "={%{amount_1} * %{amount_2}}"
+```
 
 
 (wait_target)=
@@ -833,8 +851,8 @@ shard: 0  # optional, default is metachain
 Waiting for blocks on the chain-simulator network will trigger a call to the chain-simulator to generate the required number of blocks
 ```
 
-(set_seed_target)=
-### Set Seed
+(set_seed_step_target)=
+### Set Seed Step
 
 Computer generated numbers are pseudo-random, meaning that we can reproduce the random production if we know the seed (a number) used. This is particularly useful when you want to be able to reproduce a given execution that use random values. This step is here to allow you to set the random seed:
 
