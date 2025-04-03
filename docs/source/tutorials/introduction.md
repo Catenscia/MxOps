@@ -8,25 +8,29 @@ The difference between tutorials and examples is that tutorials are more guided,
 ## Tutorials
 
 
-| Tutorial                               | Complexity | Topics                                                  |
-|----------------------------------------|------------|---------------------------------------------------------|
-| [queries 1](queries_1)                 | easy       | loop<br>queries<br>scenario data<br>smart-values        |
-| [queries 2](queries_2)                 | medium     | loop<br>queries<br>scenario data<br>smart-values        |
-| [ trader smart-contract ]( trader_sc ) | advanced   | account<br>chain-simulator<br>cloning<br>smart-contract |
+| Tutorial                               | Complexity | Topics                                                          |
+|----------------------------------------|------------|-----------------------------------------------------------------|
+| [queries 1](queries_1)                 | easy       | loop<br>queries<br>scenario data<br>smart-values                |
+| [queries 2](queries_2)                 | medium     | loop<br>queries<br>scenario data<br>smart-values                |
+| [ trader smart-contract ]( trader_sc ) | advanced   | account cloning<br>chain-simulator<br>smart-contract            |
 
 
 
 ## Examples
 
+| Example                                | Complexity | Topics                                                  |
+|----------------------------------------|------------|---------------------------------------------------------|
+| [ piggy-bank ]( piggy_bank )           | medium     | account<br>chain-simulator<br>cloning<br>smart-contract |
+
 
 ## List by topic
 
-| Topic           | Tutorials and Examples                           |
-|-----------------|--------------------------------------------------|
-| account cloning | [  trader smart-contract  ](  trader_sc  )       |
-| chain-simulator | [  trader smart-contract  ](  trader_sc  )       |
-| loop            | [queries 2](queries_2)                           |
-| query           | [queries 1](queries_1)<br>[queries 2](queries_2) |
-| scenario data   | [queries 1](queries_1)<br>[queries 2](queries_2) |
-| smart-contract  | [  trader smart-contract  ](  trader_sc  )       |
-| smart-values    | [queries_1](queries_1)<br>[queries_2](queries_2) |
+| Topic           | Tutorials and Examples                                                       |
+|-----------------|------------------------------------------------------------------------------|
+| account cloning | [  trader smart-contract  ](  trader_sc  )                                   |
+| chain-simulator | [  trader smart-contract  ](  trader_sc  )                                   |
+| loop            | [piggy-bank](piggy_bank)<br>[queries 2](queries_2)                           |
+| query           | [piggy-bank](piggy_bank)<br>[queries 1](queries_1)<br>[queries 2](queries_2) |
+| scenario data   | [piggy-bank](piggy_bank)<br>[queries 1](queries_1)<br>[queries 2](queries_2) |
+| smart-contract  | [piggy-bank](piggy_bank)<br>[  trader smart-contract  ](  trader_sc  )       |
+| smart-values    | [piggy-bank](piggy_bank)<br>[queries_1](queries_1)<br>[queries_2](queries_2) |
