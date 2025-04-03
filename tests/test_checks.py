@@ -12,6 +12,8 @@ from mxops.data.execution_data import InternalContractData, ScenarioData
 from mxops.errors import CheckFailed
 from mxops.execution.checks import SuccessCheck, TransfersCheck
 from mxops.execution.msc import OnChainTokenTransfer
+from mxops.execution.steps.msc import LoopStep
+from mxops.execution.steps.smart_contract import ContractCallStep
 from mxops.smart_values import SmartOnChainTokenTransfer
 
 
@@ -132,3 +134,54 @@ def test_success_check(test_data_folder_path: Path):
 
     # Then
     assert result
+
+
+def test_check_nested_dependent_instatiation():
+    # Given
+    scenario_data = ScenarioData.get()
+    scenario_data.set_value(
+        "checks",
+        [
+            {"type": "Success"},
+            {
+                "type": "Transfers",
+                "expected_transfers": [
+                    {
+                        "identifier": "TOKEN-abcdef",
+                        "amount": "%amount_loop_var",
+                        "sender": "dummy",
+                        "receiver": "alice",
+                    }
+                ],
+            },
+        ],
+    )
+    scenario_data.set_value(
+        "contract_call_step",
+        {
+            "type": "ContractCall",
+            "sender": "alice",
+            "contract": "dummy",
+            "endpoint": "add",
+            "gas_limit": 1000000,
+            "checks": "%checks",
+        },
+    )
+    scenario_data.set_value("steps", ["%{contract_call_step}"])
+    loop_step = LoopStep(steps="%steps", var_name="amount_loop_var", var_list=[10**18])
+
+    # When
+    generated_step = next(loop_step.generate_steps())
+    generated_step.evaluate_smart_values()
+
+    # Then
+    assert isinstance(generated_step, ContractCallStep)
+    checks = generated_step.checks.get_evaluated_value()
+    assert len(checks) == 2
+    assert isinstance(checks[0], SuccessCheck)
+    check = checks[1]
+    assert isinstance(check, TransfersCheck)
+    check.evaluate_smart_values()
+    assert len(check.expected_transfers.get_evaluated_value()) == 1
+    transfer = check.expected_transfers.get_evaluated_value()[0]
+    assert transfer.amount == 10**18
