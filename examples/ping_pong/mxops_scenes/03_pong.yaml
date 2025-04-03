@@ -1,0 +1,17 @@
+steps:
+
+  - type: ContractCall
+    sender: owner
+    contract: "egld-ping-pong"
+    endpoint: pong
+    gas_limit: 3000000
+    checks:
+      - type: Success
+
+      - type: Transfers
+        condition: exact
+        expected_transfers:
+          - sender: "%egld-ping-pong.address"
+            receiver: "%owner.address"
+            identifier: EGLD
+            amount: "%egld-ping-pong.PingAmount"
