@@ -29,7 +29,7 @@ def get_tx_link(tx_hash: str) -> str:
         base_url = config.get("EXPLORER_URL")
     except NoOptionError:
         base_url = config.get("PROXY")
-    return f"{base_url}/transaction/{tx_hash}"
+    return f"{base_url}/transactions/{tx_hash}"
 
 
 def get_account_link(address: str | Address) -> str:
