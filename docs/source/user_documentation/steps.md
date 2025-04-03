@@ -855,3 +855,26 @@ This will generate a random seed and grant you randomness between executions, bu
 ```{warning}
 Keep in mind that the seed is only set for the current execution of MxOps, meaning that if you execute twice a command with `mxops execute ...` and the seed is set only in the first execution, it will have no impact one the random values generated during the second execution.
 ```
+
+(assert_step_target)=
+### Assert Step
+
+You may want to check that everything is going well by evaluating expressions: did this account receive the correct amount? Is the result of this query as expected? Is the result of this formula correct?
+To answer this, you can use the `AssertStep`, that will simply check that all the provided expressions are true.
+
+```yaml
+type: Assert
+expressions:
+  - true
+  - 1
+  - "={1 > 0}"
+  - "={'%{alice.address}' == 'erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3'}"
+  - "={'item1' in %{my_list}}"
+```
+
+This step is really useful combined with [smart-values](values) and with the [step to create variables](set_vars_step_target).
+
+
+```{note}
+Notice that you need to put single quote `'` when you want to execute string comparison.
+```
