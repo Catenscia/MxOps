@@ -32,10 +32,8 @@ class SmartStep(SmartValue):
         if isinstance(value, Step):
             return value
         if isinstance(value, dict):
-            step = instanciate_steps([value])[0]
-        else:
-            raise ValueError(f"Cannot create a step from type {type(value)} ({value})")
-        return step
+            return instanciate_steps([value])[0]
+        raise ValueError(f"Cannot create a step from type {type(value)} ({value})")
 
     def evaluate(self):
         """
