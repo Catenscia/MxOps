@@ -1,0 +1,37 @@
+allowed_networks:
+  - mainnet
+
+accounts:
+  - account_id: onedex-swap
+    address: erd1qqqqqqqqqqqqqpgqqz6vp9y50ep867vnr296mqf3dduh6guvmvlsu3sujc
+    abi_path: ./data/onedex-sc.abi.json
+
+steps:
+
+  - type: ContractQuery
+    contract: onedex-swap
+    endpoint: viewPair
+    arguments:
+      - 9
+    results_save_keys:
+      - pair_9
+
+  - type: SetVars
+    variables:
+      one_reserve: "%onedex-swap.pair_9.first_token_reserve"
+      wegld_reserve: "%onedex-swap.pair_9.second_token_reserve"
+      pair_9_th_price: "={%{wegld_reserve} / %{one_reserve}}"
+
+  - type: ContractQuery
+    contract: onedex-swap
+    endpoint: getAmountOut
+    arguments:
+      - "%onedex-swap.pair_9.first_token_id"
+      - "%onedex-swap.pair_9.second_token_id"
+      - "=10**18"
+    results_save_keys:
+      - pair_9_amount_out
+  
+  - type: SetVars
+    variables:
+      pair_9_float_amount_out: "={%{onedex-swap.pair_9_amount_out} / 10**18}"
