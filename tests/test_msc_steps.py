@@ -1,10 +1,13 @@
 from dataclasses import dataclass, field
 from pathlib import Path
+import re
 import time
 from typing import Any
 
 from multiversx_sdk import Address, NetworkStatus, Token, TokenTransfer
 from unittest.mock import patch
+
+import pytest
 
 from mxops import errors
 from mxops.data.execution_data import ScenarioData
@@ -25,7 +28,7 @@ from mxops.smart_values import (
     SmartValue,
 )
 from mxops.execution.steps.factory import SmartStep, SmartSteps
-from mxops.execution.steps.msc import SceneStep, SetSeedStep
+from mxops.execution.steps.msc import AssertStep, SceneStep, SetSeedStep
 
 
 @dataclass
@@ -503,3 +506,41 @@ def test_set_seed_randomness():
     # Then
     assert value_a.get_evaluated_value() != value_b.get_evaluated_value()
     assert value_a.get_evaluated_value() == value_c.get_evaluated_value()
+
+
+def test_true_assertions():
+    # Given
+    step = AssertStep(
+        [
+            True,
+            1,
+            "={1 > 0}",
+            "={'%{alice.address}' == 'erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3'}",  # noqa
+            "={'item1' in %{my_list}}",
+        ]
+    )
+    # When / Then
+    step.execute()
+
+
+@pytest.mark.parametrize(
+    "expression, expected_error_message",
+    [
+        (False, "False"),
+        (
+            "={'%{alice.address}' != 'erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3'}",  # noqa
+            "(={'%{alice.address}' != 'erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3'} -> ={'erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3' != 'erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3'})",  # noqa
+        ),
+        (
+            "={'item1' not in %{my_list}}",
+            "(={'item1' not in %{my_list}} -> ={'item1' not in ['item1', 'item2', 'item3', {'item4-key1': 'e'}]})",  # noqa
+        ),
+    ],
+)
+def test_false_assertion(expression: Any, expected_error_message: str):
+    # Given
+    step = AssertStep([expression])
+
+    # When / Then
+    with pytest.raises(errors.AssertionFailed, match=re.escape(expected_error_message)):
+        step.execute()

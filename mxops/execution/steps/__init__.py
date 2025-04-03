@@ -5,6 +5,7 @@ This subpackage contains all the steps that can be used with MxOps
 """
 
 from mxops.execution.steps.msc import (
+    AssertStep,
     LoopStep,
     PythonStep,
     SceneStep,
@@ -41,6 +42,7 @@ from mxops.execution.steps.token_management import (
 
 __all__ = [
     "AccountCloneStep",
+    "AssertStep",
     "ChainSimulatorFaucetStep",
     "ContractCallStep",
     "ContractDeployStep",

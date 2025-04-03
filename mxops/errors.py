@@ -381,6 +381,19 @@ class FuzzTestFailed(Exception):
     """
 
 
+class AssertionFailed(Exception):
+    """
+    To be raised when an assertion is not True
+    """
+
+    def __init__(self, evaluation_string: str) -> None:
+        self.evaluation_string = evaluation_string
+        super().__init__()
+
+    def __str__(self) -> str:
+        return f"Assertion failed: {self.evaluation_string}"
+
+
 #############################################################
 #
 #                   User Errors

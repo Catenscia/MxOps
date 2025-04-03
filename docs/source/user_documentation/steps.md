@@ -803,10 +803,28 @@ variables:
   MyVar: 12312424
   result-backup: "%previously-registered-value"
   nested_values: ["$CONF_VAR", 12421, "%var", {"%account.address": "%saved-value"}]
-  "%dynamic_key": "%dynamic_value"
 ```
 
 The above example will saves three variables within the scenario data: `MyVar`, `result-backup` and `nested_values`. Their values (or nested values) will be accessible with the `%` symbol (refer to the [smart values chapter](values) for more details of the value system of MxOps).
+
+Note that you can also use [smart-values](values) to create the name of the variable:
+
+```yaml
+type: SetVars
+variables:
+  "%dynamic_name": "%dynamic_value"
+  "prefix_%{dynamic_name}_suffix": "%dynamic_value"
+```
+
+Lastly, to add clarity, you can also use temporary variables to build what you want step by step:
+
+```yaml
+type: SetVars
+variables:
+  amount_1: "%my_contract.token_1_amount"
+  amount_2: "%my_contract.token_2_amount"
+  k_factor: "={%{amount_1} * %{amount_2}}"
+```
 
 
 (wait_target)=
@@ -833,8 +851,8 @@ shard: 0  # optional, default is metachain
 Waiting for blocks on the chain-simulator network will trigger a call to the chain-simulator to generate the required number of blocks
 ```
 
-(set_seed_target)=
-### Set Seed
+(set_seed_step_target)=
+### Set Seed Step
 
 Computer generated numbers are pseudo-random, meaning that we can reproduce the random production if we know the seed (a number) used. This is particularly useful when you want to be able to reproduce a given execution that use random values. This step is here to allow you to set the random seed:
 
@@ -854,4 +872,27 @@ This will generate a random seed and grant you randomness between executions, bu
 
 ```{warning}
 Keep in mind that the seed is only set for the current execution of MxOps, meaning that if you execute twice a command with `mxops execute ...` and the seed is set only in the first execution, it will have no impact one the random values generated during the second execution.
+```
+
+(assert_step_target)=
+### Assert Step
+
+You may want to check that everything is going well by evaluating expressions: did this account receive the correct amount? Is the result of this query as expected? Is the result of this formula correct?
+To answer this, you can use the `AssertStep`, that will simply check that all the provided expressions are true.
+
+```yaml
+type: Assert
+expressions:
+  - true
+  - 1
+  - "={1 > 0}"
+  - "={'%{alice.address}' == 'erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3'}"
+  - "={'item1' in %{my_list}}"
+```
+
+This step is really useful combined with [smart-values](values) and with the [step to create variables](set_vars_step_target).
+
+
+```{note}
+Notice that you need to put single quote `'` when you want to execute string comparison.
 ```
