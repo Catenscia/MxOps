@@ -226,6 +226,48 @@ class SmartList(SmartValue):
 
 
 @dataclass
+class SmartRawList(SmartValue):
+    """
+    Represent a smart value that should result in a list without evaluating
+    the smart values that may be present in the list
+    """
+
+    @staticmethod
+    def type_enforce_value(value: Any) -> list:
+        """
+        Convert a value to the expected evaluated type
+
+        :param value: value to convert
+        :type value: Any
+        :return: converted value
+        :rtype: list
+        """
+        return list(value)
+
+    def get_evaluated_value(self) -> list:
+        """
+        Return the evaluated value
+
+        :return: evaluated value
+        :rtype: list
+        """
+        return super().get_evaluated_value()
+
+    def evaluate(self):
+        """
+        Evaluate the raw value and save the intermediary values until a
+        list is reached. The evaluation of the element of the list is a
+        responsibility left to caller
+        """
+
+        def result_is_not_list(_previous_value: Any, current_value: Any) -> bool:
+            return not isinstance(current_value, list)
+
+        self._conditional_evaluation(result_is_not_list)
+        self._enforce_add_value()
+
+
+@dataclass
 class SmartPath(SmartValue):
     """
     Represent a smart value that should result in a path

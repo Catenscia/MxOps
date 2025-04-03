@@ -12,6 +12,7 @@ from typing import Any, Iterable
 from multiversx_sdk.core.constants import METACHAIN_ID
 import numpy as np
 
+from mxops import errors
 from mxops.common.providers import MyProxyNetworkProvider
 from mxops.config.config import Config
 from mxops.data.execution_data import ScenarioData
@@ -30,7 +31,7 @@ from mxops.smart_values import (
 )
 from mxops.execution.steps.base import Step
 from mxops.execution.steps.factory import SmartSteps
-from mxops.smart_values.native import SmartRawDict
+from mxops.smart_values.native import SmartRawDict, SmartRawList
 
 
 @dataclass
@@ -253,3 +254,25 @@ class SetSeedStep(Step):
         np.random.seed(seed)
         logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
         logger.info(f"Random seed has been set to {seed}")
+
+
+@dataclass
+class AssertStep(Step):
+    """
+    Represents a step that check assertion
+    """
+
+    expressions: SmartRawList
+
+    def _execute(self):
+        """
+        set the random seed
+        """
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
+        expressions = self.expressions.get_evaluated_value()
+        for expression in expressions:
+            smart_value = SmartBool(expression)
+            smart_value.evaluate()
+            if smart_value.get_evaluated_value() is not True:
+                raise errors.AssertionFailed(smart_value.get_evaluation_string())
+            logger.info(f"Assertion {expression} is True")
