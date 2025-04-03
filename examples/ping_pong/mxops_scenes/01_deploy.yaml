@@ -1,6 +1,3 @@
-allowed_scenario:
-    - mxops_tutorial_enhanced_first_scene
-
 steps:
 
   - type: ContractDeploy

@@ -10,27 +10,29 @@ The difference between tutorials and examples is that tutorials are more guided,
 
 | Tutorial                               | Complexity | Topics                                                          |
 |----------------------------------------|------------|-----------------------------------------------------------------|
+| [ping pong](ping_pong)                 | easy       | calls<br>queries<br>deployment<br>smart-contract                |
 | [queries 1](queries_1)                 | easy       | loop<br>queries<br>scenario data<br>smart-values                |
 | [queries 2](queries_2)                 | medium     | loop<br>queries<br>scenario data<br>smart-values                |
-| [ trader smart-contract ]( trader_sc ) | advanced   | account cloning<br>chain-simulator<br>smart-contract            |
+| [ trader smart-contract ]( trader_sc ) | advanced   | calls<br>account cloning<br>chain-simulator<br>smart-contract   |
 
 
 
 ## Examples
 
-| Example                                | Complexity | Topics                                                  |
-|----------------------------------------|------------|---------------------------------------------------------|
-| [ piggy-bank ]( piggy_bank )           | medium     | account<br>chain-simulator<br>cloning<br>smart-contract |
+| Example                                | Complexity | Topics                                                           |
+|----------------------------------------|------------|------------------------------------------------------------------|
+| [ piggy-bank ]( piggy_bank )           | medium     | calls<br>account<br>chain-simulator<br>cloning<br>smart-contract |
 
 
 ## List by topic
 
-| Topic           | Tutorials and Examples                                                       |
-|-----------------|------------------------------------------------------------------------------|
-| account cloning | [  trader smart-contract  ](  trader_sc  )                                   |
-| chain-simulator | [  trader smart-contract  ](  trader_sc  )                                   |
-| loop            | [piggy-bank](piggy_bank)<br>[queries 2](queries_2)                           |
-| query           | [piggy-bank](piggy_bank)<br>[queries 1](queries_1)<br>[queries 2](queries_2) |
-| scenario data   | [piggy-bank](piggy_bank)<br>[queries 1](queries_1)<br>[queries 2](queries_2) |
-| smart-contract  | [piggy-bank](piggy_bank)<br>[  trader smart-contract  ](  trader_sc  )       |
-| smart-values    | [piggy-bank](piggy_bank)<br>[queries_1](queries_1)<br>[queries_2](queries_2) |
+| Topic           | Tutorials and Examples                                                                                 |
+|-----------------|--------------------------------------------------------------------------------------------------------|
+| account cloning | [  trader smart-contract  ](  trader_sc  )                                                             |
+| calls           | [piggy-bank](piggy_bank)<br>[ping pong](ping_pong)<br>[  trader smart-contract  ](  trader_sc  )       |
+| chain-simulator | [  trader smart-contract  ](  trader_sc  )                                                             |
+| loop            | [piggy-bank](piggy_bank)<br>[queries 2](queries_2)                                                     |
+| query           | [piggy-bank](piggy_bank)<br>[ping pong](ping_pong)<br>[queries 1](queries_1)<br>[queries 2](queries_2) |
+| scenario data   | [piggy-bank](piggy_bank)<br>[queries 1](queries_1)<br>[queries 2](queries_2)                           |
+| smart-contract  | [piggy-bank](piggy_bank)<br>[ping pong](ping_pong)<br>[  trader smart-contract  ](  trader_sc  )       |
+| smart-values    | [piggy-bank](piggy_bank)<br>[queries_1](queries_1)<br>[queries_2](queries_2)                           |

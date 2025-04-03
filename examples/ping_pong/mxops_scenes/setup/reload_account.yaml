@@ -1,0 +1,5 @@
+# this scene is only here to avoid recreating accounts when repeatidely executing the example for test purposes
+
+accounts:
+  - name: users
+    folder_path: wallets

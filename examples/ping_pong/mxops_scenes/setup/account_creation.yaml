@@ -1,0 +1,14 @@
+allowed_networks:
+    - devnet
+    - testet
+
+steps:
+
+  - type: GenerateWallets
+    save_folder: ./wallets
+    wallets:
+        - owner
+  
+  - type: R3D4Faucet
+    targets:
+      - owner
