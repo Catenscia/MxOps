@@ -10,12 +10,13 @@ from typing import Any
 from mxops import errors
 from mxops.execution.checks.base import Check
 from mxops.smart_values import SmartValue
+from mxops.smart_values.native import SmartStr
 
 
 @dataclass
 class SmartCheck(SmartValue):
     """
-    Represent a smart value that should result in a step
+    Represent a smart value that should result in a check
     """
 
     @staticmethod
@@ -26,13 +27,42 @@ class SmartCheck(SmartValue):
         :param value: value to convert
         :type value: Any
         :return: converted value
-        :rtype: Step
+        :rtype: Check
         """
         if isinstance(value, Check):
             return value
         if isinstance(value, dict):
             return instanciate_checks([value])[0]
         raise ValueError(f"Cannot create a check from type {type(value)} ({value})")
+
+    def evaluate(self):
+        """
+        Evaluate the raw value and save the intermediary values until a
+        dict is reached. The keys of this dictionnary are fully evaluated as
+        SmartString as they should be the kwargs of a Check.
+        The responsibility of the evaluation of the value of the kwargs is left to the
+        Check class
+        """
+
+        def result_is_not_dict_or_check(
+            _previous_value: Any, current_value: Any
+        ) -> bool:
+            return not isinstance(current_value, (dict, Check))
+
+        self._conditional_evaluation(result_is_not_dict_or_check)
+
+        current_value = self.get_evaluated_value()
+        if isinstance(current_value, dict):
+            current_value_as_tuple = [
+                (SmartStr(k), v) for k, v in current_value.items()
+            ]
+            [k.evaluate() for k, _v in current_value_as_tuple]
+            current_value = {
+                k.get_evaluated_value(): v for k, v in current_value_as_tuple
+            }
+            if current_value != self.get_evaluated_value():
+                self.evaluated_values.append(current_value)
+        self._enforce_add_value()
 
     def get_evaluated_value(self) -> Check:
         """
@@ -47,7 +77,7 @@ class SmartCheck(SmartValue):
 @dataclass
 class SmartChecks(SmartValue):
     """
-    Represent a smart value that should result in a list of steps
+    Represent a smart value that should result in a list of checks
     """
 
     @staticmethod
@@ -61,10 +91,10 @@ class SmartChecks(SmartValue):
         :rtype: list[Check]
         """
         result = []
-        for raw_step in list(value):
-            step = SmartCheck(raw_step)
-            step.evaluate()
-            result.append(step.get_evaluated_value())
+        for raw_check in list(value):
+            check = SmartCheck(raw_check)
+            check.evaluate()
+            result.append(check.get_evaluated_value())
         return result
 
     def get_evaluated_value(self) -> list[Check]:
@@ -75,6 +105,19 @@ class SmartChecks(SmartValue):
         :rtype: list[Check]
         """
         return super().get_evaluated_value()
+
+    def evaluate(self):
+        """
+        Evaluate the raw value and save the intermediary values until a
+        list is reached. The evaluation of the element of the list is a
+        responsibility left to the SmartCheck class
+        """
+
+        def result_is_not_list_or_set(_previous_value: Any, current_value: Any) -> bool:
+            return not isinstance(current_value, (list, set))
+
+        self._conditional_evaluation(result_is_not_list_or_set)
+        self._enforce_add_value()
 
 
 def instanciate_checks(raw_checks: list[dict]) -> list[Check]:
@@ -100,7 +143,7 @@ def instanciate_checks(raw_checks: list[dict]) -> list[Check]:
             module = importlib.import_module("mxops.execution.checks")
             check_class_object = getattr(module, check_class_name)
         except (ImportError, AttributeError) as err:
-            raise errors.UnkownStep(check_type) from err
+            raise errors.UnkownCheck(check_type) from err
         try:
             checks_list.append(check_class_object(**raw_check))
         except Exception as err:
