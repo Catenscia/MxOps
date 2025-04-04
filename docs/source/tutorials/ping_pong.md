@@ -2,7 +2,7 @@
 
 
 
-This tutorial will showcase the following notions:
+This tutorial will showcase the following topics:
 
 - Smart-contract deployment
 - Smart-contract queries

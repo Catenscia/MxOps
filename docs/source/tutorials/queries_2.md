@@ -1,6 +1,6 @@
 # Queries 2
 
-This tutorial will showcase the following notions:
+This tutorial will showcase the following topics:
 
 - Smart-contract queries
 - Smart values

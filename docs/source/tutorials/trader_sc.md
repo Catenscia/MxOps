@@ -1,6 +1,6 @@
 # Trader smart-contract
 
-This tutorial will showcase the following notions:
+This tutorial will showcase the following topics:
 
 - Basic smart-contract to smart-contract call
 - Chain simulator setup for testing
