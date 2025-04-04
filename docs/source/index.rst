@@ -28,6 +28,7 @@ If you are new here, we recommend going first to the :doc:`Getting Started secti
    tutorials/introduction
    tutorials/piggy_bank
    tutorials/ping_pong
+   tutorials/python_steps
    tutorials/queries_1
    tutorials/queries_2
    tutorials/trader_sc
