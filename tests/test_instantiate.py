@@ -1,6 +1,9 @@
 from pathlib import Path
 
+import yaml
+
 from mxops.data.execution_data import ScenarioData
+from mxops.execution.checks.factory import instanciate_checks
 from mxops.execution.scene import execute_scene, load_scene
 from mxops.execution.steps import (
     ContractCallStep,
@@ -8,6 +11,8 @@ from mxops.execution.steps import (
     ContractQueryStep,
     ContractUpgradeStep,
 )
+from mxops.execution.steps.factory import instanciate_steps
+from tests.utils import instantiate_assert_all_args_provided
 
 
 def test_deploy_scene_instantiation(test_data_folder_path: Path):
@@ -131,3 +136,37 @@ def test_bytes_loading_and_conversion(test_data_folder_path: Path):
             raise ValueError(f"Wrong type loaded: {type(step)}")
         tx = step.build_unsigned_transaction()
         assert tx.data == b"endpoint_1@01020408"
+
+
+def test_instantiate_all_steps(test_data_folder_path: Path):
+    # Given
+    file_path = test_data_folder_path / "all_steps.yaml"
+    with open(file_path.as_posix(), "r", encoding="utf-8") as file:
+        content = yaml.safe_load(file)
+    raw_steps = content["steps"]
+
+    # When
+    steps = instanciate_steps(raw_steps)
+
+    # Then
+    for raw_step, step in zip(raw_steps, steps):
+        raw_step.pop("type")
+        instantiate_assert_all_args_provided(
+            step.__class__, raw_step, arguments_to_ignore={"checks"}
+        )
+
+
+def test_instantiate_all_checks(test_data_folder_path: Path):
+    # Given
+    file_path = test_data_folder_path / "all_checks.yaml"
+    with open(file_path.as_posix(), "r", encoding="utf-8") as file:
+        content = yaml.safe_load(file)
+    raw_checks = content["checks"]
+
+    # When
+    checks = instanciate_checks(raw_checks)
+
+    # Then
+    for raw_check, check in zip(raw_checks, checks):
+        raw_check.pop("type")
+        instantiate_assert_all_args_provided(check.__class__, raw_check)

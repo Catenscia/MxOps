@@ -673,7 +673,6 @@ clone_code: true  # optional, default to true
 clone_storage: true  # optional, default to true
 clone_esdts: true  # optional, default to true
 overwrite: true  # optional, default to true
-overwrite: true  # optional, default to true
 caching_period: "10 days"  # optional, default to 10 days
 ```
 
