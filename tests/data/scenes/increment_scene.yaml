@@ -1,0 +1,4 @@
+steps:
+  - type: SetVars
+    variables:
+      scene_counter: "={%{scene_counter} + 1}"

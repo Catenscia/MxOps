@@ -1,0 +1,16 @@
+checks:
+  - type: Success
+  
+  - type: Transfers
+    condition: exact
+    include_gas_refund: false # optional, defaults to false
+    expected_transfers: 
+      - sender: "%super-swap-sc.address"
+        receiver: alice
+        identifier: EGLD
+        amount: 49810022
+      - sender: "%super-swap-sc.address"
+        receiver: alice
+        identifier: XMEX-e45d41
+        amount: 789984651
+        nonce: 7895

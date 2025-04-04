@@ -6,10 +6,11 @@ Errors used in the MxOps package
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
-from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
+from multiversx_sdk import Address, TransactionOnNetwork
 
+from mxops.enums import NetworkEnum
 from mxops.utils.msc import get_tx_link
 
 
@@ -22,7 +23,7 @@ from mxops.utils.msc import get_tx_link
 
 class ParsingError(Exception):
     """
-    To be raise when some data could not be parsed successfuly
+    To be raised when some data could not be parsed successfully
     """
 
     def __init__(
@@ -34,11 +35,54 @@ class ParsingError(Exception):
         super().__init__(message)
 
 
+class TokenNotFound(Exception):
+    """
+    To be raised when an expected token was not found
+    """
+
+
+class FaucetFailed(Exception):
+    """
+    To be raised when a faucet did not succeed
+    """
+
+
 class NewTokenIdentifierNotFound(Exception):
     """
     To be raised when the token identifier of newly issued token was not found in
     the results of the transaction
     """
+
+
+class MaxIterations(Exception):
+    """
+    To be raised when some operations has reached too many operations
+    """
+
+
+class SmartValueNotEvaluated(Exception):
+    """
+    To be raised when a smart values was asked for its evaluations
+    but it has yet to be evaluated
+    """
+
+
+class MaxIterationError(Exception):
+    """
+    To be raised when too many iteration have been executed
+    """
+
+
+class ClosingCharNotFound(Exception):
+    """
+    To be raised when a closing character could not be found in a given string
+    """
+
+    def __init__(self, string: str, closing_char: str) -> None:
+        message = (
+            f"Could not find a closing char '{closing_char}' for string '{string}'"
+        )
+        super().__init__(message)
 
 
 #############################################################
@@ -68,43 +112,74 @@ class UnloadedScenario(Exception):
         super().__init__(message)
 
 
-class UnknownContract(Exception):
-    """
-    To be raised when a specified contract is not found is a scenario
-    """
-
-    def __init__(self, scenario_name: str, contract_id: str) -> None:
-        message = f"Contract {contract_id} is unkown in " f"scenario {scenario_name}"
-        super().__init__(message)
-
-
 class UnknownAccount(Exception):
     """
-    To be raised when a specified account is not found in a scene
+    To be raised when a specified account is not found in a scenario
     """
 
-    def __init__(self, account_name: str) -> None:
-        message = f"Account {account_name} is unkown in the current scene"
+    def __init__(self, scenario_name: str, account_designation: str | Address) -> None:
+        if isinstance(account_designation, Address):
+            account_designation = account_designation.to_bech32()
+        message = f"Account {account_designation} is unkown in scenario {scenario_name}"
         super().__init__(message)
 
 
-class ContractIdAlreadyExists(Exception):
+class UnknownAbiContract(Exception):
     """
-    To be raised when there is a conflict with contract id
+    To be raised when the abi of a specified contract is not found in a scenario
     """
 
-    def __init__(self, contract_id: str) -> None:
-        message = f"Contract id {contract_id} already exists"
+    def __init__(self, scenario_name: str, contract_address: Address) -> None:
+        message = (
+            f"No ABI found for contract {contract_address.to_bech32()} is "
+            f"unkown in scenario {scenario_name}"
+        )
+        super().__init__(message)
+
+
+class AccoundIdAlreadyExists(Exception):
+    """
+    To be raised when trying to assign a new id that already exist
+    """
+
+    def __init__(self, account_id: str) -> None:
+        message = f"Account id {account_id} already exists"
+        super().__init__(message)
+
+
+class AccoundIdAlreadyhasBech32(Exception):
+    """
+    To be raised when there is a conflict with an account id
+    """
+
+    def __init__(self, account_id: str, existing_bech32: str, new_bech32: str) -> None:
+        message = (
+            f"Account id {account_id} already had the address {existing_bech32}"
+            f"when trying to set it to the address {new_bech32}"
+        )
+        super().__init__(message)
+
+
+class AccountAlreadyHasId(Exception):
+    """
+    To be raised when there is a conflict with an account bech32
+    """
+
+    def __init__(self, contract_bech32: str, existing_id: str, new_id: str) -> None:
+        message = (
+            f"Account {contract_bech32} already had the id {existing_id}"
+            f" when trying to set the id {new_id}"
+        )
         super().__init__(message)
 
 
 class UnknownToken(Exception):
     """
-    To be raised when a specified token is not found is a scenario
+    To be raised when a specified token is not found in a scenario
     """
 
     def __init__(self, scenario_name: str, token_name: str) -> None:
-        message = f"Token named {token_name} is unkown in " f"scenario {scenario_name}"
+        message = f"Token named {token_name} is unkown in scenario {scenario_name}"
         super().__init__(message)
 
 
@@ -120,11 +195,11 @@ class TokenNameAlreadyExists(Exception):
 
 class UnknownRootName(Exception):
     """
-    To be raised when a specified root name is not found is a scenario
+    To be raised when a specified root name is not found in a scenario
     """
 
     def __init__(self, scenario_name: str, root_name: str) -> None:
-        message = f"Root named {root_name} is unkown in " f"scenario {scenario_name}"
+        message = f"Root named {root_name} is unkown in scenario {scenario_name}"
         super().__init__(message)
 
 
@@ -159,10 +234,10 @@ class ForbiddenSceneNetwork(Exception):
     """
 
     def __init__(
-        self, scene_path: Path, network_name: str, allowed_networks: List[str]
+        self, path: Path, network_name: str, allowed_networks: list[str]
     ) -> None:
         message = (
-            f"Scene {scene_path} not allowed to be executed "
+            f"Scene {path} not allowed to be executed "
             f"in the network {network_name}.\n"
             f"Allowed networks: {allowed_networks}"
         )
@@ -176,10 +251,10 @@ class ForbiddenSceneScenario(Exception):
     """
 
     def __init__(
-        self, scene_path: Path, scenario_name: str, allowed_scenario: List[str]
+        self, path: Path, scenario_name: str, allowed_scenario: list[str]
     ) -> None:
         message = (
-            f"Scene {scene_path} not allowed to be executed "
+            f"Scene {path} not allowed to be executed "
             f"in the scenario {scenario_name}.\n"
             f"Allowed scenario: {allowed_scenario}"
         )
@@ -221,7 +296,7 @@ class TransactionError(Exception):
         super().__init__()
 
     def __str__(self) -> str:
-        return f"Error on transaction {get_tx_link(self.tx.hash)}\n"
+        return f"Error on transaction {get_tx_link(self.tx.hash.hex())}\n"
 
 
 class FailedTransactionError(TransactionError):
@@ -295,9 +370,28 @@ class CheckFailed(Exception):
 
     def __str__(self) -> str:
         return (
-            f"Check failed on transaction {get_tx_link(self.tx.hash)}"
+            f"Check failed on transaction {get_tx_link(self.tx.hash.hex())}"
             f"\nCheck: {self.check}"
         )
+
+
+class FuzzTestFailed(Exception):
+    """
+    To be raised when a fuzz test fails
+    """
+
+
+class AssertionFailed(Exception):
+    """
+    To be raised when an assertion is not True
+    """
+
+    def __init__(self, evaluation_string: str) -> None:
+        self.evaluation_string = evaluation_string
+        super().__init__()
+
+    def __str__(self) -> str:
+        return f"Assertion failed: {self.evaluation_string}"
 
 
 #############################################################
@@ -320,6 +414,19 @@ class UnkownStep(Exception):
         return f"Unkown Step name: {self.step_name}"
 
 
+class UnkownCheck(Exception):
+    """
+    to be raised when the user provide a check name that is unkown
+    """
+
+    def __init__(self, check_name: str) -> None:
+        self.check_name = check_name
+        super().__init__()
+
+    def __str__(self) -> str:
+        return f"Unkown Check name: {self.check_name}"
+
+
 class UnkownVariable(Exception):
     """
     to be raised when the user provide a variable name that is unkown
@@ -338,7 +445,7 @@ class InvalidStepDefinition(Exception):
     to be raised when the arguments provided by the user for a Step are not valid
     """
 
-    def __init__(self, step_name: str, parameters: Dict) -> None:
+    def __init__(self, step_name: str, parameters: dict) -> None:
         self.step_name = step_name
         self.parameters = parameters
         super().__init__()
@@ -347,7 +454,72 @@ class InvalidStepDefinition(Exception):
         return f"Step {self.step_name} received invalid parameters {self.parameters}"
 
 
+class InvalidCheckDefinition(Exception):
+    """
+    to be raised when the arguments provided by the user for a Check are not valid
+    """
+
+    def __init__(self, check_name: str, parameters: dict) -> None:
+        self.check_name = check_name
+        self.parameters = parameters
+        super().__init__()
+
+    def __str__(self) -> str:
+        return f"Check {self.check_name} received invalid parameters {self.parameters}"
+
+
 class InvalidQueryResultsDefinition(Exception):
     """
     to be raise when the results types of a query are not correctly defined
     """
+
+
+class InvalidSceneDefinition(Exception):
+    """
+    to be raise when a scene is not correctly defined
+    """
+
+
+class InvalidDataFormat(Exception):
+    """
+    to be raise when the data format is invalid
+    """
+
+
+class WrongFuzzTestFile(Exception):
+    """
+    to be raised when the file given for fuzz testing in not correctly formatted
+    """
+
+
+class WalletAlreadyExist(Exception):
+    """
+    to be raised when a wallet was asked to be generated but a wallet already exists
+    at that location
+    """
+
+    def __init__(self, wallet_path: Path) -> None:
+        self.wallet_path = wallet_path
+        super().__init__()
+
+    def __str__(self) -> str:
+        return f"A wallet already exists at {self.wallet_path}"
+
+
+class WrongNetworkForStep(Exception):
+    """
+    to be raised when a step was asked to be executed in an innapropriate network
+    """
+
+    def __init__(
+        self, current_network: NetworkEnum, allowed_networks: list[NetworkEnum]
+    ):
+        self.current_network = current_network
+        self.allowed_networks = allowed_networks
+        super().__init__()
+
+    def __str__(self) -> str:
+        return (
+            f"Step can only be executed in the newtorks {self.allowed_networks},"
+            f" while current network is {self.current_network}"
+        )

@@ -4,12 +4,17 @@ AppDir
 AppFolder
 arg
 backend
+bitwise
+blake
 blockchain
 blockchains
 abcdef
 catenscia
 Catenscia
 ChangeLog
+composability
+composable
+conda
 config
 configparser
 cli
@@ -17,6 +22,7 @@ customization
 customizations
 decrypt
 DevOps
+dropdown
 env
 environ
 Etienne
@@ -27,6 +33,7 @@ json
 https
 monotypes
 Monotypes
+natively
 os
 pipx
 png
@@ -37,9 +44,13 @@ Readthedocs
 yaml
 svg
 str
+upgradeable
 utils
 Flaticon
+randint
 README
+ReadTheDocs
+reproducibility
 reusability
 SBTS
 sdk
@@ -48,5 +59,9 @@ StackOverflow
 stackoverflow
 td
 th
+Untracked
+url
+uv
 VScode
+VSCode
 wasm

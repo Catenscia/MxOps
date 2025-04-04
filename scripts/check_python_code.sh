@@ -22,10 +22,10 @@ else
     printf "${GREEN}bandit success${NC}\n\n\n"
 fi
 
-# launch flake8 on the entire repository
+# launch flake8 on the repository and the tests
 # it is mandatory to obtain valid check
 printf "${BLUE}##########\n# Flake8\n##########${NC}\n"
-OUTPUT=$(flake8 .)
+OUTPUT=$(flake8 mxops integration_tests tests examples)
 if [ ! -z "${OUTPUT}" ]
 then
     echo "${OUTPUT}"
@@ -33,6 +33,21 @@ then
     exit 2
 else
     printf "${GREEN}flake8 success${NC}\n\n\n"
+fi
+
+# launch ruff format & check only on the mxops package
+# it is mandatory to obtain valid check
+printf "${BLUE}##########\n# ruff\n##########${NC}\n"
+OUTPUT=$(ruff format mxops)
+OUTPUT=$(ruff check mxops)
+echo "${OUTPUT}"
+SUB="All checks passed!"
+if [[ "${OUTPUT}" != *"${SUB}"* ]];
+then
+    printf "${RED}ruff output is not empty, test failed${NC}\n"
+    exit 2
+else
+    printf "${GREEN}ruff success${NC}\n\n\n"
 fi
 
 # launch pylint only on the mxops package
@@ -43,9 +58,10 @@ echo "${OUTPUT}"
 SCORE=$(sed -n '$s/[^0-9]*\([0-9.]*\).*/\1/p' <<< "$OUTPUT")
 TEST=$(echo "${SCORE} < 9.5" |bc -l)
 
-if echo "$OUTPUT" | grep -q "^mxops/.*: E[0-9]\+"
+ERRORS_FILTER=$(echo "$OUTPUT" | grep "^mxops/.*: [EF][0-9]\+")
+if [ ! -z "${ERRORS_FILTER}" ]
 then
-    printf "${RED}pylint has detected an error, test failed${NC}\n"
+    printf "${RED}pylint has detected an error, test failed:\n${ERRORS_FILTER}${NC}\n"
     exit 3
 elif [ $TEST -ne 0 ]; then
     printf "${RED}pylint score below 9.5, test failed${NC}\n"

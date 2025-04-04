@@ -1,6 +1,7 @@
 """
 Custom module from a user
 """
+
 from typing import Any
 from mxops.data.execution_data import ScenarioData
 
@@ -15,7 +16,9 @@ def set_contract_value(contract_id: str, value_key: str, value: Any):
     :type value_key: str
     :param value: value to save
     :type value: Any
+    :return: value to save
+    :rtype: Any
     """
     scenario_data = ScenarioData.get()
-    scenario_data.set_contract_value(contract_id, value_key, value)
-    return str(value)
+    scenario_data.set_account_value(contract_id, value_key, value)
+    return value

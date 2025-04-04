@@ -7,11 +7,10 @@ This module contains utils functions related to path navigation
 from configparser import ConfigParser
 import os
 from pathlib import Path
-from typing import Dict, List, Optional
 
 from importlib_resources import files
-from multiversx_sdk_network_providers import ProxyNetworkProvider
-from multiversx_sdk_network_providers.network_config import NetworkConfig
+from multiversx_sdk import ProxyNetworkProvider
+from multiversx_sdk.network_providers.resources import NetworkConfig
 
 from mxops.enums import NetworkEnum
 
@@ -21,7 +20,7 @@ class _Config:
     Utility class that reads a config file and serves its parameters.
     """
 
-    def __init__(self, network: NetworkEnum, config_path: Optional[Path] = None):
+    def __init__(self, network: NetworkEnum, config_path: Path | None = None):
         """
         Initialise the configuration instance by reading the specified config file.
 
@@ -40,7 +39,17 @@ class _Config:
             default_config = files("mxops.resources").joinpath("default_config.ini")
             self.__config.read_string(default_config.read_text())
 
-        self.__network_config: Optional[NetworkConfig] = None
+        self.__network_config: NetworkConfig | None = None
+
+    def set_network(self, network: NetworkEnum):
+        """
+        Set the network enum
+
+        :param network: network enum to set
+        :type network: NetworkEnum
+        """
+        self.__network = network
+        self.__network_config = None
 
     def get_network(self) -> NetworkEnum:
         """
@@ -59,37 +68,46 @@ class _Config:
         :rtype: NetworkConfig
         """
         if self.__network_config is None:
+            # cannot use MyProxyNetworkProvider
+            # due to circular dependencies
             self.__network_config = ProxyNetworkProvider(
                 self.get("PROXY")
             ).get_network_config()
         return self.__network_config
 
-    def get(self, option: str) -> str:
+    def get(self, option: str, network: NetworkEnum | None = None) -> str:
         """
         return the specified option for the current environment
+        or a specified environment
 
         :param option: option to get from the config file
         :type option: str
+        :param network: netowrk to get the option of, default to None wich is current
+        :type network: NetworkEnum | None
         :return: value for the option as a string
         :rtype: str
         """
-        return self.__config.get(self.__network.name, option)
+        if network is None:
+            network_name = self.__network.name
+        else:
+            network_name = network.name
+        return self.__config.get(network_name, option)
 
-    def get_options(self) -> List[str]:
+    def get_options(self) -> list[str]:
         """
         Return the options for the current environment
 
         :return: list of available options for the current env
-        :rtype: List[str]
+        :rtype: list[str]
         """
         return [o.upper() for o in self.__config.options(self.__network.name)]
 
-    def get_values(self) -> Dict[str, str]:
+    def get_values(self) -> dict[str, str]:
         """
         Return all the values of the options for the current environment
 
         :return: dictionary with option:value for the current env
-        :rtype: Dict[str, str]
+        :rtype: dict[str, str]
         """
         options = self.get_options()
         return {o: self.get(o) for o in options}
@@ -111,7 +129,7 @@ class Config:
     Singleton class that serves the _Config class
     """
 
-    __instance: Optional[_Config] = None
+    __instance: _Config | None = None
     __network: NetworkEnum = NetworkEnum.LOCAL
 
     @classmethod
@@ -123,16 +141,18 @@ class Config:
         :type network: NetworkEnum
         """
         cls.__network = network
+        if cls.__instance is not None:
+            cls.__instance.set_network(network)
 
     @staticmethod
-    def find_config_path() -> Optional[Path]:
+    def find_config_path() -> Path | None:
         """
         Find the config path to consider.
         Looks first for a config path in the env variables and then look
         if a local config file exists
 
         :return: Path of a found config file if it exists
-        :rtype: Optional[Path]
+        :rtype: Path | None
         """
         # first check if a config is specified by env var
         try:
@@ -167,18 +187,3 @@ class Config:
             config_path = cls.find_config_path()
             cls.__instance = _Config(cls.__network, config_path)
         return cls.__instance
-
-
-def dump_default_config():
-    """
-    Take the default config and dump it in the working directory as mxops_config.ini
-    """
-    dump_path = Path("./mxops_config.ini")
-    if os.path.exists(dump_path.as_posix()):
-        raise RuntimeError("A config file already exists in the working directory")
-
-    default_config = files("mxops.resources").joinpath("default_config.ini")
-
-    with open(dump_path.as_posix(), "w+", encoding="utf-8") as dump_file:
-        dump_file.write(default_config.read_text())
-    print(f"Copy of the default config dumped at {dump_path.absolute()}")

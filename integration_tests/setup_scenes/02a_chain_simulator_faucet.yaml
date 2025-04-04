@@ -1,0 +1,11 @@
+allowed_networks:
+  - chain-simulator
+
+allowed_scenario:
+  - "integration_test.*"
+
+steps:
+  - type: ChainSimulatorFaucet
+    amount: 100000000000000000000  # 100 EGLD
+    targets: "%user_wallets"
+    

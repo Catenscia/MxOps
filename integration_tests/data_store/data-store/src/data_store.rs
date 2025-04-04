@@ -12,15 +12,6 @@ pub const HEX_ADDRESS: [u8; 32] =
 /// erd1qqqqqqqqqqqqqpgqf48ydzn8shr8mnmrvydq2fn9v2afzd3c4fvsk4wglm
 
 #[derive(TopEncode, TopDecode, NestedEncode, NestedDecode, TypeAbi, PartialEq, Eq)]
-pub struct MyStruct<M: ManagedTypeApi> {
-    pub int: u16,
-    pub seq: ManagedVec<M, u8>,
-    pub another_byte: u8,
-    pub uint_32: u32,
-    pub uint_64: u64,
-}
-
-#[derive(TopEncode, TopDecode, NestedEncode, NestedDecode, TypeAbi, PartialEq, Eq)]
 pub struct Struct<M: ManagedTypeApi> {
     pub int: u16,
     pub seq: ManagedVec<M, u8>,
@@ -190,18 +181,19 @@ pub trait DataStore {
         &self,
         my_option_biguint: Option<BigUint>,
         my_optional_token_identifier: OptionalValue<TokenIdentifier>,
-    ) {
+    ) -> MultiValue2<Option<BigUint>, OptionalValue<TokenIdentifier>> {
         require!(
             my_option_biguint.clone().unwrap() == BigUint::from(123987u64),
             "my_option_biguint failed"
         );
-        self.my_option_biguint().set(my_option_biguint);
+        self.my_option_biguint().set(my_option_biguint.clone());
 
         require!(
             my_optional_token_identifier.is_none() == true,
             "my_optional_token_identifier failed"
         );
         self.my_token_identifier().clear();
+        (my_option_biguint, my_optional_token_identifier).into()
     } // no views, check directly the mappers
 
     #[endpoint]
@@ -209,23 +201,24 @@ pub trait DataStore {
         &self,
         my_managed_address: ManagedAddress,
         my_optional_token_identifier: OptionalValue<TokenIdentifier>,
-    ) {
+    ) -> MultiValue2<ManagedAddress, OptionalValue<TokenIdentifier>> {
         require!(
             my_managed_address == ManagedAddress::from(HEX_ADDRESS),
             "my_option_biguint failed"
         );
-        self.my_managed_address().set(my_managed_address);
+        self.my_managed_address().set(my_managed_address.clone());
 
         require!(
             my_optional_token_identifier.is_none() == false,
             "my_optional_token_identifier failed"
         );
-        let my_token_identifier = my_optional_token_identifier.into_option().unwrap();
+        let my_token_identifier = my_optional_token_identifier.clone().into_option().unwrap();
         require!(
             my_token_identifier.clone() == TokenIdentifier::from(TOKEN_IDENTIFIER),
             "my_token_identifier failed"
         );
         self.my_token_identifier().set(my_token_identifier);
+        (my_managed_address, my_optional_token_identifier).into()
     }
 
     #[view]
@@ -237,7 +230,11 @@ pub trait DataStore {
     }
 
     #[endpoint]
-    fn test_3(&self, my_isize: isize, biguints: MultiValueEncoded<BigUint>) {
+    fn test_3(
+        &self,
+        my_isize: isize,
+        biguints: MultiValueEncoded<BigUint>,
+    ) -> MultiValue2<isize, MultiValueEncoded<BigUint>> {
         self.my_vec_biguint().clear();
         for (index, ref_value) in biguints.to_vec().iter().enumerate() {
             let value = (*ref_value).clone();
@@ -247,6 +244,7 @@ pub trait DataStore {
 
         require!(my_isize == -3isize, "my_isize failed");
         self.my_isize().set(my_isize);
+        (my_isize, biguints).into()
     }
 
     #[view]
@@ -257,13 +255,14 @@ pub trait DataStore {
     }
 
     #[endpoint]
-    fn test_4(&self, biguints: ManagedVec<BigUint>) {
+    fn test_4(&self, biguints: ManagedVec<BigUint>) -> ManagedVec<BigUint> {
         self.my_vec_biguint().clear();
         for (index, ref_value) in biguints.iter().enumerate() {
             let value = (*ref_value).clone();
             require!(value == BigUint::from(index), "biguints_vec failed");
             self.my_vec_biguint().push(&value);
         }
+        biguints
     }
 
     #[view]

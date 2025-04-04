@@ -1,6 +1,8 @@
 allowed_networks:
-    - devnet
     - localnet
+    - testnet
+    - devnet
+    - chain-simulator
 
 allowed_scenario:
   - "integration_test_data_store"
@@ -24,12 +26,11 @@ steps:
     contract: data-store
     endpoint: get_upgrade_params
     arguments: []
-    print_results: true
     results_save_keys: 
       - upgrade_params
 
   - type: Python
-    module_path: ./integration_tests/data_store/scripts/checks.py
+    module_path: ./integration_tests/scripts/checks.py
     function: check_storage
     arguments:
       - data-store

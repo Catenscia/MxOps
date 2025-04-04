@@ -1,54 +1,68 @@
 allowed_networks:
-  - devnet
-  - localnet
+    - localnet
+    - testnet
+    - devnet
+    - chain-simulator
 
 allowed_scenario:
   - "integration_test_token_management.*"
 
 steps:
-  - type: FungibleTransfer
+  - type: Transfer
     sender: jean
     receiver: marie
-    token_identifier: "%JeanToken.identifier"
-    amount: 100000  # 100.000 JTK
-
-  - type: NonFungibleTransfer
-    sender: marc
-    receiver: marie
-    token_identifier: "%MarcNFT.identifier"
-    amount: 1  # 1 MNFT
-    nonce: 1
-
-  - type: NonFungibleTransfer
-    sender: marthe
-    receiver: marie
-    token_identifier: "%MartheSFT.identifier"
-    amount: 100  # 100 MSFT
-    nonce: 1
-
-  - type: NonFungibleTransfer
-    sender: thomas
-    receiver: marie
-    token_identifier: "%ThomasMeta.identifier"
-    amount: 1000  # 1.000 TMT
-    nonce: 1
-  
-  - type: MultiTransfers
-    sender: marie
-    receiver: emmanuel
     transfers:
-      - token_identifier: "%JeanToken.identifier"
-        nonce: 0
+      - identifier: "%JeanToken.identifier"
+        amount: 100000  # 100.000 JTK
+  
+  - type: Transfer
+    sender: jean
+    receiver: marie
+    value: 10
+    transfers:
+      - identifier: "%JeanToken.identifier"
         amount: 100000  # 100.000 JTK
 
-      - token_identifier: "%MarcNFT.identifier"
+  - type: Transfer
+    sender: marc
+    receiver: marie
+    transfers:
+      - identifier: "%MarcNFT.identifier"
         amount: 1  # 1 MNFT
         nonce: 1
 
-      - token_identifier: "%MartheSFT.identifier"
+  - type: Transfer
+    sender: marthe
+    receiver: marie
+    transfers:
+      - identifier: "%MartheSFT.identifier"
         amount: 100  # 100 MSFT
         nonce: 1
 
-      - token_identifier: "%ThomasMeta.identifier"
+  - type: Transfer
+    sender: thomas
+    receiver: marie
+    transfers:
+      - identifier: "%ThomasMeta.identifier"
+        amount: 1000  # 1.000 TMT
+        nonce: 1
+  
+  - type: Transfer
+    sender: marie
+    receiver: emmanuel
+    transfers:
+      - identifier: "%JeanToken.identifier"
+        nonce: 0
+        amount: 100000  # 100.000 JTK
+
+      - identifier: "%MarcNFT.identifier"
+        amount: 1  # 1 MNFT
+        nonce: 1
+
+      - identifier: "%MartheSFT.identifier"
+        amount: 100  # 100 MSFT
+        nonce: 1
+
+      - identifier: "%ThomasMeta.identifier"
         amount: 1000  # 1.000 TMT
         nonce: 1

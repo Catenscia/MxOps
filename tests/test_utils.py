@@ -1,35 +1,59 @@
-from multiversx_sdk_core import Address
+from dataclasses import dataclass, field
+
 import pytest
+from mxops.utils.msc import get_account_link, get_tx_link
+from tests.utils import instantiate_assert_all_args_provided
 
-from mxops.execution.utils import get_address_instance
 
-
-@pytest.mark.parametrize(
-    "address_str, expected_result",
-    [
-        (
-            "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t",
-            Address.from_bech32(
-                "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t",
-            ),
-        ),
-        (
-            "%my_test_contract.address",
-            Address.from_bech32(
-                "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t",
-            ),
-        ),
-        (
-            "my_test_contract",
-            Address.from_bech32(
-                "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t",
-            ),
-        ),
-    ],
-)
-def test_get_address_instance(address_str: str, expected_result: Address):
+def test_transaction_link():
     # Given
+    tx_hash = "3519ff7dd9ed71fb140e2b79a51cfeb9e90df749504bb436ebb697a30f8afcf5"
+
     # When
-    result = get_address_instance(address_str)
+    link = get_tx_link(tx_hash)
+
     # Then
-    assert expected_result.bech32() == result.bech32()
+    assert (
+        link
+        == "http://localhost:3002/transactions/3519ff7dd9ed71fb140e2b79a51cfeb9e90df749504bb436ebb697a30f8afcf5"  # noqa
+    )
+
+
+def test_account_link():
+    # Given
+    bech32 = "erd1jkd354c4mz9cfp8vjh2cvv2vtc7fg4klfktrqp8c627r6x86sa8qquzu45"
+
+    # When
+    link = get_account_link(bech32)
+
+    # Then
+    assert (
+        link
+        == "http://localhost:3002/accounts/erd1jkd354c4mz9cfp8vjh2cvv2vtc7fg4klfktrqp8c627r6x86sa8qquzu45"  # noqa
+    )
+
+
+def test_missing_parameters():
+    # Given
+    @dataclass
+    class MyClass:
+        a: 1
+        b: int = 7
+        c: int = field(init=False)
+
+    # When
+    _ = instantiate_assert_all_args_provided(MyClass, {"a": 1, "b": 5})
+    with pytest.raises(ValueError, match="Missing parameters: {'b'} for class MyClass"):
+        instantiate_assert_all_args_provided(
+            MyClass,
+            {
+                "a": 1,
+            },
+        )
+    with pytest.raises(ValueError, match="Missing parameters: {'a'} for class MyClass"):
+        instantiate_assert_all_args_provided(
+            MyClass,
+            {
+                "b": 1,
+            },
+        )

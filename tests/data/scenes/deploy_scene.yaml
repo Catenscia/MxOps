@@ -1,0 +1,68 @@
+# list of network onto which this scene can be run
+allowed_networks:
+  - localnet
+
+allowed_scenario:
+  - ".*"
+
+accounts:
+  - account_id: owner
+    pem_path: wallets/local_owner.pem
+  
+  - account_id: adder
+    address: erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc
+    abi_path: tests/data/abis/adder.abi.json
+
+steps:
+  - type: ContractDeploy
+    sender: owner
+    wasm_path: ../contract/src/esdt-minter/output/esdt-minter.wasm
+    contract_id: SEGLD-minter
+    gas_limit: 80000000
+    arguments:
+      - 125000000
+      - 120
+    upgradeable: true
+    readable: false
+    payable: false
+    payable_by_sc: false
+
+  - type: ContractCall
+    sender: owner
+    contract: SEGLD-minter
+    endpoint: registerToken
+    gas_limit: 80000000
+    value: "&BASE_ISSUING_COST"
+    arguments:
+      - SEGLD
+      - SEGLD
+      - 18
+    checks:
+      - type: Success
+
+  - type: ContractCall
+    sender: owner
+    contract: SEGLD-minter
+    endpoint: setTokenLocalRoles
+    gas_limit: 80000000
+    arguments: []
+    checks: []
+
+  - type: ContractQuery
+    contract: SEGLD-minter
+    endpoint: getTokenIdentifier
+    arguments: []
+    results_save_keys:
+      - TokenIdentifier
+
+  - type: ContractUpgrade
+    sender: owner
+    wasm_path: ../contract/src/esdt-minter/output/esdt-minter.wasm
+    contract: SEGLD-minter
+    gas_limit: 50000000
+    arguments:
+      - 200
+    upgradeable: true
+    readable: false
+    payable: true
+    payable_by_sc: true

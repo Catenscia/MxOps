@@ -20,9 +20,8 @@ else
 fi
 
 cd docs
-OUTPUT=$(make html)
-
-if [[ "${OUTPUT}" == *"ERROR"* ]];
+OUTPUT=$(make html 2>&1)
+if [[ "${OUTPUT}" == *[eE][rR][rR][oO][rR]* ]];
 then
     printf "${RED}Documentation build got some errors${NC}\n"
     echo "${OUTPUT}"

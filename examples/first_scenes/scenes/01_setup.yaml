@@ -1,0 +1,15 @@
+accounts:
+  - account_id: egld_wrapper
+    address: erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp
+
+steps:
+
+  - type: GenerateWallets
+    save_folder: ./wallets
+    wallets:
+        - user
+    shard: 1
+  
+  - type: R3D4Faucet
+    targets:
+      - user

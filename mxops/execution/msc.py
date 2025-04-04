@@ -6,118 +6,88 @@ Various elements for the execution sub package
 
 from __future__ import annotations
 from dataclasses import dataclass
-from typing import Any, Optional, Union
+from typing import Any
 
-from mxops.execution import utils
-from mxops.utils import msc
+from multiversx_sdk import Address, Token
 
 
 @dataclass
-class EsdtTransfer:
+class OnChainTokenTransfer:
     """
-    Represent any type of ESDT transfer (Simple ESDT, NFT, SFT, MetaESDT)
+    Holds the information of an onchain token transfer
     """
 
-    token_identifier: str
+    sender: Address
+    receiver: Address
+    token: Token
     amount: int
-    nonce: int = 0
 
 
 @dataclass
-class OnChainTransfer:
+class ResultsSaveKeys:
     """
-    Represent any type of token transfer on chain
-    """
-
-    sender: str
-    receiver: str
-    token_identifier: str
-    amount: str
-
-    def __eq__(self, other: Any) -> bool:
-        if isinstance(other, ExpectedTransfer):
-            return other == self
-        if isinstance(other, OnChainTransfer):
-            return (self.sender, self.receiver, self.token_identifier, self.amount) == (
-                other.sender,
-                other.receiver,
-                other.token_identifier,
-                other.amount,
-            )
-        raise NotImplementedError
-
-
-@dataclass
-class ExpectedTransfer:
-    """
-    Holds the information of a transfert that is expected to be found in an on-chain
-    transaction
+    Class describing how the results of a query or a call should be
+    saved. Namely, under which key(s) save which result(s)
     """
 
-    sender: str
-    receiver: str
-    token_identifier: str
-    amount: Union[int, str]
-    nonce: Optional[Union[str, int]] = None
+    master_key: str | None
+    sub_keys: list[str | None] | None
 
-    def get_hex_nonce(self) -> Optional[str]:
+    @staticmethod
+    def from_input(data: Any) -> ResultsSaveKeys | None:
         """
-        Transform the nonce attribute of this instance into a hex string
-        (without the 0x).
-        If the nonce does not exists, return None.
+        Parse the user input as an instance of this class
 
-        :return: nonce is hex format
-        :rtype: Optional[str]
+        :param data: input data for a yaml Scene file
+        :type data: Any
+        :return: results save keys if defined
+        :rtype: ResultsSaveKeys | None
         """
-        if self.nonce is None:
+        if data is None:
             return None
-        if isinstance(self.nonce, str):
-            return self.nonce
-        if self.nonce == 0:
-            return None
-        try:
-            return msc.int_to_pair_hex(self.nonce)
-        except (IndexError, TypeError) as err:
-            raise ValueError(f"An invalid nonce was specified: {self.nonce}") from err
+        if isinstance(data, ResultsSaveKeys):
+            return data
+        if isinstance(data, str):
+            return ResultsSaveKeys(data, None)
+        if isinstance(data, list):
+            for save_key in data:
+                if not isinstance(save_key, str) and save_key is not None:
+                    raise TypeError(f"Save keys must be a str or None, got {save_key}")
+            return ResultsSaveKeys(None, data)
+        if isinstance(data, dict):
+            if len(data) != 1:
+                raise ValueError(
+                    "When providing a dict, only one root key should be provided"
+                )
+            master_key, sub_keys = list(data.items())[0]
+            if not isinstance(master_key, str):
+                raise TypeError("The root key should be a str")
+            for save_key in sub_keys:
+                if not isinstance(save_key, str) and save_key is not None:
+                    raise TypeError(f"Save keys must be a str or None, got {save_key}")
+            return ResultsSaveKeys(master_key, sub_keys)
+        raise TypeError(f"ResultsSaveKeys can not parse the following input {data}")
 
-    def get_dynamic_evaluated(self) -> ExpectedTransfer:
+    def parse_data_to_save(self, data: list) -> dict:
         """
-        Evaluate the attribute of the instance dynamically and return the
-        corresponding expected transfer
+        Parse data and break it into key-value pairs to save as data
 
-        :return: instance dynamically evaluated
-        :rtype: ExpectedTransfer
+        :param data: data to parse according the the results keys of this instance
+        :type data: list
+        :return: key-value pairs to save
+        :rtype: dict
         """
-        sender = utils.get_address_instance(self.sender).bech32()
-        receiver = utils.get_address_instance(self.receiver).bech32()
-        token_identifier = utils.retrieve_value_from_string(str(self.token_identifier))
-        amount = utils.retrieve_value_from_string(str(self.amount))
-        hex_nonce = self.get_hex_nonce()
-        if hex_nonce is not None:
-            token_identifier += "-" + hex_nonce
-        return ExpectedTransfer(
-            sender=sender,
-            receiver=receiver,
-            token_identifier=token_identifier,
-            amount=amount,
-        )
-
-    def __eq__(self, other: Any) -> bool:
-        evaluated_self = self.get_dynamic_evaluated()
-        if isinstance(other, OnChainTransfer):
-            evaluated_other = other
-        elif isinstance(other, ExpectedTransfer):
-            evaluated_other = other.get_dynamic_evaluated()
+        sub_keys = self.sub_keys
+        if sub_keys is not None:
+            if len(sub_keys) != len(data):
+                raise ValueError(
+                    f"Number of data parts ({len(data)} -> "
+                    f"{data}) and save keys "
+                    f"({len(sub_keys)} -> {sub_keys}) doesn't match"
+                )
+            to_save = dict(zip(sub_keys, data))
+            if self.master_key is not None:
+                to_save = {self.master_key: to_save}
         else:
-            raise NotImplementedError
-        return (
-            evaluated_self.sender,
-            evaluated_self.receiver,
-            evaluated_self.token_identifier,
-            str(evaluated_self.amount),
-        ) == (
-            evaluated_other.sender,
-            evaluated_other.receiver,
-            evaluated_other.token_identifier,
-            str(evaluated_other.amount),
-        )
+            to_save = {self.master_key: data}
+        return to_save

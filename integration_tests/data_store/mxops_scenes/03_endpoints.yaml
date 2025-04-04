@@ -1,6 +1,8 @@
 allowed_networks:
-    - devnet
     - localnet
+    - testnet
+    - devnet
+    - chain-simulator
 
 allowed_scenario:
   - "integration_test_data_store"
@@ -13,17 +15,25 @@ steps:
     gas_limit: 60000000
     arguments:
       - 123987
+      - null
+    results_save_keys: test_1_results
+
+  - type: Python
+    module_path: ./integration_tests/scripts/checks.py
+    function: check_storage
+    arguments:
+      - data-store
+      - '{"test_1_results": [123987, null]}'
   
   - type: ContractQuery
     contract: data-store
     endpoint: my_option_biguint
     arguments: []
-    print_results: true
     results_save_keys: 
       - my_option_biguint
 
   - type: Python
-    module_path: ./integration_tests/data_store/scripts/checks.py
+    module_path: ./integration_tests/scripts/checks.py
     function: check_storage
     arguments:
       - data-store
@@ -33,12 +43,11 @@ steps:
     contract: data-store
     endpoint: my_token_identifier
     arguments: []
-    print_results: true
     results_save_keys: 
       - my_token_identifier
 
   - type: Python
-    module_path: ./integration_tests/data_store/scripts/checks.py
+    module_path: ./integration_tests/scripts/checks.py
     function: check_storage
     arguments:
       - data-store
@@ -52,17 +61,24 @@ steps:
     arguments:
       - erd1qqqqqqqqqqqqqpgqf48ydzn8shr8mnmrvydq2fn9v2afzd3c4fvsk4wglm
       - WEGLD-abcdef
+    results_save_keys: test_2_results
+
+  - type: Python
+    module_path: ./integration_tests/scripts/checks.py
+    function: check_storage
+    arguments:
+      - data-store
+      - '{"test_2_results": ["erd1qqqqqqqqqqqqqpgqf48ydzn8shr8mnmrvydq2fn9v2afzd3c4fvsk4wglm", "WEGLD-abcdef"]}'
   
   - type: ContractQuery
     contract: data-store
     endpoint: get_test_2_params
     arguments: []
-    print_results: true
     results_save_keys: 
       - test_2_params
 
   - type: Python
-    module_path: ./integration_tests/data_store/scripts/checks.py
+    module_path: ./integration_tests/scripts/checks.py
     function: check_storage
     arguments:
       - data-store
@@ -75,26 +91,34 @@ steps:
     gas_limit: 60000000
     arguments:
       - -3
-      - 0
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
+      - - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+    results_save_keys: test_3_results
+
+  - type: Python
+    module_path: ./integration_tests/scripts/checks.py
+    function: check_storage
+    arguments:
+      - data-store
+      - '{"test_3_results": [-3, [0, 1, 2, 3, 4, 5]]}'
+  
   
   - type: ContractQuery
     contract: data-store
     endpoint: get_test_3_params
     arguments: []
-    print_results: true
     results_save_keys: test_3_params
 
   - type: Python
-    module_path: ./integration_tests/data_store/scripts/checks.py
+    module_path: ./integration_tests/scripts/checks.py
     function: check_storage
     arguments:
       - data-store
-      - '{"test_3_params": [-3, 0, 1, 2, 3, 4, 5]}'
+      - '{"test_3_params": [-3, [0, 1, 2, 3, 4, 5]]}'
     
   - type: ContractCall
     sender: emmanuel
@@ -103,31 +127,37 @@ steps:
     gas_limit: 60000000
     arguments:
       - [0, 1, 2, 3, 4, 5, 6]
+    results_save_keys: test_4_results
+
+  - type: Python
+    module_path: ./integration_tests/scripts/checks.py
+    function: check_storage
+    arguments:
+      - data-store
+      - '{"test_4_results": [[0, 1, 2, 3, 4, 5, 6]]}'
   
   - type: ContractQuery
     contract: data-store
     endpoint: my_vec_biguint
     arguments: []
-    print_results: true
     results_save_keys: my_vec_biguint
 
   - type: Python
-    module_path: ./integration_tests/data_store/scripts/checks.py
+    module_path: ./integration_tests/scripts/checks.py
     function: check_storage
     arguments:
       - data-store
-      - '{"my_vec_biguint": [0, 1, 2, 3, 4, 5, 6]}'
+      - '{"my_vec_biguint": [[0, 1, 2, 3, 4, 5, 6]]}'
   
   - type: ContractQuery
     contract: data-store
     endpoint: get_test_4_params
     arguments: []
-    print_results: true
     results_save_keys: 
     - test_4_params
 
   - type: Python
-    module_path: ./integration_tests/data_store/scripts/checks.py
+    module_path: ./integration_tests/scripts/checks.py
     function: check_storage
     arguments:
       - data-store

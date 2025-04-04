@@ -6,25 +6,40 @@
 Welcome to MxOps |version| !
 =========================================
 
+.. image:: ./_images/mxops_full_logo.png
+   :alt: MxOps Logo
+
 You are in the MxOps documentation. Use the left-side panel or the menu below to navigate where you want to go.
-If you are new here, we recommend going first to the :doc:`getting_started/presentation` section.
+If you are new here, we recommend going first to the :doc:`Getting Started section <getting_started/introduction>`.
 
 .. toctree::
    :maxdepth: 1
    :caption: Getting Started
 
-   getting_started/presentation
+   getting_started/introduction
    getting_started/installation
-   getting_started/first_scene
-   getting_started/about_scenarios
-   getting_started/enhanced_first_scene
+   getting_started/first_scenes
    getting_started/conclusion
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Tutorials and Examples
+
+   tutorials/introduction
+   tutorials/piggy_bank
+   tutorials/ping_pong
+   tutorials/python_steps
+   tutorials/queries_1
+   tutorials/queries_2
+   tutorials/trader_sc
+   tutorials/wrapper_clone
+   tutorials/wrapping
 
 .. toctree::
    :maxdepth: 1
    :caption: User Documentation
 
+   user_documentation/introduction
    user_documentation/scenario
    user_documentation/scenes
    user_documentation/steps
@@ -33,17 +48,6 @@ If you are new here, we recommend going first to the :doc:`getting_started/prese
    user_documentation/serialization
    user_documentation/execution
    user_documentation/config
-   user_documentation/analyze
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Examples
-
-   examples/presentation
-   examples/piggy_bank
-   examples/wrapping
-   examples/queries
-   examples/python_steps
 
 .. toctree::
    :maxdepth: 1

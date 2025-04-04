@@ -45,18 +45,23 @@ pub trait EsdtMinter {
 
     /// Claim the airdrop amount assigned to the caller
     ///
+    /// ### Return:
+    ///
+    /// * **BigUint**: amount of token sent
+    ///
     /// ### Return Payments:
     ///
     /// * **airdrop_payment**: airdrop for the user
     ///
     #[endpoint(claimAirdrop)]
-    fn claim_airdrop(&self) {
+    fn claim_airdrop(&self) -> BigUint {
         let caller = self.blockchain().get_caller();
         let claimable_amount = self.airdrop_amount(caller.clone()).get();
         require!(&claimable_amount > &BigUint::zero(), "Nothing to claim");
         self.esdt_identifier()
-            .mint_and_send(&caller, claimable_amount);
+            .mint_and_send(&caller, claimable_amount.clone());
         self.airdrop_amount(caller).clear();
+        claimable_amount
     }
 
     // #################   restricted endpoints    #################
@@ -68,6 +73,10 @@ pub trait EsdtMinter {
     /// ### Payments:
     ///
     /// * **capital_payment**: payment in the token of the contract.
+    ///
+    /// ### Return:
+    ///
+    /// * **EsdtTokenPayment**: interests sent
     ///
     /// ### Return Payments:
     ///

@@ -1,7 +1,9 @@
 import json
 from pathlib import Path
 
-from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
+from multiversx_sdk.network_providers.http_resources import (
+    transaction_from_proxy_response,
+)
 
 from mxops.execution.network import raise_on_errors
 from mxops import errors
@@ -10,7 +12,7 @@ from mxops import errors
 def test_out_of_gas(test_data_folder_path: Path):
     # Given
     with open(test_data_folder_path / "api_responses" / "out_of_gas.json") as file:
-        tx = TransactionOnNetwork.from_proxy_http_response(**json.load(file))
+        tx = transaction_from_proxy_response(**json.load(file))
 
     # When
 
@@ -25,7 +27,7 @@ def test_out_of_gas(test_data_folder_path: Path):
 def test_not_enough_esdt(test_data_folder_path: Path):
     # Given
     with open(test_data_folder_path / "api_responses" / "not_enough_esdt.json") as file:
-        tx = TransactionOnNetwork.from_proxy_http_response(**json.load(file))
+        tx = transaction_from_proxy_response(**json.load(file))
 
     # When
 
@@ -40,7 +42,7 @@ def test_not_enough_esdt(test_data_folder_path: Path):
 def test_vm_error(test_data_folder_path: Path):
     # Given
     with open(test_data_folder_path / "api_responses" / "vm_error.json") as file:
-        tx = TransactionOnNetwork.from_proxy_http_response(**json.load(file))
+        tx = transaction_from_proxy_response(**json.load(file))
 
     # When
 

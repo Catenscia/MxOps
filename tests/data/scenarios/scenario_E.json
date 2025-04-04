@@ -1,0 +1,55 @@
+{
+    "name": "___test_mxops_tutorial_first_scene",
+    "network": "devnet",
+    "creation_time": 1677134890,
+    "last_update_time": 1677134896,
+    "account_id_to_bech32": {},
+    "accounts_data": {
+        "erd1qqqqqqqqqqqqqpgq0048vv3uk6l6cdreezpallvduy4qnfv2plcq74464k": {
+            "__class__": "InternalContractData",
+            "account_id": "egld-ping-pong",
+            "bech32": "erd1qqqqqqqqqqqqqpgq0048vv3uk6l6cdreezpallvduy4qnfv2plcq74464k",
+            "saved_values": {},
+            "code_hash": "5ce403a4f73701481cc15b2378cdc5bce3e35fa215815aa5eb9104d9f7ab2451",
+            "deploy_time": 1677134892,
+            "last_upgrade_time": 1677134892
+        },
+        "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t": {
+            "__class__": "ExternalContractData",
+            "account_id": "wrapper",
+            "bech32": "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t",
+            "saved_values": {}
+        },
+        "erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3": {
+            "__class__": "AccountData",
+            "account_id": "alice",
+            "bech32": "erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3",
+            "saved_values": {}
+        },
+        "erd1ddhla0htp9eknfjn628ut55qafcpxa9evxmps2aflq8ldgqq08esc3x3f8": {
+            "__class__": "PemAccountData",
+            "account_id": "bom",
+            "bech32": "erd1ddhla0htp9eknfjn628ut55qafcpxa9evxmps2aflq8ldgqq08esc3x3f8",
+            "pem_path": "path/to.pem",
+            "saved_values": {}
+        },
+        "erd1jqtj976xg4fka5xqnt0e4vz4guh64x90jmr7csrjd3a55frvh9jqc2g9vg": {
+            "__class__": "LedgerAccountData",
+            "account_id": "charlie",
+            "bech32": "erd1jqtj976xg4fka5xqnt0e4vz4guh64x90jmr7csrjd3a55frvh9jqc2g9vg",
+            "ledger_address_index": 1,
+            "saved_values": {}
+        }
+    },
+    "tokens_data": {
+        "My Token": {
+            "__class__": "TokenData",
+            "name": "My Token",
+            "ticker": "MTK",
+            "identifier": "MTK-abcdef",
+            "saved_values": {},
+            "type": "fungible"
+        }
+    },
+    "saved_values": {}
+}

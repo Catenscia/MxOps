@@ -1,6 +1,8 @@
 allowed_networks:
-  - devnet
-  - localnet
+    - localnet
+    - testnet
+    - devnet
+    - chain-simulator
 
 allowed_scenario:
   - "integration_test_token_management.*"
@@ -22,26 +24,44 @@ steps:
     function: check_token_properties
     arguments:
       - "MarcNFT"
+
+  - type: NonFungibleIssue
+    sender: marc
+    token_name: MarcNFTAllProp
+    token_ticker: MNFT
+    can_freeze: true
+    can_wipe: true
+    can_pause: true
+    can_change_owner: true
+    can_upgrade: true
+    can_add_special_roles: true
+    can_transfer_nft_create_role: true
+
+  - type: Python
+    module_path: ./integration_tests/token_management/scripts/checks.py
+    function: check_token_properties
+    arguments:
+      - "MarcNFTAllProp"
   
   - type: ManageNonFungibleTokenRoles
     sender: marc
     is_set: true
     token_identifier: "%MarcNFT.identifier"
-    target: "[marc]"
+    target: "%marc.address"
     roles:
-      - ESDTRoleNFTCreate
-      - ESDTRoleNFTBurn
-      - ESDTRoleNFTUpdateAttributes
-      - ESDTRoleNFTAddURI
-      - ESDTTransferRole
+      - nft_create
+      - nft_burn
+      - nft_update_attributes
+      - nft_add_uri
+      - esdt_transfer_role
   
   - type: ManageNonFungibleTokenRoles
     sender: marc
     is_set: true
     token_identifier: "%MarcNFT.identifier"
-    target: "[marie]"
+    target: "%marie.address"
     roles:
-      - ESDTTransferRole
+      - esdt_transfer_role
   
   - type: NonFungibleMint
     sender: marc

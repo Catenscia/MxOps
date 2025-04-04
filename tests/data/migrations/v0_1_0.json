@@ -1,0 +1,751 @@
+{
+    "saved_values": {
+        "marie": {
+            "address": "erd1tpkdh44yyyx5zwuukmdvry2u7uajgc3l5gf04e45gepfprwchyrswjw5vs"
+        },
+        "emmanuel": {
+            "address": "erd1yy995sn9drrlj7qvzgpcyfgexl7kh9u33l3zqp5np20vw5p2jmwq7s4ark"
+        },
+        "fran\u00e7ois": {
+            "address": "erd1gyqgmmxmg9fttvug4dx5hs4ggewgsaz2al4zankfkr0x8jyd3h9s2est3m"
+        },
+        "thomas": {
+            "address": "erd1ngpjmxuzgvnsdxesy66e354sk77ce22vv8augpms6lx2vyjq3dqssfwyqu"
+        },
+        "paul": {
+            "address": "erd1u07h7vlhktwasayzt6uwpaq6nzkdyhf0d9kpxeye8n9mqztrmmwqfhruwv"
+        },
+        "marthe": {
+            "address": "erd10xth2hqqxnj2nckt0fqcq004ns2wckews6ygu6nu5tp9cwrxnu6sy4qlxt"
+        },
+        "marc": {
+            "address": "erd1g9ysagkr3aev8lxudcxl8j5nk77uy0aa3y26aaxhhu55k4dqccaqt9vvwp"
+        },
+        "jacques": {
+            "address": "erd1gvclvcfp7y586cfyg9ammcw39ld3cltqqkeu7lz86ws5fredufssjs6rlr"
+        },
+        "pierre": {
+            "address": "erd156ph6mcjqv5vzwjq9fctalg9kvk27y9sgs23sugltsy7sa23xw4svyhr2w"
+        },
+        "jean": {
+            "address": "erd1czt3wrd9qfsgqyfrgk9p48ug38s7qnlzqvvaquqcaz07wlk0dwnspwn7x0"
+        },
+        "user_wallets": [
+            "emmanuel",
+            "fran\u00e7ois",
+            "jacques",
+            "jean",
+            "marc",
+            "marie",
+            "marthe",
+            "paul",
+            "pierre",
+            "thomas"
+        ]
+    },
+    "name": "integration_test_data_store",
+    "network": "chain-simulator",
+    "creation_time": 1734282389,
+    "last_update_time": 1734282390,
+    "contracts_data": {
+        "data-store": {
+            "saved_values": {
+                "init_params": [
+                    {
+                        "name": "Default",
+                        "discriminant": 0,
+                        "values": null
+                    },
+                    123455,
+                    -3
+                ],
+                "init_params_2": {
+                    "a": 0,
+                    "b": 123455,
+                    "c": -3
+                },
+                "upgrade_params": [
+                    1000000000000000000,
+                    -100000000000000000
+                ],
+                "my_option_biguint": 123987,
+                "my_token_identifier": "",
+                "test_2_params": [
+                    "erd1qqqqqqqqqqqqqpgqf48ydzn8shr8mnmrvydq2fn9v2afzd3c4fvsk4wglm",
+                    "WEGLD-abcdef"
+                ],
+                "test_3_params": [
+                    -3,
+                    0,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5
+                ],
+                "my_vec_biguint": [
+                    0,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6
+                ],
+                "test_4_params": [
+                    0,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6
+                ],
+                "view_test_1_returns": [
+                    {
+                        "name": "Monday",
+                        "discriminant": 0,
+                        "values": null
+                    },
+                    {
+                        "name": "Sunday",
+                        "discriminant": 6,
+                        "values": null
+                    },
+                    {
+                        "name": "Default",
+                        "discriminant": 0,
+                        "values": null
+                    },
+                    {
+                        "name": "Today",
+                        "discriminant": 1,
+                        "values": [
+                            {
+                                "name": "Tuesday",
+                                "discriminant": 1,
+                                "values": null
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Write",
+                        "discriminant": 2,
+                        "values": [
+                            "bytes:AQIECA==",
+                            14
+                        ]
+                    },
+                    {
+                        "name": "Struct",
+                        "discriminant": 3,
+                        "values": [
+                            8,
+                            "bytes:CS0=",
+                            0,
+                            789484,
+                            485
+                        ]
+                    }
+                ],
+                "view_test_2_returns": [
+                    {
+                        "token_identifier": "WEGLD-abcdef",
+                        "token_nonce": 0,
+                        "amount": 89784651
+                    },
+                    {
+                        "token_identifier": "MEX-abcdef",
+                        "token_nonce": 0,
+                        "amount": 184791484
+                    }
+                ]
+            },
+            "contract_id": "data-store",
+            "address": "erd1qqqqqqqqqqqqqpgq5d4kvm8mdznek3e3ty6npluuneuhxsxajmwqvya7p8",
+            "serializer": {
+                "endpoints": {
+                    "my_usize": {
+                        "name": "my_usize",
+                        "mutability": "readonly",
+                        "inputs": [],
+                        "outputs": [
+                            {
+                                "type": "u32"
+                            }
+                        ],
+                        "docs": []
+                    },
+                    "my_u8": {
+                        "name": "my_u8",
+                        "mutability": "readonly",
+                        "inputs": [],
+                        "outputs": [
+                            {
+                                "type": "u8"
+                            }
+                        ],
+                        "docs": []
+                    },
+                    "my_u16": {
+                        "name": "my_u16",
+                        "mutability": "readonly",
+                        "inputs": [],
+                        "outputs": [
+                            {
+                                "type": "u16"
+                            }
+                        ],
+                        "docs": []
+                    },
+                    "my_u32": {
+                        "name": "my_u32",
+                        "mutability": "readonly",
+                        "inputs": [],
+                        "outputs": [
+                            {
+                                "type": "u32"
+                            }
+                        ],
+                        "docs": []
+                    },
+                    "my_u64": {
+                        "name": "my_u64",
+                        "mutability": "readonly",
+                        "inputs": [],
+                        "outputs": [
+                            {
+                                "type": "u64"
+                            }
+                        ],
+                        "docs": []
+                    },
+                    "my_isize": {
+                        "name": "my_isize",
+                        "mutability": "readonly",
+                        "inputs": [],
+                        "outputs": [
+                            {
+                                "type": "i32"
+                            }
+                        ],
+                        "docs": []
+                    },
+                    "my_i8": {
+                        "name": "my_i8",
+                        "mutability": "readonly",
+                        "inputs": [],
+                        "outputs": [
+                            {
+                                "type": "i8"
+                            }
+                        ],
+                        "docs": []
+                    },
+                    "my_i16": {
+                        "name": "my_i16",
+                        "mutability": "readonly",
+                        "inputs": [],
+                        "outputs": [
+                            {
+                                "type": "i16"
+                            }
+                        ],
+                        "docs": []
+                    },
+                    "my_i32": {
+                        "name": "my_i32",
+                        "mutability": "readonly",
+                        "inputs": [],
+                        "outputs": [
+                            {
+                                "type": "i32"
+                            }
+                        ],
+                        "docs": []
+                    },
+                    "my_i64": {
+                        "name": "my_i64",
+                        "mutability": "readonly",
+                        "inputs": [],
+                        "outputs": [
+                            {
+                                "type": "i64"
+                            }
+                        ],
+                        "docs": []
+                    },
+                    "my_token_identifier": {
+                        "name": "my_token_identifier",
+                        "mutability": "readonly",
+                        "inputs": [],
+                        "outputs": [
+                            {
+                                "type": "TokenIdentifier"
+                            }
+                        ],
+                        "docs": []
+                    },
+                    "my_managed_address": {
+                        "name": "my_managed_address",
+                        "mutability": "readonly",
+                        "inputs": [],
+                        "outputs": [
+                            {
+                                "type": "Address"
+                            }
+                        ],
+                        "docs": []
+                    },
+                    "my_biguint": {
+                        "name": "my_biguint",
+                        "mutability": "readonly",
+                        "inputs": [],
+                        "outputs": [
+                            {
+                                "type": "BigUint"
+                            }
+                        ],
+                        "docs": []
+                    },
+                    "my_bigint": {
+                        "name": "my_bigint",
+                        "mutability": "readonly",
+                        "inputs": [],
+                        "outputs": [
+                            {
+                                "type": "BigInt"
+                            }
+                        ],
+                        "docs": []
+                    },
+                    "my_option_biguint": {
+                        "name": "my_option_biguint",
+                        "mutability": "readonly",
+                        "inputs": [],
+                        "outputs": [
+                            {
+                                "type": "Option<BigUint>"
+                            }
+                        ],
+                        "docs": []
+                    },
+                    "my_vec_biguint": {
+                        "name": "my_vec_biguint",
+                        "mutability": "readonly",
+                        "inputs": [],
+                        "outputs": [
+                            {
+                                "type": "variadic<BigUint>",
+                                "multi_result": true
+                            }
+                        ],
+                        "docs": []
+                    },
+                    "my_enum_with_everything": {
+                        "name": "my_enum_with_everything",
+                        "mutability": "readonly",
+                        "inputs": [],
+                        "outputs": [
+                            {
+                                "type": "EnumWithEverything"
+                            }
+                        ],
+                        "docs": []
+                    },
+                    "view_optional_1": {
+                        "name": "view_optional_1",
+                        "mutability": "readonly",
+                        "inputs": [
+                            {
+                                "name": "my_optional",
+                                "type": "optional<bool>",
+                                "multi_arg": true
+                            }
+                        ],
+                        "outputs": [
+                            {
+                                "type": "optional<bool>",
+                                "multi_result": true
+                            }
+                        ],
+                        "docs": []
+                    },
+                    "get_init_params": {
+                        "name": "get_init_params",
+                        "mutability": "readonly",
+                        "inputs": [],
+                        "outputs": [
+                            {
+                                "type": "EnumWithEverything"
+                            },
+                            {
+                                "type": "u32"
+                            },
+                            {
+                                "type": "i8"
+                            }
+                        ],
+                        "docs": []
+                    },
+                    "get_upgrade_params": {
+                        "name": "get_upgrade_params",
+                        "mutability": "readonly",
+                        "inputs": [],
+                        "outputs": [
+                            {
+                                "type": "tuple<BigUint,BigInt>"
+                            }
+                        ],
+                        "docs": []
+                    },
+                    "test_1": {
+                        "name": "test_1",
+                        "mutability": "mutable",
+                        "inputs": [
+                            {
+                                "name": "my_option_biguint",
+                                "type": "Option<BigUint>"
+                            },
+                            {
+                                "name": "my_optional_token_identifier",
+                                "type": "optional<TokenIdentifier>",
+                                "multi_arg": true
+                            }
+                        ],
+                        "outputs": [],
+                        "docs": []
+                    },
+                    "test_2": {
+                        "name": "test_2",
+                        "mutability": "mutable",
+                        "inputs": [
+                            {
+                                "name": "my_managed_address",
+                                "type": "Address"
+                            },
+                            {
+                                "name": "my_optional_token_identifier",
+                                "type": "optional<TokenIdentifier>",
+                                "multi_arg": true
+                            }
+                        ],
+                        "outputs": [],
+                        "docs": []
+                    },
+                    "get_test_2_params": {
+                        "name": "get_test_2_params",
+                        "mutability": "readonly",
+                        "inputs": [],
+                        "outputs": [
+                            {
+                                "type": "tuple<Address,TokenIdentifier>"
+                            }
+                        ],
+                        "docs": []
+                    },
+                    "test_3": {
+                        "name": "test_3",
+                        "mutability": "mutable",
+                        "inputs": [
+                            {
+                                "name": "my_isize",
+                                "type": "i32"
+                            },
+                            {
+                                "name": "biguints",
+                                "type": "variadic<BigUint>",
+                                "multi_arg": true
+                            }
+                        ],
+                        "outputs": [],
+                        "docs": []
+                    },
+                    "get_test_3_params": {
+                        "name": "get_test_3_params",
+                        "mutability": "readonly",
+                        "inputs": [],
+                        "outputs": [
+                            {
+                                "type": "i32"
+                            },
+                            {
+                                "type": "variadic<BigUint>",
+                                "multi_result": true
+                            }
+                        ],
+                        "docs": []
+                    },
+                    "test_4": {
+                        "name": "test_4",
+                        "mutability": "mutable",
+                        "inputs": [
+                            {
+                                "name": "biguints",
+                                "type": "List<BigUint>"
+                            }
+                        ],
+                        "outputs": [],
+                        "docs": []
+                    },
+                    "get_test_4_params": {
+                        "name": "get_test_4_params",
+                        "mutability": "readonly",
+                        "inputs": [],
+                        "outputs": [
+                            {
+                                "type": "List<BigUint>"
+                            }
+                        ],
+                        "docs": []
+                    },
+                    "view_test_1": {
+                        "name": "view_test_1",
+                        "mutability": "readonly",
+                        "inputs": [
+                            {
+                                "name": "a",
+                                "type": "DayOfWeek"
+                            },
+                            {
+                                "name": "b",
+                                "type": "DayOfWeek"
+                            },
+                            {
+                                "name": "c",
+                                "type": "EnumWithEverything"
+                            },
+                            {
+                                "name": "d",
+                                "type": "EnumWithEverything"
+                            },
+                            {
+                                "name": "e",
+                                "type": "EnumWithEverything"
+                            },
+                            {
+                                "name": "f",
+                                "type": "EnumWithEverything"
+                            }
+                        ],
+                        "outputs": [
+                            {
+                                "type": "DayOfWeek"
+                            },
+                            {
+                                "type": "DayOfWeek"
+                            },
+                            {
+                                "type": "EnumWithEverything"
+                            },
+                            {
+                                "type": "EnumWithEverything"
+                            },
+                            {
+                                "type": "EnumWithEverything"
+                            },
+                            {
+                                "type": "EnumWithEverything"
+                            }
+                        ],
+                        "docs": []
+                    },
+                    "view_test_2": {
+                        "name": "view_test_2",
+                        "mutability": "readonly",
+                        "inputs": [
+                            {
+                                "name": "payments",
+                                "type": "variadic<EsdtTokenPayment>",
+                                "multi_arg": true
+                            }
+                        ],
+                        "outputs": [
+                            {
+                                "type": "variadic<EsdtTokenPayment>",
+                                "multi_result": true
+                            }
+                        ],
+                        "docs": []
+                    },
+                    "init": {
+                        "name": "init",
+                        "mutability": "mutable",
+                        "inputs": [
+                            {
+                                "name": "my_enum",
+                                "type": "EnumWithEverything"
+                            },
+                            {
+                                "name": "my_u32",
+                                "type": "u32"
+                            },
+                            {
+                                "name": "my_i8",
+                                "type": "i8"
+                            }
+                        ],
+                        "outputs": [],
+                        "docs": []
+                    },
+                    "upgrade": {
+                        "name": "upgrade",
+                        "mutability": "mutable",
+                        "inputs": [
+                            {
+                                "name": "my_biguint",
+                                "type": "BigUint"
+                            },
+                            {
+                                "name": "my_bigint",
+                                "type": "BigInt"
+                            }
+                        ],
+                        "outputs": [],
+                        "docs": []
+                    }
+                },
+                "structs": {
+                    "EsdtTokenPayment": {
+                        "name": "EsdtTokenPayment",
+                        "fields": [
+                            {
+                                "name": "token_identifier",
+                                "type": "TokenIdentifier",
+                                "docs": []
+                            },
+                            {
+                                "name": "token_nonce",
+                                "type": "u64",
+                                "docs": []
+                            },
+                            {
+                                "name": "amount",
+                                "type": "BigUint",
+                                "docs": []
+                            }
+                        ],
+                        "docs": []
+                    }
+                },
+                "enums": {
+                    "DayOfWeek": {
+                        "name": "DayOfWeek",
+                        "variants": [
+                            {
+                                "name": "Monday",
+                                "discriminant": 0,
+                                "fields": []
+                            },
+                            {
+                                "name": "Tuesday",
+                                "discriminant": 1,
+                                "fields": []
+                            },
+                            {
+                                "name": "Wednesday",
+                                "discriminant": 2,
+                                "fields": []
+                            },
+                            {
+                                "name": "Thursday",
+                                "discriminant": 3,
+                                "fields": []
+                            },
+                            {
+                                "name": "Friday",
+                                "discriminant": 4,
+                                "fields": []
+                            },
+                            {
+                                "name": "Saturday",
+                                "discriminant": 5,
+                                "fields": []
+                            },
+                            {
+                                "name": "Sunday",
+                                "discriminant": 6,
+                                "fields": []
+                            }
+                        ],
+                        "docs": []
+                    },
+                    "EnumWithEverything": {
+                        "name": "EnumWithEverything",
+                        "variants": [
+                            {
+                                "name": "Default",
+                                "discriminant": 0,
+                                "fields": []
+                            },
+                            {
+                                "name": "Today",
+                                "discriminant": 1,
+                                "fields": [
+                                    {
+                                        "name": "0",
+                                        "type": "DayOfWeek",
+                                        "docs": []
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "Write",
+                                "discriminant": 2,
+                                "fields": [
+                                    {
+                                        "name": "0",
+                                        "type": "bytes",
+                                        "docs": []
+                                    },
+                                    {
+                                        "name": "1",
+                                        "type": "u16",
+                                        "docs": []
+                                    }
+                                ]
+                            },
+                            {
+                                "name": "Struct",
+                                "discriminant": 3,
+                                "fields": [
+                                    {
+                                        "name": "int",
+                                        "type": "u16",
+                                        "docs": []
+                                    },
+                                    {
+                                        "name": "seq",
+                                        "type": "bytes",
+                                        "docs": []
+                                    },
+                                    {
+                                        "name": "another_byte",
+                                        "type": "u8",
+                                        "docs": []
+                                    },
+                                    {
+                                        "name": "uint_32",
+                                        "type": "u32",
+                                        "docs": []
+                                    },
+                                    {
+                                        "name": "uint_64",
+                                        "type": "u64",
+                                        "docs": []
+                                    }
+                                ]
+                            }
+                        ],
+                        "docs": []
+                    }
+                }
+            },
+            "code_hash": "45b70609707c56d046e6a5ec0990d9d7feb54000503fcc171f7153aa399dc224",
+            "deploy_time": 1734283186,
+            "last_upgrade_time": 1734283192,
+            "is_external": false
+        }
+    },
+    "tokens_data": {}
+}

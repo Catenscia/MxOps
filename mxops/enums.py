@@ -17,6 +17,7 @@ class NetworkEnum(Enum):
     DEV = "devnet"
     TEST = "testnet"
     LOCAL = "localnet"
+    CHAIN_SIMULATOR = "chain-simulator"
 
 
 class TokenTypeEnum(Enum):
@@ -28,6 +29,19 @@ class TokenTypeEnum(Enum):
     NON_FUNGIBLE = "non fungible"
     SEMI_FUNGIBLE = "semi fungible"
     META = "meta"
+
+
+class LogGroupEnum(Enum):
+    """
+    Define the different groups of logging
+    Useful to define log level per group
+    """
+
+    GNL = "general"
+    CONFIG = "configuration"
+    EXEC = "execution"
+    DATA = "data"
+    MSC = "miscellanious"
 
 
 def parse_enum(value: str, enum_class: Type[Enum]) -> Enum:

@@ -1,19 +1,18 @@
 # Scenes
 
-A `Scene` is a collection of sequential `Steps` to be executed by MxOps.
-At execution time, the user will designate the `Scenario` in which the actions will be performed and the data recorded.
+A scene is mostly a collection of sequential steps to be executed by MxOps.
+At execution time, the user will designate the scenario and the network in which the actions will be performed and the data recorded.
 
 ## Scene Format
 
-`Scenes` are written in yaml format. Each file will contain the following elements:
+scenes are written in yaml format. Each file can contain the following elements:
 
-- `allowed_network*`: a list of the network onto which the `Scene` is allowed to be run. Allowed values are: [`localnet`, `testnet`, `devnet`, `mainnet`].
-- `allowed_scenario*`: a list of the scenario into which the `Scene` is allowed to be run. Regex can be used here.
-- `accounts`: a list of the accounts details. This can be defined only once per execution (so in only one file in the case where several files were submitted). Each account will be designated by its `account_name` in the `Steps`.
-- `external_contracts`: a dictionary of external contract addresses. The keys will be used as contract ids by MxOps. This can be defined only once per scenario.
-- `steps`: a list the `Steps` to execute sequentially.
+- `allowed_network`: a list of the networks onto which the scene is allowed to be run. Allowed values are: `mainnet`, `devnet`, `testnet`, `localnet` and `chain-simulator`. By default all networks except mainnet are allowed.
+- `allowed_scenario`: a list of the scenarios into which the scene is allowed to be run. Regex can be used here. By default all scenarios are allowed.
+- `accounts`: a list to define either signer accounts (pem wallet, ledger wallet, ...) or just ids for easier interaction (account id and ABIs for third party contracts, ...).
+- `steps`: a list of the the steps to execute sequentially.
 
- \* *mandatory values*
+All of the above elements are optional, you can use only the one you need and omit the rest.
 
 ## Scene Example
 
@@ -30,20 +29,36 @@ allowed_scenario:
     - "<scenario_name_or_regex>"
     - "<scenario_name_or_regex>"
 
-# List of the accounts that will be used in this scene or in other scenes later scenes. This means that
-# if you execute a folder of scenes for example, you only need to define the accounts in the first executed scene.
-# Names have to be unique or they will override each other
+# List of the accounts that will be used in this scene or in other scenes later on. This means that
+# if you execute a folder of scenes for example, you only need to define the accounts
+# in the first executed scene.
+# Ids have to be unique per scenario
 accounts:
-  - account_name: bob
+
+  # a pem wallet
+  - account_id: bob
     pem_path: path/to/bom_pem
-  - account_name: alice
-    ledger_account_index: 12
+
+  # a ledger wallet
+  - account_id: alice
     ledger_address_index: 2
 
-# External contracts that will be called for transactions or queries in future steps
-external_contracts:
-  egld_wrapper: erd1qqqqqqqqqqqqqpgqhe8t5jewej70zupmh44jurgn29psua5l2jps3ntjj3 
-  xexchange_router: erd1qqqqqqqqqqqqqpgqq66xk9gfr4esuhem3jru86wg5hvp33a62jps2fy57p
+  # a folder of pem wallets
+  - name: user_wallets  # the list of the loaded wallets names will be saved under this name
+    folder_path: ./path/to/all/users_wallets
+  
+  # a third party account
+  - account_id: beni
+    address: erd159u4p8d6agj2jekf5fmgpscpgeq7ytnv65yy8ajme2x8r7qwqensulfejs
+
+  # a third party contract abi
+  - account_id: egld_wrapper
+    address: erd1qqqqqqqqqqqqqpgqhe8t5jewej70zupmh44jurgn29psua5l2jps3ntjj3 
+    abi_path: abis/egld_wrapper.abi.json
+
+  # a third party contract without abi
+  - account_id: xexchange_router
+    address: erd1qqqqqqqqqqqqqpgqq66xk9gfr4esuhem3jru86wg5hvp33a62jps2fy57p
 
 # List of the steps to execute in this scene
 steps:

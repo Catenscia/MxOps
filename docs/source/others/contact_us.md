@@ -4,7 +4,6 @@ We hope to have shown how MxOps can help you build more safely and consistently.
 
 If you have any idea on how to improve MxOps or any feature you would like, you are more than welcome to [share your thoughts](https://github.com/Catenscia/MxOps/discussions/categories/ideas)! 🤗
 
-(get_help)=
 ## Help
 
 If you need help, you have several options:

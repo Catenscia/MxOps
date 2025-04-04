@@ -1,189 +1,99 @@
 import json
 from pathlib import Path
+import re
 
-from multiversx_sdk_cli.accounts import Account, Address
-from multiversx_sdk_network_providers.transactions import TransactionOnNetwork
+from multiversx_sdk import Address, Token
+from multiversx_sdk.network_providers.http_resources import (
+    transaction_from_proxy_response,
+)
+import pytest
 
 from mxops.data.execution_data import InternalContractData, ScenarioData
 from mxops.errors import CheckFailed
-from mxops.execution.account import AccountsManager
-from mxops.execution.checks import TransfersCheck
-from mxops.execution.msc import ExpectedTransfer, OnChainTransfer
+from mxops.execution.checks import SuccessCheck, TransfersCheck
+from mxops.execution.msc import OnChainTokenTransfer
+from mxops.execution.steps.msc import LoopStep
+from mxops.execution.steps.smart_contract import ContractCallStep
+from mxops.smart_values import SmartOnChainTokenTransfer
 
 
-def test_transfers_equality():
+def test_onchain_and_expected_transfer_equality():
     # Given
-    expected_transfers = [
-        ExpectedTransfer(
-            "[test_user_A]",
-            "my_test_contract",
-            "tokenA",
-            "15",
-        ),
-        ExpectedTransfer(
-            "erd1yy995sn9drrlj7qvzgpcyfgexl7kh9u33l3zqp5np20vw5p2jmwq7s4ark",
-            "%my_test_contract.address",
-            "tokenA",
-            "18",
-        ),
-        ExpectedTransfer(
-            "my_test_contract",
-            "test_user_A",
-            "tokenA",
-            "15",
-        ),
-        ExpectedTransfer(
-            "%my_test_contract.address",
-            "[test_user_B]",
-            "tokenA",
-            15,
-        ),
-        ExpectedTransfer(
-            "test_user_A",
-            "erd1czt3wrd9qfsgqyfrgk9p48ug38s7qnlzqvvaquqcaz07wlk0dwnspwn7x0",
-            "MyNFT",
-            1,
-            nonce=3661,
-        ),
-        ExpectedTransfer(
-            "erd1yy995sn9drrlj7qvzgpcyfgexl7kh9u33l3zqp5np20vw5p2jmwq7s4ark",
-            "erd1czt3wrd9qfsgqyfrgk9p48ug38s7qnlzqvvaquqcaz07wlk0dwnspwn7x0",
-            "MySFT",
-            15848,
-            nonce=210,
-        ),
-    ]
-
-    onchain_transfers = [
-        OnChainTransfer(
-            "erd1jzw34pun678ktsstunk0dm0z2uh7m0ld9trw507ksnzt0wxalwwsv3fpa2",
-            "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t",
-            "tokenA",
-            "15",
-        ),
-        OnChainTransfer(
-            "erd1yy995sn9drrlj7qvzgpcyfgexl7kh9u33l3zqp5np20vw5p2jmwq7s4ark",
-            "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t",
-            "tokenA",
-            "18",
-        ),
-        OnChainTransfer(
-            "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t",
-            "erd1jzw34pun678ktsstunk0dm0z2uh7m0ld9trw507ksnzt0wxalwwsv3fpa2",
-            "tokenA",
-            "15",
-        ),
-        OnChainTransfer(
-            "erd1qqqqqqqqqqqqqpgqdmq43snzxutandvqefxgj89r6fh528v9dwnswvgq9t",
-            "erd1y3296u7m2v5653pddey3p7l5zacqmsgqc7vsu3w74p9jm2qp3tqqz950yl",
-            "tokenA",
-            "15",
-        ),
-        OnChainTransfer(
-            "erd1jzw34pun678ktsstunk0dm0z2uh7m0ld9trw507ksnzt0wxalwwsv3fpa2",
-            "erd1czt3wrd9qfsgqyfrgk9p48ug38s7qnlzqvvaquqcaz07wlk0dwnspwn7x0",
-            "MyNFT-0e4d",
-            "1",
-        ),
-        OnChainTransfer(
-            "erd1yy995sn9drrlj7qvzgpcyfgexl7kh9u33l3zqp5np20vw5p2jmwq7s4ark",
-            "erd1czt3wrd9qfsgqyfrgk9p48ug38s7qnlzqvvaquqcaz07wlk0dwnspwn7x0",
-            "MySFT-d2",
-            "15848",
-        ),
-    ]
-
-    # When
-    # Then
-    for et, ot in zip(expected_transfers, onchain_transfers):
-        assert et == ot
-        assert ot == et
-        assert et in onchain_transfers
-        assert ot in expected_transfers
-
-    for i in range(len(expected_transfers)):
-        for j in range(i + 1, len(expected_transfers)):
-            assert expected_transfers[i] != expected_transfers[j]
-            assert onchain_transfers[i] != onchain_transfers[j]
-
-    assert expected_transfers == onchain_transfers
-
-
-def test_data_load_equality():
-    # Given
-    AccountsManager._accounts["owner"] = Account(
-        Address.from_bech32(
-            "erd1zzugxvypryhfym7qrnnkxvrlh8d9ylw2s0399q5tzp43g297plcq4p6d30"
-        )
-    )
     scenario = ScenarioData.get()
     contract_data = InternalContractData(
-        contract_id="egld-ping-pong",
-        address="erd1qqqqqqqqqqqqqpgqpxkd9qgyyxykq5l6d8v9zud99hpwh7l0plcq3dae77",
-        serializer=None,
+        account_id="egld-ping-pong",
+        bech32="erd1qqqqqqqqqqqqqpgqpxkd9qgyyxykq5l6d8v9zud99hpwh7l0plcq3dae77",
         saved_values={"PingAmount": 1000000000000000000},
-        wasm_hash="1383133d22b8be01c4dc6dfda448dbf0b70ba1acb348a50dd3224b9c8bb21757",
+        code_hash="1383133d22b8be01c4dc6dfda448dbf0b70ba1acb348a50dd3224b9c8bb21757",
         deploy_time=1677261606,
         last_upgrade_time=1677261606,
     )
-    scenario.add_contract_data(contract_data)
+    scenario.add_account_data(contract_data)
 
-    expected_transfer = ExpectedTransfer(
-        sender="[owner]",
-        receiver="%egld-ping-pong.address",
-        token_identifier="EGLD",
-        amount="%egld-ping-pong.PingAmount",
+    expected_transfer = SmartOnChainTokenTransfer(
+        {
+            "sender": "alice",
+            "receiver": "%egld-ping-pong.address",
+            "token_identifier": "EGLD",
+            "amount": "%egld-ping-pong.PingAmount",
+        }
     )
 
     on_chain_transfers = [
-        OnChainTransfer(
-            sender="erd1zzugxvypryhfym7qrnnkxvrlh8d9ylw2s0399q5tzp43g297plcq4p6d30",
-            receiver="erd1qqqqqqqqqqqqqpgqpxkd9qgyyxykq5l6d8v9zud99hpwh7l0plcq3dae77",
-            token_identifier="EGLD",
-            amount="1000000000000000000",
+        OnChainTokenTransfer(
+            sender=Address.new_from_bech32(
+                "erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3"
+            ),
+            receiver=Address.new_from_bech32(
+                "erd1qqqqqqqqqqqqqpgqpxkd9qgyyxykq5l6d8v9zud99hpwh7l0plcq3dae77"
+            ),
+            token=Token("EGLD"),
+            amount=1000000000000000000,
         )
     ]
 
     # When
-    index = on_chain_transfers.index(expected_transfer)
+    expected_transfer.evaluate()
+    index = on_chain_transfers.index(expected_transfer.get_evaluated_value())
 
     # Then
     assert index == 0
 
 
-def test_exact_add_liquidity_transfers_check(test_data_folder_path: Path):
+def test_add_liquidity_transfers_check(test_data_folder_path: Path):
     # Given
     with open(test_data_folder_path / "api_responses" / "add_liquidity.json") as file:
-        onchain_tx = TransactionOnNetwork.from_proxy_http_response(**json.load(file))
+        onchain_tx = transaction_from_proxy_response(**json.load(file))
 
     expected_transfers = [
-        ExpectedTransfer(
+        [
             "erd1n775edthxhyrhntcutmqfspanmjvscumxuydmm83xumlahz75kfsgp62ss",
             "erd1qqqqqqqqqqqqqpgqav09xenkuqsdyeyy5evqyhuusvu4gl3t2jpss57g8x",
             "WEGLD-bd4d79",
             "2662383390769244262",
-        ),
-        ExpectedTransfer(
+        ],
+        [
             "erd1n775edthxhyrhntcutmqfspanmjvscumxuydmm83xumlahz75kfsgp62ss",
             "erd1qqqqqqqqqqqqqpgqav09xenkuqsdyeyy5evqyhuusvu4gl3t2jpss57g8x",
             "RIDE-7d18e9",
             "1931527217545745197301",
-        ),
-        ExpectedTransfer(
+        ],
+        [
             "erd1qqqqqqqqqqqqqpgqav09xenkuqsdyeyy5evqyhuusvu4gl3t2jpss57g8x",
             "erd1n775edthxhyrhntcutmqfspanmjvscumxuydmm83xumlahz75kfsgp62ss",
             "EGLDRIDE-7bd51a",
             "1224365948567992620",
-        ),
-        ExpectedTransfer(
+        ],
+        [
             "erd1qqqqqqqqqqqqqpgqav09xenkuqsdyeyy5evqyhuusvu4gl3t2jpss57g8x",
             "erd1n775edthxhyrhntcutmqfspanmjvscumxuydmm83xumlahz75kfsgp62ss",
             "RIDE-7d18e9",
             "37",
-        ),
+        ],
     ]
 
     # When
+
     transfer_check = TransfersCheck(expected_transfers, condition="exact")
     exact_result = transfer_check.get_check_status(onchain_tx)
 
@@ -194,11 +104,8 @@ def test_exact_add_liquidity_transfers_check(test_data_folder_path: Path):
         expected_transfers, condition="exact", include_gas_refund=True
     )
     refund_result = transfer_check.get_check_status(onchain_tx)
-    try:
+    with pytest.raises(CheckFailed, match=re.escape("Check failed on transaction")):
         transfer_check.raise_on_failure(onchain_tx)
-        raise RuntimeError("Above line should raise an error")
-    except CheckFailed:
-        pass
 
     transfer_check = TransfersCheck(
         expected_transfers, condition="included", include_gas_refund=True
@@ -210,3 +117,71 @@ def test_exact_add_liquidity_transfers_check(test_data_folder_path: Path):
     assert include_result
     assert not refund_result
     assert included_refund_result
+
+
+def test_success_check(test_data_folder_path: Path):
+    # Given
+    with open(test_data_folder_path / "api_responses" / "add_liquidity.json") as file:
+        success_onchain_tx = transaction_from_proxy_response(**json.load(file))
+    with open(test_data_folder_path / "api_responses" / "not_enough_esdt.json") as file:
+        fail_onchain_tx = transaction_from_proxy_response(**json.load(file))
+
+    # When
+    check = SuccessCheck()
+    result = check.get_check_status(success_onchain_tx)
+    with pytest.raises(CheckFailed):
+        SuccessCheck().raise_on_failure(fail_onchain_tx)
+
+    # Then
+    assert result
+
+
+def test_check_nested_dependent_instatiation():
+    # Given
+    scenario_data = ScenarioData.get()
+    scenario_data.set_value(
+        "checks",
+        [
+            {"type": "Success"},
+            {
+                "type": "Transfers",
+                "expected_transfers": [
+                    {
+                        "identifier": "TOKEN-abcdef",
+                        "amount": "%amount_loop_var",
+                        "sender": "dummy",
+                        "receiver": "alice",
+                    }
+                ],
+            },
+        ],
+    )
+    scenario_data.set_value(
+        "contract_call_step",
+        {
+            "type": "ContractCall",
+            "sender": "alice",
+            "contract": "dummy",
+            "endpoint": "add",
+            "gas_limit": 1000000,
+            "checks": "%checks",
+        },
+    )
+    scenario_data.set_value("steps", ["%{contract_call_step}"])
+    loop_step = LoopStep(steps="%steps", var_name="amount_loop_var", var_list=[10**18])
+
+    # When
+    generated_step = next(loop_step.generate_steps())
+    generated_step.evaluate_smart_values()
+
+    # Then
+    assert isinstance(generated_step, ContractCallStep)
+    checks = generated_step.checks.get_evaluated_value()
+    assert len(checks) == 2
+    assert isinstance(checks[0], SuccessCheck)
+    check = checks[1]
+    assert isinstance(check, TransfersCheck)
+    check.evaluate_smart_values()
+    assert len(check.expected_transfers.get_evaluated_value()) == 1
+    transfer = check.expected_transfers.get_evaluated_value()[0]
+    assert transfer.amount == 10**18

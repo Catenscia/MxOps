@@ -6,6 +6,7 @@ Catenscia
 changelog
 ContractCall
 ContractCallStep
+ContractDeploy
 ContractQuery
 ContractQueryStep
 ContractUpgrade
@@ -15,8 +16,13 @@ Dev
 devnet
 EnumWithEverything
 EsdtMinter
+ExecuteTrade
+FileFuzzerStep
 françois
 Freepik
+Fuzzer
+fuzzer
+GenerateWallets
 GetBaseToken
 GetPoolPrice
 GetQuoteToken
@@ -33,6 +39,7 @@ mxops
 mxopsHelper
 MyCustomException
 MyStruct
+MxPySerializer
 PiggyBank
 PingAmount
 PoolPrice
@@ -40,6 +47,7 @@ pylint
 QuoteToken
 runtime
 ScenarioData
+SceneStep
 SuccessCheck
 TransfersCheck
 uint

@@ -1,0 +1,28 @@
+steps:
+
+  - type: ContractCall
+    sender: erd1j574lhrfmx4p8xguxrtu5ca7rhetulqjy5xns8snlnusqlu8yz0q8app93
+    contract: dummy
+    endpoint: endpoint_1
+    gas_limit: 1200000
+    value: 0
+    arguments:
+      - [1, 2, 4, 8]
+
+  - type: ContractCall
+    sender: erd1j574lhrfmx4p8xguxrtu5ca7rhetulqjy5xns8snlnusqlu8yz0q8app93
+    contract: dummy
+    endpoint: endpoint_1
+    gas_limit: 1200000
+    value: 0
+    arguments:
+      - "0x01020408"
+
+  - type: ContractCall
+    sender: erd1j574lhrfmx4p8xguxrtu5ca7rhetulqjy5xns8snlnusqlu8yz0q8app93
+    contract: dummy
+    endpoint: endpoint_1
+    gas_limit: 1200000
+    value: 0
+    arguments:
+      - "bytes:AQIECA=="

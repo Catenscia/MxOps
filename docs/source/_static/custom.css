@@ -1,0 +1,55 @@
+/* Ensure the icon and second chevron are hidden */
+.sd-dropdown summary::before,
+.sd-dropdown summary .edit-icon,
+.md-typeset .sd-dropdown summary.normal-title::after {
+    display: none !important;
+}
+
+/* Style the summary element to align the title and chevron */
+.md-typeset .sd-dropdown summary.normal-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.25rem 0.5rem !important;
+    line-height: 1.5 !important;
+    min-height: unset !important;
+}
+
+/* Style the title text */
+.md-typeset .sd-dropdown summary.normal-title .sd-summary-text {
+    font-family: inherit !important;
+    font-weight: normal !important;
+    font-style: normal !important;
+    font-size:medium !important;
+    flex-grow: 0;
+    text-align: left;
+}
+
+/* Style the chevron */
+.md-typeset .sd-dropdown summary.normal-title .sd-summary-state-marker {
+    display: flex;
+    align-items: center;
+    line-height: 1 !important;
+}
+
+/* Ensure the chevron SVG is sized appropriately */
+.md-typeset .sd-dropdown summary.normal-title .sd-summary-state-marker .sd-octicon-chevron-right {
+    width: 1em !important;
+    height: 1em !important;
+}
+
+
+/* Add space above caption items */
+.md-nav__link.caption {
+    margin-top: 1.5rem;
+}
+
+/* Add more weight to the main sections of a chapter on the right side menu */
+.md-sidebar.md-sidebar--secondary > div > div > nav > ul > li:nth-child(1) > nav > ul > li > a {
+    font-weight: bold;
+}
+
+/* Hide the Contents label in the secondary sidebar */
+.md-sidebar.md-sidebar--secondary > div > div > nav > label {
+    display: none;
+}
