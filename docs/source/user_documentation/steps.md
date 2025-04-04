@@ -896,3 +896,17 @@ This step is really useful combined with [smart-values](values) and with the [st
 ```{note}
 Notice that you need to put single quote `'` when you want to execute string comparison.
 ```
+
+(log_step_target)=
+### Log Step
+
+Use this step to log some message, you can use the different logging level available: error, warning, info and debug.
+All levels are optional, only use the ones you want.
+
+```yaml
+type: Log
+error: "Error message %{my_list}"  # optional
+warning: "Warning message %{alice.address}"  # optional
+info: "Info message ={1+1}"  # optional
+debug: "Debug message ={'%{my_list[0]}' + '%{my_list[1]}'}"  # optional
+```
