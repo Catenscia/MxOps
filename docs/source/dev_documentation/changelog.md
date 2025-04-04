@@ -69,7 +69,7 @@
 - 🚨 BREAKING CHANGE 🚨 cli and smart-values have been moved into dedicated sub-packages
 - 🚨 BREAKING CHANGE 🚨 step argument `print_results` was changed to `log_results` and is set to True by default
 - 🚨 BREAKING CHANGE 🚨 renamed `wasm_hash` to `code_hash`
-
+- 🚨 BREAKING CHANGE 🚨 step argument `print_result` was changed to `log_result` and is set to True by default
 
 
 ## 2.2.0 - 2024-04-16

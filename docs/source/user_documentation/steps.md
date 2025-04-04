@@ -748,7 +748,7 @@ arguments:  # optional
 keyword_arguments:  # optional
   key_1: value_1
   key_2: "$VALUE"  # using os env var
-print_result: True  # optional
+log_result: True  # optional
 result_save_key: "my_result"  # optional, key under which save the function result
 ```
 
