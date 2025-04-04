@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 3.0.0 - 2025-04-04
+
 ### Fixed
 
 - Inconsistent data path due the snap packages
