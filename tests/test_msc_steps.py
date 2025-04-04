@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from io import StringIO
 from pathlib import Path
 import re
 import time
@@ -28,7 +29,7 @@ from mxops.smart_values import (
     SmartValue,
 )
 from mxops.execution.steps.factory import SmartStep, SmartSteps
-from mxops.execution.steps.msc import AssertStep, SceneStep, SetSeedStep
+from mxops.execution.steps.msc import AssertStep, LogStep, SceneStep, SetSeedStep
 
 
 @dataclass
@@ -544,3 +545,25 @@ def test_false_assertion(expression: Any, expected_error_message: str):
     # When / Then
     with pytest.raises(errors.AssertionFailed, match=re.escape(expected_error_message)):
         step.execute()
+
+
+def test_log_step(exec_log_capture: StringIO):
+    # Given
+    step = LogStep(
+        error="Error message %{my_list}",
+        warning="Warning message %{alice.address}",
+        info="Info message ={1+1}",
+        debug="Debug message ={'%{my_list[0]}' + '%{my_list[1]}'}",
+    )
+
+    # When
+    step.execute()
+
+    # Assert
+    log_outputs = exec_log_capture.getvalue().splitlines()
+    assert log_outputs == [
+        "ERROR: Error message ['item1', 'item2', 'item3', {'item4-key1': 'e'}]",
+        "WARNING: Warning message erd1pqslfwszea4hrxdvluhr0v7dhgdfwv6ma70xef79vruwnl7uwkdsyg4xj3",  # noqa
+        "INFO: Info message 2",
+        "DEBUG: Debug message item1item2",
+    ]

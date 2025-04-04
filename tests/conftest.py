@@ -1,3 +1,5 @@
+from io import StringIO
+import logging
 import os
 from pathlib import Path
 from multiversx_sdk import AccountOnNetwork, Address
@@ -16,7 +18,7 @@ from mxops.data.execution_data import (
     TokenData,
     delete_scenario_data,
 )
-from mxops.enums import NetworkEnum, TokenTypeEnum
+from mxops.enums import LogGroupEnum, NetworkEnum, TokenTypeEnum
 from mxops.execution.account import AccountsManager
 
 
@@ -131,3 +133,51 @@ def accounts_manager(mock_account_requests):  # needs to be execute after
     accounts_manager.load_register_pem_from_folder(
         name="wallets_folder", folder_path=Path("./tests/data/wallets_folder")
     )
+
+
+@pytest.fixture
+def exec_log_capture(scenario_data):  # Scenario data must be setup
+    """
+    Set up a string buffer to capture logs
+    log level is temporarly set to DEBUG
+    """
+    # store the current state of the logger
+    logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
+    current_log_level = logger.level
+    current_handlers = logger.handlers.copy()
+    exec_log_level = os.environ.get("MXOPS_EXEC_LOG_LEVEL", None)
+    mxops_log_level = os.environ.get("MXOPS_LOG_LEVEL", None)
+
+    # create a curstom buffer handler
+    buffer = StringIO()
+    handler = logging.StreamHandler(buffer)
+    handler.setLevel(logging.DEBUG)
+
+    # Configure logger
+    logger.setLevel(logging.DEBUG)
+    logger.handlers.clear()
+    logger.addHandler(handler)
+    os.environ["MXOPS_EXEC_LOG_LEVEL"] = "DEBUG"
+    os.environ["MXOPS_LOG_LEVEL"] = "DEBUG"
+
+    # Add formatter for better output
+    formatter = logging.Formatter("%(levelname)s: %(message)s")
+    handler.setFormatter(formatter)
+
+    yield buffer
+
+    # Cleanup
+    logger.removeHandler(handler)
+    buffer.close()
+    logger.handlers.clear()
+    for h in current_handlers:
+        logger.addHandler(h)
+    logger.setLevel(current_log_level)
+    if exec_log_level is not None:
+        os.environ["MXOPS_EXEC_LOG_LEVEL"] = exec_log_level
+    else:
+        os.environ.pop("MXOPS_EXEC_LOG_LEVEL")
+    if mxops_log_level is not None:
+        os.environ["MXOPS_LOG_LEVEL"] = mxops_log_level
+    else:
+        os.environ.pop("MXOPS_LOG_LEVEL")

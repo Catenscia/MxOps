@@ -276,3 +276,29 @@ class AssertStep(Step):
             if smart_value.get_evaluated_value() is not True:
                 raise errors.AssertionFailed(smart_value.get_evaluation_string())
             logger.info(f"Assertion {expression} is True")
+
+
+@dataclass
+class LogStep(Step):
+    """
+    Represents a step that logs user input
+    """
+
+    error: SmartStr | None = None
+    warning: SmartStr | None = None
+    info: SmartStr | None = None
+    debug: SmartStr | None = None
+
+    def _execute(self):
+        """
+        set the random seed
+        """
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
+        if self.error is not None:
+            logger.error(self.error.get_evaluated_value())
+        if self.warning is not None:
+            logger.warning(self.warning.get_evaluated_value())
+        if self.info is not None:
+            logger.info(self.info.get_evaluated_value())
+        if self.debug is not None:
+            logger.debug(self.debug.get_evaluated_value())
