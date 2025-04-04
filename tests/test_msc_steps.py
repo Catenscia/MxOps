@@ -297,7 +297,7 @@ def test_python_step():
         module_path,
         function,
         ["my_test_contract", "my_test_key", "my_test_value"],
-        print_result=True,
+        log_result=True,
         result_save_key="result_1",
     )
 
@@ -309,7 +309,7 @@ def test_python_step():
             "value_key": "my_test_key",
             "value": 4582,
         },
-        print_result=True,
+        log_result=True,
         result_save_key="result_2",
     )
 

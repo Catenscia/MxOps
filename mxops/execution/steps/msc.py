@@ -183,7 +183,7 @@ class PythonStep(Step):
     function: SmartStr
     arguments: SmartList = field(default_factory=lambda: SmartList([]))
     keyword_arguments: SmartDict = field(default_factory=lambda: SmartDict({}))
-    print_result: SmartBool = True
+    log_result: SmartBool = True
     result_save_key: SmartStr | None = None
 
     def _execute(self):
@@ -216,7 +216,7 @@ class PythonStep(Step):
             logger.info(
                 f"Saving function result at {result_save_key}: {json_dumps(result)}"
             )
-        elif self.print_result.get_evaluated_value():
+        elif self.log_result.get_evaluated_value():
             logger.info(f"Function result: {json_dumps(result)}")
 
 
