@@ -1,0 +1,301 @@
+steps:
+  # Miscellaneous
+  - type: Assert
+    expressions:
+      - true
+      - "={1 + 1 == 2}"
+
+  - type: Log
+    error: "error message"  # optional, defautls to null
+    warning: "warning message"  # optional, defautls to null
+    info: "info message"  # optional, defautls to null
+    debug: "debug message"  # optional, defautls to null
+
+  - type: Loop
+    var_name: i_loop  # name of the loop variable, accessible with %i_loop
+    var_start: 0  # optional, start value of the loop variable
+    var_end: 100  # optional, end value of the loop variable
+    var_list: ["alice", "bob"]  # optional, values that the loop variable should take
+    steps: []  # steps to execute at each loop iteration
+  
+  - type: Python
+    module_path: path/to/my_module
+    function: name_of_my_function
+    arguments:  # optional, arguments to pass to the python function
+      - arg1
+      - "%my_contract.query_result"
+    keyword_arguments:  # optional, keyword arguments to pass to the python function
+      key_1: value_1
+      key_2: "$VALUE" 
+    log_result: true  # optional, defaults to true
+    result_save_key: result_key  # optional, key under which save the function result
+
+  - type: Scene
+    path: path/to/my_scene.yaml
+    repeat: 1  # optional, defaults to 1
+
+  - type: SetSeed
+    seed: "=randint(0,2**32)" # can be replace by a fixed integer
+  
+  - type: SetVars
+    variables:
+      my_var_1: 123654
+      my_var_2: ["alice", "bob"]
+      "prefix_%{dynamic_name}_suffix": "%dynamic_value"
+
+  - type: Wait
+    for_seconds: 1.2  # optional, defaults to null
+    for_blocks: 123   # optional, defaults to null
+    shard: 0  # optional, defaults to metachain
+  
+
+
+
+
+  # Setup
+  - type: AccountClone
+    address: my_mainnet_contract
+    source_network: mainnet
+    clone_balance: true  # optional, defaults to true
+    clone_code: true  # optional, defaults to true
+    clone_storage: true  # optional, defaults to true
+    clone_esdts: true  # optional, defaults to true
+    overwrite: true  # optional, defaults to true
+    caching_period: "10 days"  # optional, defaults to 10 days
+  
+  - type: ChainSimulatorFaucet
+    targets:  # to which accounts the faucet should send funcds
+      - alice
+      - bob
+    amount: "={10**18}"  # amount to send to each wallet
+
+  - type: GenerateWallets
+    save_folder: path/to/wallets/folder  # folder where to save the generated wallets
+    wallets: # wallets to generate, can also just supply a number of wallets
+      - alice
+      - bob
+    shard: 1  # optional, to force the shard of the generated wallets
+
+  - type: R3D4Faucet
+    targets:  # to which accounts the faucet should send funcds
+      - alice
+      - bob
+
+
+
+
+  # Smart Contract
+  - type: ContractCall
+    sender: alice
+    contract: my-contract
+    endpoint: myEndpoint
+    gas_limit: 2000000
+    arguments:  # optional
+      - 100
+      - TOKEN-abcdef
+    value: 0  # optional, integer amount of EGLD to send
+    esdt_transfers:  # optional, any ESDT, NFT, SFT, MEta-ESDT transfers
+      - identifier: TOKEN-abcdef
+        amount: "={10**18}"
+      - identifier: SFT-abcdef
+        amount: 10000000
+        nonce: 123
+    log_results: True  # optional, if you want to log the results returned by the call
+    results_save_keys: master_key  # optional, key(s) under which save the results returned by the call
+    checks:  # optional, contains a success check by default
+      - type: Success
+
+
+  - type: ContractDeploy
+    sender: alice
+    contract_id: my-contract
+    gas_limit: 10000000
+    wasm_path: path/to/my_contract.wasm
+    abi_path: path/to/my_contract.abi.json  # optional but strongly recommended
+    arguments:  # optional
+      - 100
+      - TOKEN-abcdef
+    upgradeable: true  # optional, defaults to true
+    readable: true  # optional, defaults to true
+    payable: false  # optional, defaults to false
+    payable_by_sc: false  # optional, defaults to false
+    checks:  # optional, contains a success check by default
+      - type: Success
+
+  - type: ContractQuery
+    contract: my-contract
+    endpoint: myEndpoint
+    arguments:  # optional
+      - 100
+      - TOKEN-abcdef
+    log_results: True  # optional, if you want to log the results returned by the call
+    results_save_keys: master_key  # optional, key(s) under which save the results returned by the call
+
+  - type: ContractUpgrade
+    sender: alice
+    contract: my-contract
+    gas_limit: 10000000
+    wasm_path: path/to/my_contract.wasm
+    abi_path: path/to/my_contract.abi.json  # optional but strongly recommended
+    arguments:  # optional
+      - 100
+      - TOKEN-abcdef
+    upgradeable: true  # optional, defaults to true
+    readable: true  # optional, defaults to true
+    payable: false  # optional, defaults to false
+    payable_by_sc: false  # optional, defaults to false
+    checks:  # optional, contains a success check by default
+      - type: Success
+
+  - type: FileFuzzer
+    contract: my-contract
+    file_path: path/to/fuzzer_file.yaml
+
+
+
+
+
+  # Transactions
+  - type: Transfer
+    sender: alice
+    receiver: bob
+    value: 7895651689  # optional, integer amount of EGLD to send
+    transfers:  # optional, any ESDT, NFT, SFT, MEta-ESDT transfers
+      - identifier: TOKEN-abcdef
+        amount: "={10**18}"
+      - identifier: SFT-abcdef
+        amount: 10000000
+        nonce: 123
+    checks:  # optional, contains a success check by default
+      - type: Success
+
+
+
+
+
+  # Token Management
+  - type: FungibleIssue
+    sender: alice
+    token_name: MyToken  # must be unique within a Scenario
+    token_ticker: MTK
+    initial_supply: 1000000000  # 1,000,000.000 MTK
+    num_decimals: 3
+    can_freeze: false  # optional, defaults to false
+    can_wipe: false  # optional, defaults to false
+    can_pause: false  # optional, defaults to false
+    can_change_owner: false  # optional, defaults to false
+    can_upgrade: false  # optional, defaults to false
+    can_add_special_roles: false  # optional, defaults to false
+
+  - type: SemiFungibleIssue
+    sender: alice
+    token_name: MySFT  # must be unique within a Scenario
+    token_ticker: MSFT
+    can_freeze: false  # optional, defaults to false
+    can_wipe: false  # optional, defaults to false
+    can_pause: false  # optional, defaults to false
+    can_change_owner: false  # optional, defaults to false
+    can_upgrade: false  # optional, defaults to false
+    can_add_special_roles: false  # optional, defaults to false
+    can_transfer_nft_create_role: false  # optional, defaults to false
+
+  - type: NonFungibleIssue
+    sender: alice
+    token_name: MyNFT  # must be unique within a Scenario
+    token_ticker: MNFT
+    can_freeze: false  # optional, defaults to false
+    can_wipe: false  # optional, defaults to false
+    can_pause: false  # optional, defaults to false
+    can_change_owner: false  # optional, defaults to false
+    can_upgrade: false  # optional, defaults to false
+    can_add_special_roles: false  # optional, defaults to false
+    can_transfer_nft_create_role: false  # optional, defaults to false
+
+  - type: MetaIssue
+    sender: alice
+    token_name: MyMeta  # must be unique within a Scenario
+    token_ticker: MMT
+    num_decimals: 3
+    can_freeze: false  # optional, defaults to false
+    can_wipe: false  # optional, defaults to false
+    can_pause: false  # optional, defaults to false
+    can_change_owner: false  # optional, defaults to false
+    can_upgrade: false  # optional, defaults to false
+    can_add_special_roles: false  # optional, defaults to false
+    can_transfer_nft_create_role: false  # optional, defaults to false
+
+  - type: ManageFungibleTokenRoles
+    sender: alice
+    token_identifier: MTK-abcdef
+    target: erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw
+    is_set: true  # if false, this will unset the provided roles
+    roles:  # choose one or several of the roles below
+      - local_mint
+      - local_burn
+      - esdt_transfer_role
+
+  - type: ManageNonFungibleTokenRoles
+    sender: alice
+    token_identifier: MNFT-abcdef
+    target: erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw
+    is_set: true  # if false, this will unset the provided roles
+    roles:  # choose one or several of the roles below
+      - nft_create
+      - nft_burn
+      - nft_update_attributes
+      - nft_add_uri
+      - esdt_transfer_role
+      - nft_update
+      - esdt_modify_royalties
+      - esdt_set_new_uri
+      - esdt_modify_creator
+      - nft_recreate
+
+  - type: ManageSemiFungibleTokenRoles
+    sender: alice
+    token_identifier: MNFT-abcdef
+    target: erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw
+    is_set: true  # if false, this will unset the provided roles
+    roles:  # choose one or several of the roles below
+      - nft_create
+      - nft_burn
+      - nft_add_quantity
+      - esdt_transfer_role
+      - nft_update
+      - esdt_modify_royalties
+      - esdt_set_new_uri
+      - esdt_modify_creator
+      - nft_recreate
+
+  - type: ManageMetaTokenRoles
+    sender: alice
+    token_identifier: META-abcdef
+    target: erd17jcn20jh2k868vg0mm7yh0trdd5mxpy4jzasaf2uraffpae0yrjsvu6txw
+    is_set: true  # if false, this will unset the provided roles
+    roles:  # choose one or several of the roles below
+      - nft_create
+      - nft_burn
+      - nft_add_quantity
+      - esdt_transfer_role
+      - nft_update
+      - esdt_modify_royalties
+      - esdt_set_new_uri
+      - esdt_modify_creator
+      - nft_recreate
+
+  - type: FungibleMint
+    sender: alice
+    token_identifier: MTK-abcdef
+    amount: 100000000
+
+  - type: NonFungibleMint
+    sender: alice
+    token_identifier: TOKE-abcdef
+    amount: 1  # must be 1 for NFT but any number for SFT and Meta
+    name: "Beautiful NFT" # optional
+    royalties: 750  # optional, here it is equals to 7.5%
+    hash: "00"  # optional
+    attributes: "metadata:ipfsCID/song.json;tags:song,beautiful,music" # optional
+    uris:  # optional
+      - https://mypng.com/1
+      - https://mysftjpg.com/1
