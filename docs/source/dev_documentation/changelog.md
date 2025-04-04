@@ -42,6 +42,7 @@
 - logs are now saved to the MxOps data folder and scenario folders
 - `SetSeedStep`
 - `AssertStep`
+- `LogStep`
 
 ### Changed
 

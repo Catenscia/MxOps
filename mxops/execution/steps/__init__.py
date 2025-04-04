@@ -6,6 +6,7 @@ This subpackage contains all the steps that can be used with MxOps
 
 from mxops.execution.steps.msc import (
     AssertStep,
+    LogStep,
     LoopStep,
     PythonStep,
     SceneStep,
@@ -52,6 +53,7 @@ __all__ = [
     "FungibleIssueStep",
     "FungibleMintStep",
     "GenerateWalletsStep",
+    "LogStep",
     "LoopStep",
     "ManageFungibleTokenRolesStep",
     "ManageMetaTokenRolesStep",
