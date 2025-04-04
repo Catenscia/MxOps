@@ -31,6 +31,8 @@ If you are new here, we recommend going first to the :doc:`Getting Started secti
    tutorials/queries_1
    tutorials/queries_2
    tutorials/trader_sc
+   tutorials/wrapper_clone
+   tutorials/wrapping
 
 .. toctree::
    :maxdepth: 1
