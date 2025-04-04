@@ -23,6 +23,7 @@ The difference between tutorials and examples is that tutorials are more guided,
 |----------------------------------------|------------|---------------------------------------------------------------------------------------|
 | [ wrapping ]( wrapping )               | easy       | calls<br>checks<br>smart-contract                                                     |
 | [ wrapper clone ]( wrapper_clone )     | easy       | calls<br>checks<br>account cloning<br>chain-simulator<br>smart-contract               |
+| [ python steps ]( python_steps )       | medium     | python steps                                                                          |
 | [ piggy-bank ]( piggy_bank )           | medium     | calls<br>checks<br>queries<br>loop<br>scenario data<br>smart-contract<br>smart-values |
 
 
@@ -36,6 +37,7 @@ The difference between tutorials and examples is that tutorials are more guided,
 | checks          | [piggy-bank](piggy_bank)<br>[ping pong](ping_pong)<br>[ wrapper clone ]( wrapper_clone )<br>[ wrapping ]( wrapping )                                                      |
 | chain-simulator | [  trader smart-contract  ](  trader_sc  )<br>[ wrapper clone ]( wrapper_clone )                                                                                          |
 | loop            | [piggy-bank](piggy_bank)<br>[queries 2](queries_2)                                                                                                                        |
+| python step     | [ python steps ]( python_steps )                                                                                                                                          |
 | query           | [piggy-bank](piggy_bank)<br>[ping pong](ping_pong)<br>[queries 1](queries_1)<br>[queries 2](queries_2)<br>[ wrapper clone ]( wrapper_clone )<br>[ wrapping ]( wrapping )  |
 | scenario data   | [piggy-bank](piggy_bank)<br>[queries 1](queries_1)<br>[queries 2](queries_2)                                                                                              |
 | smart-contract  | [piggy-bank](piggy_bank)<br>[ping pong](ping_pong)<br>[  trader smart-contract  ](  trader_sc  )<br>[ wrapper clone ]( wrapper_clone )<br>[ wrapping ]( wrapping )        |

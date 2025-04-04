@@ -92,6 +92,7 @@ However, there are some ambiguous cases where an argument provided by a user cou
 To avoid these confusions, a user can force MxOps to fetch the address of an account by using the syntax `%account_id.address` or `%account_id.bech32`.
 
 
+(formula_target)=
 ## Formula
 
 Another symbol available with MxOps is the `=` symbol, which is used to make MxOps evaluate python expressions:
