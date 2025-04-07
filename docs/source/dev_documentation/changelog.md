@@ -5,6 +5,7 @@
 ### Fixed
 
 - Ledger account instantiation not detected
+- Missing ledger dependencies
 
 ## 3.0.0 - 2025-04-04
 
