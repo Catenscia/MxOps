@@ -100,7 +100,7 @@ def parse_load_account(account: dict):
     if "folder_path" in account:
         AccountsManager.load_register_pem_from_folder(**account)
         return
-    if "ledger" in account:
+    if "ledger_address_index" in account:
         AccountsManager.load_register_ledger_account(**account)
         return
     if "pem" in account:

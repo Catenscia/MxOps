@@ -1,7 +1,10 @@
+from multiversx_sdk import Address
 import pytest
+import pytest_mock
 from mxops.data.execution_data import PemAccountData, ScenarioData
 from mxops.errors import UnknownAccount
 from mxops.execution.account import AccountsManager
+from mxops.execution.scene import parse_load_account
 
 
 def test_loaded_accounts():
@@ -81,3 +84,21 @@ def test_unknown_account():
     # When
     with pytest.raises(UnknownAccount):
         account_manager.get_account("unknown-account")
+
+
+def test_ledger_loading(mocker: pytest_mock.MockerFixture):
+    # Given
+    mock_bech32 = "erd1spyavw0956vq68xj8y4tenjpq2wd5a9p2c6j8gsz7ztyrnpxrruqzu66jx"
+    account_id = "my_ledger_account"
+    raw_account = {"account_id": account_id, "ledger_address_index": 0}
+    mocker.patch(
+        "multiversx_sdk.accounts.ledger_account.LedgerAccount._get_address",
+        side_effect=lambda: Address.new_from_bech32(mock_bech32),
+    )
+
+    # When
+    parse_load_account(raw_account)
+    account = AccountsManager.get_account(account_id)
+
+    # Then
+    assert account.address.to_bech32() == mock_bech32
