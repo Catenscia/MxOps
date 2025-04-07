@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- Ledger account instantiation not detected
+
 ## 3.0.0 - 2025-04-04
 
 ### Fixed
