@@ -6,6 +6,7 @@
 
 - Ledger account instantiation not detected
 - Missing ledger dependencies
+- Missing hash signing option when using ledger account
 
 ## 3.0.0 - 2025-04-04
 
