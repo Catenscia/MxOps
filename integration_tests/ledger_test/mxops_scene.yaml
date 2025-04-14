@@ -1,0 +1,15 @@
+accounts:
+
+  - account_id: user
+    ledger_address_index: 9999
+
+steps:
+  - type: ChainSimulatorFaucet
+    targets: 
+      - user
+    amount: "={10**18}"
+  
+  - type: Transfer
+    sender: user
+    receiver: user
+    value: "={10**16}"
