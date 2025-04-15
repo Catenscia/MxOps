@@ -8,7 +8,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
-from multiversx_sdk import Transaction, TransactionOnNetwork
+from multiversx_sdk import LedgerAccount, Transaction, TransactionOnNetwork
 
 from mxops import errors
 from mxops.common.providers import MyProxyNetworkProvider
@@ -133,6 +133,9 @@ class TransactionStep(Step):
             tx.signature = b"aaaaa"
         else:
             sender_account = AccountsManager.get_account(tx.sender)
+            if isinstance(sender_account, LedgerAccount):
+                # hash sign option must be activate for ledger account signing
+                tx.options |= 1
             tx.nonce = sender_account.get_nonce_then_increment()
             tx.signature = sender_account.sign_transaction(tx)
 

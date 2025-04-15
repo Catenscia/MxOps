@@ -17,11 +17,11 @@ Please write clean commits messages by following the [conventional convention](h
 To submit your changes, follow this steps:
 
 - Fork this repo
-- create a new branch from `develop` and call it `fix...`, `feature...`, `docs...` or else depending on your needs (see below)
+- create a new branch from `develop` and call it `fix/...`, `feature/...`, `docs/...` or anything else depending on your needs (see the table below)
 - make your changes and commits continuously to your local branch
 - If you have a changed or added a functionnality, make sure to add unit tests and/or integration tests to cover your change (don't hesitate to reach out if you need any help)
-- execute locally `bash scripts/check_python_code.sh` and ensure that all unit tests pass
-- execute locally `bash scripts/launch_integration_tests.sh <devnet/localnet>` and ensure that all integration tests pass (see [here for help](./integration_tests/README.md))
+- execute locally `bash scripts/local_checks.sh` and ensure that all tests, checks and build pass.
+- execute locally the integration tests on the chain-simulator, as described [here](./integration_tests/README.md)
 - submit a PR from your branch to the `develop` branch of this repo
 
 ## Branch names
@@ -29,12 +29,13 @@ To submit your changes, follow this steps:
 Banches names should reflect the type of change they bring.
 The examples below should fit most needs.
 
-| **Change type**   | Description                                            | Name                       |
-|-------------------|--------------------------------------------------------|----------------------------|
-| **Feature**       | For any feature that will be added to the project      | `feature_<feature_name>`   |
-| **Fix**           | For any bug fix on the project                         | `fix_<bug_name>`           |
-| **Refactor**      | For any change that do not impact the functionalities  | `refactor_<refactor_name>` |
-| **Test**          | For any test(s) that will be added to the project      | `test_<test_name>`         |
-| **Documentation** | For any change in the documentation                    | `docs_<change_name>`       |
+| **Change type**   | Description                                                       | Name                                  |
+|-------------------|-------------------------------------------------------------------|---------------------------------------|
+| **Feature**       | For any feature that will be added to the project                 | `feature/<feature_name>`              |
+| **Fix**           | For any bug fix on the project                                    | `fix/<bug_name>`                      |
+| **Refactor**      | For any change that do not impact the functionalities             | `refactor/<refactor_name>`            |
+| **Breaking**      | For any change that break the code (major version update needed)  | `breaking/<refactor_name>`            |
+| **Test**          | For any test(s) that will be added to the project                 | `test/<test_name>`                    |
+| **Documentation** | For any change in the documentation                               | `docs/<change_name>`                  |
 
 Many thanks! :heart: :heart: :heart:

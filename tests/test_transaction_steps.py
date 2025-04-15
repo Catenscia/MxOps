@@ -1,3 +1,6 @@
+from multiversx_sdk import Address
+import pytest_mock
+from mxops.execution.scene import parse_load_account
 from mxops.execution.steps import TransferStep
 
 
@@ -109,3 +112,37 @@ def test_simple_esdt_transfer_with_egld():
         b"MultiESDTNFTTransfer@0000000000000000000100000000000000000000000000000000000"
         b"01affffff@02@5745474c442d616263646566@@0a@45474c442d303030303030@@0a"
     )
+
+
+def test_ledger_tx_sign(mocker: pytest_mock.MockerFixture):
+    # Given
+    mock_bech32 = "erd1spyavw0956vq68xj8y4tenjpq2wd5a9p2c6j8gsz7ztyrnpxrruqzu66jx"
+    account_id = "my_ledger_account"
+    raw_account = {"account_id": account_id, "ledger_address_index": 0}
+    mocker.patch(
+        "multiversx_sdk.accounts.ledger_account.LedgerAccount._get_address",
+        side_effect=lambda: Address.new_from_bech32(mock_bech32),
+    )
+    mocker.patch("multiversx_sdk.accounts.ledger_account.LedgerApp.set_address")
+    mocker.patch("ledgercomm.Transport")
+    parse_load_account(raw_account)
+
+    step = TransferStep(
+        sender="my_ledger_account",
+        receiver="my_ledger_account",
+        value=123456,
+        checks=[],
+    )
+
+    mocker.patch(
+        "mxops.execution.steps.base.send", side_effect=lambda *args: "fake_hash"
+    )
+    mocker.patch(
+        "multiversx_sdk.accounts.ledger_account.LedgerApp.sign_transaction",
+        side_effect=lambda *args: b"fake_sig".hex(),
+    )
+
+    # When / Then
+    # check that the option has well been set when signing with a ledger account
+    # the multiversx sdk would throw an error otherwise
+    step.execute()
