@@ -133,7 +133,7 @@ Here is a little illustration of what is happening (click on it to zoom-in):
 ```
 
 So the only thing you will have to do as a user is to write scenes and tell MxOps to execute them. MxOps will really handle all the complex part for you!
-The next section gives you a broad understanding of the constitution of a scene and how to write them.
+The next chapter gives you a broad understanding of the constitution of a scene and how to write them.
 
 ## Scenes
 
@@ -214,4 +214,4 @@ MxOps was done with flexibility in mind: in addition to all the existing feature
 
 ## Next step
 
-You will be guided through the steps of writing a scene in the next sections. But before that, you need to 🚧 {doc}`install MxOps! <installation>` 🚧
+You will be guided through the steps of writing a scene in the next chapters. But before that, you need to 🚧 {doc}`install MxOps! <installation>` 🚧
