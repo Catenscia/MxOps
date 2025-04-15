@@ -48,6 +48,7 @@ If you are new here, we recommend going first to the :doc:`Getting Started secti
    user_documentation/serialization
    user_documentation/execution
    user_documentation/config
+   user_documentation/chain_simulator
 
 .. toctree::
    :maxdepth: 1

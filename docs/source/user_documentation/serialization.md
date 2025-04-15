@@ -4,7 +4,7 @@ When interacting with the blockchain, a very important aspect to keep in mind is
 - automatically convert the data provided by the user into the format expected by the blockchain
 - automatically parse the data received from the blockchain into a human usable format
 
-The rest of this section details how the user should provide data and use data when interacting with a smart-contract.
+The rest of this chapter details how the user should provide data and use data when interacting with a smart-contract.
 
 ## Monotypes
 

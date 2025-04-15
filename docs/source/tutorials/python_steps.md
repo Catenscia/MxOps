@@ -1,6 +1,6 @@
 # Python Steps Examples
 
-This section will show you some basic ways of using the [python step](python_step_target). These are just small examples: the python step really gives you the keys to execute whatever you want: the creativity is yours to make what will perfectly fits your needs! 💪
+This chapter will show you some basic ways of using the [python step](python_step_target). These are just small examples: the python step really gives you the keys to execute whatever you want: the creativity is yours to make what will perfectly fits your needs! 💪
 
 ## Calculation
 

@@ -8,6 +8,10 @@
 - Missing ledger dependencies
 - Missing hash signing option when using ledger account
 
+## Added
+
+- Documentation page for the chain-simulator
+
 ## 3.0.0 - 2025-04-04
 
 ### Fixed

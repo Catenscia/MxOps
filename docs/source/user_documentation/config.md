@@ -30,7 +30,7 @@ steps:
       - 3
 ```
 
-See more info on this in the {doc}`values sections<values>`.
+See more info on this in the {doc}`values chapter<values>`.
 
 ## Write Custom File
 

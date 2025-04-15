@@ -130,7 +130,7 @@ checks: # optional, by default it will contain a transaction success check
   - type: Success
 ```
 
-If you have provided an ABI with the contract, MxOps will be able to automatically encode the arguments for your call, even if they are complex structures. For more details on that, please head to the {doc}`serialization` section.
+If you have provided an ABI with the contract, MxOps will be able to automatically encode the arguments for your call, even if they are complex structures. For more details on that, please head to the {doc}`serialization` chapter.
 MxOps will also automatically decode the response of the call so that if you save the data, you can easily use it again by reference (see [smart values chapter](values)).
 
 
@@ -313,7 +313,7 @@ results_save_keys: # optional, key(s) under which save the results of the query
 log_results: true # optional, if the query results should be printed in the console, default to true
 ```
 
-If you have provided an ABI with the contract, MxOps will be able to automatically encode the arguments for your query, even if they are complex structures. For more details on that, please head to the {doc}`serialization` section.
+If you have provided an ABI with the contract, MxOps will be able to automatically encode the arguments for your query, even if they are complex structures. For more details on that, please head to the {doc}`serialization` chapter.
 MxOps will also automatically decode the response of the query so that if you save the data, you can easily use it again by reference (see [smart values chapter](values)).
 
 #### About `results_save_keys`
