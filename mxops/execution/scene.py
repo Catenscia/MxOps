@@ -103,7 +103,7 @@ def parse_load_account(account: dict):
     if "ledger_address_index" in account:
         AccountsManager.load_register_ledger_account(**account)
         return
-    if "pem" in account:
+    if "pem_path" in account:
         AccountsManager.load_register_pem_account(**account)
         return
 

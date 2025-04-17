@@ -102,3 +102,22 @@ def test_ledger_loading(mocker: pytest_mock.MockerFixture):
 
     # Then
     assert account.address.to_bech32() == mock_bech32
+
+
+def test_pem_account_loading():
+    # Given
+    account_id = "account_to_load_3"
+    raw_account = {
+        "pem_path": "tests/data/wallets/account_to_load_3.pem",
+        "account_id": account_id,
+    }
+
+    # When
+    parse_load_account(raw_account)
+    account = AccountsManager.get_account(account_id)
+
+    # Then
+    assert (
+        account.address.to_bech32()
+        == "erd16t438r4hgjmg3gxp7mvk43jxrzkhrkr36lmwerd3rulw6yw9n5ms9jzeup"
+    )
