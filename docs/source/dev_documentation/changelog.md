@@ -5,6 +5,7 @@
 ### Fixed
 
 - Single pem account instantiation not detected
+- Ignore external account transaction signature when on chain-simulator
 
 ## 3.0.1 - 2025-04-15
 
