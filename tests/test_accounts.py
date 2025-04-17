@@ -1,7 +1,12 @@
-from multiversx_sdk import Address
+from multiversx_sdk import Account, Address
 import pytest
 import pytest_mock
-from mxops.data.execution_data import PemAccountData, ScenarioData
+from mxops.data.execution_data import (
+    AccountData,
+    ExternalContractData,
+    PemAccountData,
+    ScenarioData,
+)
 from mxops.errors import UnknownAccount
 from mxops.execution.account import AccountsManager
 from mxops.execution.scene import parse_load_account
@@ -121,3 +126,54 @@ def test_pem_account_loading():
         account.address.to_bech32()
         == "erd16t438r4hgjmg3gxp7mvk43jxrzkhrkr36lmwerd3rulw6yw9n5ms9jzeup"
     )
+
+
+def test_folder_accounts_loading():
+    # Given
+    name = "wallets_folder"
+    raw_account = {
+        "name": name,
+        "folder_path": "tests/data/wallets/folder_to_load",
+    }
+
+    # When
+    parse_load_account(raw_account)
+
+    # Then
+    assert isinstance(AccountsManager.get_account("alice"), Account)
+    assert isinstance(AccountsManager.get_account("bob"), Account)
+    assert isinstance(AccountsManager.get_account("charlie"), Account)
+
+
+def test_load_external_user():
+    # Given
+    account_id = "external_user"
+    bech32 = "erd1f63dsctrvwaxxk04vll7ccl8wmza4aa5dk9maz36xdx8lkymq8cstac7yg"
+    raw_account = {"account_id": account_id, "bech32": bech32}
+    scenario_data = ScenarioData.get()
+
+    # When
+    parse_load_account(raw_account)
+    account_data = scenario_data.get_account_data(account_id)
+
+    # Then
+    assert type(account_data) is AccountData
+    assert account_data.account_id == account_id
+    assert account_data.bech32 == bech32
+
+
+def test_load_external_contract_with_contract_id():
+    # Given
+    account_id = "external_contract"
+    bech32 = "erd1qqqqqqqqqqqqqpgq9ph6uhdl2hkq7sarxxwycr6txnx0ewcal3ts0cs79w"
+    raw_account = {"contract_id": account_id, "bech32": bech32}
+    scenario_data = ScenarioData.get()
+
+    # When
+    parse_load_account(raw_account)
+    account_data = scenario_data.get_account_data(account_id)
+
+    # Then
+    assert type(account_data) is ExternalContractData
+    assert account_data.account_id == account_id
+    assert account_data.bech32 == bech32
