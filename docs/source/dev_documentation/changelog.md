@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- Single pem account instantiation not detected
+
 ## 3.0.1 - 2025-04-15
 
 ### Fixed
