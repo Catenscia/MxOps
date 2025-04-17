@@ -1,4 +1,4 @@
-from multiversx_sdk import Account, Address
+from multiversx_sdk import Account, Address, Transaction
 import pytest
 import pytest_mock
 from mxops.data.execution_data import (
@@ -10,6 +10,7 @@ from mxops.data.execution_data import (
 from mxops.errors import UnknownAccount
 from mxops.execution.account import AccountsManager
 from mxops.execution.scene import parse_load_account
+from mxops.execution.steps.transactions import TransferStep
 
 
 def test_loaded_accounts():
@@ -177,3 +178,58 @@ def test_load_external_contract_with_contract_id():
     assert type(account_data) is ExternalContractData
     assert account_data.account_id == account_id
     assert account_data.bech32 == bech32
+
+
+def test_signature_ignore_unknown_account(chain_simulator_network):
+    # Given
+
+    transaction = Transaction(
+        Address.from_bech32(
+            "erd1q33a7f3wnq7l50hkh2t009z55v3dg8ksp3lr7xcafh0kknlgcteqkywxca"
+        ),
+        Address.from_bech32(
+            "erd1q33a7f3wnq7l50hkh2t009z55v3dg8ksp3lr7xcafh0kknlgcteqkywxca"
+        ),
+        gas_limit=5000000,
+        chain_id="D",
+        nonce=1,
+    )
+    step = TransferStep(
+        sender="erd1q33a7f3wnq7l50hkh2t009z55v3dg8ksp3lr7xcafh0kknlgcteqkywxca",
+        receiver="erd1q33a7f3wnq7l50hkh2t009z55v3dg8ksp3lr7xcafh0kknlgcteqkywxca",
+        value=1,
+    )
+
+    # When
+    step.set_nonce_and_sign_transaction(transaction)
+
+    # Then
+    assert transaction.nonce == 1
+    assert transaction.signature == b"aaaaa"
+
+
+def test_signature_ignore_external_account(chain_simulator_network):
+    # Given
+    account_id = "external_signer"
+    bech32 = "erd1muw5taleu9cejz5mhknan45yxmu0w8qxy7awps3w7fv5d8a0mz9sr90j0l"
+    parse_load_account({"account_id": account_id, "bech32": bech32})
+
+    transaction = Transaction(
+        Address.from_bech32(bech32),
+        Address.from_bech32(bech32),
+        gas_limit=5000000,
+        chain_id="D",
+        nonce=1,
+    )
+    step = TransferStep(
+        sender=bech32,
+        receiver=bech32,
+        value=1,
+    )
+
+    # When
+    step.set_nonce_and_sign_transaction(transaction)
+
+    # Then
+    assert transaction.nonce == 1
+    assert transaction.signature == b"aaaaa"

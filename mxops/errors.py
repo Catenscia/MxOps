@@ -85,6 +85,18 @@ class ClosingCharNotFound(Exception):
         super().__init__(message)
 
 
+class AccountConversionError(Exception):
+    """
+    To be raised when a specified account is not found in a scenario
+    """
+
+    def __init__(self, account_data: dict) -> None:
+        message = (
+            f"Account data {account_data} cannot be converted into a signing account"
+        )
+        super().__init__(message)
+
+
 #############################################################
 #
 #                   Data Management Errors
