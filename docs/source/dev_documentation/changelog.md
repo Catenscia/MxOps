@@ -10,7 +10,7 @@
 - Missing ledger dependencies
 - Missing hash signing option when using ledger account
 
-## Added
+### Added
 
 - Documentation page for the chain-simulator
 
