@@ -45,7 +45,7 @@ def test_account_data():
 
     # Then
     assert data == PemAccountData(
-        "alice", address.to_bech32(), "tests/data/wallets_folder/alice.pem"
+        "alice", address.to_bech32(), "tests/data/wallets/folder_to_load/alice.pem"
     )
 
 
@@ -54,14 +54,14 @@ def test_reload_account():
     scenario_data = ScenarioData.get()
     account_manager = AccountsManager()
     account_1_data = PemAccountData(
-        "unloaded_account_1",
+        "account_to_load_1",
         "erd18jhjjxjx9q8kud5kqap0xkddrw3fvzc5c60sx7aag2zk7afxw2zsqr3m3v",
-        "tests/data/unloaded_account_1.pem",
+        "tests/data/wallets/account_to_load_1.pem",
     )
     account_2_data = PemAccountData(
-        "unloaded_account_2",
+        "account_to_load_2",
         "erd1em7dlr8c3avclm6kq9kprag3sfe2pm4fjryfn0l8jj62l5ynmcqq4retvx",
-        "tests/data/unloaded_account_2.pem",
+        "tests/data/wallets/account_to_load_2.pem",
     )
     assert account_1_data.bech32 not in account_manager._accounts
     assert account_2_data.bech32 not in account_manager._accounts
