@@ -108,7 +108,7 @@ def scenario_data(network):  # must be executed after the network fixture
 
 def mocked_get_account(address: Address) -> AccountOnNetwork:
     return AccountOnNetwork(
-        raw={}, address=address, nonce=0, balance=0, is_guarded=False
+        raw={}, address=address, nonce=1, balance=0, is_guarded=False
     )
 
 
@@ -123,15 +123,15 @@ def mock_account_requests(mocker: pytest_mock.MockerFixture):
 def accounts_manager(mock_account_requests):  # needs to be execute after
     accounts_manager = AccountsManager()
     accounts_manager.load_register_pem_account(
-        pem_path=Path("./tests/data/test_user_A.pem"),
+        pem_path=Path("./tests/data/wallets/test_user_A.pem"),
         account_id="test_user_A",
     )
     accounts_manager.load_register_pem_account(
-        pem_path=Path("./tests/data/test_user_B.pem"),
+        pem_path=Path("./tests/data/wallets/test_user_B.pem"),
         account_id="test_user_B",
     )
     accounts_manager.load_register_pem_from_folder(
-        name="wallets_folder", folder_path=Path("./tests/data/wallets_folder")
+        name="wallets_folder", folder_path=Path("./tests/data/wallets/folder_to_load")
     )
 
 
@@ -181,3 +181,12 @@ def exec_log_capture(scenario_data):  # Scenario data must be setup
         os.environ["MXOPS_LOG_LEVEL"] = mxops_log_level
     else:
         os.environ.pop("MXOPS_LOG_LEVEL")
+
+
+@pytest.fixture
+def chain_simulator_network():
+    current_network = Config.get_config().get_network()
+    Config.set_network(NetworkEnum.CHAIN_SIMULATOR)
+    yield
+    # Cleanup
+    Config.set_network(current_network)

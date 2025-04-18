@@ -148,9 +148,7 @@ class AccountsManager:
                     account_data.ledger_address_index, account_data.account_id
                 )
             else:
-                raise ValueError(
-                    f"Account data of type {type(account_data)} is not handled"
-                )
+                raise errors.AccountConversionError(account_data.to_dict())
         try:
             return cls._accounts[account_data.bech32]
         except KeyError as err:

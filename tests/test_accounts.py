@@ -1,10 +1,16 @@
-from multiversx_sdk import Address
+from multiversx_sdk import Account, Address, Transaction
 import pytest
 import pytest_mock
-from mxops.data.execution_data import PemAccountData, ScenarioData
+from mxops.data.execution_data import (
+    AccountData,
+    ExternalContractData,
+    PemAccountData,
+    ScenarioData,
+)
 from mxops.errors import UnknownAccount
 from mxops.execution.account import AccountsManager
 from mxops.execution.scene import parse_load_account
+from mxops.execution.steps.transactions import TransferStep
 
 
 def test_loaded_accounts():
@@ -45,7 +51,7 @@ def test_account_data():
 
     # Then
     assert data == PemAccountData(
-        "alice", address.to_bech32(), "tests/data/wallets_folder/alice.pem"
+        "alice", address.to_bech32(), "tests/data/wallets/folder_to_load/alice.pem"
     )
 
 
@@ -54,14 +60,14 @@ def test_reload_account():
     scenario_data = ScenarioData.get()
     account_manager = AccountsManager()
     account_1_data = PemAccountData(
-        "unloaded_account_1",
+        "account_to_load_1",
         "erd18jhjjxjx9q8kud5kqap0xkddrw3fvzc5c60sx7aag2zk7afxw2zsqr3m3v",
-        "tests/data/unloaded_account_1.pem",
+        "tests/data/wallets/account_to_load_1.pem",
     )
     account_2_data = PemAccountData(
-        "unloaded_account_2",
+        "account_to_load_2",
         "erd1em7dlr8c3avclm6kq9kprag3sfe2pm4fjryfn0l8jj62l5ynmcqq4retvx",
-        "tests/data/unloaded_account_2.pem",
+        "tests/data/wallets/account_to_load_2.pem",
     )
     assert account_1_data.bech32 not in account_manager._accounts
     assert account_2_data.bech32 not in account_manager._accounts
@@ -102,3 +108,128 @@ def test_ledger_loading(mocker: pytest_mock.MockerFixture):
 
     # Then
     assert account.address.to_bech32() == mock_bech32
+
+
+def test_pem_account_loading():
+    # Given
+    account_id = "account_to_load_3"
+    raw_account = {
+        "pem_path": "tests/data/wallets/account_to_load_3.pem",
+        "account_id": account_id,
+    }
+
+    # When
+    parse_load_account(raw_account)
+    account = AccountsManager.get_account(account_id)
+
+    # Then
+    assert (
+        account.address.to_bech32()
+        == "erd16t438r4hgjmg3gxp7mvk43jxrzkhrkr36lmwerd3rulw6yw9n5ms9jzeup"
+    )
+
+
+def test_folder_accounts_loading():
+    # Given
+    name = "wallets_folder"
+    raw_account = {
+        "name": name,
+        "folder_path": "tests/data/wallets/folder_to_load",
+    }
+
+    # When
+    parse_load_account(raw_account)
+
+    # Then
+    assert isinstance(AccountsManager.get_account("alice"), Account)
+    assert isinstance(AccountsManager.get_account("bob"), Account)
+    assert isinstance(AccountsManager.get_account("charlie"), Account)
+
+
+def test_load_external_user():
+    # Given
+    account_id = "external_user"
+    bech32 = "erd1f63dsctrvwaxxk04vll7ccl8wmza4aa5dk9maz36xdx8lkymq8cstac7yg"
+    raw_account = {"account_id": account_id, "bech32": bech32}
+    scenario_data = ScenarioData.get()
+
+    # When
+    parse_load_account(raw_account)
+    account_data = scenario_data.get_account_data(account_id)
+
+    # Then
+    assert type(account_data) is AccountData
+    assert account_data.account_id == account_id
+    assert account_data.bech32 == bech32
+
+
+def test_load_external_contract_with_contract_id():
+    # Given
+    account_id = "external_contract"
+    bech32 = "erd1qqqqqqqqqqqqqpgq9ph6uhdl2hkq7sarxxwycr6txnx0ewcal3ts0cs79w"
+    raw_account = {"contract_id": account_id, "bech32": bech32}
+    scenario_data = ScenarioData.get()
+
+    # When
+    parse_load_account(raw_account)
+    account_data = scenario_data.get_account_data(account_id)
+
+    # Then
+    assert type(account_data) is ExternalContractData
+    assert account_data.account_id == account_id
+    assert account_data.bech32 == bech32
+
+
+def test_signature_ignore_unknown_account(chain_simulator_network):
+    # Given
+
+    transaction = Transaction(
+        Address.from_bech32(
+            "erd1q33a7f3wnq7l50hkh2t009z55v3dg8ksp3lr7xcafh0kknlgcteqkywxca"
+        ),
+        Address.from_bech32(
+            "erd1q33a7f3wnq7l50hkh2t009z55v3dg8ksp3lr7xcafh0kknlgcteqkywxca"
+        ),
+        gas_limit=5000000,
+        chain_id="D",
+        nonce=1,
+    )
+    step = TransferStep(
+        sender="erd1q33a7f3wnq7l50hkh2t009z55v3dg8ksp3lr7xcafh0kknlgcteqkywxca",
+        receiver="erd1q33a7f3wnq7l50hkh2t009z55v3dg8ksp3lr7xcafh0kknlgcteqkywxca",
+        value=1,
+    )
+
+    # When
+    step.set_nonce_and_sign_transaction(transaction)
+
+    # Then
+    assert transaction.nonce == 1
+    assert transaction.signature == b"aaaaa"
+
+
+def test_signature_ignore_external_account(chain_simulator_network):
+    # Given
+    account_id = "external_signer"
+    bech32 = "erd1muw5taleu9cejz5mhknan45yxmu0w8qxy7awps3w7fv5d8a0mz9sr90j0l"
+    parse_load_account({"account_id": account_id, "bech32": bech32})
+
+    transaction = Transaction(
+        Address.from_bech32(bech32),
+        Address.from_bech32(bech32),
+        gas_limit=5000000,
+        chain_id="D",
+        nonce=1,
+    )
+    step = TransferStep(
+        sender=bech32,
+        receiver=bech32,
+        value=1,
+    )
+
+    # When
+    step.set_nonce_and_sign_transaction(transaction)
+
+    # Then
+    assert transaction.nonce == 1
+    assert transaction.signature == b"aaaaa"

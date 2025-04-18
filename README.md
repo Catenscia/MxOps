@@ -3,7 +3,7 @@
 ![MxOps full logo](./docs/source/_images/mxops_full_logo.png)
 
 
-MxOps is tool created to facilitate and automate MultiversX interactions: be it smart contracts deployments, calls, queries or just simple transfers. Inspired from DevOps tools, it aims to ease and make reproducible any set of interactions with the blockchain.
+MxOps is a tool created to facilitate and automate MultiversX interactions: be it smart contracts deployments, calls, queries or just simple transfers. Inspired from DevOps tools, it aims to ease and make reproducible any set of interactions with the blockchain.
 
 MxOps is built to be especially useful in these situations:
 

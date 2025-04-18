@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 3.0.2 - 2025-04-18
+
+### Fixed
+
+- Single pem account instantiation not detected
+- Ignore external account transaction signature when on chain-simulator
+- Unused package dependencies moved to dev dependencies
+
 ## 3.0.1 - 2025-04-15
 
 ### Fixed
@@ -10,7 +18,7 @@
 - Missing ledger dependencies
 - Missing hash signing option when using ledger account
 
-## Added
+### Added
 
 - Documentation page for the chain-simulator
 
