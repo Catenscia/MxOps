@@ -123,15 +123,15 @@ def mock_account_requests(mocker: pytest_mock.MockerFixture):
 def accounts_manager(mock_account_requests):  # needs to be execute after
     accounts_manager = AccountsManager()
     accounts_manager.load_register_pem_account(
-        pem_path=Path("./tests/data/test_user_A.pem"),
+        pem_path=Path("./tests/data/wallets/test_user_A.pem"),
         account_id="test_user_A",
     )
     accounts_manager.load_register_pem_account(
-        pem_path=Path("./tests/data/test_user_B.pem"),
+        pem_path=Path("./tests/data/wallets/test_user_B.pem"),
         account_id="test_user_B",
     )
     accounts_manager.load_register_pem_from_folder(
-        name="wallets_folder", folder_path=Path("./tests/data/wallets_folder")
+        name="wallets_folder", folder_path=Path("./tests/data/wallets/folder_to_load")
     )
 
 
