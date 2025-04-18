@@ -108,7 +108,7 @@ def scenario_data(network):  # must be executed after the network fixture
 
 def mocked_get_account(address: Address) -> AccountOnNetwork:
     return AccountOnNetwork(
-        raw={}, address=address, nonce=0, balance=0, is_guarded=False
+        raw={}, address=address, nonce=1, balance=0, is_guarded=False
     )
 
 
@@ -181,3 +181,12 @@ def exec_log_capture(scenario_data):  # Scenario data must be setup
         os.environ["MXOPS_LOG_LEVEL"] = mxops_log_level
     else:
         os.environ.pop("MXOPS_LOG_LEVEL")
+
+
+@pytest.fixture
+def chain_simulator_network():
+    current_network = Config.get_config().get_network()
+    Config.set_network(NetworkEnum.CHAIN_SIMULATOR)
+    yield
+    # Cleanup
+    Config.set_network(current_network)

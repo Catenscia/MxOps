@@ -123,7 +123,7 @@ class TransactionStep(Step):
         network = Config.get_config().get_network()
         try:
             sender_account = AccountsManager.get_account(tx.sender)
-        except errors.UnknownAccount as err:
+        except (errors.UnknownAccount, errors.AccountConversionError) as err:
             if network != NetworkEnum.CHAIN_SIMULATOR:
                 raise err
             sender_account = None
