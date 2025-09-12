@@ -163,12 +163,10 @@ class TransactionStep(Step):
             on_chain_tx = send_and_wait_for_result(tx)
             for check in checks:
                 check.raise_on_failure(on_chain_tx)
-            logger.info(
-                f"Transaction successful: {get_tx_link(on_chain_tx.hash.hex())}"
-            )
+            logger.info(f"All checks successful: {get_tx_link(on_chain_tx.hash.hex())}")
         else:
             on_chain_tx = None
-            send(tx)
-            logger.info("Transaction sent")
+            tx_hash = send(tx)
+            logger.info(f"Transaction sent: {get_tx_link(tx_hash)}")
 
         self._post_transaction_execution(on_chain_tx)

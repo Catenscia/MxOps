@@ -1,0 +1,16 @@
+steps:
+
+  - type: ContractCall
+    sender: thomas
+    contract: "abc-esdt-minter"
+    endpoint: claimInterests
+    gas_limit: 5000000
+    esdt_transfers: 
+      - identifier: "%abc-esdt-minter.EsdtIdentifier"
+        amount: 100000
+    checks: 
+      - type: Fail
+      - type: Log
+        event_identifier: signalError
+        mandatory_topic_text_patterns:
+          - Item not whitelisted

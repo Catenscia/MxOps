@@ -90,7 +90,7 @@ def test_deploy_scene_instantiation(test_data_folder_path: Path):
 
 def test_abi_loading(test_data_folder_path: Path):
     # Given
-    scene_path = test_data_folder_path / "scenes" / "empty_scene.yaml"
+    scene_path = test_data_folder_path / "scenes" / "empty_steps_scene.yaml"
     scenario_data = ScenarioData.get()
 
     # When
@@ -105,9 +105,9 @@ def test_abi_loading(test_data_folder_path: Path):
     }
 
 
-def test_default_loading(test_data_folder_path: Path):
+def test_empty_scene(test_data_folder_path: Path):
     # Given
-    scene_path = test_data_folder_path / "scenes" / "default_scene.yaml"
+    scene_path = test_data_folder_path / "scenes" / "empty_scene.yaml"
 
     # When
     scene = load_scene(scene_path)
