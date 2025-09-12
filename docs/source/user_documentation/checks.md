@@ -26,9 +26,6 @@ sender: alice
 contract: my_first_sc
 endpoint: myEndpoint
 gas_limit: 60000000
-arguments:
-  - arg1
-value: 0
 checks:
   - type: Success
 ```
@@ -43,11 +40,92 @@ sender: alice
 contract: my_first_sc
 endpoint: myEndpoint
 gas_limit: 60000000
-arguments:
-  - arg1
-value: 0
 checks: []
 ```
+
+## FailCheck
+
+This is the opposite of the success check. This ensure that the transaction has failed.
+You might want to use this when testing permissioned endpoints.
+
+For more granularity on error types, use the [log check](log_check_target).
+
+```yaml
+type: ContractCall
+sender: alice
+contract: my_first_sc
+endpoint: myEndpoint
+gas_limit: 60000000
+checks:
+  - type: Fail
+```
+
+(log_check_target)=
+## LogCheck
+
+This check is useful to assert that some specific events within you transaction went as
+you expected by looking at log events.
+
+It be used either on successful transaction to check a mint event for example or on failed
+transactions, to check that the error is the correct one.
+
+```yaml
+type: Log
+event_identifier: signalError
+mandatory_topic_text_patterns: # optional, defaults to empty list
+  - error signalled by smartcontract
+mandatory_data_text_patterns: # optional, defaults to empty list
+  - Too low output amount
+```
+
+You can find a few examples below.
+
+### LogCheck for whitelisting error
+
+```yaml
+type: ContractCall
+sender: alice
+contract: my_first_sc
+endpoint: myEndpoint
+gas_limit: 60000000
+checks:
+  - type: Log
+    event_identifier: signalError
+    mandatory_topic_text_patterns:
+      - Item not whitelisted
+```
+
+### LogCheck for a custom smart-contract error message
+
+```yaml
+type: ContractCall
+sender: alice
+contract: my_first_sc
+endpoint: myEndpoint
+gas_limit: 60000000
+checks:
+  - type: Log
+    event_identifier: internalVMErrors
+    mandatory_data_text_patterns:
+      - error signalled by smartcontract
+      - Slippage exceeded
+```
+
+### LogCheck for a successful swap event emitted in a transaction
+
+```yaml
+type: ContractCall
+sender: alice
+contract: my_first_sc
+endpoint: myEndpoint
+gas_limit: 60000000
+checks:
+  - type: Success
+  - type: Log
+    event_identifier: swapTokensFixedInput
+```
+
+
 
 ## TransfersCheck
 

@@ -36,6 +36,7 @@ monotypes
 Monotypes
 natively
 os
+permissioned
 pipx
 png
 pre
