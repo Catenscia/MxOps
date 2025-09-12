@@ -10,9 +10,12 @@ from multiversx_sdk import TransactionOnNetwork
 
 from mxops.data.execution_data import ScenarioData
 from mxops.enums import LogGroupEnum
+from mxops.errors import TransactionError
 from mxops.execution.checks.base import Check
 from mxops.execution.network import get_on_chain_transfers, raise_on_errors
 from mxops.smart_values import SmartBool, SmartOnChainTokenTransfers, SmartStr
+from mxops.smart_values.native import SmartList
+from mxops.utils.msc import list_contains_every_patterns, text_contains_all_patterns
 
 
 @dataclass
@@ -32,6 +35,28 @@ class SuccessCheck(Check):
         """
         raise_on_errors(onchain_tx)
         return True
+
+
+@dataclass
+class FailCheck(Check):
+    """
+    Check that an on-chain transaction is a failure
+    """
+
+    def _get_check_status(self, onchain_tx: TransactionOnNetwork) -> bool:
+        """
+        Check that an on-chain transaction is a failure
+
+        :param onchain_tx: transaction to perform the check on
+        :type onchain_tx: TransactionOnNetwork
+        :return: True if the check pass
+        :rtype: bool
+        """
+        try:
+            raise_on_errors(onchain_tx)
+        except TransactionError:
+            return True
+        return False
 
 
 @dataclass
@@ -85,3 +110,53 @@ class TransfersCheck(Check):
             )
             return False
         return True
+
+
+@dataclass
+class LogCheck(Check):
+    """
+    Check that an on-chain transaction is successful
+    """
+
+    event_identifier: SmartStr
+    mandatory_topic_text_patterns: SmartList = field(
+        default_factory=lambda: SmartList([])
+    )
+    mandatory_data_text_patterns: SmartList = field(
+        default_factory=lambda: SmartList([])
+    )
+
+    def _get_check_status(self, onchain_tx: TransactionOnNetwork) -> bool:
+        """
+        Check that an on-chain transaction is successful
+
+        :param onchain_tx: transaction to perform the check on
+        :type onchain_tx: TransactionOnNetwork
+        :return: True if the check pass
+        :rtype: bool
+        """
+        for event in onchain_tx.logs.events:
+            # check event identifier
+            if event.identifier != self.event_identifier.get_evaluated_value():
+                continue
+
+            # check all mandatory topic text patterns
+            topic_patterns = self.mandatory_topic_text_patterns.get_evaluated_value()
+            topic_texts = []
+            for raw_topic in event.topics:
+                try:
+                    topic_texts.append(raw_topic.decode())
+                except UnicodeDecodeError:
+                    continue
+
+            if not list_contains_every_patterns(topic_texts, topic_patterns):
+                # not the event we are looking for
+                continue
+
+            # check all mandatory data text patterns
+            data_patterns = self.mandatory_data_text_patterns.get_evaluated_value()
+            if text_contains_all_patterns(event.data.decode(), data_patterns):
+                # event found!
+                return True
+
+        return False
