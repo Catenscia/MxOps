@@ -1,0 +1,13 @@
+# list of network onto which this scene can be run
+allowed_networks:
+  - localnet
+
+allowed_scenario:
+  - ".*"
+
+accounts:
+  - account_id: adder
+    address: erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc
+    abi_path: tests/data/abis/adder.abi.json
+
+steps: []
