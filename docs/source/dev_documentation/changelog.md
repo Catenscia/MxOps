@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Added
+
+- fail check and log check
+
+### Fixed
+
+- Tokens are now correctly visible when cloned in the chain-simulator
+
 ## 3.0.2 - 2025-04-18
 
 ### Fixed
