@@ -542,7 +542,7 @@ class FileFuzzerStep(Step):
                 f"{params.description.get_evaluated_value()}"
             )
             self._execute_fuzz(contract_abi, params)
-        logger.info("Fuzzing execution complete (100%)")
+        logger.info("Fuzzing execution complete (100%%)")
 
     def _execute_fuzz(
         self, contract_abi: dict, execution_parameters: FuzzExecutionParameters
