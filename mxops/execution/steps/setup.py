@@ -4,6 +4,7 @@ author: Etienne Wallet
 This module contains Steps used to setup environment, chain or workflow
 """
 
+from configparser import NoOptionError
 from copy import deepcopy
 from dataclasses import dataclass
 import os
@@ -350,6 +351,88 @@ class AccountCloneStep(Step):
 
         return raw_account_data
 
+    def insert_tokens_in_elasticsearch(self, esdt_identifiers: set[str]):
+        """
+        Fetch token data from the source network's Elasticsearch and insert
+        it into the local chain simulator's Elasticsearch.
+        This is required to make tokens visible in the chain simulator terminal
+        and available through the API.
+
+        See: https://github.com/multiversx/mx-chain-simulator-go/issues/109
+
+        :param esdt_identifiers: set of esdt identifiers to insert
+        :type esdt_identifiers: set[str]
+        """
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
+        source_network = parse_network_enum(self.source_network.get_evaluated_value())
+        config = Config.get_config()
+
+        try:
+            source_es_url = config.get("ELASTICSEARCH", source_network)
+        except NoOptionError:
+            logger.debug(
+                f"No Elasticsearch URL configured for {source_network.value}, "
+                "skipping token insertion"
+            )
+            return
+
+        try:
+            local_es_url = config.get("ELASTICSEARCH")
+        except NoOptionError:
+            logger.debug(
+                "No Elasticsearch URL configured for local network, "
+                "skipping token insertion"
+            )
+            return
+
+        for identifier in esdt_identifiers:
+            # Fetch token data from source Elasticsearch
+            source_url = f"{source_es_url}/tokens/_doc/{identifier}"
+            try:
+                response = requests.get(source_url, timeout=10)
+                if response.status_code != 200:
+                    logger.warning(
+                        f"Could not fetch token {identifier} from source "
+                        f"Elasticsearch: {response.status_code}"
+                    )
+                    continue
+                token_data = response.json()
+                if not token_data.get("found", False):
+                    logger.warning(
+                        f"Token {identifier} not found in source Elasticsearch"
+                    )
+                    continue
+            except requests.RequestException as e:
+                logger.warning(
+                    f"Error fetching token {identifier} from source Elasticsearch: {e}"
+                )
+                continue
+
+            # Insert token data into local Elasticsearch
+            local_url = f"{local_es_url}/tokens/_doc/{identifier}"
+            try:
+                # Use the _source field which contains the actual token data
+                token_source = token_data.get("_source", {})
+                response = requests.put(
+                    local_url,
+                    json=token_source,
+                    headers={"Content-Type": "application/json"},
+                    timeout=10,
+                )
+                if response.status_code not in (200, 201):
+                    logger.warning(
+                        f"Could not insert token {identifier} into local "
+                        f"Elasticsearch: {response.status_code} - {response.text}"
+                    )
+                else:
+                    logger.debug(
+                        f"Token {identifier} inserted into local Elasticsearch"
+                    )
+            except requests.RequestException as e:
+                logger.warning(
+                    f"Error inserting token {identifier} into local Elasticsearch: {e}"
+                )
+
     def _execute(self):
         """
         Retrieve the source  account and its storage
@@ -375,6 +458,9 @@ class AccountCloneStep(Step):
         if len(esdt_seen) > 0:
             esdt_module_state = self.get_esdt_module_clone_data(esdt_seen)
             proxy.set_state([esdt_module_state])
+            # Insert tokens into Elasticsearch to make them visible in the
+            # chain simulator terminal and available through API
+            self.insert_tokens_in_elasticsearch(esdt_seen)
 
         if self.overwrite.get_evaluated_value():
             proxy.set_state_overwrite([account_state])
