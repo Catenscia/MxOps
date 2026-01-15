@@ -15,7 +15,10 @@ import requests
 
 from mxops import errors
 from mxops.common.constants import ESDT_MODULE_BECH32
-from mxops.common.providers import MyProxyNetworkProvider
+from mxops.common.providers import (
+    MyProxyNetworkProvider,
+    get_account_storage_with_fallback,
+)
 from mxops.config.config import Config
 from mxops.data.data_cache import (
     save_account_data,
@@ -293,7 +296,7 @@ class AccountCloneStep(Step):
             source_proxy = ProxyNetworkProvider(
                 Config.get_config().get("PROXY", source_network)
             )
-            source_storage = source_proxy.get_account_storage(address)
+            source_storage = get_account_storage_with_fallback(source_proxy, address)
             save_account_storage_data(source_network, address, source_storage)
 
         # build the storage to set

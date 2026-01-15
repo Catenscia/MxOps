@@ -4,6 +4,7 @@
 
 ### Added
 
+- iterative account key storage retrieval
 - fail check and log check
 
 ### Fixed

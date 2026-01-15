@@ -73,6 +73,16 @@ class MaxIterationError(Exception):
     """
 
 
+class StorageIterationError(Exception):
+    """
+    To be raised when storage iteration via paginated endpoint fails
+    """
+
+    def __init__(self, address: str, reason: str) -> None:
+        message = f"Storage iteration failed for {address}: {reason}"
+        super().__init__(message)
+
+
 class ClosingCharNotFound(Exception):
     """
     To be raised when a closing character could not be found in a given string
