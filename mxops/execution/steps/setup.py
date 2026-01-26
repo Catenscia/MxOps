@@ -25,9 +25,11 @@ from mxops.config.config import Config
 from mxops.data.data_cache import (
     save_account_data,
     save_account_storage_data,
+    save_esdt_module_entry,
     save_esdt_token_data,
     try_load_account_data,
     try_load_account_storage_data,
+    try_load_esdt_module_entry,
     try_load_esdt_token_data,
 )
 from mxops.data.execution_data import ScenarioData
@@ -39,7 +41,11 @@ from mxops.smart_values.mx_sdk import SmartAddress, SmartAddresses
 from mxops.smart_values.native import SmartBool, SmartDatetime, SmartStr
 from mxops.execution.steps.base import Step
 from mxops.execution.steps.transactions import TransferStep
-from mxops.utils.account_storage import separate_esdt_related_storage
+from mxops.utils.account_storage import (
+    ESDT_BALANCE_STORAGE_HEX_PREFIX,
+    ESDT_BALANCE_ROLE_HEX_PREFIX,
+    extract_identifier_from_hex_key,
+)
 from mxops.utils.msc import get_account_link
 from mxops.utils.wallets import generate_keystore_wallet, generate_pem_wallet
 
@@ -315,18 +321,9 @@ class AccountCloneStep(Step):
             raw_account_to_set["codeMetadata"] = current_raw_account["codeMetadata"]
         return raw_account_to_set
 
-    def get_storage_clone_data(self) -> tuple[dict, set[str]]:
-        """
-        Fetch and construct the raw data to clone the storage of the account
-
-        :return: raw storage data to clone and seen esdt in the storage to clone
-        :rtype: tuple[dict, set[str]]
-        """
+    def _fetch_source_storage(self, source_network: NetworkEnum, address: Address):
+        """Fetch source storage from cache or proxy."""
         logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
-        source_network = parse_network_enum(self.source_network.get_evaluated_value())
-        address = self.address.get_evaluated_value()
-
-        # fetch the source account from cache or proxy
         source_storage = try_load_account_storage_data(
             source_network, address, self.caching_period.get_evaluated_value()
         )
@@ -339,59 +336,133 @@ class AccountCloneStep(Step):
             )
             source_storage = get_account_storage_with_fallback(source_proxy, address)
             save_account_storage_data(source_network, address, source_storage)
+        return source_storage
 
-        # build the storage to set
-        source_esdts_entries, source_other_entries = separate_esdt_related_storage(
-            source_storage.entries
-        )
+    def get_storage_clone_data(self) -> tuple[dict, set[str]]:
+        """
+        Fetch and construct the raw data to clone the storage of the account.
+        Optimized to work directly with the pairs dict in a single pass,
+        avoiding object creation overhead.
 
+        :return: raw storage data to clone and seen esdt in the storage to clone
+        :rtype: tuple[dict, set[str]]
+        """
+        source_network = parse_network_enum(self.source_network.get_evaluated_value())
+        address = self.address.get_evaluated_value()
+        source_storage = self._fetch_source_storage(source_network, address)
+
+        # Work directly with pairs dict instead of creating entry objects
+        # This avoids triple iteration: object creation, separation, and dict updates
         raw_data = {}
         seen_esdt = set()
-        if self.clone_storage.get_evaluated_value():
-            for entry in source_other_entries:
-                raw_data.update(entry.raw)
+        clone_storage = self.clone_storage.get_evaluated_value()
+        clone_esdts = self.clone_esdts.get_evaluated_value()
 
-        if self.clone_esdts.get_evaluated_value():
-            for identifier, entries in source_esdts_entries.items():
-                seen_esdt.add(identifier)
-                for entry in entries:
-                    raw_data.update(entry.raw)
+        for hex_key, hex_value in source_storage.raw.get("pairs", {}).items():
+            is_esdt_or_role = hex_key.startswith(
+                ESDT_BALANCE_STORAGE_HEX_PREFIX
+            ) or hex_key.startswith(ESDT_BALANCE_ROLE_HEX_PREFIX)
+
+            if is_esdt_or_role:
+                if clone_esdts:
+                    raw_data[hex_key] = hex_value
+                    identifier = extract_identifier_from_hex_key(hex_key)
+                    if identifier:
+                        seen_esdt.add(identifier)
+            elif clone_storage:
+                raw_data[hex_key] = hex_value
 
         return raw_data, seen_esdt
 
-    def get_esdt_module_clone_data(self, esdt_identifiers: list[str]) -> dict:
-        """
-        Using a list of identifiers, determine for each esdt if it is already known
-        to the current network, otherwise fetch the data on the source network
+    def _find_missing_esdt_identifiers(
+        self, esdt_identifiers: set[str], current_hex_keys: set[str]
+    ) -> list[str]:
+        """Find ESDT identifiers not present in current network."""
+        return [
+            identifier
+            for identifier in esdt_identifiers
+            if identifier.encode("utf-8").hex() not in current_hex_keys
+        ]
 
-        :param esdt_identifiers: esdt identifier to check
-        :type esdt_identifiers: list[str]
+    def _fetch_missing_esdt_entries(
+        self,
+        missing_identifiers: list[str],
+        esdt_module_address: Address,
+        source_network: NetworkEnum,
+        caching_threshold,
+    ) -> dict[str, str]:
+        """Fetch missing ESDT entries from cache or source network."""
+        pairs = {}
+        source_proxy = None  # Lazy init only if needed
+
+        for identifier in missing_identifiers:
+            hex_identifier = identifier.encode("utf-8").hex()
+
+            # Try cache first
+            cached_value = try_load_esdt_module_entry(
+                source_network, identifier, caching_threshold
+            )
+            if cached_value is not None:
+                pairs[hex_identifier] = cached_value
+                continue
+
+            # Lazy init source proxy only when needed
+            if source_proxy is None:
+                source_proxy = ProxyNetworkProvider(
+                    Config.get_config().get("PROXY", source_network)
+                )
+
+            # Fetch from source and cache
+            source_entry = source_proxy.get_account_storage_entry(
+                esdt_module_address, identifier
+            )
+            pairs[hex_identifier] = source_entry.raw["value"]
+            save_esdt_module_entry(
+                source_network, identifier, source_entry.raw["value"]
+            )
+
+        return pairs
+
+    def get_esdt_module_clone_data(self, esdt_identifiers: set[str]) -> dict:
+        """
+        Using a set of identifiers, determine for each esdt if it is already known
+        to the current network, otherwise fetch the data on the source network.
+        Optimized with batch fetching (1 call instead of N for target) and caching.
+
+        :param esdt_identifiers: esdt identifiers to check
+        :type esdt_identifiers: set[str]
         :return: data to set for the esdt module
         :rtype: dict
         """
         source_network = parse_network_enum(self.source_network.get_evaluated_value())
-        source_proxy = ProxyNetworkProvider(
-            Config.get_config().get("PROXY", source_network)
-        )
         proxy = MyProxyNetworkProvider()
         esdt_module_address = Address.new_from_bech32(ESDT_MODULE_BECH32)
 
         raw_account_data = proxy.get_account(esdt_module_address).raw["account"]
         raw_account_data["pairs"] = {}
 
-        for identifier in esdt_identifiers:
-            # check if it is known
-            current_entry = proxy.get_account_storage_entry(
-                esdt_module_address, identifier
-            )
-            if len(current_entry.value) > 0:
-                continue
-            # otherwise clone it
-            source_entry = source_proxy.get_account_storage_entry(
-                esdt_module_address, identifier
-            )
-            hex_identifier = identifier.encode("utf-8").hex()
-            raw_account_data["pairs"][hex_identifier] = source_entry.raw["value"]
+        # Batch fetch current ESDT module storage (1 call instead of N)
+        current_storage = get_account_storage_with_fallback(proxy, esdt_module_address)
+        current_hex_keys = set(current_storage.raw.get("pairs", {}).keys())
+
+        missing_identifiers = self._find_missing_esdt_identifiers(
+            esdt_identifiers, current_hex_keys
+        )
+        if not missing_identifiers:
+            return raw_account_data
+
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
+        logger.debug(
+            f"Need to clone {len(missing_identifiers)} ESDT module entries "
+            f"from {source_network.value}"
+        )
+
+        raw_account_data["pairs"] = self._fetch_missing_esdt_entries(
+            missing_identifiers,
+            esdt_module_address,
+            source_network,
+            self.caching_period.get_evaluated_value(),
+        )
 
         return raw_account_data
 
