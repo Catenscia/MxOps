@@ -7,7 +7,9 @@ This module contains Steps used to setup environment, chain or workflow
 from configparser import NoOptionError
 from copy import deepcopy
 from dataclasses import dataclass
+import json
 import os
+import time
 from typing import ClassVar
 
 from multiversx_sdk import Address, ProxyNetworkProvider
@@ -23,8 +25,10 @@ from mxops.config.config import Config
 from mxops.data.data_cache import (
     save_account_data,
     save_account_storage_data,
+    save_esdt_token_data,
     try_load_account_data,
     try_load_account_storage_data,
+    try_load_esdt_token_data,
 )
 from mxops.data.execution_data import ScenarioData
 from mxops.enums import LogGroupEnum, NetworkEnum, parse_network_enum
@@ -391,7 +395,43 @@ class AccountCloneStep(Step):
 
         return raw_account_data
 
-    def insert_tokens_in_elasticsearch(self, esdt_identifiers: set[str]):
+    def _fetch_with_backoff(
+        self,
+        url: str,
+        max_retries: int = 5,
+        base_delay: float = 1.0,
+    ) -> requests.Response | None:
+        """
+        Fetch a URL with exponential backoff on 429 rate limit errors.
+
+        :param url: URL to fetch
+        :type url: str
+        :param max_retries: maximum number of retry attempts
+        :type max_retries: int
+        :param base_delay: base delay in seconds for exponential backoff
+        :type base_delay: float
+        :return: the response if successful, None if all retries exhausted
+        :rtype: requests.Response | None
+        """
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
+        for attempt in range(max_retries + 1):
+            response = requests.get(url, timeout=10)
+            if response.status_code != 429:
+                return response
+
+            if attempt < max_retries:
+                delay = base_delay * (2**attempt)
+                logger.debug(
+                    f"Rate limited (429), retrying in {delay:.1f}s "
+                    f"(attempt {attempt + 1}/{max_retries})"
+                )
+                time.sleep(delay)
+
+        return response
+
+    def insert_tokens_in_elasticsearch(
+        self, esdt_identifiers: set[str], requests_per_second: float = 4.0
+    ):
         """
         Fetch token data from the source network's Elasticsearch and insert
         it into the local chain simulator's Elasticsearch.
@@ -402,7 +442,10 @@ class AccountCloneStep(Step):
 
         :param esdt_identifiers: set of esdt identifiers to insert
         :type esdt_identifiers: set[str]
+        :param requests_per_second: rate limit for API requests (default: 4.0)
+        :type requests_per_second: float
         """
+        request_interval = 1.0 / requests_per_second
         logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
         source_network = parse_network_enum(self.source_network.get_evaluated_value())
         config = Config.get_config()
@@ -425,53 +468,96 @@ class AccountCloneStep(Step):
             )
             return
 
-        for identifier in esdt_identifiers:
-            # Fetch token data from source Elasticsearch
-            source_url = f"{source_es_url}/tokens/_doc/{identifier}"
-            try:
-                response = requests.get(source_url, timeout=10)
-                if response.status_code != 200:
-                    logger.warning(
-                        f"Could not fetch token {identifier} from source "
-                        f"Elasticsearch: {response.status_code}"
-                    )
-                    continue
-                token_data = response.json()
-                if not token_data.get("found", False):
-                    logger.warning(
-                        f"Token {identifier} not found in source Elasticsearch"
-                    )
-                    continue
-            except requests.RequestException as e:
-                logger.warning(
-                    f"Error fetching token {identifier} from source Elasticsearch: {e}"
-                )
-                continue
+        caching_threshold = self.caching_period.get_evaluated_value()
 
-            # Insert token data into local Elasticsearch
-            local_url = f"{local_es_url}/tokens/_doc/{identifier}"
-            try:
-                # Use the _source field which contains the actual token data
-                token_source = token_data.get("_source", {})
-                response = requests.put(
-                    local_url,
-                    json=token_source,
-                    headers={"Content-Type": "application/json"},
-                    timeout=10,
-                )
-                if response.status_code not in (200, 201):
+        # Collect all token data first
+        tokens_to_insert: dict[str, dict] = {}
+
+        for identifier in esdt_identifiers:
+            # Try to load token data from cache first
+            token_source = try_load_esdt_token_data(
+                source_network, identifier, caching_threshold
+            )
+
+            if token_source is None:
+                # Fetch token data from source Elasticsearch with backoff
+                source_url = f"{source_es_url}/tokens/_doc/{identifier}"
+                try:
+                    response = self._fetch_with_backoff(source_url)
+                    if response is None or response.status_code != 200:
+                        status = response.status_code if response else "no response"
+                        logger.warning(
+                            f"Could not fetch token {identifier} from source "
+                            f"Elasticsearch: {status}"
+                        )
+                        continue
+                    token_data = response.json()
+                    if not token_data.get("found", False):
+                        logger.warning(
+                            f"Token {identifier} not found in source Elasticsearch"
+                        )
+                        continue
+                    token_source = token_data.get("_source", {})
+                    # Save to cache for future use
+                    save_esdt_token_data(source_network, identifier, token_source)
+                except requests.RequestException as e:
                     logger.warning(
-                        f"Could not insert token {identifier} into local "
-                        f"Elasticsearch: {response.status_code} - {response.text}"
+                        f"Error fetching token {identifier} from source "
+                        f"Elasticsearch: {e}"
+                    )
+                    continue
+
+                # Rate limit to avoid 429 errors from source Elasticsearch
+                time.sleep(request_interval)
+
+            tokens_to_insert[identifier] = token_source
+
+        # Batch insert tokens into local Elasticsearch using bulk API
+        if not tokens_to_insert:
+            return
+
+        bulk_lines = []
+        for identifier, token_source in tokens_to_insert.items():
+            # Each document needs an action line and a source line
+            action = {"index": {"_index": "tokens", "_id": identifier}}
+            bulk_lines.append(json.dumps(action))
+            bulk_lines.append(json.dumps(token_source))
+
+        # Bulk API requires newline-delimited JSON with trailing newline
+        bulk_body = "\n".join(bulk_lines) + "\n"
+
+        bulk_url = f"{local_es_url}/_bulk"
+        try:
+            response = requests.post(
+                bulk_url,
+                data=bulk_body,
+                headers={"Content-Type": "application/x-ndjson"},
+                timeout=30,
+            )
+            if response.status_code not in (200, 201):
+                logger.warning(
+                    f"Bulk insert to local Elasticsearch failed: "
+                    f"{response.status_code} - {response.text}"
+                )
+            else:
+                result = response.json()
+                if result.get("errors", False):
+                    failed = sum(
+                        1
+                        for item in result.get("items", [])
+                        if "error" in item.get("index", {})
+                    )
+                    logger.warning(
+                        f"Bulk insert had {failed} errors out of "
+                        f"{len(tokens_to_insert)} tokens"
                     )
                 else:
                     logger.debug(
-                        f"Token {identifier} inserted into local Elasticsearch"
+                        f"{len(tokens_to_insert)} tokens inserted into "
+                        "local Elasticsearch"
                     )
-            except requests.RequestException as e:
-                logger.warning(
-                    f"Error inserting token {identifier} into local Elasticsearch: {e}"
-                )
+        except requests.RequestException as e:
+            logger.warning(f"Error during bulk insert to local Elasticsearch: {e}")
 
     def _execute(self):
         """
