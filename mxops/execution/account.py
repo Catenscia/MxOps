@@ -15,7 +15,12 @@ from multiversx_sdk import (
 
 from mxops import errors
 from mxops.common.providers import MyProxyNetworkProvider
-from mxops.data.execution_data import LedgerAccountData, PemAccountData, ScenarioData
+from mxops.data.execution_data import (
+    KeystoreAccountData,
+    LedgerAccountData,
+    PemAccountData,
+    ScenarioData,
+)
 from mxops.enums import LogGroupEnum
 
 
@@ -109,6 +114,54 @@ class AccountsManager:
         return account.address
 
     @classmethod
+    def load_register_keystore_account(
+        cls,
+        keystore_path: str | Path,
+        password_env_var: str,
+        account_id: str | None = None,
+        address_index: int | None = None,
+    ) -> Address:
+        """
+        Load a keystore account and register it
+
+        :param keystore_path: path to the keystore JSON file
+        :type keystore_path: str | Path
+        :param password_env_var: name of the environment variable containing
+            the password
+        :type password_env_var: str
+        :param account_id: id of the account for easier reference,
+            defaults to None
+        :type account_id: str | None
+        :param address_index: address index for mnemonic-based keystores,
+            defaults to None
+        :type address_index: int | None
+        :return: address of the loaded account
+        :rtype: Address
+        :raises KeystorePasswordNotFound: if the password environment variable
+            is not set
+        """
+        if isinstance(keystore_path, str):
+            keystore_path = Path(keystore_path)
+
+        # Get password from environment variable
+        password = os.environ.get(password_env_var)
+        if password is None:
+            raise errors.KeystorePasswordNotFound(password_env_var)
+
+        account = Account.new_from_keystore(keystore_path, password, address_index)
+        ScenarioData.get().add_account_data(
+            KeystoreAccountData(
+                account_id=account_id,
+                bech32=account.address.to_bech32(),
+                keystore_path=keystore_path.as_posix(),
+                password_env_var=password_env_var,
+                address_index=address_index,
+            )
+        )
+        cls._register_account(account)
+        return account.address
+
+    @classmethod
     def _register_account(cls, account: Account | LedgerAccount):
         """
         Register an account in the accounts manager using its bech32 address
@@ -146,6 +199,13 @@ class AccountsManager:
             elif isinstance(account_data, LedgerAccountData):
                 cls.load_register_ledger_account(
                     account_data.ledger_address_index, account_data.account_id
+                )
+            elif isinstance(account_data, KeystoreAccountData):
+                cls.load_register_keystore_account(
+                    account_data.keystore_path,
+                    account_data.password_env_var,
+                    account_data.account_id,
+                    account_data.address_index,
                 )
             else:
                 raise errors.AccountConversionError(account_data.to_dict())

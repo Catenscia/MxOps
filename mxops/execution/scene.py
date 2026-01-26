@@ -106,6 +106,15 @@ def parse_load_account(account: dict):
     if "pem_path" in account:
         AccountsManager.load_register_pem_account(**account)
         return
+    if "keystore_path" in account:
+        if "password_env_var" not in account:
+            raise errors.InvalidSceneDefinition(
+                f"Keystore account {account} is missing the "
+                "`password_env_var` parameter. Passwords must be provided "
+                "via environment variables for security."
+            )
+        AccountsManager.load_register_keystore_account(**account)
+        return
 
     # now handle user and external accounts
     # account id and bech32 parameters mush be provided
