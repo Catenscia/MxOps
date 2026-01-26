@@ -31,6 +31,7 @@ github
 jacques
 jean
 Keystore
+keystore
 Knop
 LogCheck
 mainnet

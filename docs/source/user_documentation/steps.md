@@ -598,22 +598,43 @@ You can find more information in the MultiversX documentation about [non fungibl
 (generate_wallets_target)=
 ### Generate Wallets Step
 
-This step allows you to generate new wallets. For now, only PEM wallets can be generated
+This step allows you to generate new wallets. Both PEM and keystore formats are supported.
+
+#### PEM Wallet Generation
 
 ```yaml
 type: GenerateWallets
 save_folder: ./my/wallets  # folder where to save the generated wallets
 wallets: 10  # number of wallets to generate
 shard: 1  # optional, to force the shard of the generated wallets
+format: pem  # optional, defaults to pem
 ```
 
-If you prefer to names you wallets, you can provide a list of names instead.
+If you prefer to name your wallets, you can provide a list of names instead.
 
 ```yaml
 type: GenerateWallets
 save_folder: ./my/wallets  # folder where to save the generated wallets
 wallets: ["alice", "bob"]  # generate two wallets named alice and bob
 shard: 0  # optional, to force the shard of the generated wallets
+```
+
+#### Keystore Wallet Generation
+
+To generate keystore wallets, set `format: keystore` and provide `password_env_var` which is the name of the environment variable containing the encryption password.
+
+```yaml
+type: GenerateWallets
+save_folder: ./my/wallets
+wallets: 3
+format: keystore
+password_env_var: WALLET_GEN_PASSWORD  # env var containing the password
+shard: 1  # optional
+```
+
+```{warning}
+For security reasons, passwords must be provided via environment variables, not directly in the scene file. Set the environment variable before running MxOps:
+`export WALLET_GEN_PASSWORD="your_secure_password"`
 ```
 
 
