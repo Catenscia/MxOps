@@ -11,6 +11,9 @@
 ### Fixed
 
 - Tokens are now correctly visible when cloned in the chain-simulator
+- Account cloning now uses rate limiting and exponential backoff to avoid 429 errors when fetching token data from Elasticsearch
+- ESDT token data from Elasticsearch is now cached to speed up subsequent cloning operations
+- Token insertion into local Elasticsearch now uses bulk API for faster cloning
 
 ## 3.0.2 - 2025-04-18
 
