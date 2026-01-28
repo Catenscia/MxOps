@@ -13,11 +13,14 @@ from multiversx_sdk.network_providers.proxy_network_provider import (
 
 from mxops import errors
 from mxops.data.data_cache import (
+    ACCOUNT_PREFIX,
+    ACCOUNT_STORAGE_PREFIX,
     save_account_data,
     save_account_storage_data,
     try_load_account_data,
     try_load_account_storage_data,
 )
+from mxops.data import data_path
 from mxops.data.execution_data import (
     _ScenarioData,
     ExternalContractData,
@@ -315,8 +318,23 @@ def test_migration_v0_1_0_to_v1_0_0():
     )
 
 
+def _cleanup_cache_files(address: Address, prefix: str):
+    """Remove cache files for the given address across all networks."""
+    key = f"{prefix}_{address.to_bech32()}"
+    for network in NetworkEnum:
+        file_path = data_path.get_data_cache_file_path(f"{key}.json", network)
+        if file_path.exists():
+            file_path.unlink()
+
+
 def test_account_data_cache():
     # Given
+    address = Address.new_from_bech32(
+        "erd1qqqqqqqqqqqqqpgqs8r2jhfymgle49dqx42xyypx6r2smt602jps2kcn8f"
+    )
+    # Clean up any existing cache files for this address
+    _cleanup_cache_files(address, ACCOUNT_PREFIX)
+
     account = account_from_proxy_response(
         {
             "account": {
@@ -376,6 +394,9 @@ def test_storage_data_cache():
     address = Address.new_from_bech32(
         "erd1qqqqqqqqqqqqqpgqs8r2jhfymgle49dqx42xyypx6r2smt602jps2kcn8f"
     )
+    # Clean up any existing cache files for this address
+    _cleanup_cache_files(address, ACCOUNT_STORAGE_PREFIX)
+
     storage = account_storage_from_response(
         {
             "blockInfo": {

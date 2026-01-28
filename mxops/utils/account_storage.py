@@ -47,6 +47,41 @@ def extract_token_from_entry(entry: AccountStorageEntry) -> Token | None:
     return Token(f"{token_ticker}-{random_identifier}", nonce)
 
 
+def extract_identifier_from_hex_key(hex_key: str) -> str | None:
+    """
+    Extract just the token identifier from a hex key without creating Token objects.
+    This is a lightweight alternative to extract_token_from_entry() for cases where
+    only the identifier is needed.
+
+    :param hex_key: hex-encoded storage key
+    :type hex_key: str
+    :return: token identifier (ticker-random) or None if not an ESDT key
+    :rtype: str | None
+    """
+    # Determine which prefix, if any
+    if hex_key.startswith(ESDT_BALANCE_STORAGE_HEX_PREFIX):
+        raw_token = hex_key[len(ESDT_BALANCE_STORAGE_HEX_PREFIX) :]
+    elif hex_key.startswith(ESDT_BALANCE_ROLE_HEX_PREFIX):
+        raw_token = hex_key[len(ESDT_BALANCE_ROLE_HEX_PREFIX) :]
+    else:
+        return None
+
+    try:
+        # Split at first dash (0x2d)
+        parts = raw_token.split("2d", 1)
+        if len(parts) != 2:
+            return None
+
+        hex_ticker = parts[0]
+        hex_random = parts[1][:12]  # Random is always 6 chars = 12 hex
+
+        ticker = bytes.fromhex(hex_ticker).decode("utf-8")
+        random_id = bytes.fromhex(hex_random).decode("utf-8")
+        return f"{ticker}-{random_id}"
+    except (ValueError, UnicodeDecodeError):
+        return None
+
+
 def separate_esdt_related_storage(
     entries: AccountStorageEntry,
 ) -> tuple[dict[str, AccountStorageEntry], list[AccountStorageEntry]]:

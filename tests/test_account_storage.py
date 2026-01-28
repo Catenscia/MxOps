@@ -1,6 +1,7 @@
 from multiversx_sdk import AccountStorageEntry, Token
 import pytest
 from mxops.utils.account_storage import (
+    extract_identifier_from_hex_key,
     extract_token_from_entry,
     separate_esdt_related_storage,
 )
@@ -57,6 +58,40 @@ def test_token_extract(entry: AccountStorageEntry, expected_result: Token | None
     result = extract_token_from_entry(entry)
     # Assert
     assert result == expected_result
+
+
+@pytest.mark.parametrize(
+    "hex_key,expected_identifier",
+    [
+        # ESDT balance keys (ELRONDesdt prefix)
+        ("454c524f4e44657364744d544b2d333132303263", "MTK-31202c"),
+        ("454c524f4e44657364744d544b2d393466366430", "MTK-94f6d0"),
+        # ESDT balance key with nonce
+        (
+            "454c524f4e446573647442494458424f544556542d66663139303301",
+            "BIDXBOTEVT-ff1903",
+        ),
+        (
+            "454c524f4e44657364744753504143454150452d3038626332622acd",
+            "GSPACEAPE-08bc2b",
+        ),
+        # ESDT role keys (ELRONDroleesdt prefix)
+        (
+            "454c524f4e44726f6c65657364745745474c442d626434643739",
+            "WEGLD-bd4d79",
+        ),
+        # Non-ESDT key should return None
+        ("7772617070656445676c64546f6b656e4964", None),
+        # Invalid/malformed keys
+        ("454c524f4e44657364744d544b", None),  # No dash separator
+        ("", None),  # Empty string
+    ],
+)
+def test_extract_identifier_from_hex_key(hex_key: str, expected_identifier: str | None):
+    # When
+    result = extract_identifier_from_hex_key(hex_key)
+    # Then
+    assert result == expected_identifier
 
 
 def test_split_entries():

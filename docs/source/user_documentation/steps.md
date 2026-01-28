@@ -698,7 +698,6 @@ caching_period: "10 days"  # optional, default to 10 days
 ```
 
 Account cloning can lead to huge data requests. If you are using the public proxy, please use a high caching period.
-Currently, some clones will even fail because the storage of the account is too big. This will be fixed on the MultiversX side in the [bernard release](https://github.com/multiversx/mx-chain-go/pull/6547) by the core team.
 
 ## Miscellaneous Steps
 
