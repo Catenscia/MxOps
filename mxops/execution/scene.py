@@ -100,6 +100,24 @@ def parse_load_account(account: dict):
     if "folder_path" in account:
         AccountsManager.load_register_pem_from_folder(**account)
         return
+    if "keystore_folder_path" in account:
+        if "name" not in account:
+            raise errors.InvalidSceneDefinition(
+                f"Keystore folder account {account} is missing the "
+                "`name` parameter to store the list of loaded account names."
+            )
+        if "password_env_var" not in account:
+            raise errors.InvalidSceneDefinition(
+                f"Keystore folder account {account} is missing the "
+                "`password_env_var` parameter. Passwords must be provided "
+                "via environment variables for security."
+            )
+        AccountsManager.load_register_keystore_from_folder(
+            name=account["name"],
+            folder_path=account["keystore_folder_path"],
+            password_env_var=account["password_env_var"],
+        )
+        return
     if "ledger_address_index" in account:
         AccountsManager.load_register_ledger_account(**account)
         return
