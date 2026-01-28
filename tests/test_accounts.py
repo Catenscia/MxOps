@@ -1,4 +1,4 @@
-from multiversx_sdk import Account, Address, Transaction
+from multiversx_sdk import Account, Address, Transaction, UserSecretKey
 import pytest
 import pytest_mock
 from mxops.data.execution_data import (
@@ -233,3 +233,72 @@ def test_signature_ignore_external_account(chain_simulator_network):
     # Then
     assert transaction.nonce == 1
     assert transaction.signature == b"aaaaa"
+
+
+def test_keystore_folder_accounts_loading(tmp_path, monkeypatch):
+    """Test loading keystore accounts from a folder"""
+    # Setup: create temp folder with keystores
+    password = "test_password_123"
+    monkeypatch.setenv("TEST_KS_FOLDER_PASSWORD", password)
+    keystore_folder = tmp_path / "keystores"
+    keystore_folder.mkdir()
+
+    # Generate test keystores (use unique names to avoid conflicts with other tests)
+    account_names = ["folder_ks_alice", "folder_ks_bob", "folder_ks_charlie"]
+    for name in account_names:
+        secret_key = UserSecretKey.generate()
+        account = Account(secret_key)
+        account.save_to_keystore(
+            keystore_folder / f"{name}.json",
+            password,
+        )
+
+    raw_account = {
+        "name": "keystore_folder_wallets",
+        "keystore_folder_path": str(keystore_folder),
+        "password_env_var": "TEST_KS_FOLDER_PASSWORD",
+    }
+
+    # When
+    parse_load_account(raw_account)
+    scenario_data = ScenarioData.get()
+
+    # Then
+    assert isinstance(AccountsManager.get_account("folder_ks_alice"), Account)
+    assert isinstance(AccountsManager.get_account("folder_ks_bob"), Account)
+    assert isinstance(AccountsManager.get_account("folder_ks_charlie"), Account)
+
+    loaded_names = scenario_data.get_value("keystore_folder_wallets")
+    assert set(loaded_names) == set(account_names)
+
+
+def test_keystore_folder_missing_password_env_var():
+    """Test that keystore folder loading fails when password_env_var is missing"""
+    from mxops import errors
+
+    raw_account = {
+        "name": "keystore_wallets",
+        "keystore_folder_path": "./some/path",
+        # Missing password_env_var
+    }
+
+    with pytest.raises(errors.InvalidSceneDefinition) as exc_info:
+        parse_load_account(raw_account)
+
+    assert "password_env_var" in str(exc_info.value)
+
+
+def test_keystore_folder_missing_name():
+    """Test that keystore folder loading fails when name is missing"""
+    from mxops import errors
+
+    raw_account = {
+        "keystore_folder_path": "./some/path",
+        "password_env_var": "SOME_PASSWORD",
+        # Missing name
+    }
+
+    with pytest.raises(errors.InvalidSceneDefinition) as exc_info:
+        parse_load_account(raw_account)
+
+    assert "name" in str(exc_info.value)
