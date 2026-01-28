@@ -75,6 +75,8 @@ steps:
       - alice
       - bob
     shard: 1  # optional, to force the shard of the generated wallets
+    format: pem  # optional, pem or keystore, defaults to pem
+    password_env_var: WALLET_PASSWORD  # optional, required for keystore format
 
   - type: R3D4Faucet
     targets:  # to which accounts the faucet should send funcds

@@ -107,6 +107,19 @@ class AccountConversionError(Exception):
         super().__init__(message)
 
 
+class KeystorePasswordNotFound(Exception):
+    """
+    To be raised when the password environment variable for a keystore is not set
+    """
+
+    def __init__(self, env_var_name: str) -> None:
+        message = (
+            f"Password environment variable '{env_var_name}' is not set. "
+            "Please set it before loading the keystore account."
+        )
+        super().__init__(message)
+
+
 #############################################################
 #
 #                   Data Management Errors

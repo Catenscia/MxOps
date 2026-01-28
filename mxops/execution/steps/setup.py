@@ -37,19 +37,21 @@ from mxops.execution.steps.base import Step
 from mxops.execution.steps.transactions import TransferStep
 from mxops.utils.account_storage import separate_esdt_related_storage
 from mxops.utils.msc import get_account_link
-from mxops.utils.wallets import generate_pem_wallet
+from mxops.utils.wallets import generate_keystore_wallet, generate_pem_wallet
 
 
 @dataclass
 class GenerateWalletsStep(Step):
     """
     Represents a step to generate some MultiversX wallets
-    For now, only pem wallets are supported
+    Supports PEM and keystore formats
     """
 
     save_folder: SmartPath
     wallets: SmartValue
     shard: SmartInt | None = None
+    format: SmartStr = "pem"
+    password_env_var: SmartStr | None = None
 
     def _execute(self):
         """
@@ -61,6 +63,24 @@ class GenerateWalletsStep(Step):
         save_folder.mkdir(parents=True, exist_ok=True)
         wallets = self.wallets.get_evaluated_value()
         shard = None if self.shard is None else self.shard.get_evaluated_value()
+        wallet_format = (
+            self.format.get_evaluated_value()
+            if isinstance(self.format, SmartStr)
+            else self.format
+        )
+
+        # Validate keystore requirements
+        if wallet_format == "keystore":
+            if self.password_env_var is None:
+                raise errors.InvalidSceneDefinition(
+                    "GenerateWalletsStep with format='keystore' "
+                    "requires password_env_var"
+                )
+            password_env_var = self.password_env_var.get_evaluated_value()
+            password = os.environ.get(password_env_var)
+            if password is None:
+                raise errors.KeystorePasswordNotFound(password_env_var)
+
         account_manager = AccountsManager()
         if isinstance(wallets, int):
             n_wallets = wallets
@@ -74,17 +94,34 @@ class GenerateWalletsStep(Step):
                 f"got {type(wallets)}"
             )
         for i, name in enumerate(names):
-            pem_wallet, wallet_address = generate_pem_wallet(shard)
             if name is None:
-                wallet_name = wallet_address.to_bech32()
+                wallet_name = None
             else:
                 wallet_name = utils.retrieve_value_from_any(name)
-            wallet_path = save_folder / f"{wallet_name}.pem"
-            if os.path.isfile(wallet_path.as_posix()):
-                raise errors.WalletAlreadyExist(wallet_path)
 
-            pem_wallet.save(wallet_path)
-            account_manager.load_register_pem_account(wallet_path, wallet_name)
+            if wallet_format == "pem":
+                pem_wallet, wallet_address = generate_pem_wallet(shard)
+                if wallet_name is None:
+                    wallet_name = wallet_address.to_bech32()
+                wallet_path = save_folder / f"{wallet_name}.pem"
+                if os.path.isfile(wallet_path.as_posix()):
+                    raise errors.WalletAlreadyExist(wallet_path)
+                pem_wallet.save(wallet_path)
+                account_manager.load_register_pem_account(wallet_path, wallet_name)
+            else:  # keystore
+                keystore_wallet, wallet_address = generate_keystore_wallet(
+                    shard, password
+                )
+                if wallet_name is None:
+                    wallet_name = wallet_address.to_bech32()
+                wallet_path = save_folder / f"{wallet_name}.json"
+                if os.path.isfile(wallet_path.as_posix()):
+                    raise errors.WalletAlreadyExist(wallet_path)
+                keystore_wallet.save(wallet_path)
+                account_manager.load_register_keystore_account(
+                    wallet_path, password_env_var, wallet_name
+                )
+
             logger.info(
                 f"Wallet n°{i + 1}/{n_wallets} generated with address "
                 f"{wallet_address.to_bech32()} at {wallet_path}"

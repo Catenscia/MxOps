@@ -7,7 +7,7 @@ This module contains utils various functions related to wallets
 from typing import Optional, Tuple
 
 from multiversx_sdk import Address
-from multiversx_sdk.wallet import Mnemonic, UserPEM
+from multiversx_sdk.wallet import Mnemonic, UserPEM, UserWallet
 
 from mxops import errors
 
@@ -46,6 +46,35 @@ def generate_pem_wallet(shard: Optional[int] = None) -> Tuple[UserPEM, Address]:
         address_shard = get_shard_of_pubkey(address.pubkey)
         if shard is None or address_shard == shard:
             return UserPEM(label=address.bech32(), secret_key=secret_key), address
+        k_iter += 1
+
+    raise errors.MaxIterations("Failed to find a fitting wallet within max iterations")
+
+
+def generate_keystore_wallet(
+    shard: Optional[int] = None,
+    password: str = "",  # nosec B107
+) -> Tuple[UserWallet, Address]:
+    """
+    Generate a MultiversX keystore wallet with optional shard targeting
+
+    :param shard: target shard for the wallet, defaults to None (any shard)
+    :type shard: Optional[int]
+    :param password: password for encrypting the keystore
+    :type password: str
+    :return: tuple of the UserWallet object and the wallet address
+    :rtype: Tuple[UserWallet, Address]
+    """
+    k_iter = 0
+    while k_iter < 10000:
+        mnemonic = Mnemonic.generate()
+        secret_key = mnemonic.derive_key(0)
+        public_key = secret_key.generate_public_key()
+        address = Address(public_key.buffer, "erd")
+        address_shard = get_shard_of_pubkey(address.pubkey)
+        if shard is None or address_shard == shard:
+            user_wallet = UserWallet.from_secret_key(secret_key, password)
+            return user_wallet, address
         k_iter += 1
 
     raise errors.MaxIterations("Failed to find a fitting wallet within max iterations")

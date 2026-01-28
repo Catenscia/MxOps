@@ -6,6 +6,7 @@
 
 - iterative account key storage retrieval
 - fail check and log check
+- keystore JSON wallet support for account loading and wallet generation
 
 ### Fixed
 
