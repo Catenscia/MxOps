@@ -41,7 +41,7 @@ include = ["mxops*"]
 namespaces = false
 
 [tool.setuptools.package-data]
-"*" = ["*.txt", "*.ini"]
+"*" = ["*.txt", "*.ini", "*.yaml"]
 
 [tool.pytest.ini_options]
 filterwarnings = [
