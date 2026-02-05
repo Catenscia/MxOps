@@ -1,9 +1,10 @@
 """
 author: Etienne Wallet
 
-This module contains derrived classes from api or proxy providers
+This module contains derived classes from api or proxy providers
 """
 
+import logging
 from time import sleep
 
 from multiversx_sdk import (
@@ -20,6 +21,7 @@ from mxops.config.config import Config
 from mxops.enums import LogGroupEnum
 from mxops.errors import MaxIterationError, StorageIterationError
 from mxops.utils.logger import get_logger
+from mxops.utils.progress import ProgressLogger
 
 
 def _is_retryable_error(error: Exception) -> bool:
@@ -45,6 +47,7 @@ def get_account_storage_with_fallback(
     request_delay: float | None = None,
     max_iterations: int = 100000,
     min_batch_size: int = 50,  # Reasonable minimum that balances retries vs giving up
+    progress_logger: logging.Logger | None = None,
 ) -> AccountStorage:
     """
     Fetch all account storage with automatic fallback.
@@ -67,6 +70,7 @@ def get_account_storage_with_fallback(
     :param request_delay: delay between requests in seconds (default: 1/API_RATE_LIMIT)
     :param max_iterations: maximum iterations to prevent infinite loops
     :param min_batch_size: minimum batch size before falling back to standard endpoint
+    :param progress_logger: optional logger for progress reporting on slow operations
     :return: AccountStorage with all entries
     """
     logger = get_logger(LogGroupEnum.GNL)
@@ -76,6 +80,14 @@ def get_account_storage_with_fallback(
 
     if request_delay is None:
         request_delay = 1.0 / float(Config.get_config().get("API_RATE_LIMIT"))
+
+    # Setup progress logger if progress_logger provided
+    progress: ProgressLogger | None = None
+    if progress_logger is not None:
+        # Truncate to first 20 chars of bech32 address for readable logs
+        label = address.to_bech32()[:20] + "..."
+        progress = ProgressLogger(progress_logger, f"Storage key fetching for {label}")
+        progress.start()
 
     # Try paginated endpoint first
     all_pairs: dict[str, str] = {}
@@ -111,6 +123,10 @@ def get_account_storage_with_fallback(
                         )
 
                     all_pairs.update(pairs)
+
+                    # Report progress after each batch
+                    if progress is not None:
+                        progress.update(len(all_pairs))
 
                     if not new_state:  # Iteration complete
                         iteration_succeeded = True
@@ -165,6 +181,8 @@ def get_account_storage_with_fallback(
 
     # If iteration succeeded, convert to AccountStorage
     if iteration_succeeded and all_pairs:
+        if progress is not None:
+            progress.finish(len(all_pairs))
         entries = [
             AccountStorageEntry(
                 raw={k: v},
@@ -176,6 +194,8 @@ def get_account_storage_with_fallback(
         return AccountStorage(raw={"pairs": all_pairs}, entries=entries)
 
     # Fall back to standard endpoint
+    if progress is not None:
+        progress.finish(len(all_pairs) if all_pairs else 0)
     return proxy.get_account_storage(address)
 
 
