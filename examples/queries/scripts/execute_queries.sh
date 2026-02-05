@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mxops execute \
+uv run mxops execute \
         -n mainnet \
         -s queries_tutorial \
         -d \

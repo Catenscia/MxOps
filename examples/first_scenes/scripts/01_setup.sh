@@ -2,7 +2,7 @@
 
 rm wallets/*
 
-mxops execute \
+uv run mxops execute \
         -n devnet \
         -s first_scenario \
         -c \

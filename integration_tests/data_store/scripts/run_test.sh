@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-mxops \
+uv run mxops \
     execute \
     -n $1 \
     -s integration_test_data_store \

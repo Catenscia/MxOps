@@ -28,24 +28,24 @@ bash scripts/check_python_code.sh
 
 Auto-fix and check:
 ```bash
-ruff format mxops && ruff check mxops --fix
+uv run ruff format mxops && uv run ruff check mxops --fix
 bash scripts/check_python_code.sh
 ```
 
 Or run individual tools:
 ```bash
 # Security check
-bandit -r mxops
+uv run bandit -r mxops
 
 # Style check
-flake8 mxops tests integration_tests examples
+uv run flake8 mxops tests integration_tests examples
 
 # Format and lint
-ruff format mxops
-ruff check mxops
+uv run ruff format mxops
+uv run ruff check mxops
 
 # Code analysis
-pylint mxops
+uv run pylint mxops
 ```
 
 ## Notes

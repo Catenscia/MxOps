@@ -11,7 +11,8 @@ pub const HEX_ADDRESS: [u8; 32] =
     hex!("000000000000000005004d4e468a6785c67dcf63611a05266562ba913638aa59");
 /// erd1qqqqqqqqqqqqqpgqf48ydzn8shr8mnmrvydq2fn9v2afzd3c4fvsk4wglm
 
-#[derive(TopEncode, TopDecode, NestedEncode, NestedDecode, TypeAbi, PartialEq, Eq)]
+#[type_abi]
+#[derive(TopEncode, TopDecode, NestedEncode, NestedDecode, PartialEq, Eq)]
 pub struct Struct<M: ManagedTypeApi> {
     pub int: u16,
     pub seq: ManagedVec<M, u8>,
@@ -20,7 +21,8 @@ pub struct Struct<M: ManagedTypeApi> {
     pub uint_64: u64,
 }
 
-#[derive(TopEncode, TopDecode, NestedEncode, NestedDecode, TypeAbi, PartialEq, Eq)]
+#[type_abi]
+#[derive(TopEncode, TopDecode, NestedEncode, NestedDecode, PartialEq, Eq)]
 pub enum DayOfWeek {
     Monday,
     Tuesday,
@@ -31,7 +33,8 @@ pub enum DayOfWeek {
     Sunday,
 }
 
-#[derive(TopEncode, TopDecode, NestedEncode, NestedDecode, TypeAbi, PartialEq, Eq)]
+#[type_abi]
+#[derive(TopEncode, TopDecode, NestedEncode, NestedDecode, PartialEq, Eq)]
 pub enum EnumWithEverything<M: ManagedTypeApi> {
     Default,
     Today(DayOfWeek),
@@ -333,7 +336,7 @@ pub trait DataStore {
         let payment_vec = payments.to_vec();
         require!(payments.len() == 2, "Wrong payments number");
         require!(
-            payment_vec.get(0)
+            *payment_vec.get(0)
                 == EsdtTokenPayment::new(
                     TokenIdentifier::from(TOKEN_IDENTIFIER),
                     0,
@@ -342,7 +345,7 @@ pub trait DataStore {
             "Wrong first payment"
         );
         require!(
-            payment_vec.get(1)
+            *payment_vec.get(1)
                 == EsdtTokenPayment::new(
                     TokenIdentifier::from(TOKEN_IDENTIFIER_2),
                     0,

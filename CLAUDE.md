@@ -31,10 +31,10 @@ python -m mxops <command>
 ```
 
 ### Code Quality (all must pass for PR)
-- **Bandit**: `bandit -r mxops` - no security issues
-- **Flake8**: `flake8 mxops tests integration_tests examples` - max-line-length=88
-- **Ruff**: `ruff format mxops && ruff check mxops` - format + lint
-- **Pylint**: `pylint mxops` - score >= 9.5
+- **Bandit**: `uv run bandit -r mxops` - no security issues
+- **Flake8**: `uv run flake8 mxops tests integration_tests examples` - max-line-length=88
+- **Ruff**: `uv run ruff format mxops && uv run ruff check mxops` - format + lint
+- **Pylint**: `uv run pylint mxops` - score >= 9.5
 
 ## Architecture
 

@@ -22,7 +22,7 @@ bash scripts/launch_unit_tests.sh
 
 For specific tests or patterns:
 ```bash
-coverage run -m pytest tests/<path> --color=yes -vv
+uv run coverage run -m pytest tests/<path> --color=yes -vv
 ```
 
 ## Notes

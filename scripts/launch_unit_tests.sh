@@ -8,7 +8,7 @@ NC='\033[0m'
 
 printf "${BLUE}############\n# Unit Tests\n############${NC}\n"
 
-OUTPUT=$(coverage run -m pytest tests --color=yes -vv)
+OUTPUT=$(uv run coverage run -m pytest tests --color=yes -vv)
 EXIT=$?
 echo -e "${OUTPUT}"
 
@@ -18,6 +18,6 @@ then
     printf "${RED}Unit tests failed${NC}\n"
     exit 1
 else
-    coverage html
+    uv run coverage html
     printf "${GREEN}Unit tests success${NC}\n\n\n"
 fi

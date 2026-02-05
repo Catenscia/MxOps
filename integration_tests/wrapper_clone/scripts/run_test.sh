@@ -6,7 +6,7 @@ if ! [[ " ${1} " =~ " chain-simulator " ]]; then
     exit 0
 fi
 
-mxops \
+uv run mxops \
     execute \
     -n $1 \
     -s integration_test_wrapper_clone \

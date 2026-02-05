@@ -60,7 +60,7 @@ pub trait PiggyBank {
         let caller = self.blockchain().get_caller();
         self.require_good_token_identifier(&deposit_payment);
         self.address_amount(caller.clone())
-            .update(|val| *val += deposit_payment.amount);
+            .update(|val| *val += &deposit_payment.amount);
 
         self.address_amount(caller).get()
     }
