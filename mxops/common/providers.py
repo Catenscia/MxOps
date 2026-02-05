@@ -24,6 +24,143 @@ from mxops.utils.logger import get_logger
 from mxops.utils.progress import ProgressLogger
 
 
+def set_state_with_batching(
+    proxy: ProxyNetworkProvider,
+    account_state: dict,
+    overwrite: bool = True,
+    batch_size: int | None = None,
+    min_batch_size: int = 50,
+    request_delay: float | None = None,
+) -> None:
+    """
+    Set account state with batched storage pairs to avoid timeouts.
+    If the account has many storage pairs, they are split into batches.
+    On timeout, batch size is reduced and the request is retried.
+
+    The first request sets account metadata (nonce, balance, code, etc.) along
+    with the first batch of pairs. Subsequent requests only set additional
+    pairs batches using the same address.
+
+    Note: Unlike get_account_storage_with_fallback which can fall back to a
+    standard endpoint, this function raises an error if all retries are
+    exhausted, since there is no alternative way to set state.
+
+    :param proxy: proxy network provider with set_state/set_state_overwrite methods
+    :param account_state: account state dict containing address, balance,
+        nonce, code, pairs, etc.
+    :param overwrite: if True, use set_state_overwrite; otherwise use set_state
+    :param batch_size: number of pairs per request (default from config)
+    :param min_batch_size: minimum batch size before giving up (must be >= 1)
+    :param request_delay: delay between requests in seconds (default: 1/API_RATE_LIMIT)
+    :raises ValueError: if account_state missing address or min_batch_size < 1
+    :raises RuntimeError: if setting state fails after all retries
+    """
+    logger = get_logger(LogGroupEnum.GNL)
+
+    # Validate inputs
+    if min_batch_size < 1:
+        raise ValueError("min_batch_size must be at least 1")
+
+    if "address" not in account_state:
+        raise ValueError("account_state must contain 'address' key")
+
+    if batch_size is None:
+        batch_size = int(Config.get_config().get("STORAGE_ITERATION_BATCH_SIZE"))
+
+    if request_delay is None:
+        request_delay = 1.0 / float(Config.get_config().get("API_RATE_LIMIT"))
+
+    pairs = account_state.get("pairs", {})
+    address = account_state["address"]
+
+    # If no pairs or few pairs, just send as-is
+    if len(pairs) <= batch_size:
+        if overwrite:
+            proxy.set_state_overwrite([account_state])
+        else:
+            proxy.set_state([account_state])
+        return
+
+    # Split pairs into batches
+    # Note: Python 3.7+ guarantees dict insertion order, so list() is deterministic
+    # for a given input dict
+    pairs_list = list(pairs.items())
+    current_batch_size = batch_size
+    pairs_sent = 0
+    batches_sent = 0
+    is_first_request = True
+
+    while pairs_sent < len(pairs_list):
+        # Build batch of pairs
+        batch_end = min(pairs_sent + current_batch_size, len(pairs_list))
+        batch_pairs = dict(pairs_list[pairs_sent:batch_end])
+
+        # Build state for this request
+        if is_first_request:
+            # First request includes all account metadata
+            state_to_send = {**account_state, "pairs": batch_pairs}
+        else:
+            # Subsequent requests only include address and pairs
+            state_to_send = {"address": address, "pairs": batch_pairs}
+
+        # Try to send with retry logic
+        while current_batch_size >= min_batch_size:
+            try:
+                if is_first_request and overwrite:
+                    proxy.set_state_overwrite([state_to_send])
+                else:
+                    proxy.set_state([state_to_send])
+
+                # Success - move to next batch
+                pairs_sent = batch_end
+                is_first_request = False
+                batches_sent += 1
+                break
+
+            except Exception as e:
+                if _is_retryable_error(e):
+                    new_batch_size = current_batch_size // 2
+                    logger.info(
+                        f"Set state for {address} failed with batch size "
+                        f"{current_batch_size}, reducing to {new_batch_size}: {e}"
+                    )
+                    current_batch_size = new_batch_size
+
+                    if current_batch_size >= min_batch_size:
+                        # Rebuild batch with smaller size
+                        batch_end = min(
+                            pairs_sent + current_batch_size, len(pairs_list)
+                        )
+                        batch_pairs = dict(pairs_list[pairs_sent:batch_end])
+                        if is_first_request:
+                            state_to_send = {**account_state, "pairs": batch_pairs}
+                        else:
+                            state_to_send = {"address": address, "pairs": batch_pairs}
+
+                        if request_delay > 0:
+                            sleep(request_delay)
+                else:
+                    raise
+        else:
+            # Exhausted min batch size
+            raise RuntimeError(
+                f"Failed to set state for {address}: batch size reduced below "
+                f"minimum ({min_batch_size}) after repeated timeouts. "
+                f"Sent {pairs_sent}/{len(pairs_list)} pairs successfully. "
+                f"The chain simulator may be in a partial state. "
+                f"Consider retrying or increasing min_batch_size."
+            )
+
+        # Delay between successful batches
+        if pairs_sent < len(pairs_list) and request_delay > 0:
+            sleep(request_delay)
+
+    logger.debug(
+        f"Set state for {address} completed: {len(pairs_list)} pairs "
+        f"in {batches_sent} batches"
+    )
+
+
 def _is_retryable_error(error: Exception) -> bool:
     """
     Check if an error is retryable (timeout or connection related).

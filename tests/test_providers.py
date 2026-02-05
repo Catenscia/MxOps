@@ -10,6 +10,7 @@ from requests.exceptions import HTTPError, Timeout
 from mxops.common.providers import (
     _is_retryable_error,
     get_account_storage_with_fallback,
+    set_state_with_batching,
 )
 
 
@@ -398,3 +399,417 @@ class TestGetAccountStorageWithFallbackBatchReduction:
 
         mock_proxy.get_account_storage.assert_called_once()
         assert result == mock_standard_storage
+
+
+class TestSetStateWithBatching:
+    """Tests for the set_state_with_batching function."""
+
+    @pytest.fixture
+    def mock_proxy(self):
+        """Create a mock proxy network provider."""
+        return MagicMock()
+
+    @pytest.fixture
+    def mock_config(self):
+        """Mock the Config.get_config() to return test values."""
+        with patch("mxops.common.providers.Config") as mock:
+            config_instance = MagicMock()
+            config_instance.get.side_effect = lambda key: {
+                "STORAGE_ITERATION_BATCH_SIZE": "100",
+                "API_RATE_LIMIT": "100",
+            }.get(key)
+            mock.get_config.return_value = config_instance
+            yield mock
+
+    def test_small_storage_no_batching(self, mock_proxy, mock_config):
+        """Test that small storage is sent in a single request."""
+        account_state = {
+            "address": "erd1abc...",
+            "nonce": 5,
+            "balance": "1000000000000000000",
+            "pairs": {
+                "6b657931": "76616c756531",
+                "6b657932": "76616c756532",
+            },
+        }
+
+        set_state_with_batching(
+            mock_proxy, account_state, overwrite=True, request_delay=0
+        )
+
+        mock_proxy.set_state_overwrite.assert_called_once_with([account_state])
+        mock_proxy.set_state.assert_not_called()
+
+    def test_small_storage_no_batching_no_overwrite(self, mock_proxy, mock_config):
+        """Test that small storage uses set_state when overwrite=False."""
+        account_state = {
+            "address": "erd1abc...",
+            "nonce": 5,
+            "balance": "1000000000000000000",
+            "pairs": {
+                "6b657931": "76616c756531",
+            },
+        }
+
+        set_state_with_batching(
+            mock_proxy, account_state, overwrite=False, request_delay=0
+        )
+
+        mock_proxy.set_state.assert_called_once_with([account_state])
+        mock_proxy.set_state_overwrite.assert_not_called()
+
+    def test_large_storage_is_batched(self, mock_proxy, mock_config):
+        """Test that large storage is split into batches."""
+        # Create 250 pairs (should be split into 3 batches with batch_size=100)
+        pairs = {f"key{i:04d}".encode().hex(): f"val{i}".encode().hex()
+                 for i in range(250)}
+        account_state = {
+            "address": "erd1abc...",
+            "nonce": 5,
+            "balance": "1000000000000000000",
+            "code": "0061736d",
+            "pairs": pairs,
+        }
+
+        set_state_with_batching(
+            mock_proxy, account_state, overwrite=True,
+            batch_size=100, request_delay=0
+        )
+
+        # First call should use set_state_overwrite with full metadata
+        # Subsequent calls should use set_state with just address and pairs
+        assert mock_proxy.set_state_overwrite.call_count == 1
+        assert mock_proxy.set_state.call_count == 2
+
+        # Verify first call has full metadata
+        first_call_state = mock_proxy.set_state_overwrite.call_args[0][0][0]
+        assert first_call_state["nonce"] == 5
+        assert first_call_state["balance"] == "1000000000000000000"
+        assert first_call_state["code"] == "0061736d"
+        assert len(first_call_state["pairs"]) == 100
+
+        # Verify subsequent calls only have address and pairs
+        for call in mock_proxy.set_state.call_args_list:
+            state = call[0][0][0]
+            assert "address" in state
+            assert "pairs" in state
+            # Should not have full metadata in subsequent calls
+            assert "nonce" not in state
+            assert "balance" not in state
+            assert "code" not in state
+
+    def test_batch_reduction_on_timeout(self, mock_proxy, mock_config):
+        """Test that batch size is reduced when timeout occurs."""
+        pairs = {f"key{i:04d}".encode().hex(): f"val{i}".encode().hex()
+                 for i in range(150)}
+        account_state = {
+            "address": "erd1abc...",
+            "pairs": pairs,
+        }
+
+        call_count = 0
+        batch_sizes_observed = []
+
+        def mock_set_state_overwrite(states):
+            nonlocal call_count
+            call_count += 1
+            batch_sizes_observed.append(len(states[0]["pairs"]))
+            if call_count == 1:
+                raise Timeout("Connection timed out")
+            # Success on subsequent calls
+
+        mock_proxy.set_state_overwrite.side_effect = mock_set_state_overwrite
+
+        set_state_with_batching(
+            mock_proxy, account_state, overwrite=True,
+            batch_size=100, min_batch_size=25, request_delay=0
+        )
+
+        # First call fails with 100, retry with 50, then continue
+        assert batch_sizes_observed[0] == 100  # First attempt
+        assert batch_sizes_observed[1] == 50   # Reduced batch
+
+    def test_multiple_batch_reductions(self, mock_proxy, mock_config):
+        """Test multiple batch size reductions before success."""
+        # Need more than 100 pairs to trigger batching
+        pairs = {f"key{i:04d}".encode().hex(): f"val{i}".encode().hex()
+                 for i in range(150)}
+        account_state = {
+            "address": "erd1abc...",
+            "pairs": pairs,
+        }
+
+        call_count = 0
+        batch_sizes_observed = []
+
+        def mock_set_state_overwrite(states):
+            nonlocal call_count
+            call_count += 1
+            batch_sizes_observed.append(len(states[0]["pairs"]))
+            if call_count < 3:
+                raise Timeout("Connection timed out")
+
+        mock_proxy.set_state_overwrite.side_effect = mock_set_state_overwrite
+
+        set_state_with_batching(
+            mock_proxy, account_state, overwrite=True,
+            batch_size=100, min_batch_size=10, request_delay=0
+        )
+
+        # 100 -> 50 (timeout) -> 25 (success)
+        assert batch_sizes_observed[0] == 100  # First batch
+        assert batch_sizes_observed[1] == 50   # Reduced
+        assert batch_sizes_observed[2] == 25   # Reduced again
+
+    def test_raises_when_min_batch_exceeded(self, mock_proxy, mock_config):
+        """Test that RuntimeError is raised when min batch size is exceeded."""
+        # Need more than batch_size pairs to trigger batching
+        pairs = {f"key{i:04d}".encode().hex(): f"val{i}".encode().hex()
+                 for i in range(150)}
+        account_state = {
+            "address": "erd1abc...",
+            "pairs": pairs,
+        }
+
+        # Always timeout
+        mock_proxy.set_state_overwrite.side_effect = Timeout("Always timeout")
+
+        with pytest.raises(RuntimeError) as exc_info:
+            set_state_with_batching(
+                mock_proxy, account_state, overwrite=True,
+                batch_size=100, min_batch_size=50, request_delay=0
+            )
+
+        assert "batch size reduced below minimum" in str(exc_info.value)
+        assert "50" in str(exc_info.value)
+
+    def test_non_retryable_error_raises_immediately(self, mock_proxy, mock_config):
+        """Test that non-retryable errors are raised immediately."""
+        pairs = {f"key{i:04d}".encode().hex(): f"val{i}".encode().hex()
+                 for i in range(150)}
+        account_state = {
+            "address": "erd1abc...",
+            "pairs": pairs,
+        }
+
+        mock_proxy.set_state_overwrite.side_effect = ValueError("Invalid state")
+
+        with pytest.raises(ValueError) as exc_info:
+            set_state_with_batching(
+                mock_proxy, account_state, overwrite=True,
+                batch_size=100, request_delay=0
+            )
+
+        assert "Invalid state" in str(exc_info.value)
+        # Should only be called once (no retry)
+        assert mock_proxy.set_state_overwrite.call_count == 1
+
+    def test_connection_error_triggers_batch_reduction(self, mock_proxy, mock_config):
+        """Test that ConnectionError triggers batch size reduction."""
+        # Need more than batch_size pairs to trigger batching
+        pairs = {f"key{i:04d}".encode().hex(): f"val{i}".encode().hex()
+                 for i in range(150)}
+        account_state = {
+            "address": "erd1abc...",
+            "pairs": pairs,
+        }
+
+        call_count = 0
+
+        def mock_set_state_overwrite(states):
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                raise RequestsConnectionError("Connection refused")
+
+        mock_proxy.set_state_overwrite.side_effect = mock_set_state_overwrite
+
+        set_state_with_batching(
+            mock_proxy, account_state, overwrite=True,
+            batch_size=100, min_batch_size=10, request_delay=0
+        )
+
+        assert call_count == 2  # First fails, second succeeds
+
+    def test_http_502_triggers_batch_reduction(self, mock_proxy, mock_config):
+        """Test that HTTP 502 errors trigger batch size reduction."""
+        # Need more than batch_size pairs to trigger batching
+        pairs = {f"key{i:04d}".encode().hex(): f"val{i}".encode().hex()
+                 for i in range(150)}
+        account_state = {
+            "address": "erd1abc...",
+            "pairs": pairs,
+        }
+
+        call_count = 0
+
+        def mock_set_state_overwrite(states):
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                mock_response = MagicMock()
+                mock_response.status_code = 502
+                raise HTTPError(response=mock_response)
+
+        mock_proxy.set_state_overwrite.side_effect = mock_set_state_overwrite
+
+        set_state_with_batching(
+            mock_proxy, account_state, overwrite=True,
+            batch_size=100, min_batch_size=10, request_delay=0
+        )
+
+        assert call_count == 2
+
+    def test_empty_pairs_sends_single_request(self, mock_proxy, mock_config):
+        """Test that account state with empty pairs is sent in a single request."""
+        account_state = {
+            "address": "erd1abc...",
+            "nonce": 5,
+            "balance": "1000000000000000000",
+            "pairs": {},
+        }
+
+        set_state_with_batching(
+            mock_proxy, account_state, overwrite=True, request_delay=0
+        )
+
+        mock_proxy.set_state_overwrite.assert_called_once_with([account_state])
+
+    def test_no_pairs_key_sends_single_request(self, mock_proxy, mock_config):
+        """Test that account state without pairs key is sent in a single request."""
+        account_state = {
+            "address": "erd1abc...",
+            "nonce": 5,
+            "balance": "1000000000000000000",
+        }
+
+        set_state_with_batching(
+            mock_proxy, account_state, overwrite=True, request_delay=0
+        )
+
+        mock_proxy.set_state_overwrite.assert_called_once_with([account_state])
+
+    def test_logging_on_batch_reduction(self, mock_proxy, mock_config):
+        """Test that batch reduction is logged."""
+        # Need more than batch_size pairs to trigger batching
+        pairs = {f"key{i:04d}".encode().hex(): f"val{i}".encode().hex()
+                 for i in range(150)}
+        account_state = {
+            "address": "erd1abc...",
+            "pairs": pairs,
+        }
+
+        call_count = 0
+
+        def mock_set_state_overwrite(states):
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                raise Timeout("Connection timed out")
+
+        mock_proxy.set_state_overwrite.side_effect = mock_set_state_overwrite
+
+        with patch("mxops.common.providers.get_logger") as mock_get_logger:
+            mock_logger = MagicMock()
+            mock_get_logger.return_value = mock_logger
+
+            set_state_with_batching(
+                mock_proxy, account_state, overwrite=True,
+                batch_size=100, min_batch_size=10, request_delay=0
+            )
+
+            # Verify logger.info was called with batch reduction message
+            mock_logger.info.assert_called()
+            log_message = mock_logger.info.call_args_list[0][0][0]
+            assert "failed with batch size" in log_message
+            assert "reducing to" in log_message
+
+    def test_progress_preserved_after_partial_success(self, mock_proxy, mock_config):
+        """Test that successfully sent batches are not resent after a later failure.
+
+        When batch 1 succeeds and batch 2 fails, only batch 2 should be retried.
+        The pairs from batch 1 should not be resent.
+        """
+        # Create 200 pairs (will be 2 batches of 100)
+        pairs = {f"key{i:04d}".encode().hex(): f"val{i}".encode().hex()
+                 for i in range(200)}
+        account_state = {
+            "address": "erd1abc...",
+            "pairs": pairs,
+        }
+
+        call_count = 0
+        pairs_in_each_call = []
+
+        def mock_set_state_overwrite(states):
+            nonlocal call_count
+            call_count += 1
+            pairs_in_each_call.append(list(states[0]["pairs"].keys()))
+            # First batch succeeds
+
+        def mock_set_state(states):
+            nonlocal call_count
+            call_count += 1
+            batch_pairs = list(states[0]["pairs"].keys())
+            pairs_in_each_call.append(batch_pairs)
+            # Fail on first set_state call (second batch)
+            if call_count == 2:
+                raise Timeout("Connection timed out")
+            # Subsequent calls succeed
+
+        mock_proxy.set_state_overwrite.side_effect = mock_set_state_overwrite
+        mock_proxy.set_state.side_effect = mock_set_state
+
+        set_state_with_batching(
+            mock_proxy, account_state, overwrite=True,
+            batch_size=100, min_batch_size=25, request_delay=0
+        )
+
+        # Batch 1 (via set_state_overwrite): 100 pairs - succeeds
+        # Batch 2 (via set_state): 100 pairs - fails (timeout)
+        # Batch 2 retry (via set_state): 50 pairs - succeeds
+        # Batch 2 part 2 (via set_state): 50 pairs - succeeds
+
+        # Check that first batch pairs are not in any subsequent batches
+        first_batch_pairs = set(pairs_in_each_call[0])
+        for subsequent_batch in pairs_in_each_call[1:]:
+            assert first_batch_pairs.isdisjoint(set(subsequent_batch)), \
+                "Pairs from successful first batch should not be resent"
+
+        # Verify all 200 pairs were sent exactly once (no duplicates, none missing)
+        all_pairs_sent = []
+        for batch in pairs_in_each_call:
+            all_pairs_sent.extend(batch)
+        # Check total count (may include retried pairs from failed batch)
+        # But unique pairs should be exactly 200
+        all_unique_pairs = set(all_pairs_sent)
+        assert len(all_unique_pairs) == 200, \
+            f"Expected 200 unique pairs, got {len(all_unique_pairs)}"
+
+    def test_raises_on_invalid_min_batch_size(self, mock_proxy, mock_config):
+        """Test that ValueError is raised when min_batch_size < 1."""
+        account_state = {
+            "address": "erd1abc...",
+            "pairs": {"key": "value"},
+        }
+
+        with pytest.raises(ValueError) as exc_info:
+            set_state_with_batching(
+                mock_proxy, account_state, overwrite=True,
+                min_batch_size=0, request_delay=0
+            )
+
+        assert "min_batch_size must be at least 1" in str(exc_info.value)
+
+    def test_raises_on_missing_address(self, mock_proxy, mock_config):
+        """Test that ValueError is raised when address is missing from account_state."""
+        account_state = {
+            "pairs": {"key": "value"},
+        }
+
+        with pytest.raises(ValueError) as exc_info:
+            set_state_with_batching(
+                mock_proxy, account_state, overwrite=True, request_delay=0
+            )
+
+        assert "account_state must contain 'address' key" in str(exc_info.value)
