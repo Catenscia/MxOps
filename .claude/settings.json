@@ -1,0 +1,26 @@
+{
+    "permissions": {
+        "allow": [
+            "Bash(git status:*)",
+            "Bash(git diff:*)",
+            "Bash(git log:*)",
+            "Bash(git add:*)",
+            "Bash(git commit:*)",
+            "Bash(git push:*)",
+            "Bash(uv sync:*)",
+            "Bash(uv run:*)",
+            "Bash(bash scripts/local_checks.sh:*)",
+            "Bash(bash scripts/launch_unit_tests.sh:*)",
+            "Bash(bash scripts/launch_integration_tests.sh:*)",
+            "Bash(bash scripts/check_python_code.sh:*)",
+            "Bash(bash integration_tests/scripts/setup.sh:*)",
+            "Bash(coverage run:*)",
+            "Bash(bandit:*)",
+            "Bash(flake8:*)",
+            "Bash(ruff:*)",
+            "Bash(pylint:*)",
+            "Bash(python -m pytest:*)",
+            "Bash(python -m mxops:*)"
+        ]
+    }
+}
