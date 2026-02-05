@@ -8,7 +8,7 @@ NC='\033[0m'
 
 printf "${BLUE}#########################\n# Documentation Build\n#########################${NC}\n"
 
-OUTPUT=$(pyspelling)
+OUTPUT=$(uv run pyspelling)
 SUB="Spelling check passed"
 if [[ "${OUTPUT}" != *"${SUB}"* ]];
 then

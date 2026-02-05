@@ -3,7 +3,7 @@
 export PING_PONG_AMOUNT=100000000000000000
 export PONG_WAIT_TIME=1
 
-mxops execute \
+uv run mxops execute \
         -n devnet \
         -s ping_pong_tutorial \
         -d \
