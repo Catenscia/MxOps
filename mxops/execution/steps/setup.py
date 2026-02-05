@@ -20,6 +20,7 @@ from mxops.common.constants import ESDT_MODULE_BECH32
 from mxops.common.providers import (
     MyProxyNetworkProvider,
     get_account_storage_with_fallback,
+    set_state_with_batching,
 )
 from mxops.config.config import Config
 from mxops.data.data_cache import (
@@ -674,7 +675,8 @@ class AccountCloneStep(Step):
             # chain simulator terminal and available through API
             self.insert_tokens_in_elasticsearch(esdt_seen)
 
-        if self.overwrite.get_evaluated_value():
-            proxy.set_state_overwrite([account_state])
-        else:
-            proxy.set_state([account_state])
+        set_state_with_batching(
+            proxy,
+            account_state,
+            overwrite=self.overwrite.get_evaluated_value(),
+        )
