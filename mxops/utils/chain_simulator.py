@@ -23,7 +23,7 @@ from mxops.common.providers import MyProxyNetworkProvider
 
 LOGGER = get_logger(LogGroupEnum.MSC)
 
-MAX_STARTUP_RETRIES = 60  # Maximum seconds to wait for chain simulator to start
+MAX_STARTUP_RETRIES = 300  # Maximum seconds to wait for chain simulator to start
 
 # NOTE: SERVICE_DEPENDENCIES must be kept in sync with the embedded docker-compose file
 # at mxops/resources/chain_simulator_docker_compose.yaml. These are the logical
