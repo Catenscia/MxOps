@@ -47,6 +47,7 @@ from mxops.utils.account_storage import (
     extract_identifier_from_hex_key,
 )
 from mxops.utils.msc import get_account_link
+from mxops.utils.progress import ProgressLogger
 from mxops.utils.wallets import generate_keystore_wallet, generate_pem_wallet
 
 
@@ -334,7 +335,9 @@ class AccountCloneStep(Step):
             source_proxy = ProxyNetworkProvider(
                 Config.get_config().get("PROXY", source_network)
             )
-            source_storage = get_account_storage_with_fallback(source_proxy, address)
+            source_storage = get_account_storage_with_fallback(
+                source_proxy, address, progress_logger=logger
+            )
             save_account_storage_data(source_network, address, source_storage)
         return source_storage
 
@@ -516,6 +519,9 @@ class AccountCloneStep(Step):
         :param requests_per_second: rate limit for API requests (default: 4.0)
         :type requests_per_second: float
         """
+        if not esdt_identifiers:
+            return
+
         request_interval = 1.0 / requests_per_second
         logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
         source_network = parse_network_enum(self.source_network.get_evaluated_value())
@@ -543,6 +549,11 @@ class AccountCloneStep(Step):
 
         # Collect all token data first
         tokens_to_insert: dict[str, dict] = {}
+
+        # Setup progress logging for slow token fetches
+        progress = ProgressLogger(logger, "Token data fetching")
+        progress.start()
+        processed_count = 0
 
         for identifier in esdt_identifiers:
             # Try to load token data from cache first
@@ -582,6 +593,10 @@ class AccountCloneStep(Step):
                 time.sleep(request_interval)
 
             tokens_to_insert[identifier] = token_source
+            processed_count += 1
+            progress.update(processed_count)
+
+        progress.finish(processed_count)
 
         # Batch insert tokens into local Elasticsearch using bulk API
         if not tokens_to_insert:
