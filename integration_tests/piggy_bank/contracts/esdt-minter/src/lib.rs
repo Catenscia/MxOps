@@ -98,9 +98,9 @@ pub trait EsdtMinter {
 
         // send back the capital along the the interests
         let payment_with_interests = EsdtTokenPayment::new(
-            capital_payment.token_identifier,
+            capital_payment.token_identifier.clone(),
             0u64,
-            capital_payment.amount + interest_amount,
+            capital_payment.amount.clone() + interest_amount,
         );
 
         self.send().direct_esdt(

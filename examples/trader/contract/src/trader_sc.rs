@@ -106,7 +106,7 @@ pub trait TraderSc {
             .jex_pair_proxy(self.jex_pair_address().get())
             .swap_tokens_fixed_input(BigUint::zero())
             .single_esdt(&input_identifier, 0u64, &input_amount)
-            .returns(ReturnsBackTransfers)
+            .returns(ReturnsBackTransfersLegacy)
             .sync_call();
 
         // extract quantity of tokens received
@@ -114,7 +114,8 @@ pub trait TraderSc {
             back_transfers.esdt_payments.len() == 1,
             "Expect to receive 1 back transfer"
         );
-        back_transfers.esdt_payments.get(0).amount
+        let amount = back_transfers.esdt_payments.get(0).amount.clone();
+        amount
     }
 
     // #################################
