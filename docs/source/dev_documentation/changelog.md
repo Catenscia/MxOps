@@ -7,6 +7,9 @@
 - iterative account key storage retrieval
 - fail check and log check
 - keystore JSON wallet support for account loading and wallet generation
+- keystore folder accounts loading (load all keystores from a folder)
+- Claude Code configuration for AI-assisted development
+- adaptive progress logging for slow account cloning operations (activates after 5s)
 
 ### Fixed
 

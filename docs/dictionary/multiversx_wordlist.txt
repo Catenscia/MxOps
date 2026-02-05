@@ -29,6 +29,7 @@ init
 JEX
 jex
 Jexchange
+keystores
 LedgerAccount
 localnet
 mainnet
