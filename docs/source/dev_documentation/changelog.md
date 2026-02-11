@@ -10,6 +10,12 @@
 - keystore folder accounts loading (load all keystores from a folder)
 - Claude Code configuration for AI-assisted development
 - adaptive progress logging for slow account cloning operations (activates after 5s)
+- embedded docker-compose for the chain-simulator with service selection (`--services`, `--exclude`, `--no-auto-deps`)
+
+### Changed
+
+- upgraded smart contract SDK (multiversx-sc) from 0.63.3 to 0.64.1
+- migrated all shell scripts to use `uv run` prefix
 
 ### Fixed
 
@@ -17,6 +23,8 @@
 - Account cloning now uses rate limiting and exponential backoff to avoid 429 errors when fetching token data from Elasticsearch
 - ESDT token data from Elasticsearch is now cached to speed up subsequent cloning operations
 - Token insertion into local Elasticsearch now uses bulk API for faster cloning
+- Storage key iteration now uses dynamic batch sizing to avoid timeouts on large contracts
+- Storage state setting on chain-simulator now uses batched requests to avoid timeouts on large accounts
 
 ## 3.0.2 - 2025-04-18
 
