@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 3.1.0 - 2026-02-11
+
 ### Added
 
 - iterative account key storage retrieval
