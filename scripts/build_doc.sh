@@ -8,7 +8,7 @@ NC='\033[0m'
 
 printf "${BLUE}#########################\n# Documentation Build\n#########################${NC}\n"
 
-OUTPUT=$(pyspelling)
+OUTPUT=$(uv run pyspelling)
 SUB="Spelling check passed"
 if [[ "${OUTPUT}" != *"${SUB}"* ]];
 then
@@ -20,7 +20,7 @@ else
 fi
 
 cd docs
-OUTPUT=$(make html 2>&1)
+OUTPUT=$(make html SPHINXBUILD="uv run sphinx-build" 2>&1)
 if [[ "${OUTPUT}" == *[eE][rR][rR][oO][rR]* ]];
 then
     printf "${RED}Documentation build got some errors${NC}\n"

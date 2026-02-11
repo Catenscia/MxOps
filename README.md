@@ -60,10 +60,6 @@ MxOps is used below to fetch information from the [live Onedex contract](https:/
       - 9  # id of the pair to get the details of
 ```
 
-```{dropdown} Query results
-:class-title: normal-title
-:color: light
-
 ```json
 [
     {

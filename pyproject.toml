@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mxops"
-version = "3.0.2"
+version = "3.1.0"
 authors = [
   {name="Etienne Wallet"},
 ]
@@ -41,7 +41,7 @@ include = ["mxops*"]
 namespaces = false
 
 [tool.setuptools.package-data]
-"*" = ["*.txt", "*.ini"]
+"*" = ["*.txt", "*.ini", "*.yaml"]
 
 [tool.pytest.ini_options]
 filterwarnings = [

@@ -7,7 +7,9 @@ This module contains utils various functions
 from configparser import NoOptionError
 import hashlib
 from pathlib import Path
+import re
 import time
+from typing import List
 
 from multiversx_sdk import Address
 
@@ -103,3 +105,56 @@ class RateThrottler:
         if delta > 0:
             time.sleep(delta)
         self.min_next_tick_timestamp = time.time() + self.unit_period
+
+
+def text_contains_all_patterns(text: str, patterns: List[str]) -> bool:
+    """
+    Check if the given text contains every regex pattern provided in the list
+
+    :param text: text to inspect
+    :type text: str
+    :param patterns: patterns to find in the text to inspect
+    :type patterns: List[str]
+    :return: if all the patterns have at least one match
+    :rtype: bool
+    """
+    for pattern in patterns:
+        if re.search(pattern, text) is None:
+            return False
+    return True
+
+
+def list_contains_at_least_a_match(texts: list[str], pattern: str) -> bool:
+    """
+    Check if the provided pattern has at least one match in at least one of
+    the provided text
+
+    :param texts: texts to inspect
+    :type texts: str
+    :param pattern: pattern to find in the texts to inspect
+    :type pattern: str
+    :return: if at least a match is found
+    :rtype: bool
+    """
+    for text in texts:
+        if re.search(pattern, text) is not None:
+            return True
+    return False
+
+
+def list_contains_every_patterns(texts: list[str], patterns: List[str]) -> bool:
+    """
+    Check that every pattern has at least one match in at least one of the provided
+    text
+
+    :param texts: texts to inspect
+    :type texts: list[str]
+    :param patterns: patterns to find in the texts to inspect
+    :type patterns: List[str]
+    :return: if all the patterns have at least one match in every text
+    :rtype: bool
+    """
+    for pattern in patterns:
+        if not list_contains_at_least_a_match(texts, pattern):
+            return False
+    return True

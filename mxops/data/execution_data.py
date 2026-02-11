@@ -404,6 +404,17 @@ class LedgerAccountData(AccountData):
 
 
 @dataclass
+class KeystoreAccountData(AccountData):
+    """
+    Defines the data of a user account defined with a keystore JSON file
+    """
+
+    keystore_path: str
+    password_env_var: str
+    address_index: int | None = None
+
+
+@dataclass
 class _ScenarioData(SavedValuesData):
     """
     Dataclass representing the data that can be locally saved for a scenario

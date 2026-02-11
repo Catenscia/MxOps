@@ -1,6 +1,15 @@
 checks:
   - type: Success
   
+  - type: Fail
+  
+  - type: Log
+    event_identifier: signalError
+    mandatory_topic_text_patterns: # optional, defaults to empty list
+      - error signalled by smartcontract
+    mandatory_data_text_patterns: # optional, defaults to empty list
+      - Too low output amount
+  
   - type: Transfers
     condition: exact
     include_gas_refund: false # optional, defaults to false

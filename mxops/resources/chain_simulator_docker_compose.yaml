@@ -1,0 +1,157 @@
+services:
+  redis:
+    platform: linux/amd64
+    image: "redis:alpine"
+    command: redis-server
+    ports:
+      - "127.0.0.1:6379:6379"
+    environment:
+      - REDIS_REPLICATION_MODE=master
+
+  postgres:
+    platform: linux/amd64
+    container_name: postgres-container
+    image: postgres:15-alpine
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      - POSTGRES_USER=chainsim_user
+      - POSTGRES_PASSWORD=chainsim_password
+      - POSTGRES_DB=chainsim_db
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chainsim_user -d chainsim_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  events-notifier:
+    platform: linux/amd64
+    container_name: events-notifier-container
+    image: multiversx/events-notifier:latest
+    ports:
+      - 127.0.0.1:22111:22111
+      - 127.0.0.1:5000:5000
+    entrypoint: >
+        /bin/bash -c "
+        sed -i 's/Enabled = false/Enabled = true/' ./config/config.toml
+        && sed -i 's|localhost:22111|0.0.0.0:22111|g' ./config/config.toml 
+        && sed -i 's|localhost:6379|redis:6379|g' ./config/config.toml
+        && sed -i 's|ConnectionType = \"sentinel\"|ConnectionType = \"instance\"|' ./config/config.toml
+        && cat ./config/config.toml
+        && ./notifier
+        " 
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:5000/status/metrics"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      - redis
+
+  elasticsearch:
+    platform: linux/amd64
+    ports: 
+      - 127.0.0.1:9200:9200
+    container_name: elasticsearch-container
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.1
+    environment:
+      - "discovery.type=single-node"
+      - "xpack.security.enabled=false"
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:9200"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  elastic-indexer:
+    platform: linux/amd64
+    #ports: 22112
+    container_name: elastic-indexer
+    image: multiversx/elastic-indexer:latest
+    depends_on:
+      elasticsearch:
+        condition: service_healthy     
+    entrypoint: >
+        /bin/bash -c "sed -i 's|http://localhost:9200|http://elasticsearch:9200|g' ./config/prefs.toml
+        && sed -i 's|url = \"localhost:22111\"|url = \"0.0.0.0:22111\"|g' ./config/prefs.toml
+        && cat ./config/prefs.toml
+        && ./elasticindexer -log-level *:DEBUG"
+
+  chain-simulator:
+    platform: linux/amd64
+    container_name: chain-simulator
+    ports: 
+      - 8085:8085
+    image: multiversx/chainsimulator:latest
+    environment:
+      EVENTS_NOTIFIER_URL: 'ws://events-notifier:22111'
+      ELASTIC_SEARCH_URL: 'elasticsearch:9200'
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      events-notifier:
+        condition: service_healthy
+    entrypoint: >
+        /bin/bash -c " sed -i 's|http://localhost:9200|http://elasticsearch:9200|g' ./config/node/config/external.toml
+        && ./start-with-services.sh -log-level *:INFO"
+    healthcheck:
+     test: [ "CMD", "curl", "-f", "http://127.0.0.1:8085/simulator/observers" ]
+     interval: 10s
+     timeout: 5s
+     retries: 5
+
+  api:
+    platform: linux/amd64
+    ports: 
+      - 127.0.0.1:3001:3001
+    container_name: api
+    image: multiversx/mx-api-service:test2
+    environment:
+      DEFAULT_CFG_FILE: devnet
+      CFG_urls_redis: redis
+      CFG_urls_elastic: 'arr:["http://elasticsearch:9200"]'
+      CFG_urls_gateway: 'arr:["http://chain-simulator:8085"]'
+      CFG_features_tokensFetch_enabled: bool:false      
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  explorer:
+    platform: linux/amd64
+    ports: 
+      - 3002:80
+    container_name: explorer
+    image: multiversx/mx-explorer-dapp:test2
+    environment:
+      START_NAME_STOP: devnet
+      START_CHAIN_ID_STOP: D
+      START_EGLD_LABEL_STOP: xEGLD
+      START_WALLET_ADDRESS_STOP: https://devnet-wallet.multiversx.com
+      START_EXPLORER_ADDRESS_STOP: https://devnet-explorer.multiversx.com
+      START_NFT_EXPLORER_ADDRESS_STOP: https://devnet.xspotlight.com
+      START_API_ADDRESS_STOP: http://127.0.0.1:3001
+      START_IS_SOVEREIGN_STOP: "false"
+
+
+  lite-wallet:
+    platform: linux/amd64
+    ports:
+      - 3003:80
+    container_name: lite-wallet
+    image: multiversx/mx-lite-wallet-dapp:test2
+    environment:
+      START_NETWORK_ID_STOP: custom
+      START_NETWORK_NAME_STOP: custom
+      START_API_ADDRESS_STOP: http://127.0.0.1:3001
+      START_GATEWAY_URL_STOP: http://127.0.0.1:8085
+      START_WALLET_ADDRESS_STOP: https://testnet-wallet.multiversx.com
+      START_WEGLD_ID_STOP: xEGLD

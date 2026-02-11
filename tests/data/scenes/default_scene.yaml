@@ -1,0 +1,49 @@
+# List of network onto which this scene can be run
+allowed_networks:
+    - devnet
+    - testnet
+    - localnet
+    - chain-simulator
+
+# List of scenario into which this scene can be run
+# Regex can be used. For example ".*" allows all scenario.
+allowed_scenario:
+    - "<scenario_name_or_regex>"
+    - "<scenario_name_or_regex>"
+
+# List of the accounts that will be used in this scene or in other scenes later on. This means that
+# if you execute a folder of scenes for example, you only need to define the accounts
+# in the first executed scene.
+# Ids have to be unique per scenario
+accounts:
+
+  # a pem wallet
+  - account_id: bob
+    pem_path: path/to/bom_pem
+
+  # a ledger wallet
+  - account_id: alice
+    ledger_address_index: 2
+
+  # a folder of pem wallets
+  # the list of the loaded wallets names will be saved under the provided name
+  - name: user_wallets
+    folder_path: ./path/to/all/users_wallets
+  
+  # a third party account
+  - account_id: beni
+    address: erd159u4p8d6agj2jekf5fmgpscpgeq7ytnv65yy8ajme2x8r7qwqensulfejs
+
+  # a third party contract abi
+  - account_id: egld_wrapper
+    address: erd1qqqqqqqqqqqqqpgqhe8t5jewej70zupmh44jurgn29psua5l2jps3ntjj3 
+    abi_path: abis/egld_wrapper.abi.json
+
+  # a third party contract without abi
+  - account_id: xexchange_router
+    address: erd1qqqqqqqqqqqqqpgqq66xk9gfr4esuhem3jru86wg5hvp33a62jps2fy57p
+
+# List of the steps to execute in this scene
+# Begin writing "- type:" to activate auto completion and step suggestions.
+steps:
+  - 

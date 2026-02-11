@@ -24,6 +24,8 @@ LOGGER = get_logger(LogGroupEnum.DATA)
 
 ACCOUNT_PREFIX = "ACCOUNT"
 ACCOUNT_STORAGE_PREFIX = "ACCOUNT_STORAGE"
+ESDT_TOKEN_PREFIX = "ESDT_TOKEN"  # nosec B105
+ESDT_MODULE_ENTRY_PREFIX = "ESDT_MODULE_ENTRY"
 
 
 @dataclass
@@ -199,4 +201,90 @@ def save_account_storage_data(
     key = f"{ACCOUNT_STORAGE_PREFIX}_{address.to_bech32()}"
     CachedData(
         network=network, key=key, data_datetime=data_datetime, data=storage.raw
+    ).save()
+
+
+def try_load_esdt_token_data(
+    network: NetworkEnum, identifier: str, datetime_threshold: datetime | None = None
+) -> dict | None:
+    """
+    Load cached data describing an ESDT token from Elasticsearch
+
+    :param network: network of the token
+    :type network: NetworkEnum
+    :param identifier: token identifier
+    :type identifier: str
+    :param datetime_threshold: oldest cached data time allowed
+    :type datetime_threshold: datetime | None
+    :return: cached token data if it exists
+    :rtype: dict | None
+    """
+    key = f"{ESDT_TOKEN_PREFIX}_{identifier}"
+    return CachedData.try_load_data(key, network, datetime_threshold)
+
+
+def save_esdt_token_data(
+    network: NetworkEnum,
+    identifier: str,
+    token_data: dict,
+    data_datetime: datetime | None = None,
+):
+    """
+    Save data as cache describing an ESDT token from Elasticsearch
+
+    :param network: network of the token
+    :type network: NetworkEnum
+    :param identifier: token identifier
+    :type identifier: str
+    :param token_data: token data to save
+    :type token_data: dict
+    :param data_datetime: datetime of the data, default to None which will be now
+    :type data_datetime: datetime | None
+    """
+    key = f"{ESDT_TOKEN_PREFIX}_{identifier}"
+    CachedData(
+        network=network, key=key, data_datetime=data_datetime, data=token_data
+    ).save()
+
+
+def try_load_esdt_module_entry(
+    network: NetworkEnum, identifier: str, datetime_threshold: datetime | None = None
+) -> str | None:
+    """
+    Load cached ESDT module storage entry (hex value) for a token identifier.
+
+    :param network: network of the token
+    :type network: NetworkEnum
+    :param identifier: token identifier
+    :type identifier: str
+    :param datetime_threshold: oldest cached data time allowed
+    :type datetime_threshold: datetime | None
+    :return: cached hex value if it exists
+    :rtype: str | None
+    """
+    key = f"{ESDT_MODULE_ENTRY_PREFIX}_{identifier}"
+    return CachedData.try_load_data(key, network, datetime_threshold)
+
+
+def save_esdt_module_entry(
+    network: NetworkEnum,
+    identifier: str,
+    hex_value: str,
+    data_datetime: datetime | None = None,
+):
+    """
+    Save ESDT module storage entry (hex value) to cache.
+
+    :param network: network of the token
+    :type network: NetworkEnum
+    :param identifier: token identifier
+    :type identifier: str
+    :param hex_value: hex-encoded storage value
+    :type hex_value: str
+    :param data_datetime: datetime of the data, default to None which will be now
+    :type data_datetime: datetime | None
+    """
+    key = f"{ESDT_MODULE_ENTRY_PREFIX}_{identifier}"
+    CachedData(
+        network=network, key=key, data_datetime=data_datetime, data=hex_value
     ).save()

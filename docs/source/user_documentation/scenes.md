@@ -39,6 +39,12 @@ accounts:
   - account_id: bob
     pem_path: path/to/bom_pem
 
+  # a keystore wallet (password from environment variable for security)
+  - account_id: carol
+    keystore_path: path/to/carol_keystore.json
+    password_env_var: CAROL_KEYSTORE_PASSWORD  # name of the env var containing the password
+    address_index: 0  # optional, for mnemonic-based keystores
+
   # a ledger wallet
   - account_id: alice
     ledger_address_index: 2
@@ -46,7 +52,13 @@ accounts:
   # a folder of pem wallets
   - name: user_wallets  # the list of the loaded wallets names will be saved under this name
     folder_path: ./path/to/all/users_wallets
-  
+
+  # a folder of keystore (JSON) wallets
+  # all keystores in the folder must use the same password
+  - name: keystore_wallets  # the list of the loaded wallets names will be saved under this name
+    keystore_folder_path: ./path/to/keystore_wallets
+    password_env_var: KEYSTORE_PASSWORD  # env var containing password for all keystores
+
   # a third party account
   - account_id: beni
     address: erd159u4p8d6agj2jekf5fmgpscpgeq7ytnv65yy8ajme2x8r7qwqensulfejs

@@ -1,0 +1,45 @@
+steps:
+
+  - type: ContractCall
+    sender: thomas
+    contract: "abc-esdt-minter"
+    endpoint: addAirdropAmount
+    gas_limit: 5000000
+    arguments:
+      - "%thomas.address"
+      - "={10**30}"
+
+    checks: 
+      - type: Fail
+      - type: Log
+        event_identifier: signalError
+        mandatory_topic_text_patterns:
+          - Endpoint can only be called by owner
+
+  - type: ContractCall
+    sender: thomas
+    contract: "abc-esdt-minter"
+    endpoint: addInterestAddress
+    gas_limit: 5000000
+    arguments:
+      - "%thomas.address"
+    checks: 
+      - type: Fail
+      - type: Log
+        event_identifier: signalError
+        mandatory_topic_text_patterns:
+          - Endpoint can only be called by owner
+
+  - type: ContractCall
+    sender: thomas
+    contract: "abc-esdt-minter"
+    endpoint: removeInterestAddress
+    gas_limit: 5000000
+    arguments:
+      - "%abc-piggy-bank.address"
+    checks: 
+      - type: Fail
+      - type: Log
+        event_identifier: signalError
+        mandatory_topic_text_patterns:
+          - Endpoint can only be called by owner

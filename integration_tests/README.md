@@ -9,7 +9,7 @@ For develop PRs, we recommend to only run the integration tests on the chain-sim
 ## Chain simulator
 
 ```bash
-mxops chain-simulator start
+uv run mxops chain-simulator start
 bash integration_tests/scripts/setup.sh chain-simulator
 bash scripts/launch_integration_tests.sh chain-simulator
 ```
@@ -17,7 +17,7 @@ bash scripts/launch_integration_tests.sh chain-simulator
 After everyting is over, you can inspect the local explorer for the chain simulator if you wish, otherwise, shutdown the chain-simulator
 
 ```bash
-mxops chain-simulator stop
+uv run mxops chain-simulator stop
 ```
 
 ## Devnet

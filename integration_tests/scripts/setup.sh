@@ -6,7 +6,7 @@ else
     scene="integration_tests/setup_scenes/02b_r3d4_faucet.yaml"
 fi
 
-mxops \
+uv run mxops \
     execute \
     -n $1 \
     -s integration_test \

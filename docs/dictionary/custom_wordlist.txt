@@ -4,6 +4,7 @@ AppDir
 AppFolder
 arg
 backend
+backoff
 bitwise
 blake
 blockchain
@@ -36,6 +37,7 @@ monotypes
 Monotypes
 natively
 os
+permissioned
 pipx
 png
 pre

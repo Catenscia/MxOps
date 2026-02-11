@@ -15,7 +15,12 @@ from multiversx_sdk import (
 
 from mxops import errors
 from mxops.common.providers import MyProxyNetworkProvider
-from mxops.data.execution_data import LedgerAccountData, PemAccountData, ScenarioData
+from mxops.data.execution_data import (
+    KeystoreAccountData,
+    LedgerAccountData,
+    PemAccountData,
+    ScenarioData,
+)
 from mxops.enums import LogGroupEnum
 
 
@@ -50,6 +55,39 @@ class AccountsManager:
             if file_path.suffix == ".pem":
                 loaded_account_addresses.append(
                     cls.load_register_pem_account(file_path, account_id=file_path.stem)
+                )
+                loaded_accounts_names.append(file_path.stem)
+        scenario_data = ScenarioData.get()
+        scenario_data.set_value(name, sorted(loaded_accounts_names))
+        return loaded_account_addresses
+
+    @classmethod
+    def load_register_keystore_from_folder(
+        cls, name: str, folder_path: str, password_env_var: str
+    ) -> list[Address]:
+        """
+        Load all keystore accounts located in the given folder.
+        The name of the accounts is the file name (without .json extension) and
+        the list of loaded accounts is saved in the Scenario variable under the
+        key provided (name).
+
+        :param name: key to save the names of the list of loaded accounts
+        :param folder_path: path to the folder where keystore wallets are located
+        :param password_env_var: name of the environment variable containing
+            the password (same password for all keystores in folder)
+        :return: addresses of the loaded accounts
+        """
+        loaded_accounts_names = []
+        loaded_account_addresses = []
+        for file_name in os.listdir(folder_path):
+            file_path = Path(folder_path) / file_name
+            if file_path.suffix == ".json":
+                loaded_account_addresses.append(
+                    cls.load_register_keystore_account(
+                        keystore_path=file_path,
+                        password_env_var=password_env_var,
+                        account_id=file_path.stem,
+                    )
                 )
                 loaded_accounts_names.append(file_path.stem)
         scenario_data = ScenarioData.get()
@@ -109,6 +147,54 @@ class AccountsManager:
         return account.address
 
     @classmethod
+    def load_register_keystore_account(
+        cls,
+        keystore_path: str | Path,
+        password_env_var: str,
+        account_id: str | None = None,
+        address_index: int | None = None,
+    ) -> Address:
+        """
+        Load a keystore account and register it
+
+        :param keystore_path: path to the keystore JSON file
+        :type keystore_path: str | Path
+        :param password_env_var: name of the environment variable containing
+            the password
+        :type password_env_var: str
+        :param account_id: id of the account for easier reference,
+            defaults to None
+        :type account_id: str | None
+        :param address_index: address index for mnemonic-based keystores,
+            defaults to None
+        :type address_index: int | None
+        :return: address of the loaded account
+        :rtype: Address
+        :raises KeystorePasswordNotFound: if the password environment variable
+            is not set
+        """
+        if isinstance(keystore_path, str):
+            keystore_path = Path(keystore_path)
+
+        # Get password from environment variable
+        password = os.environ.get(password_env_var)
+        if password is None:
+            raise errors.KeystorePasswordNotFound(password_env_var)
+
+        account = Account.new_from_keystore(keystore_path, password, address_index)
+        ScenarioData.get().add_account_data(
+            KeystoreAccountData(
+                account_id=account_id,
+                bech32=account.address.to_bech32(),
+                keystore_path=keystore_path.as_posix(),
+                password_env_var=password_env_var,
+                address_index=address_index,
+            )
+        )
+        cls._register_account(account)
+        return account.address
+
+    @classmethod
     def _register_account(cls, account: Account | LedgerAccount):
         """
         Register an account in the accounts manager using its bech32 address
@@ -146,6 +232,13 @@ class AccountsManager:
             elif isinstance(account_data, LedgerAccountData):
                 cls.load_register_ledger_account(
                     account_data.ledger_address_index, account_data.account_id
+                )
+            elif isinstance(account_data, KeystoreAccountData):
+                cls.load_register_keystore_account(
+                    account_data.keystore_path,
+                    account_data.password_env_var,
+                    account_data.account_id,
+                    account_data.address_index,
                 )
             else:
                 raise errors.AccountConversionError(account_data.to_dict())

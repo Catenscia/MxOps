@@ -1,0 +1,71 @@
+{
+    "tx_hash": "1bbbeb31b0cc837cabd9fe05e90a5e46c27280b59d9d76162682d5c684cab2ac",
+    "response": {
+        "type": "normal",
+        "processingTypeOnSource": "SCInvoking",
+        "processingTypeOnDestination": "SCInvoking",
+        "hash": "1bbbeb31b0cc837cabd9fe05e90a5e46c27280b59d9d76162682d5c684cab2ac",
+        "nonce": 78044,
+        "round": 10612818,
+        "epoch": 4395,
+        "value": "0",
+        "receiver": "erd1qqqqqqqqqqqqqpgqyxfc4r5fmw2ljcgwxj2nuzv72y9ryvyhah0sgn5vv2",
+        "sender": "erd1cfyadenn4k9wndha0ljhlsdrww9k0jqafqq626hu9zt79urzvzasalgycz",
+        "gasPrice": 1000000000,
+        "gasLimit": 95000000,
+        "gasUsed": 95000000,
+        "data": "ZGlzdHJpYnV0ZUA0ZjRlNDUyZDM4MzM2MTM3NjMzMEAwMDAwMDAwMDAwMDAwMDYyMDIwMDAwMDAwMDAwMDAwMDAwMDUwMDI5OTE0MmQxMmZiM2IzNjUxMWI0YWQ4NWFlYWVjYzdlODY1ZTRhNjY3Y2ViMDAwMDAwMGM1NzQ1NDc0YzQ0MmQ2MTMyMzg2MzM1MzkwMjAwMDAwMDAwMDAwMDAwMDAwNTAwYjY2MDJhM2FmNjdiY2Y0NTUwNTcxODJiNDFhNDliYWY0Nzk0NTMyOTdjZWIwMDAwMDAwYzU4NGY1ODRlNGYyZDM1MzgzOTY1MzAzOTAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMjA4NjIwMDAwMDAwMDAwMDAwMDAw",
+        "signature": "b97eefd9ede49c2243897ca5924263a8d935d9b3a0a6341982481a9b7cf9758d2028dcbcd8b931e39ca5963802e8b89b5ea939af1b1f2bc1a697bf48ce3cd601",
+        "sourceShard": 1,
+        "destinationShard": 1,
+        "blockNonce": 10540888,
+        "blockHash": "10a238f6a7416cc5e77cc89a7aad036c5d30bb39dc36649b4be4a427b3db0bce",
+        "notarizedAtSourceInMetaNonce": 10544934,
+        "NotarizedAtSourceInMetaHash": "d8e494b2eb58bafc8166482cf2f9cc772df509e371df6f79b796ef361b13b84c",
+        "notarizedAtDestinationInMetaNonce": 10544934,
+        "notarizedAtDestinationInMetaHash": "d8e494b2eb58bafc8166482cf2f9cc772df509e371df6f79b796ef361b13b84c",
+        "miniblockType": "TxBlock",
+        "miniblockHash": "3027edd3bab5b7277c5b50cd7ff0b3deb4335ff94beaf24756324330be1f3aef",
+        "hyperblockNonce": 10544934,
+        "hyperblockHash": "d8e494b2eb58bafc8166482cf2f9cc772df509e371df6f79b796ef361b13b84c",
+        "timestamp": 1757676908,
+        "timestampMs": 1757676908000,
+        "logs": {
+            "address": "erd1qqqqqqqqqqqqqpgqyxfc4r5fmw2ljcgwxj2nuzv72y9ryvyhah0sgn5vv2",
+            "events": [
+                {
+                    "address": "erd1qqqqqqqqqqqqqpgqyxfc4r5fmw2ljcgwxj2nuzv72y9ryvyhah0sgn5vv2",
+                    "identifier": "signalError",
+                    "topics": [
+                        "wknW5nOtium2/X/lf8Gjc4tnyB1IAaVq/CiX4vBiYLs=",
+                        "ZXJyb3Igc2lnbmFsbGVkIGJ5IHNtYXJ0Y29udHJhY3Q="
+                    ],
+                    "data": "QDY1Nzg2NTYzNzU3NDY5NmY2ZTIwNjY2MTY5NmM2NTY0",
+                    "additionalData": [
+                        "QDY1Nzg2NTYzNzU3NDY5NmY2ZTIwNjY2MTY5NmM2NTY0"
+                    ]
+                },
+                {
+                    "address": "erd1cfyadenn4k9wndha0ljhlsdrww9k0jqafqq626hu9zt79urzvzasalgycz",
+                    "identifier": "internalVMErrors",
+                    "topics": [
+                        "AAAAAAAAAAAFACGTio6J25X5YQ40lT4JnlEKMjCX7d8=",
+                        "ZGlzdHJpYnV0ZQ=="
+                    ],
+                    "data": "CglydW50aW1lLmdvOjg0NCBbZXhlY3V0aW9uIGZhaWxlZF0gW2Rpc3RyaWJ1dGVdCglydW50aW1lLmdvOjg0NCBbZXhlY3V0aW9uIGZhaWxlZF0gW2Rpc3RyaWJ1dGVdCglydW50aW1lLmdvOjg0NCBbZXJyb3Igc2lnbmFsbGVkIGJ5IHNtYXJ0Y29udHJhY3RdCglydW50aW1lLmdvOjg0NCBbZXJyb3Igc2lnbmFsbGVkIGJ5IHNtYXJ0Y29udHJhY3RdIFtzd2FwXQoJcnVudGltZS5nbzo4NDQgW2Vycm9yIHNpZ25hbGxlZCBieSBzbWFydGNvbnRyYWN0XSBbc3dhcF0KCXJ1bnRpbWUuZ286ODQ0IFtlcnJvciBzaWduYWxsZWQgYnkgc21hcnRjb250cmFjdF0gW3N3YXBdCglydW50aW1lLmdvOjg0MSBbVG9vIGxvdyBvdXRwdXQgYW1vdW50Ll0=",
+                    "additionalData": [
+                        "CglydW50aW1lLmdvOjg0NCBbZXhlY3V0aW9uIGZhaWxlZF0gW2Rpc3RyaWJ1dGVdCglydW50aW1lLmdvOjg0NCBbZXhlY3V0aW9uIGZhaWxlZF0gW2Rpc3RyaWJ1dGVdCglydW50aW1lLmdvOjg0NCBbZXJyb3Igc2lnbmFsbGVkIGJ5IHNtYXJ0Y29udHJhY3RdCglydW50aW1lLmdvOjg0NCBbZXJyb3Igc2lnbmFsbGVkIGJ5IHNtYXJ0Y29udHJhY3RdIFtzd2FwXQoJcnVudGltZS5nbzo4NDQgW2Vycm9yIHNpZ25hbGxlZCBieSBzbWFydGNvbnRyYWN0XSBbc3dhcF0KCXJ1bnRpbWUuZ286ODQ0IFtlcnJvciBzaWduYWxsZWQgYnkgc21hcnRjb250cmFjdF0gW3N3YXBdCglydW50aW1lLmdvOjg0MSBbVG9vIGxvdyBvdXRwdXQgYW1vdW50Ll0="
+                    ]
+                }
+            ]
+        },
+        "status": "success",
+        "operation": "transfer",
+        "function": "distribute",
+        "initiallyPaidFee": "1427180000000000",
+        "fee": "1427180000000000",
+        "chainID": "D",
+        "version": 2,
+        "options": 0
+    }
+}

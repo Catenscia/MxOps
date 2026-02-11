@@ -10,7 +10,7 @@ import pytest
 
 from mxops.data.execution_data import InternalContractData, ScenarioData
 from mxops.errors import CheckFailed
-from mxops.execution.checks import SuccessCheck, TransfersCheck
+from mxops.execution.checks import SuccessCheck, TransfersCheck, LogCheck, FailCheck
 from mxops.execution.msc import OnChainTokenTransfer
 from mxops.execution.steps.msc import LoopStep
 from mxops.execution.steps.smart_contract import ContractCallStep
@@ -185,3 +185,72 @@ def test_check_nested_dependent_instatiation():
     assert len(check.expected_transfers.get_evaluated_value()) == 1
     transfer = check.expected_transfers.get_evaluated_value()[0]
     assert transfer.amount == 10**18
+
+
+def test_fail_check(test_data_folder_path: Path):
+    # Given
+    with open(test_data_folder_path / "api_responses" / "add_liquidity.json") as file:
+        success_onchain_tx = transaction_from_proxy_response(**json.load(file))
+    with open(test_data_folder_path / "api_responses" / "not_enough_esdt.json") as file:
+        fail_onchain_tx = transaction_from_proxy_response(**json.load(file))
+
+    # When
+    check = FailCheck()
+    result = check.get_check_status(fail_onchain_tx)
+    with pytest.raises(CheckFailed):
+        FailCheck().raise_on_failure(success_onchain_tx)
+
+    # Then
+    assert result
+
+
+@pytest.mark.parametrize(
+    "tx_file_name,event_identifier,topics_patterns,data_patterns,excepted_result",
+    [
+        ("sc_error.json", "signalError", [], [], True),
+        ("sc_error.json", "internalVMErrors", [], [], True),
+        (
+            "sc_error.json",
+            "signalError",
+            ["error signalled by smartcontract"],
+            [],
+            True,
+        ),
+        (
+            "sc_error.json",
+            "internalVMErrors",
+            ["distribute"],
+            ["Too low output amount"],
+            True,
+        ),
+        ("sc_error.json", "wrong_topic", [], [], False),
+        ("sc_error.json", "wrong_topic", ["pattern1"], ["pattern2"], False),
+        ("sc_error.json", "signalError", ["wrong pattern"], [], False),
+        ("out_of_gas.json", "signalError", ["not enough gas"], [], True),
+        ("out_of_gas.json", "internalVMErrors", [], ["not enough gas"], True),
+    ],
+)
+def test_log_check(
+    test_data_folder_path: Path,
+    tx_file_name: str,
+    event_identifier: str,
+    topics_patterns: list,
+    data_patterns: list,
+    excepted_result: bool,
+):
+    # Given
+    with open(test_data_folder_path / "api_responses" / tx_file_name) as file:
+        tx = transaction_from_proxy_response(**json.load(file))
+
+    log_check = LogCheck(
+        event_identifier,
+        mandatory_topic_text_patterns=topics_patterns,
+        mandatory_data_text_patterns=data_patterns,
+    )
+
+    # When
+    log_check.evaluate_smart_values()
+    result = log_check.get_check_status(tx)
+
+    # Then
+    assert result == excepted_result

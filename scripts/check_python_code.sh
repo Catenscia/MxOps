@@ -11,7 +11,7 @@ NC='\033[0m'
 # launch bandit on the mxops package
 # it is mandatory to obtain a valid check
 printf "${BLUE}##########\n# Bandit\n##########${NC}\n"
-OUTPUT=$(bandit -r mxops)
+OUTPUT=$(uv run bandit -r mxops)
 echo "${OUTPUT}"
 SUB="No issues identified"
 if [[ "${OUTPUT}" != *"${SUB}"* ]];
@@ -25,7 +25,7 @@ fi
 # launch flake8 on the repository and the tests
 # it is mandatory to obtain valid check
 printf "${BLUE}##########\n# Flake8\n##########${NC}\n"
-OUTPUT=$(flake8 mxops integration_tests tests examples)
+OUTPUT=$(uv run flake8 mxops integration_tests tests examples)
 if [ ! -z "${OUTPUT}" ]
 then
     echo "${OUTPUT}"
@@ -38,8 +38,8 @@ fi
 # launch ruff format & check only on the mxops package
 # it is mandatory to obtain valid check
 printf "${BLUE}##########\n# ruff\n##########${NC}\n"
-OUTPUT=$(ruff format mxops)
-OUTPUT=$(ruff check mxops)
+OUTPUT=$(uv run ruff format mxops)
+OUTPUT=$(uv run ruff check mxops)
 echo "${OUTPUT}"
 SUB="All checks passed!"
 if [[ "${OUTPUT}" != *"${SUB}"* ]];
@@ -53,7 +53,7 @@ fi
 # launch pylint only on the mxops package
 # score should be equal or above 9.5
 printf "${BLUE}##########\n# Pylint\n##########${NC}\n"
-OUTPUT=$(pylint mxops)
+OUTPUT=$(uv run pylint mxops)
 echo "${OUTPUT}"
 SCORE=$(sed -n '$s/[^0-9]*\([0-9.]*\).*/\1/p' <<< "$OUTPUT")
 TEST=$(echo "${SCORE} < 9.5" |bc -l)

@@ -73,6 +73,16 @@ class MaxIterationError(Exception):
     """
 
 
+class StorageIterationError(Exception):
+    """
+    To be raised when storage iteration via paginated endpoint fails
+    """
+
+    def __init__(self, address: str, reason: str) -> None:
+        message = f"Storage iteration failed for {address}: {reason}"
+        super().__init__(message)
+
+
 class ClosingCharNotFound(Exception):
     """
     To be raised when a closing character could not be found in a given string
@@ -93,6 +103,19 @@ class AccountConversionError(Exception):
     def __init__(self, account_data: dict) -> None:
         message = (
             f"Account data {account_data} cannot be converted into a signing account"
+        )
+        super().__init__(message)
+
+
+class KeystorePasswordNotFound(Exception):
+    """
+    To be raised when the password environment variable for a keystore is not set
+    """
+
+    def __init__(self, env_var_name: str) -> None:
+        message = (
+            f"Password environment variable '{env_var_name}' is not set. "
+            "Please set it before loading the keystore account."
         )
         super().__init__(message)
 
