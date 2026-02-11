@@ -20,7 +20,7 @@ else
 fi
 
 cd docs
-OUTPUT=$(make html 2>&1)
+OUTPUT=$(make html SPHINXBUILD="uv run sphinx-build" 2>&1)
 if [[ "${OUTPUT}" == *[eE][rR][rR][oO][rR]* ]];
 then
     printf "${RED}Documentation build got some errors${NC}\n"
