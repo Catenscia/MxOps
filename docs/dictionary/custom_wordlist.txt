@@ -36,6 +36,7 @@ https
 monotypes
 Monotypes
 natively
+nginx
 os
 permissioned
 pipx

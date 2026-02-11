@@ -277,7 +277,15 @@ def start_chain_simulator(
 
     LOGGER.info("Starting the chain simulator")
     process = subprocess.Popen(  # nosec
-        ["docker", "compose", "-f", file_path.as_posix(), "up", "-d"],
+        [
+            "docker",
+            "compose",
+            "-f",
+            file_path.as_posix(),
+            "up",
+            "-d",
+            "--force-recreate",
+        ],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         universal_newlines=True,

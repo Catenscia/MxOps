@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- Chain simulator explorer and lite-wallet containers failing on restart due to non-idempotent nginx config in upstream images (added `--force-recreate` to `docker compose up`)
+
 ## 3.1.0 - 2026-02-11
 
 ### Added
