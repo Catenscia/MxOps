@@ -38,20 +38,6 @@ steps:
     arguments:
       - data-store
       - '{"my_option_biguint": 123987}'
-  
-  - type: ContractQuery
-    contract: data-store
-    endpoint: my_token_identifier
-    arguments: []
-    results_save_keys: 
-      - my_token_identifier
-
-  - type: Python
-    module_path: ./integration_tests/scripts/checks.py
-    function: check_storage
-    arguments:
-      - data-store
-      - '{"my_token_identifier": ""}'
 
   - type: ContractCall
     sender: emmanuel
@@ -83,6 +69,20 @@ steps:
     arguments:
       - data-store
       - '{"test_2_params": ["erd1qqqqqqqqqqqqqpgqf48ydzn8shr8mnmrvydq2fn9v2afzd3c4fvsk4wglm", "WEGLD-abcdef"]}'
+  
+  - type: ContractQuery
+    contract: data-store
+    endpoint: my_token_identifier
+    arguments: []
+    results_save_keys: 
+      - my_token_identifier
+
+  - type: Python
+    module_path: ./integration_tests/scripts/checks.py
+    function: check_storage
+    arguments:
+      - data-store
+      - '{"my_token_identifier": "WEGLD-abcdef"}'
 
   - type: ContractCall
     sender: emmanuel
