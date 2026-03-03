@@ -116,9 +116,8 @@ pub trait PiggyBank {
         proxy_instance
             .claim_interests()
             .with_esdt_transfer(esdt_payment.clone())
-            .sync_call();
-
-        esdt_payment
+            .returns(ReturnsBackTransfersSingleESDT)
+            .sync_call()
     }
 
     /// Require a payment to be made of the piggy token
