@@ -277,6 +277,43 @@ pub trait DataStore {
         managed_vec
     }
 
+    #[endpoint]
+    #[allow_multiple_var_args]
+    fn test_5(
+        &self,
+        tokens: MultiValueEncodedCounted<TokenIdentifier<Self::Api>>,
+        amounts: MultiValueEncodedCounted<BigUint<Self::Api>>,
+    ) -> MultiValue2<
+        MultiValueEncodedCounted<TokenIdentifier<Self::Api>>,
+        MultiValueEncodedCounted<BigUint<Self::Api>>,
+    > {
+        let tokens_vec = tokens.to_vec();
+        let amounts_vec = amounts.to_vec();
+
+        require!(tokens.len() == 2, "Wrong tokens number");
+        require!(amounts.len() == 2, "Wrong amounts number");
+
+        require!(
+            *tokens_vec.get(0) == TokenIdentifier::from(TOKEN_IDENTIFIER),
+            "Wrong first token"
+        );
+        require!(
+            *tokens_vec.get(1) == TokenIdentifier::from(TOKEN_IDENTIFIER_2),
+            "Wrong second token"
+        );
+
+        require!(
+            *amounts_vec.get(0) == BigUint::from(89784651u64),
+            "Wrong first amount"
+        );
+        require!(
+            *amounts_vec.get(1) == BigUint::from(184791484u64),
+            "Wrong second amount"
+        );
+
+        (tokens, amounts).into()
+    }
+
     // #################   pure views    #################
 
     #[view]
