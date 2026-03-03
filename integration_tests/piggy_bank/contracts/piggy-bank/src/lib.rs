@@ -111,10 +111,14 @@ pub trait PiggyBank {
         let proxy_address = self.esdt_minter_address().get();
         let mut proxy_instance = self.esdt_minter_proxy(proxy_address);
 
+        let esdt_payment = EsdtTokenPayment::new(self.piggy_token_identifier().get(), 0u64, amount);
+
         proxy_instance
             .claim_interests()
-            .with_esdt_transfer((self.piggy_token_identifier().get(), 0u64, amount))
-            .execute_on_dest_context()
+            .with_esdt_transfer(esdt_payment.clone())
+            .sync_call();
+
+        esdt_payment
     }
 
     /// Require a payment to be made of the piggy token

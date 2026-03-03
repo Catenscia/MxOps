@@ -164,7 +164,7 @@ pub trait EsdtMinter {
         token_ticker: ManagedBuffer,
         num_decimals: usize,
     ) {
-        let register_cost = (*self.call_value().egld_value()).clone();
+        let register_cost = (*self.call_value().egld()).clone();
         self.esdt_identifier().issue_and_set_all_roles(
             register_cost,
             token_display_name,
