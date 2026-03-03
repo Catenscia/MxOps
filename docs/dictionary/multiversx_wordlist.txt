@@ -69,6 +69,7 @@ TopEncode
 TypeAbi
 txs
 USDC
+variadic
 Vec
 WEGLD
 wrapEgld

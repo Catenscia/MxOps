@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- Explicit test for variadic counted values
+
 ### Fixed
 
 - Chain simulator explorer and lite-wallet containers failing on restart due to non-idempotent nginx config in upstream images (added `--force-recreate` to `docker compose up`)

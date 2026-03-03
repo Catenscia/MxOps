@@ -7,14 +7,15 @@ publish = false
 
 [lib]
 path = "src/data_store.rs"
+
 [dependencies.multiversx-sc]
-version = "0.64.1"
+version = "0.64.2"
 
 [dev-dependencies]
 num-bigint = "0.4.2"
 
 [dev-dependencies.multiversx-sc-scenario]
-version = "0.64.1"
+version = "0.64.2"
 
 [workspace]
 members = [".", "meta"]
