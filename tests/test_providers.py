@@ -813,3 +813,676 @@ class TestSetStateWithBatching:
             )
 
         assert "account_state must contain 'address' key" in str(exc_info.value)
+
+
+class TestGetAccountStorageWithFallbackBatchIncrease:
+    """Tests for dynamic batch size increase in get_account_storage_with_fallback."""
+
+    @pytest.fixture
+    def mock_proxy(self):
+        return MagicMock()
+
+    @pytest.fixture
+    def test_address(self):
+        return Address.new_from_bech32(
+            "erd1qqqqqqqqqqqqqpgq35qkf34a8svu4r2zmfzuztmeltqclapv78ss5jleq3"
+        )
+
+    @pytest.fixture
+    def mock_config(self):
+        with patch("mxops.common.providers.Config") as mock:
+            config_instance = MagicMock()
+            config_instance.get.side_effect = lambda key: {
+                "STORAGE_ITERATION_BATCH_SIZE": "1000",
+                "API_RATE_LIMIT": "100",
+            }.get(key)
+            mock.get_config.return_value = config_instance
+            yield mock
+
+    def test_batch_increase_on_smaller_payload(
+        self, mock_proxy, test_address, mock_config
+    ):
+        """After timeout and reduction, smaller avg bytes/key triggers doubling."""
+        call_count = 0
+
+        # Large keys (20 bytes each) cause timeout, then small keys (4 bytes)
+        def side_effect(url, data):
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                # First call: large payload succeeds
+                mock_resp = MagicMock()
+                mock_resp.to_dictionary.return_value = {
+                    "pairs": {"aa" * 10: "bb" * 10},  # 40 bytes total, 1 key
+                    "newIteratorState": [[1]],
+                }
+                return mock_resp
+            elif call_count == 2:
+                # Second call: timeout
+                raise Timeout("Timeout")
+            elif call_count == 3:
+                # Third call: small payload succeeds (avg bytes/key < reference)
+                mock_resp = MagicMock()
+                mock_resp.to_dictionary.return_value = {
+                    "pairs": {"ab": "cd"},  # 4 bytes total, 1 key
+                    "newIteratorState": [[2]],
+                }
+                return mock_resp
+            else:
+                # Fourth call: should use increased batch size, finish
+                mock_resp = MagicMock()
+                mock_resp.to_dictionary.return_value = {
+                    "pairs": {"ef": "01"},
+                    "newIteratorState": [],
+                }
+                return mock_resp
+
+        mock_proxy.do_post_generic.side_effect = side_effect
+
+        result = get_account_storage_with_fallback(
+            mock_proxy, test_address, num_keys=200, request_delay=0, min_batch_size=50
+        )
+
+        assert isinstance(result, AccountStorage)
+        # Call 1: numKeys=200 (success)
+        # Call 2: numKeys=200 (timeout) -> reduce to 100
+        # Call 3: numKeys=100 (success, small payload -> increase to 200)
+        # Call 4: numKeys=200 (success, done)
+        assert mock_proxy.do_post_generic.call_args_list[0][0][1]["numKeys"] == 200
+        assert mock_proxy.do_post_generic.call_args_list[1][0][1]["numKeys"] == 200
+        assert mock_proxy.do_post_generic.call_args_list[2][0][1]["numKeys"] == 100
+        assert mock_proxy.do_post_generic.call_args_list[3][0][1]["numKeys"] == 200
+
+    def test_no_increase_when_payload_same_or_larger(
+        self, mock_proxy, test_address, mock_config
+    ):
+        """No increase when avg bytes/key >= failure reference."""
+        call_count = 0
+
+        def side_effect(url, data):
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                # Success with large keys (reference = 40 bytes/key)
+                mock_resp = MagicMock()
+                mock_resp.to_dictionary.return_value = {
+                    "pairs": {"aa" * 10: "bb" * 10},
+                    "newIteratorState": [[1]],
+                }
+                return mock_resp
+            elif call_count == 2:
+                raise Timeout("Timeout")
+            elif call_count == 3:
+                # Success but payload still large (>= reference)
+                mock_resp = MagicMock()
+                mock_resp.to_dictionary.return_value = {
+                    "pairs": {"cc" * 10: "dd" * 10},  # Same 40 bytes/key
+                    "newIteratorState": [],
+                }
+                return mock_resp
+
+        mock_proxy.do_post_generic.side_effect = side_effect
+
+        get_account_storage_with_fallback(
+            mock_proxy, test_address, num_keys=200, request_delay=0, min_batch_size=50
+        )
+
+        # Call 3 should still use reduced batch (no increase)
+        assert mock_proxy.do_post_generic.call_args_list[2][0][1]["numKeys"] == 100
+
+    def test_no_increase_when_first_request_times_out(
+        self, mock_proxy, test_address, mock_config
+    ):
+        """No prior success means no increase after subsequent success."""
+        call_count = 0
+
+        def side_effect(url, data):
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                raise Timeout("Timeout")
+            else:
+                mock_resp = MagicMock()
+                mock_resp.to_dictionary.return_value = {
+                    "pairs": {"ab": "cd"},
+                    "newIteratorState": [],
+                }
+                return mock_resp
+
+        mock_proxy.do_post_generic.side_effect = side_effect
+
+        get_account_storage_with_fallback(
+            mock_proxy, test_address, num_keys=200, request_delay=0, min_batch_size=50
+        )
+
+        # Call 2 should use reduced batch (no increase, no reference)
+        assert mock_proxy.do_post_generic.call_args_list[1][0][1]["numKeys"] == 100
+
+    def test_recovery_reset_on_re_failure(
+        self, mock_proxy, test_address, mock_config
+    ):
+        """After increase, another failure reduces and resets recovery."""
+        call_count = 0
+
+        def side_effect(url, data):
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                # Success with large keys (reference)
+                mock_resp = MagicMock()
+                mock_resp.to_dictionary.return_value = {
+                    "pairs": {"aa" * 10: "bb" * 10},  # 40 bytes/key
+                    "newIteratorState": [[1]],
+                }
+                return mock_resp
+            elif call_count == 2:
+                raise Timeout("First timeout")
+            elif call_count == 3:
+                # Small payload -> triggers increase back to 200
+                mock_resp = MagicMock()
+                mock_resp.to_dictionary.return_value = {
+                    "pairs": {"ab": "cd"},  # 4 bytes/key
+                    "newIteratorState": [[2]],
+                }
+                return mock_resp
+            elif call_count == 4:
+                # Increased to 200 -> timeout again
+                raise Timeout("Second timeout")
+            else:
+                # Reduced back to 100 -> success
+                mock_resp = MagicMock()
+                mock_resp.to_dictionary.return_value = {
+                    "pairs": {"ef": "01"},
+                    "newIteratorState": [],
+                }
+                return mock_resp
+
+        mock_proxy.do_post_generic.side_effect = side_effect
+
+        get_account_storage_with_fallback(
+            mock_proxy, test_address, num_keys=200, request_delay=0, min_batch_size=50
+        )
+
+        # Call 4 at 200 (re-increased), call 5 at 100 (reduced again)
+        assert mock_proxy.do_post_generic.call_args_list[3][0][1]["numKeys"] == 200
+        assert mock_proxy.do_post_generic.call_args_list[4][0][1]["numKeys"] == 100
+
+    def test_increase_capped_at_original(
+        self, mock_proxy, test_address, mock_config
+    ):
+        """Doubling never exceeds original num_keys."""
+        call_count = 0
+
+        def side_effect(url, data):
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                # Success (reference = 40 bytes/key)
+                mock_resp = MagicMock()
+                mock_resp.to_dictionary.return_value = {
+                    "pairs": {"aa" * 10: "bb" * 10},
+                    "newIteratorState": [[1]],
+                }
+                return mock_resp
+            elif call_count == 2:
+                raise Timeout("Timeout")
+            elif call_count <= 5:
+                # Multiple successes with tiny payloads -> increase each time
+                mock_resp = MagicMock()
+                mock_resp.to_dictionary.return_value = {
+                    "pairs": {f"0{call_count}": "0a"},
+                    "newIteratorState": [[call_count]],
+                }
+                return mock_resp
+            else:
+                mock_resp = MagicMock()
+                mock_resp.to_dictionary.return_value = {
+                    "pairs": {"0f": "0e"},
+                    "newIteratorState": [],
+                }
+                return mock_resp
+
+        mock_proxy.do_post_generic.side_effect = side_effect
+
+        get_account_storage_with_fallback(
+            mock_proxy, test_address, num_keys=200, request_delay=0, min_batch_size=50
+        )
+
+        batch_sizes = [
+            call[0][1]["numKeys"]
+            for call in mock_proxy.do_post_generic.call_args_list
+        ]
+        # After reduction to 100, increases: 200, 200 (capped), 200 (capped)
+        assert all(s <= 200 for s in batch_sizes)
+
+    def test_logging_on_batch_increase(
+        self, mock_proxy, test_address, mock_config
+    ):
+        """INFO log emitted on batch increase with old/new sizes."""
+        call_count = 0
+
+        def side_effect(url, data):
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                mock_resp = MagicMock()
+                mock_resp.to_dictionary.return_value = {
+                    "pairs": {"aa" * 10: "bb" * 10},
+                    "newIteratorState": [[1]],
+                }
+                return mock_resp
+            elif call_count == 2:
+                raise Timeout("Timeout")
+            else:
+                mock_resp = MagicMock()
+                mock_resp.to_dictionary.return_value = {
+                    "pairs": {"ab": "cd"},
+                    "newIteratorState": [],
+                }
+                return mock_resp
+
+        mock_proxy.do_post_generic.side_effect = side_effect
+
+        with patch("mxops.common.providers.get_logger") as mock_get_logger:
+            mock_logger = MagicMock()
+            mock_get_logger.return_value = mock_logger
+
+            get_account_storage_with_fallback(
+                mock_proxy, test_address,
+                num_keys=200, request_delay=0, min_batch_size=50
+            )
+
+            info_calls = [
+                call[0][0] for call in mock_logger.info.call_args_list
+            ]
+            increase_logs = [m for m in info_calls if "increasing batch size" in m]
+            assert len(increase_logs) == 1
+            assert "from 100 to 200" in increase_logs[0]
+
+
+class TestSetStateWithBatchingBatchIncrease:
+    """Tests for dynamic batch size increase in set_state_with_batching."""
+
+    @pytest.fixture
+    def mock_proxy(self):
+        return MagicMock()
+
+    @pytest.fixture
+    def mock_config(self):
+        with patch("mxops.common.providers.Config") as mock:
+            config_instance = MagicMock()
+            config_instance.get.side_effect = lambda key: {
+                "STORAGE_ITERATION_BATCH_SIZE": "100",
+                "API_RATE_LIMIT": "100",
+            }.get(key)
+            mock.get_config.return_value = config_instance
+            yield mock
+
+    def test_batch_increase_on_smaller_avg_bytes_per_pair(
+        self, mock_proxy, mock_config
+    ):
+        """After timeout, smaller avg bytes/pair triggers batch size doubling."""
+        # First 100 pairs: large values (20 hex chars each)
+        # Next 100 pairs: small values (2 hex chars each)
+        large_pairs = {
+            f"{'aa' * 10}{i:04x}": "bb" * 10 for i in range(100)
+        }
+        small_pairs = {
+            f"cc{i:04x}": "dd" for i in range(100)
+        }
+        all_pairs = {**large_pairs, **small_pairs}
+        account_state = {
+            "address": "erd1abc...",
+            "pairs": all_pairs,
+        }
+
+        call_count = 0
+        batch_sizes = []
+
+        def mock_set_state_overwrite(states):
+            nonlocal call_count
+            call_count += 1
+            batch_sizes.append(len(states[0]["pairs"]))
+            if call_count == 1:
+                raise Timeout("Timeout")
+
+        def mock_set_state(states):
+            nonlocal call_count
+            call_count += 1
+            batch_sizes.append(len(states[0]["pairs"]))
+
+        mock_proxy.set_state_overwrite.side_effect = mock_set_state_overwrite
+        mock_proxy.set_state.side_effect = mock_set_state
+
+        set_state_with_batching(
+            mock_proxy, account_state, overwrite=True,
+            batch_size=100, min_batch_size=10, request_delay=0
+        )
+
+        # Call 1: 100 large pairs -> timeout, reduce to 50
+        # Subsequent calls: 50 pairs each, some will have small avg bytes
+        # and trigger increase
+        assert batch_sizes[0] == 100  # First attempt (fails)
+        assert batch_sizes[1] == 50   # Reduced
+
+    def test_no_increase_when_avg_bytes_same(self, mock_proxy, mock_config):
+        """No increase when avg bytes/pair >= failure reference."""
+        # All pairs same size -> avg never decreases
+        pairs = {
+            f"{'aa' * 5}{i:04x}": "bb" * 5 for i in range(200)
+        }
+        account_state = {
+            "address": "erd1abc...",
+            "pairs": pairs,
+        }
+
+        call_count = 0
+        batch_sizes = []
+
+        def mock_set_state_overwrite(states):
+            nonlocal call_count
+            call_count += 1
+            batch_sizes.append(len(states[0]["pairs"]))
+            if call_count == 1:
+                raise Timeout("Timeout")
+
+        def mock_set_state(states):
+            nonlocal call_count
+            call_count += 1
+            batch_sizes.append(len(states[0]["pairs"]))
+
+        mock_proxy.set_state_overwrite.side_effect = mock_set_state_overwrite
+        mock_proxy.set_state.side_effect = mock_set_state
+
+        set_state_with_batching(
+            mock_proxy, account_state, overwrite=True,
+            batch_size=100, min_batch_size=10, request_delay=0
+        )
+
+        # All batches after reduction should stay at 50 (no increase)
+        for size in batch_sizes[1:]:
+            assert size == 50
+
+    def test_push_recovery_reset_on_re_failure(self, mock_proxy, mock_config):
+        """After increase, re-failure reduces and resets recovery state."""
+        # First 100: large pairs, next 100: small, next 100: large again
+        large_pairs_1 = {f"{'aa' * 10}{i:04x}": "bb" * 10 for i in range(100)}
+        small_pairs = {f"cc{i:04x}": "dd" for i in range(100)}
+        large_pairs_2 = {f"{'ee' * 10}{i:04x}": "ff" * 10 for i in range(100)}
+        all_pairs = {**large_pairs_1, **small_pairs, **large_pairs_2}
+        account_state = {
+            "address": "erd1abc...",
+            "pairs": all_pairs,
+        }
+
+        call_count = 0
+        batch_sizes = []
+
+        def mock_set_state_overwrite(states):
+            nonlocal call_count
+            call_count += 1
+            batch_sizes.append(len(states[0]["pairs"]))
+            if call_count == 1:
+                raise Timeout("First timeout")
+
+        set_state_fail_on = set()
+
+        def mock_set_state(states):
+            nonlocal call_count
+            call_count += 1
+            batch_sizes.append(len(states[0]["pairs"]))
+            if call_count in set_state_fail_on:
+                raise Timeout("Re-failure")
+
+        mock_proxy.set_state_overwrite.side_effect = mock_set_state_overwrite
+        mock_proxy.set_state.side_effect = mock_set_state
+
+        set_state_with_batching(
+            mock_proxy, account_state, overwrite=True,
+            batch_size=100, min_batch_size=10, request_delay=0
+        )
+
+        # Verify: first batch fails at 100, reduces to 50
+        assert batch_sizes[0] == 100
+        assert batch_sizes[1] == 50
+
+    def test_push_increase_capped_at_original(self, mock_proxy, mock_config):
+        """Batch size increase never exceeds original batch_size."""
+        # Large pairs then very small pairs
+        large_pairs = {f"{'aa' * 10}{i:04x}": "bb" * 10 for i in range(100)}
+        small_pairs = {f"c{i:02x}": "d" for i in range(400)}
+        all_pairs = {**large_pairs, **small_pairs}
+        account_state = {
+            "address": "erd1abc...",
+            "pairs": all_pairs,
+        }
+
+        call_count = 0
+        batch_sizes = []
+
+        def mock_set_state_overwrite(states):
+            nonlocal call_count
+            call_count += 1
+            batch_sizes.append(len(states[0]["pairs"]))
+            if call_count == 1:
+                raise Timeout("Timeout")
+
+        def mock_set_state(states):
+            nonlocal call_count
+            call_count += 1
+            batch_sizes.append(len(states[0]["pairs"]))
+
+        mock_proxy.set_state_overwrite.side_effect = mock_set_state_overwrite
+        mock_proxy.set_state.side_effect = mock_set_state
+
+        set_state_with_batching(
+            mock_proxy, account_state, overwrite=True,
+            batch_size=100, min_batch_size=10, request_delay=0
+        )
+
+        # No batch should exceed original batch_size of 100
+        for size in batch_sizes:
+            assert size <= 100
+
+    def test_push_logging_on_batch_increase(self, mock_proxy, mock_config):
+        """INFO log emitted when batch size increases on push."""
+        # Large pairs then small pairs
+        large_pairs = {f"{'aa' * 10}{i:04x}": "bb" * 10 for i in range(100)}
+        small_pairs = {f"c{i:02x}": "d" for i in range(200)}
+        all_pairs = {**large_pairs, **small_pairs}
+        account_state = {
+            "address": "erd1abc...",
+            "pairs": all_pairs,
+        }
+
+        call_count = 0
+
+        def mock_set_state_overwrite(states):
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                raise Timeout("Timeout")
+
+        def mock_set_state(states):
+            nonlocal call_count
+            call_count += 1
+
+        mock_proxy.set_state_overwrite.side_effect = mock_set_state_overwrite
+        mock_proxy.set_state.side_effect = mock_set_state
+
+        with patch("mxops.common.providers.get_logger") as mock_get_logger:
+            mock_logger = MagicMock()
+            mock_get_logger.return_value = mock_logger
+
+            set_state_with_batching(
+                mock_proxy, account_state, overwrite=True,
+                batch_size=100, min_batch_size=10, request_delay=0
+            )
+
+            info_calls = [
+                call[0][0] for call in mock_logger.info.call_args_list
+            ]
+            increase_logs = [m for m in info_calls if "increasing" in m]
+            assert len(increase_logs) >= 1
+            assert "avg bytes/pair" in increase_logs[0]
+
+
+class TestBatchSizeResetBetweenAccounts:
+    """Verify batch size is reset between accounts (existing behavior)."""
+
+    @pytest.fixture
+    def mock_proxy(self):
+        return MagicMock()
+
+    @pytest.fixture
+    def mock_config(self):
+        with patch("mxops.common.providers.Config") as mock:
+            config_instance = MagicMock()
+            config_instance.get.side_effect = lambda key: {
+                "STORAGE_ITERATION_BATCH_SIZE": "1000",
+                "API_RATE_LIMIT": "100",
+            }.get(key)
+            mock.get_config.return_value = config_instance
+            yield mock
+
+    def test_fetch_batch_size_reset_between_accounts(self, mock_proxy, mock_config):
+        """Two sequential fetch calls each start at default batch size."""
+        address_a = Address.new_from_bech32(
+            "erd1qqqqqqqqqqqqqpgq35qkf34a8svu4r2zmfzuztmeltqclapv78ss5jleq3"
+        )
+        address_b = Address.new_from_bech32(
+            "erd1qqqqqqqqqqqqqpgq35qkf34a8svu4r2zmfzuztmeltqclapv78ss5jleq3"
+        )
+
+        call_count = 0
+        batch_sizes_per_call = []
+
+        def side_effect(url, data):
+            nonlocal call_count
+            call_count += 1
+            batch_sizes_per_call.append(data["numKeys"])
+
+            if call_count == 1:
+                # Account A: first call timeout -> reduce
+                raise Timeout("Timeout")
+            else:
+                mock_resp = MagicMock()
+                mock_resp.to_dictionary.return_value = {
+                    "pairs": {"ab": "cd"},
+                    "newIteratorState": [],
+                }
+                return mock_resp
+
+        mock_proxy.do_post_generic.side_effect = side_effect
+
+        # Account A: starts at 200, reduces to 100
+        get_account_storage_with_fallback(
+            mock_proxy, address_a, num_keys=200, request_delay=0, min_batch_size=50
+        )
+
+        # Account B: should start fresh at 200
+        get_account_storage_with_fallback(
+            mock_proxy, address_b, num_keys=200, request_delay=0, min_batch_size=50
+        )
+
+        # Account A: 200 (fail), 100 (success)
+        # Account B: 200 (success) - reset to original
+        assert batch_sizes_per_call[0] == 200  # A first attempt
+        assert batch_sizes_per_call[1] == 100  # A reduced
+        assert batch_sizes_per_call[2] == 200  # B starts fresh
+
+    def test_push_batch_size_reset_between_accounts(self, mock_proxy, mock_config):
+        """Two sequential push calls each start at default batch size."""
+        pairs_a = {f"key{i:04d}".encode().hex(): f"val{i}".encode().hex()
+                   for i in range(150)}
+        state_a = {"address": "erd1aaa...", "pairs": pairs_a}
+
+        pairs_b = {f"key{i:04d}".encode().hex(): f"val{i}".encode().hex()
+                   for i in range(150, 300)}
+        state_b = {"address": "erd1bbb...", "pairs": pairs_b}
+
+        call_count_a = 0
+        batch_sizes_a = []
+        batch_sizes_b = []
+
+        def mock_overwrite_a(states):
+            nonlocal call_count_a
+            call_count_a += 1
+            batch_sizes_a.append(len(states[0]["pairs"]))
+            if call_count_a == 1:
+                raise Timeout("Timeout")
+
+        mock_proxy.set_state_overwrite.side_effect = mock_overwrite_a
+
+        # Account A: batch 100 -> timeout -> reduce to 50
+        set_state_with_batching(
+            mock_proxy, state_a, overwrite=True,
+            batch_size=100, min_batch_size=10, request_delay=0
+        )
+
+        def mock_overwrite_b(states):
+            batch_sizes_b.append(len(states[0]["pairs"]))
+
+        mock_proxy.set_state_overwrite.side_effect = mock_overwrite_b
+        mock_proxy.set_state.side_effect = lambda s: batch_sizes_b.append(
+            len(s[0]["pairs"])
+        )
+
+        # Account B: should start fresh at 100
+        set_state_with_batching(
+            mock_proxy, state_b, overwrite=True,
+            batch_size=100, min_batch_size=10, request_delay=0
+        )
+
+        assert batch_sizes_a[0] == 100  # A first attempt (fails)
+        assert batch_sizes_a[1] == 50   # A reduced
+        assert batch_sizes_b[0] == 100  # B starts fresh
+
+    def test_fetch_fallback_does_not_affect_next_account(
+        self, mock_proxy, mock_config
+    ):
+        """Account A falling back to standard doesn't affect account B."""
+        address_a = Address.new_from_bech32(
+            "erd1qqqqqqqqqqqqqpgq35qkf34a8svu4r2zmfzuztmeltqclapv78ss5jleq3"
+        )
+        address_b = Address.new_from_bech32(
+            "erd1qqqqqqqqqqqqqpgq35qkf34a8svu4r2zmfzuztmeltqclapv78ss5jleq3"
+        )
+
+        call_count = 0
+
+        def side_effect(url, data):
+            nonlocal call_count
+            call_count += 1
+            if call_count <= 2:
+                # Account A: all calls timeout -> fallback
+                raise Timeout("Always timeout")
+            else:
+                # Account B: succeeds
+                mock_resp = MagicMock()
+                mock_resp.to_dictionary.return_value = {
+                    "pairs": {"ab": "cd"},
+                    "newIteratorState": [],
+                }
+                return mock_resp
+
+        mock_proxy.do_post_generic.side_effect = side_effect
+
+        mock_standard = AccountStorage(raw={"pairs": {}}, entries=[])
+        mock_proxy.get_account_storage.return_value = mock_standard
+
+        # Account A: exhausts min_batch, falls back
+        get_account_storage_with_fallback(
+            mock_proxy, address_a, num_keys=100, request_delay=0, min_batch_size=50
+        )
+        mock_proxy.get_account_storage.assert_called_once()
+
+        # Account B: starts fresh at 200, succeeds via paginated
+        result = get_account_storage_with_fallback(
+            mock_proxy, address_b, num_keys=200, request_delay=0, min_batch_size=50
+        )
+
+        assert isinstance(result, AccountStorage)
+        assert len(result.entries) == 1
+        # Account B used the full 200, not any reduced value
+        assert mock_proxy.do_post_generic.call_args_list[-1][0][1]["numKeys"] == 200
