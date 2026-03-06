@@ -5,6 +5,8 @@
 ### Added
 
 - Explicit test for variadic counted values
+- Dynamic batch size recovery: after a timeout reduces the batch size, subsequent successful requests with smaller payloads automatically double the batch size back toward the original (for both storage fetch and push operations)
+- Tests verifying batch size resets between accounts
 
 ### Fixed
 
