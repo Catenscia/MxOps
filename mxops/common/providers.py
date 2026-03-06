@@ -86,6 +86,8 @@ def set_state_with_batching(
     # for a given input dict
     pairs_list = list(pairs.items())
     current_batch_size = batch_size
+    original_batch_size = batch_size
+    failure_avg_bytes_ref: float | None = None
     pairs_sent = 0
     batches_sent = 0
     is_first_request = True
@@ -119,6 +121,11 @@ def set_state_with_batching(
 
             except Exception as e:
                 if _is_retryable_error(e):
+                    if batch_pairs:
+                        failed_total = sum(
+                            len(k) + len(v) for k, v in batch_pairs.items()
+                        )
+                        failure_avg_bytes_ref = failed_total / len(batch_pairs)
                     new_batch_size = current_batch_size // 2
                     logger.info(
                         f"Set state for {address} failed with batch size "
@@ -150,6 +157,25 @@ def set_state_with_batching(
                 f"The chain simulator may be in a partial state. "
                 f"Consider retrying or increasing min_batch_size."
             )
+
+        # Dynamic batch increase after successful push
+        if (
+            batch_pairs
+            and failure_avg_bytes_ref is not None
+            and current_batch_size < original_batch_size
+        ):
+            total_bytes = sum(len(k) + len(v) for k, v in batch_pairs.items())
+            current_avg = total_bytes / len(batch_pairs)
+            if current_avg < failure_avg_bytes_ref:
+                old_batch_size = current_batch_size
+                current_batch_size = min(current_batch_size * 2, original_batch_size)
+                logger.info(
+                    f"Set state for {address}: avg bytes/pair "
+                    f"({current_avg:.0f}) < failure reference "
+                    f"({failure_avg_bytes_ref:.0f}), increasing "
+                    f"batch size from {old_batch_size} to "
+                    f"{current_batch_size}"
+                )
 
         # Delay between successful batches
         if pairs_sent < len(pairs_list) and request_delay > 0:
@@ -231,6 +257,9 @@ def get_account_storage_with_fallback(
     iterator_state: list[list[int]] = []
     iteration_succeeded = False
     current_batch_size = num_keys
+    original_batch_size = num_keys
+    last_successful_avg_bytes: float | None = None
+    failure_avg_bytes_ref: float | None = None
     bech32_address = address.to_bech32()
 
     try:
@@ -276,6 +305,7 @@ def get_account_storage_with_fallback(
 
                 except Exception as e:
                     if _is_retryable_error(e):
+                        failure_avg_bytes_ref = last_successful_avg_bytes
                         new_batch_size = current_batch_size // 2
                         logger.info(
                             f"Storage iteration for {bech32_address} failed with "
@@ -295,6 +325,28 @@ def get_account_storage_with_fallback(
                     f"batch size ({min_batch_size}), falling back to standard endpoint"
                 )
                 break
+
+            # Dynamic batch increase after successful fetch
+            if pairs:
+                total_bytes = sum(len(k) + len(v) for k, v in pairs.items())
+                current_avg = total_bytes / len(pairs)
+                if (
+                    failure_avg_bytes_ref is not None
+                    and current_avg < failure_avg_bytes_ref
+                    and current_batch_size < original_batch_size
+                ):
+                    old_batch_size = current_batch_size
+                    current_batch_size = min(
+                        current_batch_size * 2, original_batch_size
+                    )
+                    logger.info(
+                        f"Storage iteration for {bech32_address}: "
+                        f"avg bytes/key ({current_avg:.0f}) < failure "
+                        f"reference ({failure_avg_bytes_ref:.0f}), "
+                        f"increasing batch size from {old_batch_size} "
+                        f"to {current_batch_size}"
+                    )
+                last_successful_avg_bytes = current_avg
 
             if iteration_succeeded:
                 break
