@@ -37,7 +37,7 @@ from mxops.data.execution_data import ScenarioData
 from mxops.enums import LogGroupEnum, NetworkEnum, parse_network_enum
 from mxops.execution import utils
 from mxops.execution.account import AccountsManager
-from mxops.smart_values import SmartInt, SmartPath, SmartValue
+from mxops.smart_values import SmartDict, SmartInt, SmartPath, SmartValue
 from mxops.smart_values.mx_sdk import SmartAddress, SmartAddresses
 from mxops.smart_values.native import SmartBool, SmartDatetime, SmartStr
 from mxops.execution.steps.base import Step
@@ -256,6 +256,60 @@ class ChainSimulatorFaucetStep(Step):
                 sender=sender, receiver=target, value=self.amount.get_evaluated_value()
             )
             egld_transfer_step.execute()
+
+
+@dataclass
+class ChainSimulatorSetStateStep(Step):
+    """
+    Represents a step to set specific storage key-value pairs for an address
+    on the chain simulator using hex-encoded keys and values.
+    """
+
+    address: SmartAddress
+    keys: SmartDict
+    ALLOWED_NETWORKS: ClassVar[set] = (NetworkEnum.CHAIN_SIMULATOR,)
+
+    @staticmethod
+    def _validate_hex_keys(keys: dict[str, str]):
+        """Validate that all keys and values are valid hex strings."""
+        if not keys:
+            raise errors.InvalidSceneDefinition(
+                "ChainSimulatorSetState requires at least one key-value pair"
+            )
+        for k, v in keys.items():
+            try:
+                bytes.fromhex(k)
+            except ValueError as exc:
+                raise errors.InvalidSceneDefinition(
+                    f"ChainSimulatorSetState key must be hex-encoded, got: '{k}'"
+                ) from exc
+            try:
+                bytes.fromhex(v)
+            except ValueError as exc:
+                raise errors.InvalidSceneDefinition(
+                    f"ChainSimulatorSetState value must be hex-encoded, got: '{v}'"
+                ) from exc
+
+    def _execute(self):
+        """
+        Post hex-encoded key-value pairs to the chain simulator's
+        address-specific set-state endpoint.
+        """
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
+        scenario_data = ScenarioData.get()
+        if scenario_data.network not in self.ALLOWED_NETWORKS:
+            raise errors.WrongNetworkForStep(
+                scenario_data.network, self.ALLOWED_NETWORKS
+            )
+        proxy = MyProxyNetworkProvider()
+        bech32 = self.address.get_evaluated_value().to_bech32()
+        keys = self.keys.get_evaluated_value()
+        self._validate_hex_keys(keys)
+        logger.info(
+            f"Setting {len(keys)} storage key(s) for {bech32} on chain simulator"
+        )
+        response = proxy.set_address_state(bech32, keys)
+        logger.debug(f"set-state response: {response.to_dictionary()}")
 
 
 @dataclass
