@@ -69,6 +69,11 @@ steps:
       - bob
     amount: "={10**18}"  # amount to send to each wallet
 
+  - type: ChainSimulatorSetState
+    address: "%my_contract.address"
+    keys:
+      "736166655f70726963655f63757272656e745f696e646578": "00000000"
+
   - type: GenerateWallets
     save_folder: path/to/wallets/folder  # folder where to save the generated wallets
     wallets: # wallets to generate, can also just supply a number of wallets

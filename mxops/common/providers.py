@@ -423,6 +423,16 @@ class MyProxyNetworkProvider(ProxyNetworkProvider):
         url = "simulator/set-state"
         return self.do_post_generic(url, states)
 
+    def set_address_state(self, address: str, keys: dict[str, str]) -> GenericResponse:
+        """Set specific storage key-value pairs for an address on the chain simulator.
+
+        :param address: bech32 address to set state for
+        :param keys: hex-encoded key-value pairs to set
+        :return: response from the chain simulator
+        """
+        url = f"simulator/address/{address}/set-state"
+        return self.do_post_generic(url, keys)
+
     def set_state_overwrite(self, states: list[dict]) -> GenericResponse:
         url = "simulator/set-state-overwrite"
         return self.do_post_generic(url, states)
