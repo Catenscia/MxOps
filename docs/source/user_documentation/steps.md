@@ -676,6 +676,20 @@ targets:
   - erd1y3296u7m2v5653pddey3p7l5zacqmsgqc7vsu3w74p9jm2qp3tqqz950yl  # or direct bech32
 ```
 
+(chain_simulator_set_state_target)=
+### Chain Simulator Set State Step
+
+Exclusive to the chain simulator.
+This step allows you to set specific storage key-value pairs for an address on the chain simulator. Keys and values must be hex-encoded. This is useful after cloning contracts from mainnet when some storage values (e.g. round numbers, epoch values) are incompatible with the simulator's timeline.
+
+```yaml
+type: ChainSimulatorSetState
+address: "%my_contract.address"
+keys:
+  "736166655f70726963655f63757272656e745f696e646578": "00000000"
+  "6d795f6f746865725f6b6579": "01"
+```
+
 (account_clone_target)=
 ### Account Clone Step
 
