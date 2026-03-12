@@ -11,6 +11,7 @@
 - Tests verifying batch size resets between accounts
 - `set_states_batched` helper for pushing multiple account states with automatic payload-size grouping
 - `_set_state_with_retry` helper for transient failure resilience on `set_state` calls
+- `PROXY_TIMEOUT` configuration parameter (default 10s, mainnet 30s, chain simulator 60s) to prevent read timeouts when fetching large contract storage
 
 ### Changed
 
