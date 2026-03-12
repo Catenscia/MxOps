@@ -14,6 +14,7 @@ from multiversx_sdk import (
     GenericResponse,
     ProxyNetworkProvider,
 )
+from multiversx_sdk.network_providers.config import NetworkProviderConfig
 from requests.exceptions import ConnectionError as RequestsConnectionError
 from requests.exceptions import HTTPError, Timeout
 
@@ -559,7 +560,7 @@ class MyProxyNetworkProvider(ProxyNetworkProvider):
     _instance = None
 
     def __init__(self):
-        super().__init__(self.url)
+        super().__init__(self.url, config=self._provider_config)
 
     def __new__(cls):
         if cls._instance is None:
@@ -568,7 +569,12 @@ class MyProxyNetworkProvider(ProxyNetworkProvider):
         return cls._instance
 
     def _initialize(self):
-        self.url = Config.get_config().get("PROXY")
+        config = Config.get_config()
+        self.url = config.get("PROXY")
+        timeout = int(config.get("PROXY_TIMEOUT"))
+        self._provider_config = NetworkProviderConfig(
+            requests_options={"timeout": timeout}
+        )
 
     def get_initial_wallets(self) -> dict:
         url = "simulator/initial-wallets"

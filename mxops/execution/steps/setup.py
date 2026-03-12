@@ -14,6 +14,7 @@ import time
 from typing import ClassVar
 
 from multiversx_sdk import AccountStorage, Address, ProxyNetworkProvider
+from multiversx_sdk.network_providers.config import NetworkProviderConfig
 import requests
 
 from mxops import errors
@@ -314,6 +315,15 @@ class ChainSimulatorSetStateStep(Step):
         logger.debug(f"set-state response: {response.to_dictionary()}")
 
 
+def _build_source_proxy(source_network: NetworkEnum) -> ProxyNetworkProvider:
+    """Build a ProxyNetworkProvider for the source network with configured timeout."""
+    config = Config.get_config()
+    url = config.get("PROXY", source_network)
+    timeout = int(config.get("PROXY_TIMEOUT", source_network))
+    provider_config = NetworkProviderConfig(requests_options={"timeout": timeout})
+    return ProxyNetworkProvider(url, config=provider_config)
+
+
 def _fetch_account_clone_data(
     address: Address,
     source_network: NetworkEnum,
@@ -342,9 +352,7 @@ def _fetch_account_clone_data(
         logger.debug(
             f"Fetching account of {address.to_bech32()} on {source_network.value}"
         )
-        source_proxy = ProxyNetworkProvider(
-            Config.get_config().get("PROXY", source_network)
-        )
+        source_proxy = _build_source_proxy(source_network)
         source_account = source_proxy.get_account(address)
         save_account_data(source_network, source_account)
 
@@ -378,9 +386,7 @@ def _fetch_source_storage(
         logger.debug(
             f"Fetching storage of {address.to_bech32()} on {source_network.value}"
         )
-        source_proxy = ProxyNetworkProvider(
-            Config.get_config().get("PROXY", source_network)
-        )
+        source_proxy = _build_source_proxy(source_network)
         source_storage = get_account_storage_with_fallback(
             source_proxy, address, progress_logger=logger
         )
@@ -459,9 +465,7 @@ def _fetch_missing_esdt_entries(
             continue
 
         if source_proxy is None:
-            source_proxy = ProxyNetworkProvider(
-                Config.get_config().get("PROXY", source_network)
-            )
+            source_proxy = _build_source_proxy(source_network)
 
         source_entry = source_proxy.get_account_storage_entry(
             esdt_module_address, identifier
