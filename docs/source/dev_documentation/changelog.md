@@ -4,10 +4,18 @@
 
 ### Added
 
+- `AccountBatchCloneStep` for optimized bulk account cloning: collects all data first, then pushes with single ESDT module reconciliation, single Elasticsearch bulk insert, and smart payload-sized batched `set_state` calls
 - `ChainSimulatorSetStateStep` to set specific hex-encoded storage key-value pairs for an address on the chain simulator
 - Explicit test for variadic counted values
 - Dynamic batch size recovery: after a timeout reduces the batch size, subsequent successful requests with smaller payloads automatically double the batch size back toward the original (for both storage fetch and push operations)
 - Tests verifying batch size resets between accounts
+- `set_states_batched` helper for pushing multiple account states with automatic payload-size grouping
+- `_set_state_with_retry` helper for transient failure resilience on `set_state` calls
+
+### Changed
+
+- Chain simulator default `API_RATE_LIMIT` increased to 100 (from 2) and `STORAGE_ITERATION_BATCH_SIZE` to 5000 (from 1000) for faster localhost operations
+- `AccountCloneStep` internal methods extracted into reusable module-level functions
 
 ### Fixed
 

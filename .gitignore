@@ -142,5 +142,7 @@ dmypy.json
 # git worktrees
 worktrees
 
+/temp/
+
 # Exceptions
 !**/**/.gitkeep

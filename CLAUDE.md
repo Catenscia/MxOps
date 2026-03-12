@@ -53,11 +53,11 @@ YAML Scene -> Steps -> Transactions/Queries -> MultiversX Network
 | `tests/` | Unit tests (pytest) |
 | `integration_tests/` | Chain-simulator/devnet integration tests |
 
-### All Step Types (28)
+### All Step Types (29)
 **Contracts**: `ContractDeploy`, `ContractUpgrade`, `ContractCall`, `ContractQuery`, `FileFuzzer`
 **Transfers**: `Transfer`
 **Tokens**: `FungibleIssue`, `NonFungibleIssue`, `SemiFungibleIssue`, `MetaIssue`, `FungibleMint`, `NonFungibleMint`, `ManageFungibleTokenRoles`, `ManageNonFungibleTokenRoles`, `ManageSemiFungibleTokenRoles`, `ManageMetaTokenRoles`
-**Setup**: `GenerateWallets`, `ChainSimulatorFaucet`, `R3D4Faucet`, `AccountClone`
+**Setup**: `GenerateWallets`, `ChainSimulatorFaucet`, `R3D4Faucet`, `AccountClone`, `AccountBatchClone`
 **Control**: `Loop`, `Scene`, `SetVars`, `SetSeed`, `Assert`, `Wait`, `Log`, `Python`
 
 ### Smart Values Syntax
