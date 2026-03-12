@@ -33,6 +33,7 @@ instantiation
 isize
 json
 https
+localhost
 monotypes
 Monotypes
 natively
