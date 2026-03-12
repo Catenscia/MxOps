@@ -713,6 +713,39 @@ caching_period: "10 days"  # optional, default to 10 days
 
 Account cloning can lead to huge data requests. If you are using the public proxy, please use a high caching period.
 
+(account_batch_clone_target)=
+### Account Batch Clone Step
+
+Exclusive to the chain simulator.
+This step allows you to clone multiple accounts from another network in an optimized batch fashion. Unlike running multiple `AccountClone` steps sequentially, `AccountBatchClone` collects all data first and then pushes it efficiently:
+
+- **Single ESDT module reconciliation** instead of one per account (avoids O(n²) growing fetches)
+- **Single Elasticsearch bulk insert** for all tokens across all accounts
+- **Smart batched `set_state` calls** grouped by payload size
+
+This is recommended when cloning many accounts (e.g. all pools from a DEX).
+
+```yaml
+type: AccountBatchClone
+addresses:
+  - "erd1qqq..."
+  - "erd1qqq..."
+  - "%my_contract.address"
+source_network: mainnet
+clone_balance: true  # optional, default to true
+clone_code: true  # optional, default to true
+clone_storage: true  # optional, default to true
+clone_esdts: true  # optional, default to true
+overwrite: true  # optional, default to true
+caching_period: "10 days"  # optional, default to 10 days
+```
+
+The step logs per-phase timing so you can see where time is spent:
+- **Phase 1**: Collecting account and storage data (cached after first run)
+- **Phase 2**: Reconciling ESDT identifiers with the chain simulator
+- **Phase 3**: Inserting token data into Elasticsearch
+- **Phase 4**: Pushing all account states to the chain simulator
+
 ## Miscellaneous Steps
 
 (loop_step_target)=
