@@ -7,12 +7,13 @@ This module contains Steps used to setup environment, chain or workflow
 from configparser import NoOptionError
 from copy import deepcopy
 from dataclasses import dataclass
+from datetime import datetime
 import json
 import os
 import time
 from typing import ClassVar
 
-from multiversx_sdk import Address, ProxyNetworkProvider
+from multiversx_sdk import AccountStorage, Address, ProxyNetworkProvider
 import requests
 
 from mxops import errors
@@ -21,6 +22,7 @@ from mxops.common.providers import (
     MyProxyNetworkProvider,
     get_account_storage_with_fallback,
     set_state_with_batching,
+    set_states_batched,
 )
 from mxops.config.config import Config
 from mxops.data.data_cache import (
@@ -312,6 +314,371 @@ class ChainSimulatorSetStateStep(Step):
         logger.debug(f"set-state response: {response.to_dictionary()}")
 
 
+def _fetch_account_clone_data(
+    address: Address,
+    source_network: NetworkEnum,
+    caching_period: datetime,
+    clone_balance: bool,
+    clone_code: bool,
+    fetch_current_state: bool = True,
+) -> dict:
+    """
+    Fetch and construct the raw data to clone an account's balance and code.
+
+    :param address: address to clone
+    :param source_network: network to clone from
+    :param caching_period: caching threshold for data freshness
+    :param clone_balance: whether to clone the balance
+    :param clone_code: whether to clone the code
+    :param fetch_current_state: whether to fetch the current account state
+        from the local proxy to preserve rootHash/balance/code. Set to False
+        for batch cloning where accounts don't yet exist on the target.
+    :return: raw account data to set in the current network
+    """
+    logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
+
+    source_account = try_load_account_data(source_network, address, caching_period)
+    if source_account is None:
+        logger.debug(
+            f"Fetching account of {address.to_bech32()} on {source_network.value}"
+        )
+        source_proxy = ProxyNetworkProvider(
+            Config.get_config().get("PROXY", source_network)
+        )
+        source_account = source_proxy.get_account(address)
+        save_account_data(source_network, source_account)
+
+    raw_account_to_set = deepcopy(source_account.raw["account"])
+
+    if fetch_current_state:
+        proxy = MyProxyNetworkProvider()
+        current_raw_account = proxy.get_account(address).raw["account"]
+        raw_account_to_set["rootHash"] = current_raw_account["rootHash"]
+
+        if not clone_balance:
+            raw_account_to_set["balance"] = current_raw_account["balance"]
+
+        if not clone_code:
+            raw_account_to_set["code"] = current_raw_account["code"]
+            raw_account_to_set["codeHash"] = current_raw_account["codeHash"]
+            raw_account_to_set["codeMetadata"] = current_raw_account["codeMetadata"]
+
+    return raw_account_to_set
+
+
+def _fetch_source_storage(
+    source_network: NetworkEnum, address: Address, caching_period: datetime
+) -> AccountStorage:
+    """Fetch source storage from cache or proxy."""
+    logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
+    source_storage = try_load_account_storage_data(
+        source_network, address, caching_period
+    )
+    if source_storage is None:
+        logger.debug(
+            f"Fetching storage of {address.to_bech32()} on {source_network.value}"
+        )
+        source_proxy = ProxyNetworkProvider(
+            Config.get_config().get("PROXY", source_network)
+        )
+        source_storage = get_account_storage_with_fallback(
+            source_proxy, address, progress_logger=logger
+        )
+        save_account_storage_data(source_network, address, source_storage)
+    return source_storage
+
+
+def _get_storage_clone_data(
+    address: Address,
+    source_network: NetworkEnum,
+    caching_period: datetime,
+    clone_storage: bool,
+    clone_esdts: bool,
+) -> tuple[dict, set[str]]:
+    """
+    Fetch and construct the raw data to clone the storage of an account.
+
+    :param address: address to clone storage for
+    :param source_network: network to clone from
+    :param caching_period: caching threshold for data freshness
+    :param clone_storage: whether to clone non-ESDT storage
+    :param clone_esdts: whether to clone ESDT entries
+    :return: raw storage data and set of seen ESDT identifiers
+    """
+    source_storage = _fetch_source_storage(source_network, address, caching_period)
+
+    raw_data = {}
+    seen_esdt = set()
+
+    for hex_key, hex_value in source_storage.raw.get("pairs", {}).items():
+        is_esdt_or_role = hex_key.startswith(
+            ESDT_BALANCE_STORAGE_HEX_PREFIX
+        ) or hex_key.startswith(ESDT_BALANCE_ROLE_HEX_PREFIX)
+
+        if is_esdt_or_role:
+            if clone_esdts:
+                raw_data[hex_key] = hex_value
+                identifier = extract_identifier_from_hex_key(hex_key)
+                if identifier:
+                    seen_esdt.add(identifier)
+        elif clone_storage:
+            raw_data[hex_key] = hex_value
+
+    return raw_data, seen_esdt
+
+
+def _find_missing_esdt_identifiers(
+    esdt_identifiers: set[str], current_hex_keys: set[str]
+) -> list[str]:
+    """Find ESDT identifiers not present in current network."""
+    return [
+        identifier
+        for identifier in esdt_identifiers
+        if identifier.encode("utf-8").hex() not in current_hex_keys
+    ]
+
+
+def _fetch_missing_esdt_entries(
+    missing_identifiers: list[str],
+    esdt_module_address: Address,
+    source_network: NetworkEnum,
+    caching_threshold: datetime,
+) -> dict[str, str]:
+    """Fetch missing ESDT entries from cache or source network."""
+    pairs = {}
+    source_proxy = None
+
+    for identifier in missing_identifiers:
+        hex_identifier = identifier.encode("utf-8").hex()
+
+        cached_value = try_load_esdt_module_entry(
+            source_network, identifier, caching_threshold
+        )
+        if cached_value is not None:
+            pairs[hex_identifier] = cached_value
+            continue
+
+        if source_proxy is None:
+            source_proxy = ProxyNetworkProvider(
+                Config.get_config().get("PROXY", source_network)
+            )
+
+        source_entry = source_proxy.get_account_storage_entry(
+            esdt_module_address, identifier
+        )
+        pairs[hex_identifier] = source_entry.raw["value"]
+        save_esdt_module_entry(source_network, identifier, source_entry.raw["value"])
+
+    return pairs
+
+
+def _get_esdt_module_clone_data(
+    esdt_identifiers: set[str],
+    source_network: NetworkEnum,
+    caching_period: datetime,
+) -> dict:
+    """
+    Using a set of identifiers, determine for each ESDT if it is already known
+    to the current network, otherwise fetch the data from the source network.
+
+    :param esdt_identifiers: ESDT identifiers to check
+    :param source_network: network to fetch missing entries from
+    :param caching_period: caching threshold for data freshness
+    :return: data to set for the ESDT module
+    """
+    proxy = MyProxyNetworkProvider()
+    esdt_module_address = Address.new_from_bech32(ESDT_MODULE_BECH32)
+
+    raw_account_data = proxy.get_account(esdt_module_address).raw["account"]
+    raw_account_data["pairs"] = {}
+
+    current_storage = get_account_storage_with_fallback(proxy, esdt_module_address)
+    current_hex_keys = set(current_storage.raw.get("pairs", {}).keys())
+
+    missing_identifiers = _find_missing_esdt_identifiers(
+        esdt_identifiers, current_hex_keys
+    )
+    if not missing_identifiers:
+        return raw_account_data
+
+    logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
+    logger.debug(
+        f"Need to clone {len(missing_identifiers)} ESDT module entries "
+        f"from {source_network.value}"
+    )
+
+    raw_account_data["pairs"] = _fetch_missing_esdt_entries(
+        missing_identifiers,
+        esdt_module_address,
+        source_network,
+        caching_period,
+    )
+
+    return raw_account_data
+
+
+def _fetch_with_backoff(
+    url: str,
+    max_retries: int = 5,
+    base_delay: float = 1.0,
+) -> requests.Response | None:
+    """
+    Fetch a URL with exponential backoff on 429 rate limit errors.
+
+    :param url: URL to fetch
+    :param max_retries: maximum number of retry attempts
+    :param base_delay: base delay in seconds for exponential backoff
+    :return: the response (may be a 429 if all retries were exhausted)
+    """
+    logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
+    for attempt in range(max_retries + 1):
+        response = requests.get(url, timeout=10)
+        if response.status_code != 429:
+            return response
+
+        if attempt < max_retries:
+            delay = base_delay * (2**attempt)
+            logger.debug(
+                f"Rate limited (429), retrying in {delay:.1f}s "
+                f"(attempt {attempt + 1}/{max_retries})"
+            )
+            time.sleep(delay)
+
+    return response
+
+
+def _insert_tokens_in_elasticsearch(
+    esdt_identifiers: set[str],
+    source_network: NetworkEnum,
+    caching_period: datetime,
+    requests_per_second: float = 4.0,
+):
+    """
+    Fetch token data from the source network's Elasticsearch and insert
+    it into the local chain simulator's Elasticsearch.
+    This is required to make tokens visible in the chain simulator terminal
+    and available through the API.
+
+    See: https://github.com/multiversx/mx-chain-simulator-go/issues/109
+
+    :param esdt_identifiers: set of ESDT identifiers to insert
+    :param source_network: network to fetch token data from
+    :param caching_period: caching threshold for data freshness
+    :param requests_per_second: rate limit for API requests (default: 4.0)
+    """
+    if not esdt_identifiers:
+        return
+
+    request_interval = 1.0 / requests_per_second
+    logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
+    config = Config.get_config()
+
+    try:
+        source_es_url = config.get("ELASTICSEARCH", source_network)
+    except NoOptionError:
+        logger.debug(
+            f"No Elasticsearch URL configured for {source_network.value}, "
+            "skipping token insertion"
+        )
+        return
+
+    try:
+        local_es_url = config.get("ELASTICSEARCH")
+    except NoOptionError:
+        logger.debug(
+            "No Elasticsearch URL configured for local network, "
+            "skipping token insertion"
+        )
+        return
+
+    tokens_to_insert: dict[str, dict] = {}
+
+    progress = ProgressLogger(logger, "Token data fetching")
+    progress.start()
+    processed_count = 0
+
+    for identifier in esdt_identifiers:
+        token_source = try_load_esdt_token_data(
+            source_network, identifier, caching_period
+        )
+
+        if token_source is None:
+            source_url = f"{source_es_url}/tokens/_doc/{identifier}"
+            try:
+                response = _fetch_with_backoff(source_url)
+                if response is None or response.status_code != 200:
+                    status = response.status_code if response else "no response"
+                    logger.warning(
+                        f"Could not fetch token {identifier} from source "
+                        f"Elasticsearch: {status}"
+                    )
+                    continue
+                token_data = response.json()
+                if not token_data.get("found", False):
+                    logger.warning(
+                        f"Token {identifier} not found in source Elasticsearch"
+                    )
+                    continue
+                token_source = token_data.get("_source", {})
+                save_esdt_token_data(source_network, identifier, token_source)
+            except requests.RequestException as e:
+                logger.warning(
+                    f"Error fetching token {identifier} from source Elasticsearch: {e}"
+                )
+                continue
+
+            time.sleep(request_interval)
+
+        tokens_to_insert[identifier] = token_source
+        processed_count += 1
+        progress.update(processed_count)
+
+    progress.finish(processed_count)
+
+    if not tokens_to_insert:
+        return
+
+    bulk_lines = []
+    for identifier, token_source in tokens_to_insert.items():
+        action = {"index": {"_index": "tokens", "_id": identifier}}
+        bulk_lines.append(json.dumps(action))
+        bulk_lines.append(json.dumps(token_source))
+
+    bulk_body = "\n".join(bulk_lines) + "\n"
+
+    bulk_url = f"{local_es_url}/_bulk"
+    try:
+        response = requests.post(
+            bulk_url,
+            data=bulk_body,
+            headers={"Content-Type": "application/x-ndjson"},
+            timeout=30,
+        )
+        if response.status_code not in (200, 201):
+            logger.warning(
+                f"Bulk insert to local Elasticsearch failed: "
+                f"{response.status_code} - {response.text}"
+            )
+        else:
+            result = response.json()
+            if result.get("errors", False):
+                failed = sum(
+                    1
+                    for item in result.get("items", [])
+                    if "error" in item.get("index", {})
+                )
+                logger.warning(
+                    f"Bulk insert had {failed} errors out of "
+                    f"{len(tokens_to_insert)} tokens"
+                )
+            else:
+                logger.debug(
+                    f"{len(tokens_to_insert)} tokens inserted into local Elasticsearch"
+                )
+    except requests.RequestException as e:
+        logger.warning(f"Error during bulk insert to local Elasticsearch: {e}")
+
+
 @dataclass
 class AccountCloneStep(Step):
     """
@@ -331,13 +698,10 @@ class AccountCloneStep(Step):
     caching_period: SmartDatetime = "10 days"
     ALLOWED_NETWORKS: ClassVar[set] = (NetworkEnum.CHAIN_SIMULATOR,)
 
-    def get_account_clone_data(self) -> dict:
+    def _execute(self):
         """
-        Fetch and construct the raw data to clone the account, the balance
-        and the code of the account
-
-        :return: raw data to clone and set in the current network
-        :rtype: dict
+        Retrieve the source  account and its storage
+        and set this state to the current network
         """
         logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
         scenario_data = ScenarioData.get()
@@ -347,390 +711,199 @@ class AccountCloneStep(Step):
             )
         source_network = parse_network_enum(self.source_network.get_evaluated_value())
         address = self.address.get_evaluated_value()
+        caching_period = self.caching_period.get_evaluated_value()
 
-        # fetch the source account from cache or proxy
-        source_account = try_load_account_data(
-            source_network, address, self.caching_period.get_evaluated_value()
-        )
-        if source_account is None:
-            logger.debug(
-                f"Fetchting account of {address.to_bech32()} on {source_network.value}"
-            )
-            source_proxy = ProxyNetworkProvider(
-                Config.get_config().get("PROXY", source_network)
-            )
-            source_account = source_proxy.get_account(address)
-            save_account_data(source_network, source_account)
-
-        # fetch current account and build the account to set
-        proxy = MyProxyNetworkProvider()
-        current_raw_account = proxy.get_account(address).raw["account"]
-        raw_account_to_set = deepcopy(source_account.raw["account"])
-        raw_account_to_set["rootHash"] = current_raw_account["rootHash"]
-
-        if not self.clone_balance.get_evaluated_value():
-            raw_account_to_set["balance"] = current_raw_account["balance"]
-
-        if not self.clone_code.get_evaluated_value():
-            raw_account_to_set["code"] = current_raw_account["code"]
-            raw_account_to_set["codeHash"] = current_raw_account["codeHash"]
-            raw_account_to_set["codeMetadata"] = current_raw_account["codeMetadata"]
-        return raw_account_to_set
-
-    def _fetch_source_storage(self, source_network: NetworkEnum, address: Address):
-        """Fetch source storage from cache or proxy."""
-        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
-        source_storage = try_load_account_storage_data(
-            source_network, address, self.caching_period.get_evaluated_value()
-        )
-        if source_storage is None:
-            logger.debug(
-                f"Fetchting storage of {address.to_bech32()} on {source_network.value}"
-            )
-            source_proxy = ProxyNetworkProvider(
-                Config.get_config().get("PROXY", source_network)
-            )
-            source_storage = get_account_storage_with_fallback(
-                source_proxy, address, progress_logger=logger
-            )
-            save_account_storage_data(source_network, address, source_storage)
-        return source_storage
-
-    def get_storage_clone_data(self) -> tuple[dict, set[str]]:
-        """
-        Fetch and construct the raw data to clone the storage of the account.
-        Optimized to work directly with the pairs dict in a single pass,
-        avoiding object creation overhead.
-
-        :return: raw storage data to clone and seen esdt in the storage to clone
-        :rtype: tuple[dict, set[str]]
-        """
-        source_network = parse_network_enum(self.source_network.get_evaluated_value())
-        address = self.address.get_evaluated_value()
-        source_storage = self._fetch_source_storage(source_network, address)
-
-        # Work directly with pairs dict instead of creating entry objects
-        # This avoids triple iteration: object creation, separation, and dict updates
-        raw_data = {}
-        seen_esdt = set()
-        clone_storage = self.clone_storage.get_evaluated_value()
-        clone_esdts = self.clone_esdts.get_evaluated_value()
-
-        for hex_key, hex_value in source_storage.raw.get("pairs", {}).items():
-            is_esdt_or_role = hex_key.startswith(
-                ESDT_BALANCE_STORAGE_HEX_PREFIX
-            ) or hex_key.startswith(ESDT_BALANCE_ROLE_HEX_PREFIX)
-
-            if is_esdt_or_role:
-                if clone_esdts:
-                    raw_data[hex_key] = hex_value
-                    identifier = extract_identifier_from_hex_key(hex_key)
-                    if identifier:
-                        seen_esdt.add(identifier)
-            elif clone_storage:
-                raw_data[hex_key] = hex_value
-
-        return raw_data, seen_esdt
-
-    def _find_missing_esdt_identifiers(
-        self, esdt_identifiers: set[str], current_hex_keys: set[str]
-    ) -> list[str]:
-        """Find ESDT identifiers not present in current network."""
-        return [
-            identifier
-            for identifier in esdt_identifiers
-            if identifier.encode("utf-8").hex() not in current_hex_keys
-        ]
-
-    def _fetch_missing_esdt_entries(
-        self,
-        missing_identifiers: list[str],
-        esdt_module_address: Address,
-        source_network: NetworkEnum,
-        caching_threshold,
-    ) -> dict[str, str]:
-        """Fetch missing ESDT entries from cache or source network."""
-        pairs = {}
-        source_proxy = None  # Lazy init only if needed
-
-        for identifier in missing_identifiers:
-            hex_identifier = identifier.encode("utf-8").hex()
-
-            # Try cache first
-            cached_value = try_load_esdt_module_entry(
-                source_network, identifier, caching_threshold
-            )
-            if cached_value is not None:
-                pairs[hex_identifier] = cached_value
-                continue
-
-            # Lazy init source proxy only when needed
-            if source_proxy is None:
-                source_proxy = ProxyNetworkProvider(
-                    Config.get_config().get("PROXY", source_network)
-                )
-
-            # Fetch from source and cache
-            source_entry = source_proxy.get_account_storage_entry(
-                esdt_module_address, identifier
-            )
-            pairs[hex_identifier] = source_entry.raw["value"]
-            save_esdt_module_entry(
-                source_network, identifier, source_entry.raw["value"]
-            )
-
-        return pairs
-
-    def get_esdt_module_clone_data(self, esdt_identifiers: set[str]) -> dict:
-        """
-        Using a set of identifiers, determine for each esdt if it is already known
-        to the current network, otherwise fetch the data on the source network.
-        Optimized with batch fetching (1 call instead of N for target) and caching.
-
-        :param esdt_identifiers: esdt identifiers to check
-        :type esdt_identifiers: set[str]
-        :return: data to set for the esdt module
-        :rtype: dict
-        """
-        source_network = parse_network_enum(self.source_network.get_evaluated_value())
-        proxy = MyProxyNetworkProvider()
-        esdt_module_address = Address.new_from_bech32(ESDT_MODULE_BECH32)
-
-        raw_account_data = proxy.get_account(esdt_module_address).raw["account"]
-        raw_account_data["pairs"] = {}
-
-        # Batch fetch current ESDT module storage (1 call instead of N)
-        current_storage = get_account_storage_with_fallback(proxy, esdt_module_address)
-        current_hex_keys = set(current_storage.raw.get("pairs", {}).keys())
-
-        missing_identifiers = self._find_missing_esdt_identifiers(
-            esdt_identifiers, current_hex_keys
-        )
-        if not missing_identifiers:
-            return raw_account_data
-
-        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
-        logger.debug(
-            f"Need to clone {len(missing_identifiers)} ESDT module entries "
-            f"from {source_network.value}"
-        )
-
-        raw_account_data["pairs"] = self._fetch_missing_esdt_entries(
-            missing_identifiers,
-            esdt_module_address,
-            source_network,
-            self.caching_period.get_evaluated_value(),
-        )
-
-        return raw_account_data
-
-    def _fetch_with_backoff(
-        self,
-        url: str,
-        max_retries: int = 5,
-        base_delay: float = 1.0,
-    ) -> requests.Response | None:
-        """
-        Fetch a URL with exponential backoff on 429 rate limit errors.
-
-        :param url: URL to fetch
-        :type url: str
-        :param max_retries: maximum number of retry attempts
-        :type max_retries: int
-        :param base_delay: base delay in seconds for exponential backoff
-        :type base_delay: float
-        :return: the response if successful, None if all retries exhausted
-        :rtype: requests.Response | None
-        """
-        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
-        for attempt in range(max_retries + 1):
-            response = requests.get(url, timeout=10)
-            if response.status_code != 429:
-                return response
-
-            if attempt < max_retries:
-                delay = base_delay * (2**attempt)
-                logger.debug(
-                    f"Rate limited (429), retrying in {delay:.1f}s "
-                    f"(attempt {attempt + 1}/{max_retries})"
-                )
-                time.sleep(delay)
-
-        return response
-
-    def insert_tokens_in_elasticsearch(
-        self, esdt_identifiers: set[str], requests_per_second: float = 4.0
-    ):
-        """
-        Fetch token data from the source network's Elasticsearch and insert
-        it into the local chain simulator's Elasticsearch.
-        This is required to make tokens visible in the chain simulator terminal
-        and available through the API.
-
-        See: https://github.com/multiversx/mx-chain-simulator-go/issues/109
-
-        :param esdt_identifiers: set of esdt identifiers to insert
-        :type esdt_identifiers: set[str]
-        :param requests_per_second: rate limit for API requests (default: 4.0)
-        :type requests_per_second: float
-        """
-        if not esdt_identifiers:
-            return
-
-        request_interval = 1.0 / requests_per_second
-        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
-        source_network = parse_network_enum(self.source_network.get_evaluated_value())
-        config = Config.get_config()
-
-        try:
-            source_es_url = config.get("ELASTICSEARCH", source_network)
-        except NoOptionError:
-            logger.debug(
-                f"No Elasticsearch URL configured for {source_network.value}, "
-                "skipping token insertion"
-            )
-            return
-
-        try:
-            local_es_url = config.get("ELASTICSEARCH")
-        except NoOptionError:
-            logger.debug(
-                "No Elasticsearch URL configured for local network, "
-                "skipping token insertion"
-            )
-            return
-
-        caching_threshold = self.caching_period.get_evaluated_value()
-
-        # Collect all token data first
-        tokens_to_insert: dict[str, dict] = {}
-
-        # Setup progress logging for slow token fetches
-        progress = ProgressLogger(logger, "Token data fetching")
-        progress.start()
-        processed_count = 0
-
-        for identifier in esdt_identifiers:
-            # Try to load token data from cache first
-            token_source = try_load_esdt_token_data(
-                source_network, identifier, caching_threshold
-            )
-
-            if token_source is None:
-                # Fetch token data from source Elasticsearch with backoff
-                source_url = f"{source_es_url}/tokens/_doc/{identifier}"
-                try:
-                    response = self._fetch_with_backoff(source_url)
-                    if response is None or response.status_code != 200:
-                        status = response.status_code if response else "no response"
-                        logger.warning(
-                            f"Could not fetch token {identifier} from source "
-                            f"Elasticsearch: {status}"
-                        )
-                        continue
-                    token_data = response.json()
-                    if not token_data.get("found", False):
-                        logger.warning(
-                            f"Token {identifier} not found in source Elasticsearch"
-                        )
-                        continue
-                    token_source = token_data.get("_source", {})
-                    # Save to cache for future use
-                    save_esdt_token_data(source_network, identifier, token_source)
-                except requests.RequestException as e:
-                    logger.warning(
-                        f"Error fetching token {identifier} from source "
-                        f"Elasticsearch: {e}"
-                    )
-                    continue
-
-                # Rate limit to avoid 429 errors from source Elasticsearch
-                time.sleep(request_interval)
-
-            tokens_to_insert[identifier] = token_source
-            processed_count += 1
-            progress.update(processed_count)
-
-        progress.finish(processed_count)
-
-        # Batch insert tokens into local Elasticsearch using bulk API
-        if not tokens_to_insert:
-            return
-
-        bulk_lines = []
-        for identifier, token_source in tokens_to_insert.items():
-            # Each document needs an action line and a source line
-            action = {"index": {"_index": "tokens", "_id": identifier}}
-            bulk_lines.append(json.dumps(action))
-            bulk_lines.append(json.dumps(token_source))
-
-        # Bulk API requires newline-delimited JSON with trailing newline
-        bulk_body = "\n".join(bulk_lines) + "\n"
-
-        bulk_url = f"{local_es_url}/_bulk"
-        try:
-            response = requests.post(
-                bulk_url,
-                data=bulk_body,
-                headers={"Content-Type": "application/x-ndjson"},
-                timeout=30,
-            )
-            if response.status_code not in (200, 201):
-                logger.warning(
-                    f"Bulk insert to local Elasticsearch failed: "
-                    f"{response.status_code} - {response.text}"
-                )
-            else:
-                result = response.json()
-                if result.get("errors", False):
-                    failed = sum(
-                        1
-                        for item in result.get("items", [])
-                        if "error" in item.get("index", {})
-                    )
-                    logger.warning(
-                        f"Bulk insert had {failed} errors out of "
-                        f"{len(tokens_to_insert)} tokens"
-                    )
-                else:
-                    logger.debug(
-                        f"{len(tokens_to_insert)} tokens inserted into "
-                        "local Elasticsearch"
-                    )
-        except requests.RequestException as e:
-            logger.warning(f"Error during bulk insert to local Elasticsearch: {e}")
-
-    def _execute(self):
-        """
-        Retrieve the source  account and its storage
-        and set this state to the current network
-        """
-        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
-        source_network = parse_network_enum(self.source_network.get_evaluated_value())
         logger.info(
             f"Cloning account {self.address.get_evaluation_string()} from "
             f"{source_network.value}"
         )
         proxy = MyProxyNetworkProvider()
 
-        account_state = self.get_account_clone_data()
-        if (
-            self.clone_esdts.get_evaluated_value()
-            or self.clone_storage.get_evaluated_value()
-        ):
-            account_state["pairs"], esdt_seen = self.get_storage_clone_data()
+        account_state = _fetch_account_clone_data(
+            address,
+            source_network,
+            caching_period,
+            self.clone_balance.get_evaluated_value(),
+            self.clone_code.get_evaluated_value(),
+        )
+
+        clone_esdts = self.clone_esdts.get_evaluated_value()
+        clone_storage = self.clone_storage.get_evaluated_value()
+        if clone_esdts or clone_storage:
+            account_state["pairs"], esdt_seen = _get_storage_clone_data(
+                address, source_network, caching_period, clone_storage, clone_esdts
+            )
         else:
             esdt_seen = set()
 
         if len(esdt_seen) > 0:
-            esdt_module_state = self.get_esdt_module_clone_data(esdt_seen)
+            esdt_module_state = _get_esdt_module_clone_data(
+                esdt_seen, source_network, caching_period
+            )
             proxy.set_state([esdt_module_state])
-            # Insert tokens into Elasticsearch to make them visible in the
-            # chain simulator terminal and available through API
-            self.insert_tokens_in_elasticsearch(esdt_seen)
+            _insert_tokens_in_elasticsearch(esdt_seen, source_network, caching_period)
 
         set_state_with_batching(
             proxy,
             account_state,
             overwrite=self.overwrite.get_evaluated_value(),
+        )
+
+
+@dataclass
+class AccountBatchCloneStep(Step):
+    """
+    Represent a step that clones multiple accounts from another network
+    to the current network in an optimized batch fashion.
+    Unlike AccountCloneStep which pushes each account individually,
+    this step collects all data first and then pushes in optimized batches:
+    - Single ESDT module reconciliation instead of one per account
+    - Single Elasticsearch bulk insert for all tokens
+    - Smart batched set_state calls grouped by payload size
+    """
+
+    addresses: SmartAddresses
+    source_network: SmartStr
+    clone_balance: SmartBool = True
+    clone_code: SmartBool = True
+    clone_storage: SmartBool = True
+    clone_esdts: SmartBool = True
+    overwrite: SmartBool = True
+    caching_period: SmartDatetime = "10 days"
+    ALLOWED_NETWORKS: ClassVar[set] = (NetworkEnum.CHAIN_SIMULATOR,)
+
+    def _execute(self):
+        """
+        Collect clone data for all addresses, then push in optimized batches.
+        """
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
+        scenario_data = ScenarioData.get()
+        if scenario_data.network not in self.ALLOWED_NETWORKS:
+            raise errors.WrongNetworkForStep(
+                scenario_data.network, self.ALLOWED_NETWORKS
+            )
+
+        source_network = parse_network_enum(self.source_network.get_evaluated_value())
+        addresses = self.addresses.get_evaluated_value()
+        caching_period = self.caching_period.get_evaluated_value()
+        clone_balance = self.clone_balance.get_evaluated_value()
+        clone_code = self.clone_code.get_evaluated_value()
+        clone_storage = self.clone_storage.get_evaluated_value()
+        clone_esdts = self.clone_esdts.get_evaluated_value()
+
+        logger.info(
+            f"Batch cloning {len(addresses)} accounts from {source_network.value}"
+        )
+        step_start = time.time()
+
+        # Phase 1: Collect all account states and ESDT identifiers
+        logger.info(
+            f"Phase 1/4: Collecting data for {len(addresses)} accounts "
+            f"from {source_network.value}"
+        )
+        all_account_states: list[dict] = []
+        all_esdt_identifiers: set[str] = set()
+        source_request_delay = 1.0 / float(
+            Config.get_config().get("API_RATE_LIMIT", source_network)
+        )
+
+        progress = ProgressLogger(logger, "Account data collection")
+        progress.start()
+
+        for i, address in enumerate(addresses):
+            logger.debug(
+                f"Collecting data for {address.to_bech32()} ({i + 1}/{len(addresses)})"
+            )
+            # Check cache before fetching to know if we'll hit the network
+            account_cached = (
+                try_load_account_data(source_network, address, caching_period)
+                is not None
+            )
+            storage_cached = not (clone_esdts or clone_storage) or (
+                try_load_account_storage_data(source_network, address, caching_period)
+                is not None
+            )
+
+            account_state = _fetch_account_clone_data(
+                address,
+                source_network,
+                caching_period,
+                clone_balance,
+                clone_code,
+                fetch_current_state=False,
+            )
+
+            if clone_esdts or clone_storage:
+                account_state["pairs"], esdt_seen = _get_storage_clone_data(
+                    address, source_network, caching_period, clone_storage, clone_esdts
+                )
+                all_esdt_identifiers.update(esdt_seen)
+            else:
+                # Remove pairs to avoid carrying source storage
+                # when neither storage nor ESDT cloning is requested
+                account_state.pop("pairs", None)
+
+            all_account_states.append(account_state)
+            progress.update(i + 1)
+
+            # Rate limit only when we actually hit the source network
+            if not (account_cached and storage_cached) and i < len(addresses) - 1:
+                time.sleep(source_request_delay)
+
+        progress.finish(len(addresses))
+        phase1_elapsed = time.time() - step_start
+        logger.info(f"Phase 1/4 completed in {phase1_elapsed:.1f}s")
+
+        # Phase 2: Single ESDT module reconciliation
+        phase2_start = time.time()
+        proxy = MyProxyNetworkProvider()
+        if all_esdt_identifiers:
+            logger.info(
+                f"Phase 2/4: Reconciling {len(all_esdt_identifiers)} "
+                f"unique ESDT identifiers with chain simulator"
+            )
+            esdt_module_state = _get_esdt_module_clone_data(
+                all_esdt_identifiers, source_network, caching_period
+            )
+            # Insert ESDT module state as first element so it is included
+            # in the overwrite batch and not wiped by a subsequent
+            # set_state_overwrite call
+            if esdt_module_state.get("pairs"):
+                all_account_states.insert(0, esdt_module_state)
+        else:
+            logger.info("Phase 2/4: No ESDT identifiers to reconcile, skipping")
+        phase2_elapsed = time.time() - phase2_start
+        logger.info(f"Phase 2/4 completed in {phase2_elapsed:.1f}s")
+
+        # Phase 3: Single Elasticsearch bulk insert
+        phase3_start = time.time()
+        if all_esdt_identifiers:
+            logger.info(
+                f"Phase 3/4: Inserting {len(all_esdt_identifiers)} "
+                "tokens into Elasticsearch"
+            )
+            _insert_tokens_in_elasticsearch(
+                all_esdt_identifiers, source_network, caching_period
+            )
+        else:
+            logger.info("Phase 3/4: No tokens to insert, skipping")
+        phase3_elapsed = time.time() - phase3_start
+        logger.info(f"Phase 3/4 completed in {phase3_elapsed:.1f}s")
+
+        # Phase 4: Smart batched account state push
+        phase4_start = time.time()
+        logger.info(
+            f"Phase 4/4: Pushing {len(all_account_states)} "
+            "account states to chain simulator"
+        )
+        set_states_batched(
+            proxy,
+            all_account_states,
+            overwrite=self.overwrite.get_evaluated_value(),
+        )
+        phase4_elapsed = time.time() - phase4_start
+        total_elapsed = time.time() - step_start
+        logger.info(
+            f"Phase 4/4 completed in {phase4_elapsed:.1f}s. "
+            f"Total batch clone: {total_elapsed:.1f}s"
         )

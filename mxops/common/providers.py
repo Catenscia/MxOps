@@ -388,6 +388,173 @@ def get_account_storage_with_fallback(
     return proxy.get_account_storage(address)
 
 
+def _set_state_with_retry(
+    proxy: ProxyNetworkProvider,
+    states: list[dict],
+    overwrite: bool = False,
+    max_retries: int = 3,
+    base_delay: float = 1.0,
+) -> None:
+    """
+    Call set_state or set_state_overwrite with retry on transient errors.
+
+    :param proxy: proxy network provider
+    :param states: list of account state dicts to push
+    :param overwrite: if True, use set_state_overwrite
+    :param max_retries: maximum number of retry attempts
+    :param base_delay: base delay in seconds for exponential backoff
+    """
+    logger = get_logger(LogGroupEnum.GNL)
+    for attempt in range(max_retries + 1):
+        try:
+            if overwrite:
+                proxy.set_state_overwrite(states)
+            else:
+                proxy.set_state(states)
+            return
+        except Exception as e:
+            if _is_retryable_error(e) and attempt < max_retries:
+                delay = base_delay * (2**attempt)
+                logger.info(
+                    f"set_state failed (attempt {attempt + 1}/{max_retries + 1}), "
+                    f"retrying in {delay:.1f}s: {e}"
+                )
+                sleep(delay)
+            else:
+                raise
+
+
+def _estimate_account_bytes(account_state: dict) -> int:
+    """Estimate the payload size of an account state dict."""
+    pairs = account_state.get("pairs", {})
+    pairs_bytes = sum(len(k) + len(v) for k, v in pairs.items())
+    metadata_bytes = sum(len(str(v)) for k, v in account_state.items() if k != "pairs")
+    return pairs_bytes + metadata_bytes
+
+
+def set_states_batched(
+    proxy: ProxyNetworkProvider,
+    account_states: list[dict],
+    overwrite: bool = True,
+    batch_size: int | None = None,
+    min_batch_size: int = 50,
+    request_delay: float | None = None,
+    target_payload_bytes: int = 2_000_000,
+) -> None:
+    """
+    Push multiple account states to the chain simulator, automatically grouping
+    small accounts into batched set_state calls and delegating large accounts
+    to set_state_with_batching individually.
+
+    :param proxy: proxy network provider
+    :param account_states: list of account state dicts
+        (each with 'address', 'pairs', etc.)
+    :param overwrite: if True, use set_state_overwrite for the first call
+    :param batch_size: pairs batch size for large accounts (default from config)
+    :param min_batch_size: minimum batch size for large accounts
+    :param request_delay: delay between requests (default: 1/API_RATE_LIMIT)
+    :param target_payload_bytes: target max payload size per set_state call
+    """
+    logger = get_logger(LogGroupEnum.GNL)
+
+    if request_delay is None:
+        request_delay = 1.0 / float(Config.get_config().get("API_RATE_LIMIT"))
+
+    if not account_states:
+        return
+
+    # Separate large accounts from small ones
+    small_accounts: list[tuple[dict, int]] = []
+    large_accounts: list[dict] = []
+    small_bytes = 0
+
+    for account_state in account_states:
+        estimated_bytes = _estimate_account_bytes(account_state)
+        if estimated_bytes > target_payload_bytes:
+            large_accounts.append(account_state)
+        else:
+            small_accounts.append((account_state, estimated_bytes))
+            small_bytes += estimated_bytes
+
+    total_accounts = len(account_states)
+    accounts_pushed = 0
+    batch_count = 0
+
+    progress = ProgressLogger(logger, "State push")
+    progress.start()
+
+    # Step 1: Push the first batch (small accounts up to target size)
+    # with overwrite if requested, to establish initial state
+    first_batch: list[dict] = []
+    first_batch_bytes = 0
+
+    remaining_small: list[tuple] = []
+    for account_state, est_bytes in small_accounts:
+        if first_batch_bytes + est_bytes <= target_payload_bytes or not first_batch:
+            first_batch.append(account_state)
+            first_batch_bytes += est_bytes
+        else:
+            remaining_small.append((account_state, est_bytes))
+
+    if first_batch:
+        _set_state_with_retry(proxy, first_batch, overwrite=overwrite)
+        batch_count += 1
+        accounts_pushed += len(first_batch)
+        progress.update(accounts_pushed, f"/ {total_accounts}")
+
+    # Step 2: Push remaining small accounts in batches
+    current_batch: list[dict] = []
+    current_batch_bytes = 0
+
+    for account_state, est_bytes in remaining_small:
+        if current_batch_bytes + est_bytes > target_payload_bytes and current_batch:
+            _set_state_with_retry(proxy, current_batch)
+            batch_count += 1
+            accounts_pushed += len(current_batch)
+            progress.update(accounts_pushed, f"/ {total_accounts}")
+            current_batch = []
+            current_batch_bytes = 0
+            if request_delay > 0:
+                sleep(request_delay)
+
+        current_batch.append(account_state)
+        current_batch_bytes += est_bytes
+
+    if current_batch:
+        _set_state_with_retry(proxy, current_batch)
+        batch_count += 1
+        accounts_pushed += len(current_batch)
+        progress.update(accounts_pushed, f"/ {total_accounts}")
+
+    # Step 3: Push large accounts sequentially with batched pairs
+    if large_accounts:
+        logger.info(
+            f"Pushing {len(large_accounts)} large accounts with batched storage pairs"
+        )
+        for account_state in large_accounts:
+            set_state_with_batching(
+                proxy,
+                account_state,
+                overwrite=False,
+                batch_size=batch_size,
+                min_batch_size=min_batch_size,
+                request_delay=request_delay,
+            )
+            accounts_pushed += 1
+            progress.update(accounts_pushed, f"/ {total_accounts}")
+
+    progress.finish(accounts_pushed)
+    logger.debug(
+        f"set_states_batched completed: {total_accounts} accounts "
+        f"pushed in {batch_count} batches"
+        + (
+            f" + {len(large_accounts)} large individual pushes"
+            if large_accounts
+            else ""
+        )
+    )
+
+
 class MyProxyNetworkProvider(ProxyNetworkProvider):
     _instance = None
 

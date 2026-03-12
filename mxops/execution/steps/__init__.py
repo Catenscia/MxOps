@@ -15,6 +15,7 @@ from mxops.execution.steps.msc import (
     WaitStep,
 )
 from mxops.execution.steps.setup import (
+    AccountBatchCloneStep,
     AccountCloneStep,
     ChainSimulatorFaucetStep,
     ChainSimulatorSetStateStep,
@@ -43,6 +44,7 @@ from mxops.execution.steps.token_management import (
 )
 
 __all__ = [
+    "AccountBatchCloneStep",
     "AccountCloneStep",
     "AssertStep",
     "ChainSimulatorFaucetStep",
