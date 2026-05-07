@@ -690,6 +690,41 @@ keys:
   "6d795f6f746865725f6b6579": "01"
 ```
 
+(chain_simulator_set_token_balance_target)=
+### Chain Simulator Set Token Balance Step
+
+Exclusive to the chain simulator.
+This step allows you to give arbitrary amounts of fungible ESDT tokens to one or more accounts, without going through any on-chain transaction. It is the inverse of [Account Clone](#account_clone_target): instead of cloning real balances from a source network, you specify exactly which token, which receiver, and how many units they should hold.
+
+If a referenced token is not yet registered on the chain simulator, the step automatically clones its registration from `source_network` (default: `mainnet`) — using the same plumbing as `AccountClone`. As a result, the tokens behave as if they had been natively issued on the chain simulator: they are visible in the explorer, queryable through the proxy, and usable in subsequent transactions.
+
+```yaml
+type: ChainSimulatorSetTokenBalance
+source_network: mainnet  # optional, default to mainnet
+caching_period: "10 days"  # optional, default to 10 days
+balances:
+  - receiver: "%alice.address"
+    token_identifier: WEGLD-bd4d79
+    amount: 5000000000000000000  # 5 WEGLD
+  - receiver: "%alice.address"
+    token_identifier: USDC-c76f1f
+    amount: 1000000  # 1 USDC (6 decimals)
+  - receiver: bob
+    token_identifier: USDC-c76f1f
+    amount: 250000000
+```
+
+- `source_network` controls which network the step queries when a token is not yet registered on the simulator's ESDT module. Tokens already registered are not re-fetched.
+- `caching_period` controls how long previously-fetched source-network data (the ESDT module entry and its companion Elasticsearch document) is reused before being re-fetched. It has no effect once a token is registered on the simulator — re-registration only happens if the local ESDT module entry is missing.
+
+```{warning}
+This step only supports **fungible** tokens (no nonce). NFT, SFT and Meta-ESDT minting from thin air is not yet supported — use [Account Clone](#account_clone_target) with a real holder as the source for those.
+```
+
+```{note}
+"From thin air" balances are written directly to the receiver's storage via the chain-simulator address-level set-state endpoint, which only modifies the storage keys it is given. Other account fields (nonce, balance, code, other storage) are left untouched. The registered supply on the ESDT module entry is **not** incremented either, which is fine for the vast majority of test scenarios but may matter if your contracts read the on-module supply.
+```
+
 (account_clone_target)=
 ### Account Clone Step
 

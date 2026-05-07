@@ -45,6 +45,7 @@ png
 pre
 PyPI
 pytest
+queryable
 Readthedocs
 yaml
 svg
