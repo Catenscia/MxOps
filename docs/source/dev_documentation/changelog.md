@@ -6,6 +6,7 @@
 
 - `AccountBatchCloneStep` for optimized bulk account cloning: collects all data first, then pushes with single ESDT module reconciliation, single Elasticsearch bulk insert, and smart payload-sized batched `set_state` calls
 - `ChainSimulatorSetStateStep` to set specific hex-encoded storage key-value pairs for an address on the chain simulator
+- `ChainSimulatorSetTokenBalanceStep` to set arbitrary fungible ESDT balances on accounts in the chain simulator, auto-cloning token registrations from a source network when missing
 - Explicit test for variadic counted values
 - Dynamic batch size recovery: after a timeout reduces the batch size, subsequent successful requests with smaller payloads automatically double the batch size back toward the original (for both storage fetch and push operations)
 - Tests verifying batch size resets between accounts

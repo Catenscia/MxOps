@@ -20,6 +20,7 @@ from mxops.smart_values.mx_sdk import (
 )
 from mxops.smart_values.native import (
     SmartBytes,
+    SmartDatetime,
     SmartInt,
     SmartFloat,
     SmartBool,
@@ -35,6 +36,7 @@ __all__ = [
     "SmartBech32",
     "SmartBool",
     "SmartBytes",
+    "SmartDatetime",
     "SmartDict",
     "SmartFloat",
     "SmartInt",
