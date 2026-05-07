@@ -6,10 +6,11 @@ This module contains Steps used to setup environment, chain or workflow
 
 from configparser import NoOptionError
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 import json
 import os
+import re
 import time
 from typing import ClassVar
 
@@ -480,7 +481,7 @@ def _get_esdt_module_clone_data(
     esdt_identifiers: set[str],
     source_network: NetworkEnum,
     caching_period: datetime,
-) -> dict:
+) -> tuple[dict, set[str]]:
     """
     Using a set of identifiers, determine for each ESDT if it is already known
     to the current network, otherwise fetch the data from the source network.
@@ -488,7 +489,11 @@ def _get_esdt_module_clone_data(
     :param esdt_identifiers: ESDT identifiers to check
     :param source_network: network to fetch missing entries from
     :param caching_period: caching threshold for data freshness
-    :return: data to set for the ESDT module
+    :return: tuple of (ESDT module account data to push, set of identifiers
+        that had to be cloned from the source network). The second element
+        is empty when every requested identifier was already present locally,
+        which lets callers skip downstream work (Elasticsearch insertion,
+        set_state pushes) on the no-op path.
     """
     proxy = MyProxyNetworkProvider()
     esdt_module_address = Address.new_from_bech32(ESDT_MODULE_BECH32)
@@ -503,7 +508,7 @@ def _get_esdt_module_clone_data(
         esdt_identifiers, current_hex_keys
     )
     if not missing_identifiers:
-        return raw_account_data
+        return raw_account_data, set()
 
     logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
     logger.debug(
@@ -518,7 +523,7 @@ def _get_esdt_module_clone_data(
         caching_period,
     )
 
-    return raw_account_data
+    return raw_account_data, set(missing_identifiers)
 
 
 def _fetch_with_backoff(
@@ -741,11 +746,14 @@ class AccountCloneStep(Step):
             esdt_seen = set()
 
         if len(esdt_seen) > 0:
-            esdt_module_state = _get_esdt_module_clone_data(
+            esdt_module_state, newly_cloned = _get_esdt_module_clone_data(
                 esdt_seen, source_network, caching_period
             )
-            proxy.set_state([esdt_module_state])
-            _insert_tokens_in_elasticsearch(esdt_seen, source_network, caching_period)
+            if newly_cloned:
+                proxy.set_state([esdt_module_state])
+                _insert_tokens_in_elasticsearch(
+                    newly_cloned, source_network, caching_period
+                )
 
         set_state_with_batching(
             proxy,
@@ -861,36 +869,38 @@ class AccountBatchCloneStep(Step):
         # Phase 2: Single ESDT module reconciliation
         phase2_start = time.time()
         proxy = MyProxyNetworkProvider()
+        newly_cloned: set[str] = set()
         if all_esdt_identifiers:
             logger.info(
                 f"Phase 2/4: Reconciling {len(all_esdt_identifiers)} "
                 f"unique ESDT identifiers with chain simulator"
             )
-            esdt_module_state = _get_esdt_module_clone_data(
+            esdt_module_state, newly_cloned = _get_esdt_module_clone_data(
                 all_esdt_identifiers, source_network, caching_period
             )
             # Insert ESDT module state as first element so it is included
             # in the overwrite batch and not wiped by a subsequent
             # set_state_overwrite call
-            if esdt_module_state.get("pairs"):
+            if newly_cloned:
                 all_account_states.insert(0, esdt_module_state)
         else:
             logger.info("Phase 2/4: No ESDT identifiers to reconcile, skipping")
         phase2_elapsed = time.time() - phase2_start
         logger.info(f"Phase 2/4 completed in {phase2_elapsed:.1f}s")
 
-        # Phase 3: Single Elasticsearch bulk insert
+        # Phase 3: Bulk-insert only the newly-cloned tokens into Elasticsearch.
+        # Identifiers that were already known to the simulator have nothing
+        # new to push, so we don't re-fetch them from the source network.
         phase3_start = time.time()
-        if all_esdt_identifiers:
+        if newly_cloned:
             logger.info(
-                f"Phase 3/4: Inserting {len(all_esdt_identifiers)} "
-                "tokens into Elasticsearch"
+                f"Phase 3/4: Inserting {len(newly_cloned)} tokens into Elasticsearch"
             )
             _insert_tokens_in_elasticsearch(
-                all_esdt_identifiers, source_network, caching_period
+                newly_cloned, source_network, caching_period
             )
         else:
-            logger.info("Phase 3/4: No tokens to insert, skipping")
+            logger.info("Phase 3/4: No new tokens to insert, skipping")
         phase3_elapsed = time.time() - phase3_start
         logger.info(f"Phase 3/4 completed in {phase3_elapsed:.1f}s")
 
@@ -911,3 +921,230 @@ class AccountBatchCloneStep(Step):
             f"Phase 4/4 completed in {phase4_elapsed:.1f}s. "
             f"Total batch clone: {total_elapsed:.1f}s"
         )
+
+
+# Fungible identifier shape: TICKER (3-10 alphanum, uppercase letters allowed)
+# followed by a dash and 6 lowercase hex chars. Anything beyond that is rejected
+# by ChainSimulatorSetTokenBalanceStep (NFT/SFT/Meta-ESDT not supported in v1).
+_FUNGIBLE_IDENTIFIER_RE = re.compile(r"^[A-Z0-9]{3,10}-[0-9a-f]{6}$")
+
+
+def _encode_fungible_esdt_value(amount: int) -> str:
+    """
+    Build the hex-encoded ESDigitalToken protobuf for a fungible balance.
+
+    The chain simulator stores ESDT balances as protobuf-encoded ESDigitalToken
+    messages. For a fungible balance only field 2 (``Value``) is set. mx-chain
+    encodes ``Value`` as a positive sign byte ``0x00`` followed by the big-endian
+    bytes of the amount (Go's ``big.Int.Bytes()`` form). Without the leading
+    sign byte the simulator rejects the value with an "invalid sign byte"
+    error when ``address/.../esdt/...`` is queried; cross-checked against
+    real mainnet entries (e.g. WEGLD-bd4d79 holders).
+
+    :param amount: positive amount to encode
+    :return: hex-encoded protobuf ESDigitalToken
+    """
+    if amount <= 0:
+        raise errors.InvalidSceneDefinition(
+            "ChainSimulatorSetTokenBalance amount must be a strictly positive "
+            f"integer, got {amount}"
+        )
+    abs_bytes = amount.to_bytes((amount.bit_length() + 7) // 8, "big")
+    value_bytes = b"\x00" + abs_bytes
+    if len(value_bytes) >= 0x80:
+        # Defensive: a 16-byte amount already covers 2^128 - 1, so any token
+        # balance fits well under 128 bytes. Reject anything larger so we
+        # don't have to deal with multi-byte protobuf varint lengths. The
+        # 1-byte sign byte plus a 127-byte amount is the strict ceiling, so
+        # the maximum accepted amount is (2 ** (127 * 8)) - 1.
+        raise errors.InvalidSceneDefinition(
+            "ChainSimulatorSetTokenBalance amount is too large to encode "
+            "(must fit in 127 bytes / under 2 ** 1016)"
+        )
+    return "12" + len(value_bytes).to_bytes(1, "big").hex() + value_bytes.hex()
+
+
+def _build_fungible_esdt_storage_key(identifier: str) -> str:
+    """
+    Build the hex-encoded ESDT balance storage key for a fungible token.
+
+    Format: ELRONDesdt (hex prefix) || utf8(identifier) (hex). No nonce suffix
+    is appended for fungible tokens.
+
+    :param identifier: fungible token identifier ("TICKER-RANDOM")
+    :return: hex-encoded storage key
+    """
+    if not _FUNGIBLE_IDENTIFIER_RE.match(identifier):
+        raise errors.InvalidSceneDefinition(
+            f"ChainSimulatorSetTokenBalance: '{identifier}' is not a valid "
+            "fungible ESDT identifier. Expected 'TICKER-RANDOM' with TICKER "
+            "being 3-10 uppercase alphanumeric characters and RANDOM being "
+            "6 lowercase hex characters. NFT/SFT/Meta-ESDT (nonce > 0) are "
+            "not supported in this step."
+        )
+    return ESDT_BALANCE_STORAGE_HEX_PREFIX + identifier.encode("utf-8").hex()
+
+
+@dataclass
+class TokenBalanceSpec:
+    """
+    A single (receiver, fungible token, amount) mint specification used by
+    :class:`ChainSimulatorSetTokenBalanceStep`.
+    """
+
+    receiver: SmartAddress
+    token_identifier: SmartStr
+    amount: SmartInt
+
+    def __post_init__(self):
+        if not isinstance(self.receiver, SmartAddress):
+            self.receiver = SmartAddress(self.receiver)
+        if not isinstance(self.token_identifier, SmartStr):
+            self.token_identifier = SmartStr(self.token_identifier)
+        if not isinstance(self.amount, SmartInt):
+            self.amount = SmartInt(self.amount)
+
+    def evaluate_smart_values(self):
+        """Evaluate the smart values held by the spec."""
+        self.receiver.evaluate()
+        self.token_identifier.evaluate()
+        self.amount.evaluate()
+
+    @classmethod
+    def from_raw(cls, raw: "TokenBalanceSpec | dict") -> "TokenBalanceSpec":
+        """Build a TokenBalanceSpec from a YAML-loaded dict or pass-through."""
+        if isinstance(raw, cls):
+            return raw
+        if not isinstance(raw, dict):
+            raise errors.InvalidSceneDefinition(
+                "ChainSimulatorSetTokenBalance balances entries must be "
+                f"mappings with 'receiver', 'token_identifier' and 'amount' "
+                f"keys, got {type(raw).__name__}"
+            )
+        try:
+            return cls(
+                receiver=raw["receiver"],
+                token_identifier=raw["token_identifier"],
+                amount=raw["amount"],
+            )
+        except KeyError as err:
+            raise errors.InvalidSceneDefinition(
+                "ChainSimulatorSetTokenBalance balances entry is missing the "
+                f"required key {err.args[0]!r}"
+            ) from err
+
+
+@dataclass
+class ChainSimulatorSetTokenBalanceStep(Step):
+    """
+    Set arbitrary fungible ESDT balances on accounts in the chain simulator,
+    bypassing on-chain transactions. If a referenced token is not yet
+    registered on the simulator, its registration is automatically cloned
+    from the configured ``source_network`` (default: mainnet).
+    """
+
+    balances: list[TokenBalanceSpec] = field(default_factory=list)
+    source_network: SmartStr = "mainnet"
+    caching_period: SmartDatetime = "10 days"
+    ALLOWED_NETWORKS: ClassVar[tuple[NetworkEnum, ...]] = (NetworkEnum.CHAIN_SIMULATOR,)
+
+    def _initialize(self):
+        """Coerce raw dict entries from YAML into TokenBalanceSpec instances.
+
+        Pure conversion only — input validation (empty list, network gate)
+        runs in ``_execute`` so the network check happens before any work.
+        """
+        if all(isinstance(b, TokenBalanceSpec) for b in self.balances):
+            return
+        self.balances = [TokenBalanceSpec.from_raw(b) for b in self.balances]
+
+    def evaluate_smart_values(self):
+        super().evaluate_smart_values()
+        for spec in self.balances:
+            spec.evaluate_smart_values()
+
+    def _execute(self):
+        # Network gate first: refuse to do any work — no scenario lookups,
+        # no source-network fetches, no ESDT-module reconciliation — when
+        # the active network is not the chain simulator.
+        scenario_data = ScenarioData.get()
+        if scenario_data.network not in self.ALLOWED_NETWORKS:
+            raise errors.WrongNetworkForStep(
+                scenario_data.network, self.ALLOWED_NETWORKS
+            )
+        if not self.balances:
+            raise errors.InvalidSceneDefinition(
+                "ChainSimulatorSetTokenBalance requires at least one entry "
+                "in 'balances'"
+            )
+
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
+        source_network = parse_network_enum(self.source_network.get_evaluated_value())
+        caching_period = self.caching_period.get_evaluated_value()
+
+        # Phase 1: validate every spec and pre-compute keys/values.
+        # Group keys by receiver bech32 so each address gets a single
+        # set_address_state call (preserves any existing storage).
+        per_receiver_pairs: dict[str, dict[str, str]] = {}
+        unique_identifiers: set[str] = set()
+        for spec in self.balances:
+            identifier = spec.token_identifier.get_evaluated_value()
+            amount = spec.amount.get_evaluated_value()
+            bech32 = spec.receiver.get_evaluated_value().to_bech32()
+
+            key = _build_fungible_esdt_storage_key(identifier)
+            value = _encode_fungible_esdt_value(amount)
+
+            receiver_pairs = per_receiver_pairs.setdefault(bech32, {})
+            if key in receiver_pairs:
+                raise errors.InvalidSceneDefinition(
+                    f"ChainSimulatorSetTokenBalance: token {identifier} is "
+                    f"specified more than once for receiver {bech32}. Combine "
+                    "the entries into a single balance spec."
+                )
+            receiver_pairs[key] = value
+            unique_identifiers.add(identifier)
+
+        logger.info(
+            f"Setting {sum(len(p) for p in per_receiver_pairs.values())} "
+            f"ESDT balances across {len(per_receiver_pairs)} receiver(s) "
+            f"on chain simulator (source for missing tokens: "
+            f"{source_network.value})"
+        )
+
+        # Phase 2: ensure every referenced token is registered on the
+        # simulator's ESDT module account. Reuses the same helpers as
+        # AccountCloneStep so missing tokens are fetched from the source
+        # network exactly once. Already-present tokens are reported via the
+        # empty newly_cloned set, which lets us skip both the set_state and
+        # the Elasticsearch insert on the no-op path.
+        proxy = MyProxyNetworkProvider()
+        esdt_module_state, newly_cloned = _get_esdt_module_clone_data(
+            unique_identifiers, source_network, caching_period
+        )
+        if newly_cloned:
+            logger.info(
+                f"Cloning {len(newly_cloned)} missing ESDT "
+                f"registration(s) from {source_network.value}"
+            )
+            proxy.set_state([esdt_module_state])
+            # Phase 3: insert token metadata into the local Elasticsearch
+            # so the simulator's explorer/API can resolve the new tokens.
+            # Best-effort: the helper handles missing ES gracefully.
+            _insert_tokens_in_elasticsearch(
+                newly_cloned, source_network, caching_period
+            )
+
+        # Phase 4: write each receiver's balance entries via set_address_state.
+        # This is the surgical primitive — it adds the given storage keys
+        # without touching any other field on the account (nonce, balance,
+        # code, other storage). set_state with a partial payload would risk
+        # zeroing fields when the receiver is a contract address.
+        for bech32, pairs in per_receiver_pairs.items():
+            logger.debug(f"Pushing {len(pairs)} ESDT balance key(s) to {bech32}")
+            proxy.set_address_state(bech32, pairs)
+
+        # Phase 5: generate a block so the new state is committed and visible
+        # via the standard proxy endpoints (e.g. address/.../esdt/...). Without
+        # this, get_token_of_account can keep returning the pre-write balance.
+        proxy.generate_blocks(1)
