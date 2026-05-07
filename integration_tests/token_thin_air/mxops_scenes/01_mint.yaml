@@ -1,0 +1,65 @@
+allowed_networks:
+  - chain-simulator
+
+allowed_scenario:
+  - "integration_test_token_thin_air.*"
+
+steps:
+  # Mint two real mainnet fungible tokens to two different receivers in a
+  # single step. Tokens that are not yet registered on the chain simulator
+  # are auto-cloned from mainnet by the step itself.
+  - type: ChainSimulatorSetTokenBalance
+    source_network: mainnet
+    balances:
+      - receiver: "%paul.address"
+        token_identifier: WEGLD-bd4d79
+        amount: 450000000000000000000  # 450 WEGLD
+      - receiver: "%paul.address"
+        token_identifier: USDC-c76f1f
+        amount: 1000000  # 1 USDC (6 decimals)
+      - receiver: "%marie.address"
+        token_identifier: USDC-c76f1f
+        amount: 250000000  # 250 USDC
+
+  # Verify the balances actually landed in the simulator's ESDT storage
+  # by going through the standard proxy lookup endpoint.
+  - type: Python
+    module_path: ./integration_tests/token_thin_air/scripts/checks.py
+    function: assert_account_token_balance
+    arguments:
+      - paul
+      - WEGLD-bd4d79
+      - 450000000000000000000
+
+  - type: Python
+    module_path: ./integration_tests/token_thin_air/scripts/checks.py
+    function: assert_account_token_balance
+    arguments:
+      - paul
+      - USDC-c76f1f
+      - 1000000
+
+  - type: Python
+    module_path: ./integration_tests/token_thin_air/scripts/checks.py
+    function: assert_account_token_balance
+    arguments:
+      - marie
+      - USDC-c76f1f
+      - 250000000
+
+  # Re-running the step on already-registered tokens must be a no-op for
+  # the registration phase and only update the balances. Bumps Paul's USDC
+  # to confirm overwriting an existing thin-air balance also works.
+  - type: ChainSimulatorSetTokenBalance
+    balances:
+      - receiver: "%paul.address"
+        token_identifier: USDC-c76f1f
+        amount: 9999999  # 9.999999 USDC
+
+  - type: Python
+    module_path: ./integration_tests/token_thin_air/scripts/checks.py
+    function: assert_account_token_balance
+    arguments:
+      - paul
+      - USDC-c76f1f
+      - 9999999
