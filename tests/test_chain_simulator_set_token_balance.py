@@ -2,11 +2,13 @@
 Unit tests for ChainSimulatorSetTokenBalanceStep and its protobuf/key helpers.
 """
 
-from unittest.mock import patch
+from unittest.mock import call, patch
 
+from multiversx_sdk.core.constants import METACHAIN_ID
 import pytest
 
 from mxops import errors
+from mxops.config.config import Config
 from mxops.enums import NetworkEnum
 from mxops.execution.steps import ChainSimulatorSetTokenBalanceStep
 from mxops.execution.steps.setup import (
@@ -252,6 +254,45 @@ def test_step_success_groups_by_receiver(chain_simulator_scenario):
 
     # The state must be committed via generate_blocks so proxy reads see it.
     mock_blocks.assert_called_once_with(1)
+
+
+def test_step_auto_generate_blocks_disabled_waits(chain_simulator_scenario):
+    """When AUTO_GENERATE_BLOCKS is off, the simulator produces blocks on its
+    own: the step must not force a block and must instead wait for every shard
+    (the receivers' user shards and the metachain) to advance, so the set-state
+    is committed there before returning. num_shards is 3 in the mocked config."""
+    config = Config.get_config()
+    prev = config.get("AUTO_GENERATE_BLOCKS")
+    config.set_option("AUTO_GENERATE_BLOCKS", "false")
+    step = _make_step(
+        [{"receiver": MOCK_BECH32_A, "token_identifier": USDC, "amount": 100}]
+    )
+    try:
+        with patch(
+            "mxops.execution.steps.setup._get_esdt_module_clone_data",
+            return_value=({"address": "esdt-mod", "pairs": {}}, set()),
+        ), patch(
+            "mxops.execution.steps.setup._insert_tokens_in_elasticsearch"
+        ), patch(
+            "mxops.execution.steps.setup.MyProxyNetworkProvider.set_state"
+        ), patch(
+            "mxops.execution.steps.setup.MyProxyNetworkProvider.set_address_state"
+        ), patch(
+            "mxops.execution.steps.setup.MyProxyNetworkProvider.generate_blocks"
+        ) as mock_blocks, patch(
+            "mxops.execution.steps.setup.utils.wait_for_n_blocks"
+        ) as mock_wait:
+            step.execute()
+
+        mock_blocks.assert_not_called()
+        assert mock_wait.call_args_list == [
+            call(0, 1),
+            call(1, 1),
+            call(2, 1),
+            call(METACHAIN_ID, 1),
+        ]
+    finally:
+        config.set_option("AUTO_GENERATE_BLOCKS", prev)
 
 
 def test_step_pushes_esdt_module_only_for_newly_cloned(chain_simulator_scenario):
