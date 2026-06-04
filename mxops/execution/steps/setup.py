@@ -15,6 +15,7 @@ import time
 from typing import ClassVar
 
 from multiversx_sdk import AccountStorage, Address, ProxyNetworkProvider
+from multiversx_sdk.core.constants import METACHAIN_ID
 from multiversx_sdk.network_providers.config import NetworkProviderConfig
 import requests
 
@@ -25,6 +26,7 @@ from mxops.common.providers import (
     get_account_storage_with_fallback,
     set_state_with_batching,
     set_states_batched,
+    should_generate_blocks,
 )
 from mxops.config.config import Config
 from mxops.data.data_cache import (
@@ -1144,7 +1146,17 @@ class ChainSimulatorSetTokenBalanceStep(Step):
             logger.debug(f"Pushing {len(pairs)} ESDT balance key(s) to {bech32}")
             proxy.set_address_state(bech32, pairs)
 
-        # Phase 5: generate a block so the new state is committed and visible
-        # via the standard proxy endpoints (e.g. address/.../esdt/...). Without
-        # this, get_token_of_account can keep returning the pre-write balance.
-        proxy.generate_blocks(1)
+        # Phase 5: ensure a block is produced so the new state is committed and
+        # visible via the standard proxy endpoints (e.g. address/.../esdt/...).
+        # Without this, get_token_of_account can keep returning the pre-write
+        # balance. generate_blocks(1) advances every shard at once; when the
+        # simulator auto-produces blocks we instead wait for each shard to
+        # advance — the receivers' user shards (where the ESDT balances live)
+        # and the metachain (where the ESDT module was written) — since a single
+        # metachain block does not prove a user shard has committed its state.
+        if should_generate_blocks():
+            proxy.generate_blocks(1)
+        else:
+            num_shards = Config.get_config().get_network_config().num_shards
+            for shard in (*range(num_shards), METACHAIN_ID):
+                utils.wait_for_n_blocks(shard, 1)
