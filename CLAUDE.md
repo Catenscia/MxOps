@@ -46,19 +46,19 @@ YAML Scene -> Steps -> Transactions/Queries -> MultiversX Network
 ### Key Directories
 | Directory | Purpose |
 |-----------|---------|
-| `mxops/execution/steps/` | All step implementations (28 types) |
+| `mxops/execution/steps/` | All step implementations (32 types) |
 | `mxops/smart_values/` | Dynamic value resolution (`%`, `$`, `&`, `=` syntax) |
 | `mxops/data/` | ScenarioData persistence per network+scenario |
 | `mxops/cli/` | CLI commands (execute, data, config, chain-simulator) |
 | `tests/` | Unit tests (pytest) |
 | `integration_tests/` | Chain-simulator/devnet integration tests |
 
-### All Step Types (29)
+### All Step Types (32)
 **Contracts**: `ContractDeploy`, `ContractUpgrade`, `ContractCall`, `ContractQuery`, `FileFuzzer`
 **Transfers**: `Transfer`
 **Tokens**: `FungibleIssue`, `NonFungibleIssue`, `SemiFungibleIssue`, `MetaIssue`, `FungibleMint`, `NonFungibleMint`, `ManageFungibleTokenRoles`, `ManageNonFungibleTokenRoles`, `ManageSemiFungibleTokenRoles`, `ManageMetaTokenRoles`
-**Setup**: `GenerateWallets`, `ChainSimulatorFaucet`, `R3D4Faucet`, `AccountClone`, `AccountBatchClone`
-**Control**: `Loop`, `Scene`, `SetVars`, `SetSeed`, `Assert`, `Wait`, `Log`, `Python`
+**Setup**: `GenerateWallets`, `ChainSimulatorFaucet`, `R3D4Faucet`, `AccountClone`, `AccountBatchClone`, `ChainSimulatorSetState`, `ChainSimulatorSetTokenBalance`
+**Control**: `Loop`, `Scene`, `SetVars`, `SetSeed`, `SetConfig`, `Assert`, `Wait`, `Log`, `Python`
 
 ### Smart Values Syntax
 | Symbol | Source | Example |
