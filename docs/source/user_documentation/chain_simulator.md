@@ -59,3 +59,8 @@ AUTO_GENERATE_BLOCKS=true
 
 This option only applies to the chain-simulator network and has no effect on
 other networks.
+
+You can also toggle this option mid-scene with the
+[Set Config step](set_config_step_target), for example to run fast
+MxOps-driven setup steps and then switch to `AUTO_GENERATE_BLOCKS=false` so the
+rest of the scene relies on the simulator's own block production.

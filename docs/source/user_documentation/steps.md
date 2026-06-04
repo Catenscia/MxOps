@@ -928,6 +928,32 @@ variables:
 ```
 
 
+(set_config_step_target)=
+### Set Config Step
+
+This step allows you to change a [configuration](config) option at runtime for the network the scene is running against. This is useful when you want to alter MxOps behaviour mid-scene, for example to toggle `AUTO_GENERATE_BLOCKS` on the chain-simulator (see the [chain-simulator chapter](chain_simulator)):
+
+```yaml
+- type: SetConfig
+  option: AUTO_GENERATE_BLOCKS
+  value: "false"
+# ... steps that rely on the simulator auto-producing blocks ...
+- type: SetConfig
+  option: AUTO_GENERATE_BLOCKS
+  value: "true"
+```
+
+```{note}
+- The option is set on the **current network's** config section only. An unknown option name (e.g. a typo) raises an error rather than silently creating an unused key.
+- The change lasts for the current process only: it is never written to disk and each `mxops execute` run reloads the configuration from file.
+- Configuration values are strings. A non-string YAML scalar such as `value: false` is coerced to the string `"False"`, so quoting the value (`value: "false"`) is recommended for clarity.
+```
+
+```{warning}
+Only options that are read fresh on each use (such as `AUTO_GENERATE_BLOCKS`) take effect mid-scene. Connection-level options such as `PROXY` and `PROXY_TIMEOUT` are read once when the network provider is first created, so changing them with this step has no effect on the already-running process.
+```
+
+
 (wait_target)=
 ### Wait Step
 

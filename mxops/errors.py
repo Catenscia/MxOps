@@ -527,6 +527,16 @@ class InvalidConfigValue(Exception):
     """
 
 
+class UnknownConfigOption(Exception):
+    """
+    to be raised when a specified configuration option does not exist
+    """
+
+    def __init__(self, option: str, network_name: str) -> None:
+        message = f"Unknown config option '{option}' for network '{network_name}'"
+        super().__init__(message)
+
+
 class WrongFuzzTestFile(Exception):
     """
     to be raised when the file given for fuzz testing in not correctly formatted

@@ -14,6 +14,7 @@ import numpy as np
 
 from mxops import errors
 from mxops.common.providers import MyProxyNetworkProvider, should_generate_blocks
+from mxops.config.config import Config
 from mxops.data.execution_data import ScenarioData
 from mxops.data.utils import json_dumps
 from mxops.enums import LogGroupEnum
@@ -135,6 +136,30 @@ class SetVarsStep(Step):
             value = smart_value.get_evaluated_value()
             logger.info(f"Setting variable `{key}` with the value `{value}`")
             scenario_data.set_value(key, value)
+
+
+@dataclass
+class SetConfigStep(Step):
+    """
+    Represents a step to set a configuration option at runtime for the
+    current network.
+    """
+
+    option: SmartStr
+    value: SmartStr
+
+    def _execute(self):
+        """
+        Set the configuration option to the given value for the current network
+        """
+        logger = ScenarioData.get_scenario_logger(LogGroupEnum.EXEC)
+        option = self.option.get_evaluated_value()
+        value = self.value.get_evaluated_value()
+        config = Config.get_config()
+        if option.upper() not in config.get_options():
+            raise errors.UnknownConfigOption(option, config.get_network().name)
+        logger.info(f"Setting config option `{option}` to `{value}`")
+        config.set_option(option, value)
 
 
 @dataclass

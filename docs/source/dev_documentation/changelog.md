@@ -14,6 +14,7 @@
 - `_set_state_with_retry` helper for transient failure resilience on `set_state` calls
 - `PROXY_TIMEOUT` configuration parameter (default 10s, mainnet 30s, chain simulator 60s) to prevent read timeouts when fetching large contract storage
 - `AUTO_GENERATE_BLOCKS` chain simulator configuration parameter (default `true`) to control whether MxOps drives block production itself; set it to `false` when the simulator auto-generates blocks so MxOps behaves like on other networks
+- `SetConfigStep` to change a configuration option at runtime for the current network (process-only, never persisted), for example to toggle `AUTO_GENERATE_BLOCKS` mid-scene
 
 ### Changed
 
