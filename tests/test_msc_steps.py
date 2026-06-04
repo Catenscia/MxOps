@@ -15,7 +15,14 @@ from mxops.config.config import Config
 from mxops.data.execution_data import ScenarioData
 from mxops.execution.scene import execute_step
 from mxops.execution.steps.base import Step
-from mxops.execution.steps import LoopStep, PythonStep, SetVarsStep, WaitStep
+from mxops.common.providers import should_generate_blocks
+from mxops.execution.steps import (
+    LoopStep,
+    PythonStep,
+    SetConfigStep,
+    SetVarsStep,
+    WaitStep,
+)
 from mxops.smart_values import (
     SmartAddress,
     SmartBech32,
@@ -254,6 +261,46 @@ def test_set_vars_step():
         "key2": 2,
         "key3": ["x", "y", "z"],
     }
+
+
+def test_set_config_step(chain_simulator_network):
+    # Given
+    config = Config.get_config()
+    original_value = config.get("TX_TIMEOUT")
+    step = SetConfigStep(option="TX_TIMEOUT", value="42")
+
+    # When
+    try:
+        step.execute()
+
+        # Then
+        assert config.get("TX_TIMEOUT") == "42"
+    finally:
+        config.set_option("TX_TIMEOUT", original_value)
+
+
+def test_set_config_step_toggles_block_generation(chain_simulator_network):
+    # Given
+    assert should_generate_blocks() is True
+    step = SetConfigStep(option="AUTO_GENERATE_BLOCKS", value="false")
+
+    # When
+    try:
+        step.execute()
+
+        # Then
+        assert should_generate_blocks() is False
+    finally:
+        Config.get_config().set_option("AUTO_GENERATE_BLOCKS", "true")
+
+
+def test_set_config_step_unknown_option_raises():
+    # Given
+    step = SetConfigStep(option="NOT_A_REAL_OPTION", value="42")
+
+    # When / Then
+    with pytest.raises(errors.UnknownConfigOption):
+        step.execute()
 
 
 def test_time_wait_step():

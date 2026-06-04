@@ -43,6 +43,10 @@ steps:
       my_var_2: ["alice", "bob"]
       "prefix_%{dynamic_name}_suffix": "%dynamic_value"
 
+  - type: SetConfig
+    option: AUTO_GENERATE_BLOCKS
+    value: "true"
+
   - type: Wait
     for_seconds: 1.2  # optional, defaults to null
     for_blocks: 123   # optional, defaults to null
