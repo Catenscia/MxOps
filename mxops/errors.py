@@ -521,6 +521,12 @@ class InvalidDataFormat(Exception):
     """
 
 
+class InvalidConfigValue(Exception):
+    """
+    to be raised when a configuration option holds an invalid value
+    """
+
+
 class WrongFuzzTestFile(Exception):
     """
     to be raised when the file given for fuzz testing in not correctly formatted

@@ -4,6 +4,7 @@ author: Etienne Wallet
 This module contains derived classes from api or proxy providers
 """
 
+from configparser import NoOptionError, NoSectionError
 import logging
 from time import sleep
 
@@ -19,10 +20,48 @@ from requests.exceptions import ConnectionError as RequestsConnectionError
 from requests.exceptions import HTTPError, Timeout
 
 from mxops.config.config import Config
-from mxops.enums import LogGroupEnum
-from mxops.errors import MaxIterationError, StorageIterationError
+from mxops.enums import LogGroupEnum, NetworkEnum
+from mxops.errors import (
+    InvalidConfigValue,
+    MaxIterationError,
+    StorageIterationError,
+)
 from mxops.utils.logger import get_logger
 from mxops.utils.progress import ProgressLogger
+
+
+def should_generate_blocks() -> bool:
+    """
+    Tell whether MxOps should manually drive block production.
+
+    True only on the chain simulator when AUTO_GENERATE_BLOCKS is enabled
+    (the default). False on every other network, and on the chain simulator
+    when AUTO_GENERATE_BLOCKS is disabled (the simulator auto-produces blocks
+    on its own and MxOps should behave like on any other network).
+
+    This helper lives here (rather than in ``config``) only to avoid an import
+    cycle: ``config`` is imported by nearly everything, while every call site
+    of this helper already imports from ``providers``.
+
+    :return: whether MxOps should generate blocks itself
+    :rtype: bool
+    """
+    config = Config.get_config()
+    if config.get_network() != NetworkEnum.CHAIN_SIMULATOR:
+        return False
+    try:
+        raw = config.get("AUTO_GENERATE_BLOCKS")
+    except (NoOptionError, NoSectionError):
+        return True
+    normalized = raw.strip().lower()
+    if normalized in ("true", "1", "yes", "on"):
+        return True
+    if normalized in ("false", "0", "no", "off", ""):
+        return False
+    raise InvalidConfigValue(
+        f"Invalid AUTO_GENERATE_BLOCKS value: {raw!r}. "
+        "Expected a boolean-like value (e.g. true/false)."
+    )
 
 
 def set_state_with_batching(

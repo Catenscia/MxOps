@@ -303,7 +303,12 @@ def start_chain_simulator(
         )
         return
 
-    # Only generate first epoch if chain-simulator service is included
+    # Only generate first epoch if chain-simulator service is included.
+    # This is intentionally not gated by AUTO_GENERATE_BLOCKS: the bundled
+    # simulator is always started in manual mode, this runs once during
+    # bootstrap before any scene, and the retry loop doubles as a readiness
+    # probe (it keeps retrying until the node answers). The auto-generate case
+    # targets an externally-running simulator, which is not started here.
     if "chain-simulator" in resolved_services:
         retry_count = 0
         proxy = MyProxyNetworkProvider()

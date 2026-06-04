@@ -13,11 +13,10 @@ from multiversx_sdk.core.constants import METACHAIN_ID
 import numpy as np
 
 from mxops import errors
-from mxops.common.providers import MyProxyNetworkProvider
-from mxops.config.config import Config
+from mxops.common.providers import MyProxyNetworkProvider, should_generate_blocks
 from mxops.data.execution_data import ScenarioData
 from mxops.data.utils import json_dumps
-from mxops.enums import LogGroupEnum, NetworkEnum
+from mxops.enums import LogGroupEnum
 from mxops.execution import utils
 from mxops.smart_values import (
     SmartBool,
@@ -160,10 +159,9 @@ class WaitStep(Step):
             return
         if self.for_blocks is not None:
             for_blocks = self.for_blocks.get_evaluated_value()
-            network = Config.get_config().get_network()
             shard = self.shard.get_evaluated_value()
             logger.info(f"Waiting for {for_blocks} blocks on shard {shard}")
-            if network == NetworkEnum.CHAIN_SIMULATOR:
+            if should_generate_blocks():
                 MyProxyNetworkProvider().generate_blocks(for_blocks)
             else:
                 utils.wait_for_n_blocks(shard, for_blocks)

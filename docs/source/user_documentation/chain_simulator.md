@@ -35,3 +35,27 @@ Once you are done, don't forget to stop the chain-simulator:
 ```bash
 mxops chain-simulator stop
 ```
+
+## Block generation
+
+By default, the chain-simulator does not produce blocks on its own: MxOps drives
+block production for you. After sending a transaction it asks the simulator to
+generate blocks until the transaction is processed, and steps like `Wait` with
+`for_blocks` generate the requested blocks directly.
+
+The chain-simulator can also be configured (via its own `config.toml`) to
+auto-generate blocks at a fixed interval, behaving like a real network. There is
+no endpoint to detect this mode, so MxOps exposes a config option to control it:
+
+```ini
+[CHAIN_SIMULATOR]
+AUTO_GENERATE_BLOCKS=true
+```
+
+- `true` (default): MxOps generates blocks itself (the behavior described above).
+- `false`: MxOps does not generate any block and simply waits for the simulator
+  to produce them on its own, exactly like on devnet or mainnet. Set this when
+  you point MxOps at a simulator started with `auto-generate-blocks` enabled.
+
+This option only applies to the chain-simulator network and has no effect on
+other networks.

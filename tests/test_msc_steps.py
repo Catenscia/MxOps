@@ -11,6 +11,7 @@ from unittest.mock import patch
 import pytest
 
 from mxops import errors
+from mxops.config.config import Config
 from mxops.data.execution_data import ScenarioData
 from mxops.execution.scene import execute_step
 from mxops.execution.steps.base import Step
@@ -286,6 +287,48 @@ def test_block_wait_step():
 
     # Then
     assert 3 * 0.2 > time.time() - t0 > 2 * 0.2  # wait time between network status call
+
+
+def test_block_wait_step_chain_simulator_generates(chain_simulator_network):
+    # Given: chain simulator with default config -> MxOps generates blocks
+    step = WaitStep(for_blocks=3)
+
+    # When
+    with patch(
+        "mxops.execution.steps.msc.MyProxyNetworkProvider.generate_blocks"
+    ) as mock_generate:
+        step.execute()
+
+    # Then
+    mock_generate.assert_called_once_with(3)
+
+
+def test_block_wait_step_chain_simulator_auto_waits(chain_simulator_network):
+    # Given: simulator auto-produces blocks -> MxOps must wait, not generate
+    config = Config.get_config()
+    prev = config.get("AUTO_GENERATE_BLOCKS")
+    config.set_option("AUTO_GENERATE_BLOCKS", "false")
+    step = WaitStep(for_blocks=1)
+    side_effect = [
+        NetworkStatus({}, 0, 10, 10, 1, 1),
+        NetworkStatus({}, 0, 11, 10, 1, 1),
+    ]
+
+    # When
+    try:
+        with patch(
+            "mxops.execution.steps.msc.MyProxyNetworkProvider.generate_blocks"
+        ) as mock_generate, patch(
+            "mxops.execution.utils.MyProxyNetworkProvider.get_network_status"
+        ) as mock_status:
+            mock_status.side_effect = side_effect
+            step.execute()
+
+        # Then
+        mock_generate.assert_not_called()
+        assert mock_status.call_count == 2
+    finally:
+        config.set_option("AUTO_GENERATE_BLOCKS", prev)
 
 
 def test_python_step():
