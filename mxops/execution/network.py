@@ -10,11 +10,17 @@ from multiversx_sdk import Address, Token, Transaction
 from multiversx_sdk import TransactionOnNetwork
 from multiversx_sdk.core.constants import EGLD_IDENTIFIER_FOR_MULTI_ESDTNFT_TRANSFER
 
-from mxops.common.providers import MyProxyNetworkProvider
+from mxops.common.providers import MyProxyNetworkProvider, should_generate_blocks
 from mxops.config.config import Config
 from mxops import errors
-from mxops.enums import NetworkEnum
 from mxops.execution.msc import OnChainTokenTransfer
+
+# Minimum polling interval (seconds) used when MxOps does not drive block
+# production. The chain-simulator TX_REFRESH_PERIOD (0.001s) is tuned for the
+# generate-blocks-then-return path, where the polling loop returns on its first
+# iteration. When the simulator auto-produces blocks, that same period would
+# busy-poll the proxy thousands of times per transaction, so it is clamped here.
+MIN_TX_REFRESH_PERIOD = 0.2
 
 
 def send(tx: Transaction) -> str:
@@ -49,10 +55,12 @@ def send_and_wait_for_result(
     refresh_period = float(config.get("TX_REFRESH_PERIOD"))
 
     tx_hash = proxy.send_transaction(tx).hex()
-    num_periods_to_wait = int(timeout / refresh_period)
-    if config.get_network() == NetworkEnum.CHAIN_SIMULATOR:
+    if should_generate_blocks():
         proxy.generate_blocks_until_tx_completion(tx_hash)
+    else:
+        refresh_period = max(refresh_period, MIN_TX_REFRESH_PERIOD)
 
+    num_periods_to_wait = int(timeout / refresh_period)
     for _ in range(0, num_periods_to_wait):
         time.sleep(refresh_period)
 
