@@ -13,9 +13,11 @@
 - `set_states_batched` helper for pushing multiple account states with automatic payload-size grouping
 - `_set_state_with_retry` helper for transient failure resilience on `set_state` calls
 - `PROXY_TIMEOUT` configuration parameter (default 10s, mainnet 30s, chain simulator 60s) to prevent read timeouts when fetching large contract storage
+- `AUTO_GENERATE_BLOCKS` chain simulator configuration parameter (default `true`) to control whether MxOps drives block production itself; set it to `false` when the simulator auto-generates blocks so MxOps behaves like on other networks
 
 ### Changed
 
+- Chain simulator block production is now gated by the `AUTO_GENERATE_BLOCKS` flag: transaction waits, `WaitStep` (`for_blocks`) and `ChainSimulatorSetTokenBalanceStep` only drive blocks when it is enabled (the default). With it disabled, MxOps waits for the auto-producing simulator instead, polling at a clamped rate
 - Chain simulator default `API_RATE_LIMIT` increased to 100 (from 2) and `STORAGE_ITERATION_BATCH_SIZE` to 5000 (from 1000) for faster localhost operations
 - `AccountCloneStep` internal methods extracted into reusable module-level functions
 
