@@ -5,6 +5,7 @@ AppFolder
 arg
 backend
 backoff
+behaviour
 bitwise
 blake
 blockchain
