@@ -22,22 +22,39 @@ class _Config:
 
     def __init__(self, network: NetworkEnum, config_path: Path | None = None):
         """
-        Initialise the configuration instance by reading the specified config file.
+        Initialise the configuration instance.
+
+        The packaged default config is always loaded first and, when provided, the
+        custom config file is layered on top: values it defines override the defaults
+        per-option while every option and section it does not mention is inherited
+        from the defaults. As a consequence, a misspelled section or option in the
+        custom config is silently ignored (the default value is served instead)
+        rather than raising an error.
 
         :param network: which network is to be considered when reading the config values
         :type network: NetworkEnum
-        :param config_path: path to the config file
+        :param config_path: path to a custom config file to merge over the defaults
         :type config_path: Path
         """
         self.__network = network
         self.__config = ConfigParser()
 
+        # always load the packaged defaults first so that a custom config only
+        # needs to specify the values it wants to override
+        default_config = files("mxops.resources").joinpath("default_config.ini")
+        self.__config.read_string(default_config.read_text(encoding="utf-8"))
+
         if config_path is not None:
             with open(config_path.as_posix(), "r", encoding="utf-8") as config_file:
                 self.__config.read_file(config_file)
-        else:
-            default_config = files("mxops.resources").joinpath("default_config.ini")
-            self.__config.read_string(default_config.read_text())
+            # local import to avoid a circular import at module load time
+            # pylint: disable=import-outside-toplevel
+            from mxops.enums import LogGroupEnum
+            from mxops.utils.logger import get_logger
+
+            get_logger(LogGroupEnum.CONFIG).debug(
+                "Loaded custom config from %s on top of the defaults", config_path
+            )
 
         self.__network_config: NetworkConfig | None = None
 
@@ -162,7 +179,7 @@ class Config:
 
         if path is not None:
             if os.path.exists(path):
-                return path
+                return Path(path)
             raise ValueError("MXOPS_CONFIG env var does not direct to an existing path")
 
         # then check if a config file is present in the working directory
