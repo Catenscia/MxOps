@@ -47,14 +47,6 @@ class _Config:
         if config_path is not None:
             with open(config_path.as_posix(), "r", encoding="utf-8") as config_file:
                 self.__config.read_file(config_file)
-            # local import to avoid a circular import at module load time
-            # pylint: disable=import-outside-toplevel
-            from mxops.enums import LogGroupEnum
-            from mxops.utils.logger import get_logger
-
-            get_logger(LogGroupEnum.CONFIG).debug(
-                "Loaded custom config from %s on top of the defaults", config_path
-            )
 
         self.__network_config: NetworkConfig | None = None
 
