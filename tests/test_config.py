@@ -102,3 +102,24 @@ def test_find_config_path_from_env_missing_raises():
     with mock.patch.dict(os.environ, {"MXOPS_CONFIG": "/no/such/file.ini"}):
         with pytest.raises(ValueError):
             Config.find_config_path()
+
+
+def test_get_config_with_custom_config_does_not_recurse(tmp_path):
+    """
+    Building the singleton through Config.get_config() while MXOPS_CONFIG points to
+    a custom config must not recurse. Resolving the data path triggers
+    get_config() again, so any config resolution performed while _Config is still
+    being constructed (e.g. logger setup) would re-enter the half-built singleton
+    indefinitely.
+    """
+    cfg = tmp_path / "mxops_config.ini"
+    cfg.write_text("[DEFAULT]\nDATA_PATH=./deployment/data\n")
+    # pylint: disable=protected-access
+    saved_instance = Config._Config__instance
+    Config._Config__instance = None
+    try:
+        with mock.patch.dict(os.environ, {"MXOPS_CONFIG": str(cfg)}):
+            config = Config.get_config()
+        assert config.get("DATA_PATH") == "./deployment/data"
+    finally:
+        Config._Config__instance = saved_instance
