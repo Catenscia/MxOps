@@ -21,10 +21,12 @@
 - Chain simulator block production is now gated by the `AUTO_GENERATE_BLOCKS` flag: transaction waits, `WaitStep` (`for_blocks`) and `ChainSimulatorSetTokenBalanceStep` only drive blocks when it is enabled (the default). With it disabled, MxOps waits for the auto-producing simulator instead, polling at a clamped rate
 - Chain simulator default `API_RATE_LIMIT` increased to 100 (from 2) and `STORAGE_ITERATION_BATCH_SIZE` to 5000 (from 1000) for faster localhost operations
 - `AccountCloneStep` internal methods extracted into reusable module-level functions
+- A custom config file is now merged on top of the packaged defaults instead of fully replacing them: it only needs to specify the values it wants to override, and any option or section it omits is inherited from the defaults
 
 ### Fixed
 
 - Chain simulator explorer and lite-wallet containers failing on restart due to non-idempotent nginx config in upstream images (added `--force-recreate` to `docker compose up`)
+- Custom config file specified through the `MXOPS_CONFIG` environment variable was unusable (the path was returned as a `str`, raising an `AttributeError` when loaded)
 
 ## 3.1.0 - 2026-02-11
 
