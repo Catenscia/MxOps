@@ -42,6 +42,14 @@ SERVICE_DEPENDENCIES = {
 }
 ALL_SERVICES = list(SERVICE_DEPENDENCIES.keys())
 
+# Environment variables of the chain-simulator service that enable a connector
+# toward another service. The node fails to start or stalls if a connector is
+# enabled while its target service is not running.
+CHAIN_SIMULATOR_CONNECTOR_VARIABLES = {
+    "elasticsearch": "ELASTIC_SEARCH_URL",
+    "events-notifier": "EVENTS_NOTIFIER_URL",
+}
+
 
 def add_subparser(subparsers_action: _SubParsersAction):
     """
@@ -239,7 +247,41 @@ def filter_docker_compose(content: str, services: list[str]) -> str:
                 if not service_config["depends_on"]:
                     del service_config["depends_on"]
 
+    chain_simulator_config = compose.get("services", {}).get("chain-simulator")
+    if chain_simulator_config is not None:
+        disable_unavailable_connectors(chain_simulator_config, services)
+
     return yaml.dump(compose, default_flow_style=False, sort_keys=False)
+
+
+def disable_unavailable_connectors(chain_simulator_config: dict, services: list[str]):
+    """
+    Remove from the chain-simulator service the environment variables enabling
+    a connector toward a service that is not selected.
+
+    :param chain_simulator_config: docker-compose config of the chain-simulator service
+    :type chain_simulator_config: dict
+    :param services: list of services to include
+    :type services: list[str]
+    """
+    disabled_variables = {
+        variable
+        for service, variable in CHAIN_SIMULATOR_CONNECTOR_VARIABLES.items()
+        if service not in services
+    }
+    environment = chain_simulator_config.get("environment")
+    if isinstance(environment, dict):
+        chain_simulator_config["environment"] = {
+            name: value
+            for name, value in environment.items()
+            if name not in disabled_variables
+        }
+    elif isinstance(environment, list):
+        chain_simulator_config["environment"] = [
+            entry
+            for entry in environment
+            if entry.split("=", 1)[0] not in disabled_variables
+        ]
 
 
 def start_chain_simulator(

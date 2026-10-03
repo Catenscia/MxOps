@@ -36,6 +36,37 @@ Once you are done, don't forget to stop the chain-simulator:
 mxops chain-simulator stop
 ```
 
+## Service selection
+
+By default, all the services are started. The chain-simulator itself is the only one MxOps needs to execute scenes: the database (Elasticsearch), the events notifier, the API, the explorer and the wallet are optional.
+
+- `--services`: services to start, their dependencies are added automatically
+- `--exclude`: services to leave out
+- `--no-auto-deps`: do not add the dependencies of the selected services
+
+The available services are `redis`, `postgres`, `events-notifier`, `elasticsearch`, `elastic-indexer`, `chain-simulator`, `api`, `explorer` and `lite-wallet`.
+
+When `elasticsearch` or `events-notifier` is not started, the chain-simulator does not send its data to it.
+
+```bash
+# chain-simulator only: no database, no events notifier
+mxops chain-simulator start --services chain-simulator --no-auto-deps
+
+# chain-simulator and events notifier, without the database
+mxops chain-simulator start --services chain-simulator events-notifier --exclude elasticsearch
+```
+
+```{note}
+The explorer and the wallet rely on the API, which itself needs the database.
+```
+
+When cloning accounts, MxOps also saves the data of the cloned tokens in the database. Without the database, leave the Elasticsearch url empty in your config to skip this:
+
+```ini
+[CHAIN_SIMULATOR]
+ELASTICSEARCH=
+```
+
 ## Block generation
 
 By default, the chain-simulator does not produce blocks on its own: MxOps drives

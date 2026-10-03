@@ -15,6 +15,7 @@
 - `PROXY_TIMEOUT` configuration parameter (default 10s, mainnet 30s, chain simulator 60s) to prevent read timeouts when fetching large contract storage
 - `AUTO_GENERATE_BLOCKS` chain simulator configuration parameter (default `true`) to control whether MxOps drives block production itself; set it to `false` when the simulator auto-generates blocks so MxOps behaves like on other networks
 - `SetConfigStep` to change a configuration option at runtime for the current network (process-only, never persisted), for example to toggle `AUTO_GENERATE_BLOCKS` mid-scene
+- An empty `ELASTICSEARCH` url for the current network disables the insertion of cloned tokens data into Elasticsearch
 
 ### Changed
 
@@ -27,6 +28,7 @@
 
 - Chain simulator explorer and lite-wallet containers failing on restart due to non-idempotent nginx config in upstream images (added `--force-recreate` to `docker compose up`)
 - Custom config file specified through the `MXOPS_CONFIG` environment variable was unusable (the path was returned as a `str`, raising an `AttributeError` when loaded)
+- Chain simulator failing to start when the `elasticsearch` or `events-notifier` service was not selected: its connector toward a service is now disabled when that service is not started
 
 ## 3.1.0 - 2026-02-11
 

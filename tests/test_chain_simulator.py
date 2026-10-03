@@ -1,8 +1,11 @@
+from importlib.resources import files
+
 import pytest
 import yaml
 
 from mxops.utils.chain_simulator import (
     ALL_SERVICES,
+    CHAIN_SIMULATOR_CONNECTOR_VARIABLES,
     filter_docker_compose,
     resolve_services,
 )
@@ -185,3 +188,93 @@ class TestFilterDockerCompose:
         # Then
         parsed = yaml.safe_load(result)
         assert set(parsed["services"].keys()) == set(all_services)
+
+
+class TestConnectorsFiltering:
+    @pytest.fixture
+    def connected_compose(self):
+        return """services:
+  events-notifier:
+    image: multiversx/events-notifier:latest
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.1
+
+  chain-simulator:
+    image: multiversx/chainsimulator:latest
+    environment:
+      EVENTS_NOTIFIER_URL: 'ws://events-notifier:22111'
+      ELASTIC_SEARCH_URL: 'elasticsearch:9200'
+      OTHER_VARIABLE: 'value'
+"""
+
+    def test_connectors_kept_when_targets_selected(self, connected_compose):
+        # When
+        result = filter_docker_compose(
+            connected_compose, ["chain-simulator", "elasticsearch", "events-notifier"]
+        )
+
+        # Then
+        parsed = yaml.safe_load(result)
+        assert parsed["services"]["chain-simulator"]["environment"] == {
+            "EVENTS_NOTIFIER_URL": "ws://events-notifier:22111",
+            "ELASTIC_SEARCH_URL": "elasticsearch:9200",
+            "OTHER_VARIABLE": "value",
+        }
+
+    def test_elasticsearch_connector_removed(self, connected_compose):
+        # When
+        result = filter_docker_compose(
+            connected_compose, ["chain-simulator", "events-notifier"]
+        )
+
+        # Then
+        parsed = yaml.safe_load(result)
+        assert parsed["services"]["chain-simulator"]["environment"] == {
+            "EVENTS_NOTIFIER_URL": "ws://events-notifier:22111",
+            "OTHER_VARIABLE": "value",
+        }
+
+    def test_all_connectors_removed(self, connected_compose):
+        # When
+        result = filter_docker_compose(connected_compose, ["chain-simulator"])
+
+        # Then
+        parsed = yaml.safe_load(result)
+        assert parsed["services"]["chain-simulator"]["environment"] == {
+            "OTHER_VARIABLE": "value",
+        }
+
+    def test_connectors_removed_from_list_environment(self):
+        # Given
+        compose = """services:
+  chain-simulator:
+    image: multiversx/chainsimulator:latest
+    environment:
+      - EVENTS_NOTIFIER_URL=ws://events-notifier:22111
+      - ELASTIC_SEARCH_URL=elasticsearch:9200
+      - OTHER_VARIABLE=value
+"""
+
+        # When
+        result = filter_docker_compose(compose, ["chain-simulator"])
+
+        # Then
+        parsed = yaml.safe_load(result)
+        assert parsed["services"]["chain-simulator"]["environment"] == [
+            "OTHER_VARIABLE=value"
+        ]
+
+    def test_embedded_compose_declares_connectors(self):
+        # Given
+        embedded_compose = yaml.safe_load(
+            files("mxops.resources")
+            .joinpath("chain_simulator_docker_compose.yaml")
+            .read_text()
+        )
+
+        # When
+        environment = embedded_compose["services"]["chain-simulator"]["environment"]
+
+        # Then
+        assert set(CHAIN_SIMULATOR_CONNECTOR_VARIABLES.values()) <= set(environment)

@@ -596,6 +596,8 @@ def _insert_tokens_in_elasticsearch(
     try:
         local_es_url = config.get("ELASTICSEARCH")
     except NoOptionError:
+        local_es_url = ""
+    if not local_es_url:
         logger.debug(
             "No Elasticsearch URL configured for local network, "
             "skipping token insertion"

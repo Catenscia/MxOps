@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 from pathlib import Path
 import shutil
@@ -7,8 +8,10 @@ from multiversx_sdk import Account
 import pytest
 
 from mxops import errors
+from mxops.config.config import Config
 from mxops.enums import NetworkEnum
 from mxops.execution.steps import ChainSimulatorSetStateStep, GenerateWalletsStep
+from mxops.execution.steps.setup import _insert_tokens_in_elasticsearch
 
 
 def test_generate_n_wallet_step():
@@ -158,3 +161,30 @@ def test_chain_simulator_set_state_invalid_hex_value(chain_simulator_scenario):
         errors.InvalidSceneDefinition, match="value must be hex-encoded"
     ):
         step.execute()
+
+
+def test_insert_tokens_in_elasticsearch_skipped_without_local_url(
+    chain_simulator_scenario,
+):
+    # Given
+    config = Config.get_config()
+    original_url = config.get("ELASTICSEARCH")
+    config.set_option("ELASTICSEARCH", "")
+
+    # When
+    try:
+        with patch(
+            "mxops.execution.steps.setup.try_load_esdt_token_data"
+        ) as mock_load, patch(
+            "mxops.execution.steps.setup.requests"
+        ) as mock_requests:
+            _insert_tokens_in_elasticsearch(
+                {"USDC-c76f1f"}, NetworkEnum.MAIN, datetime.now()
+            )
+    finally:
+        config.set_option("ELASTICSEARCH", original_url)
+
+    # Then
+    mock_load.assert_not_called()
+    mock_requests.get.assert_not_called()
+    mock_requests.post.assert_not_called()
