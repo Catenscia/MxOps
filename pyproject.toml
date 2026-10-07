@@ -49,6 +49,10 @@ filterwarnings = [
     "ignore:ssl.match_hostname\\(\\) is deprecated:DeprecationWarning",
 ]
 
+[tool.ruff.lint]
+# rules that the CI was passing with, newer ruff versions enable more by default
+select = ["E4", "E7", "E9", "F"]
+
 [dependency-groups]
 dev = [
     "bandit>=1.8.2",
