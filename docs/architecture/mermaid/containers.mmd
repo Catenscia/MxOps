@@ -1,0 +1,27 @@
+---
+title: "MxOps - Containers"
+---
+graph TB
+  User@{ icon: "fa:user", shape: rounded, label: "User" }
+  subgraph Mxops["`MxOps`"]
+    Mxops.App@{ shape: rectangle, label: "MxOps CLI" }
+    Mxops.Scenes@{ shape: disk, label: "Scenes" }
+    Mxops.ConfigFile@{ shape: disk, label: "Config file" }
+    Mxops.Wallets@{ shape: disk, label: "Wallets" }
+    Mxops.DataStore@{ shape: disk, label: "Local data store" }
+  end
+  Multiversx@{ shape: rectangle, label: "MultiversX network" }
+  ChainSimulator@{ shape: rectangle, label: "Chain simulator" }
+  R3d4@{ shape: rectangle, label: "R3D4 faucet" }
+  Ledger@{ shape: rectangle, label: "Ledger device" }
+  User -. "`writes`" .-> Mxops.Scenes
+  User -. "`writes`" .-> Mxops.ConfigFile
+  User -. "`runs mxops commands`" .-> Mxops.App
+  Mxops.App -. "`loads`" .-> Mxops.Scenes
+  Mxops.App -. "`loads`" .-> Mxops.ConfigFile
+  Mxops.App -. "`loads signers`" .-> Mxops.Wallets
+  Mxops.App -. "`[...]`" .-> Mxops.DataStore
+  Mxops.App -. "`[...]`" .-> Multiversx
+  Mxops.App -. "`[...]`" .-> ChainSimulator
+  Mxops.App -. "`requests EGLD`" .-> R3d4
+  Mxops.App -. "`requests signatures`" .-> Ledger

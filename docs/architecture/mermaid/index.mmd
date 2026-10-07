@@ -1,0 +1,15 @@
+---
+title: "MxOps - System context"
+---
+graph TB
+  User@{ icon: "fa:user", shape: rounded, label: "User" }
+  Mxops@{ shape: rectangle, label: "MxOps" }
+  Multiversx@{ shape: rectangle, label: "MultiversX network" }
+  ChainSimulator@{ shape: rectangle, label: "Chain simulator" }
+  R3d4@{ shape: rectangle, label: "R3D4 faucet" }
+  Ledger@{ shape: rectangle, label: "Ledger device" }
+  User -. "`[...]`" .-> Mxops
+  Mxops -. "`[...]`" .-> Multiversx
+  Mxops -. "`[...]`" .-> ChainSimulator
+  Mxops -. "`requests EGLD`" .-> R3d4
+  Mxops -. "`requests signatures`" .-> Ledger

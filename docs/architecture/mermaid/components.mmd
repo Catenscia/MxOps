@@ -1,0 +1,73 @@
+---
+title: "MxOps CLI - Components"
+---
+graph TB
+  User@{ icon: "fa:user", shape: rounded, label: "User" }
+  subgraph MxopsApp["`MxOps CLI`"]
+    MxopsApp.Cli@{ shape: rectangle, label: "CLI" }
+    MxopsApp.SceneRunner@{ shape: rectangle, label: "Scene runner" }
+    MxopsApp.ChainSimulatorManager@{ shape: rectangle, label: "Chain simulator manager" }
+    MxopsApp.Steps@{ shape: rectangle, label: "Steps" }
+    MxopsApp.Checks@{ shape: rectangle, label: "Checks" }
+    MxopsApp.Accounts@{ shape: rectangle, label: "Accounts manager" }
+    MxopsApp.DataCache@{ shape: rectangle, label: "Data cache" }
+    MxopsApp.SmartValues@{ shape: rectangle, label: "Smart values" }
+    MxopsApp.Network@{ shape: rectangle, label: "Transaction sender" }
+    MxopsApp.Config@{ shape: rectangle, label: "Config" }
+    MxopsApp.ScenarioData@{ shape: rectangle, label: "Scenario data" }
+    MxopsApp.Providers@{ shape: rectangle, label: "Network providers" }
+    MxopsApp.DataPaths@{ shape: rectangle, label: "Data paths and migrations" }
+  end
+  MxopsScenes@{ shape: disk, label: "Scenes" }
+  R3d4@{ shape: rectangle, label: "R3D4 faucet" }
+  Ledger@{ shape: rectangle, label: "Ledger device" }
+  MxopsWallets@{ shape: disk, label: "Wallets" }
+  MxopsConfigFile@{ shape: disk, label: "Config file" }
+  Multiversx@{ shape: rectangle, label: "MultiversX network" }
+  ChainSimulator@{ shape: rectangle, label: "Chain simulator" }
+  MxopsDataStore@{ shape: disk, label: "Local data store" }
+  User -. "`runs mxops commands`" .-> MxopsApp.Cli
+  MxopsApp.Cli -. "`selects the network, reads and dumps 
+options`" .-> MxopsApp.Config
+  MxopsApp.Cli -. "`executes scenes`" .-> MxopsApp.SceneRunner
+  MxopsApp.Cli -. "`gets, deletes, clones and checkpoints 
+scenarios`" .-> MxopsApp.ScenarioData
+  MxopsApp.Cli -. "`migrates data at startup`" .-> MxopsApp.DataPaths
+  MxopsApp.Cli -. "`starts and stops`" .-> MxopsApp.ChainSimulatorManager
+  MxopsApp.SceneRunner -. "`reads the current network`" .-> MxopsApp.Config
+  MxopsApp.Steps -. "`reads and overrides options`" .-> MxopsApp.Config
+  MxopsApp.SmartValues -. "`reads & values`" .-> MxopsApp.Config
+  MxopsApp.SceneRunner -. "`instantiates and executes`" .-> MxopsApp.Steps
+  MxopsApp.SceneRunner -. "`loads accounts`" .-> MxopsApp.Accounts
+  MxopsApp.Steps -. "`runs after a transaction`" .-> MxopsApp.Checks
+  MxopsApp.Steps -. "`resolves its fields`" .-> MxopsApp.SmartValues
+  MxopsApp.Steps -. "`gets the sender`" .-> MxopsApp.Accounts
+  MxopsApp.Steps -. "`sends transactions`" .-> MxopsApp.Network
+  MxopsApp.Steps -. "`queries contracts, reads and sets states`" .-> MxopsApp.Providers
+  MxopsApp.Steps -. "`reads and saves results`" .-> MxopsApp.ScenarioData
+  MxopsApp.Steps -. "`reuses cloned accounts and tokens`" .-> MxopsApp.DataCache
+  MxopsApp.Checks -. "`resolves its fields`" .-> MxopsApp.SmartValues
+  MxopsApp.Checks -. "`gets on-chain transfers`" .-> MxopsApp.Network
+  MxopsApp.SmartValues -. "`reads % values`" .-> MxopsApp.ScenarioData
+  MxopsApp.Accounts -. "`fetches nonces`" .-> MxopsApp.Providers
+  MxopsApp.Accounts -. "`registers accounts`" .-> MxopsApp.ScenarioData
+  MxopsApp.Network -. "`sends and fetches transactions`" .-> MxopsApp.Providers
+  MxopsApp.ChainSimulatorManager -. "`generates the first epoch`" .-> MxopsApp.Providers
+  MxopsApp.ScenarioData -. "`locates files`" .-> MxopsApp.DataPaths
+  MxopsApp.DataCache -. "`locates files`" .-> MxopsApp.DataPaths
+  MxopsApp.ChainSimulatorManager -. "`locates the compose file`" .-> MxopsApp.DataPaths
+  MxopsApp.Config -. "`loads`" .-> MxopsConfigFile
+  MxopsApp.SceneRunner -. "`loads`" .-> MxopsScenes
+  MxopsApp.Steps -. "`reads token data when cloning`" .-> Multiversx
+  MxopsApp.Steps -. "`inserts cloned token data`" .-> ChainSimulator
+  MxopsApp.Steps -. "`requests EGLD`" .-> R3d4
+  MxopsApp.Accounts -. "`requests signatures`" .-> Ledger
+  MxopsApp.Accounts -. "`loads signers`" .-> MxopsWallets
+  MxopsApp.Providers -. "`sends transactions and queries, reads 
+accounts and storage`" .-> Multiversx
+  MxopsApp.Providers -. "`same as a gateway, plus generates blocks 
+and sets states`" .-> ChainSimulator
+  MxopsApp.ScenarioData -. "`reads and writes scenario data`" .-> MxopsDataStore
+  MxopsApp.DataCache -. "`reads and writes cache`" .-> MxopsDataStore
+  MxopsApp.DataPaths -. "`migrates`" .-> MxopsDataStore
+  MxopsApp.ChainSimulatorManager -. "`starts and stops`" .-> ChainSimulator

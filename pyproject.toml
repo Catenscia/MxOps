@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mxops"
-version = "3.2.0-dev6"
+version = "3.2.0-dev7"
 authors = [
   {name="Etienne Wallet"},
 ]
@@ -48,6 +48,10 @@ filterwarnings = [
     "ignore:ssl.PROTOCOL_TLS is deprecated:DeprecationWarning",
     "ignore:ssl.match_hostname\\(\\) is deprecated:DeprecationWarning",
 ]
+
+[tool.ruff.lint]
+# rules that the CI was passing with, newer ruff versions enable more by default
+select = ["E4", "E7", "E9", "F"]
 
 [dependency-groups]
 dev = [

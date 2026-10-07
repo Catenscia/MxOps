@@ -1,0 +1,240 @@
+// C4 model of MxOps, written with LikeC4 (https://likec4.dev)
+
+specification {
+  element actor {
+    style {
+      shape person
+    }
+  }
+  element system
+  element externalSystem {
+    style {
+      color muted
+    }
+  }
+  element container
+  element component
+  element files {
+    style {
+      shape storage
+    }
+  }
+  element service {
+    style {
+      color muted
+    }
+  }
+}
+
+model {
+  user = actor 'User' {
+    description 'Developer or operator automating MultiversX interactions'
+  }
+
+  mxops = system 'MxOps' {
+    description 'Automates MultiversX interactions described in YAML scenes'
+
+    scenes = files 'Scenes' {
+      technology 'YAML files'
+      description 'Accounts to load and steps to execute, written by the user'
+    }
+
+    configFile = files 'Config file' {
+      technology 'INI file'
+      description 'Optional mxops_config.ini, merged over the packaged defaults'
+    }
+
+    wallets = files 'Wallets' {
+      technology 'PEM and keystore files'
+      description 'Keys of the accounts that sign transactions'
+    }
+
+    dataStore = files 'Local data store' {
+      technology 'JSON files and logs'
+      description 'Per network: scenario data, checkpoints, ABIs, cache of on-chain data and logs'
+    }
+
+    app = container 'MxOps CLI' {
+      technology 'Python, mx-sdk-py'
+      description 'The mxops command'
+
+      cli = component 'CLI' {
+        technology 'mxops/cli'
+        description 'Commands execute, data, config, chain-simulator and version'
+      }
+
+      config = component 'Config' {
+        technology 'mxops/config'
+        description 'Options of the selected network'
+      }
+
+      sceneRunner = component 'Scene runner' {
+        technology 'mxops/execution/scene.py'
+        description 'Loads scenes, checks the allowed networks and scenarios, loads accounts and executes steps'
+      }
+
+      steps = component 'Steps' {
+        technology 'mxops/execution/steps'
+        description 'Contract, token, transfer, setup and control steps'
+      }
+
+      checks = component 'Checks' {
+        technology 'mxops/execution/checks'
+        description 'Assertions on the outcome of a transaction'
+      }
+
+      smartValues = component 'Smart values' {
+        technology 'mxops/smart_values'
+        description 'Resolve %, $, & and = expressions into typed values'
+      }
+
+      accounts = component 'Accounts manager' {
+        technology 'mxops/execution/account.py'
+        description 'Registers signing accounts and syncs their nonces'
+      }
+
+      network = component 'Transaction sender' {
+        technology 'mxops/execution/network.py'
+        description 'Sends transactions, waits for results and extracts on-chain transfers'
+      }
+
+      providers = component 'Network providers' {
+        technology 'mxops/common/providers.py'
+        description 'Proxy client with chain simulator endpoints and batched storage reads and writes'
+      }
+
+      scenarioData = component 'Scenario data' {
+        technology 'mxops/data/execution_data.py'
+        description 'Accounts, contracts, tokens and saved values of the current scenario'
+      }
+
+      dataCache = component 'Data cache' {
+        technology 'mxops/data/data_cache.py'
+        description 'Cache of accounts, storage and tokens fetched from a network'
+      }
+
+      dataPaths = component 'Data paths and migrations' {
+        technology 'mxops/data/path_versions, mxops/data/migrations'
+        description 'Layout of the local data store and upgrades between layout versions'
+      }
+
+      chainSimulatorManager = component 'Chain simulator manager' {
+        technology 'mxops/utils/chain_simulator.py'
+        description 'Starts and stops the chain simulator services'
+      }
+
+      cli -> config 'selects the network, reads and dumps options'
+      cli -> sceneRunner 'executes scenes'
+      cli -> scenarioData 'gets, deletes, clones and checkpoints scenarios'
+      cli -> dataPaths 'migrates data at startup'
+      cli -> chainSimulatorManager 'starts and stops'
+
+      sceneRunner -> steps 'instantiates and executes'
+      sceneRunner -> accounts 'loads accounts'
+      sceneRunner -> config 'reads the current network'
+
+      steps -> smartValues 'resolves its fields'
+      steps -> checks 'runs after a transaction'
+      steps -> accounts 'gets the sender'
+      steps -> network 'sends transactions'
+      steps -> providers 'queries contracts, reads and sets states'
+      steps -> scenarioData 'reads and saves results'
+      steps -> dataCache 'reuses cloned accounts and tokens'
+      steps -> config 'reads and overrides options'
+
+      checks -> smartValues 'resolves its fields'
+      checks -> network 'gets on-chain transfers'
+
+      smartValues -> scenarioData 'reads % values'
+      smartValues -> config 'reads & values'
+
+      accounts -> providers 'fetches nonces'
+      accounts -> scenarioData 'registers accounts'
+      network -> providers 'sends and fetches transactions'
+
+      scenarioData -> dataPaths 'locates files'
+      dataCache -> dataPaths 'locates files'
+      chainSimulatorManager -> dataPaths 'locates the compose file'
+      chainSimulatorManager -> providers 'generates the first epoch'
+    }
+
+    app.sceneRunner -> scenes 'loads'
+    app.config -> configFile 'loads'
+    app.accounts -> wallets 'loads signers'
+    app.scenarioData -> dataStore 'reads and writes scenario data'
+    app.dataCache -> dataStore 'reads and writes cache'
+    app.dataPaths -> dataStore 'migrates'
+  }
+
+  multiversx = externalSystem 'MultiversX network' {
+    description 'Mainnet, devnet, testnet or a localnet'
+
+    gateway = service 'Gateway' {
+      technology 'HTTP'
+      description 'Proxy API of the network'
+    }
+
+    index = service 'Elasticsearch index' {
+      technology 'HTTP'
+      description 'Indexed on-chain data'
+    }
+  }
+
+  chainSimulator = externalSystem 'Chain simulator' {
+    description 'Local simulated network with its services, run by Docker Compose'
+
+    simulator = service 'Chain simulator' {
+      technology 'HTTP'
+      description 'Proxy API plus simulator endpoints: block generation, state setting'
+    }
+
+    index = service 'Elasticsearch' {
+      technology 'HTTP'
+      description 'Index of the simulated network'
+    }
+
+    services = service 'Other services' {
+      technology 'Docker containers'
+      description 'API, explorer, lite wallet, events notifier and indexer'
+    }
+  }
+
+  r3d4 = externalSystem 'R3D4 faucet' {
+    description 'Public faucet for devnet and testnet EGLD'
+  }
+
+  ledger = externalSystem 'Ledger device' {
+    description 'Hardware wallet'
+  }
+
+  user -> mxops.app.cli 'runs mxops commands'
+  user -> mxops.scenes 'writes'
+  user -> mxops.configFile 'writes'
+
+  mxops.app.providers -> multiversx.gateway 'sends transactions and queries, reads accounts and storage'
+  mxops.app.providers -> chainSimulator.simulator 'same as a gateway, plus generates blocks and sets states'
+  mxops.app.chainSimulatorManager -> chainSimulator 'starts and stops' {
+    technology 'docker compose'
+  }
+  mxops.app.steps -> multiversx.index 'reads token data when cloning'
+  mxops.app.steps -> chainSimulator.index 'inserts cloned token data'
+  mxops.app.steps -> r3d4 'requests EGLD'
+  mxops.app.accounts -> ledger 'requests signatures'
+}
+
+views {
+  view index {
+    title 'MxOps - System context'
+    include *
+  }
+
+  view containers of mxops {
+    title 'MxOps - Containers'
+    include *
+  }
+
+  view components of mxops.app {
+    title 'MxOps CLI - Components'
+    include *
+  }
+}
